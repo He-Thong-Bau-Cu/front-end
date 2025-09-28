@@ -1,0 +1,84 @@
+/* ElectionDocuments.module.css */
+.container {
+  max-width: 700px;
+  margin: 32px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 32px 24px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.title {
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #2d3a4a;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.form input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid #bfc8d0;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form button {
+  align-self: flex-start;
+  padding: 8px 20px;
+  background: #2d7ff9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.form button:hover {
+  background: #195bb5;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 1rem;
+}
+
+.table th,
+.table td {
+  border: 1px solid #e3e7ed;
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.table th {
+  background: #f5f8fa;
+  font-weight: 600;
+  color: #2d3a4a;
+}
+
+.table tr:nth-child(even) {
+  background: #f9fbfc;
+}
+
+.table a {
+  color: #2d7ff9;
+  text-decoration: underline;
+}
+
+.table a:hover {
+  color: #195bb5;
+}
