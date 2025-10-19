@@ -9,8 +9,9 @@ import {
 } from '@ant-design/icons';
 import { Menu } from 'antd';
 import Sider from 'antd/es/layout/Sider';
-import { Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import logo from "../../assets/logo.png";
+
 
 
 
@@ -18,18 +19,26 @@ type SideberProps = {
     onMenuSelect: (title: string) => void;
 };
 const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
-    const handleMenuClick = (e: { key: string }) => {
-        const labelMap: Record<string, string> = {
-            1: 'Tổng quan',
-            2: 'Quản lý tài khoản',
-            3: 'Thống kê và theo dõi',
-            4: 'Quản lý vai trò',
-            5: 'Quản lý quyền',
-            6: 'Quản lý dữ liệu',
-            7: 'Cài đặt hệ thống',
-            8: 'Báo cáo hệ thống',
-        };
-        onMenuSelect(labelMap[e.key]);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+
+    const menuItems = [
+        { key: '/admin', icon: <DashboardOutlined />, label: 'Tổng quan' },
+        { key: '/admin/user', icon: <TeamOutlined />, label: 'Quản lý tài khoản' },
+        { key: '/admin/statistics', icon: <BarChartOutlined />, label: 'Thông kê và theo dõi' },
+        { key: '/admin/roles', icon: <UserOutlined />, label: 'Quản lý vai trò' },
+        { key: '/admin/permissions', icon: <SafetyOutlined />, label: 'Quản lý quyền' },
+        { key: '/admin/data', icon: <FileTextOutlined />, label: 'Quản lý dữ liệu' },
+        { key: '/admin/settings', icon: <SettingOutlined />, label: 'Cài đặt hệ thống' },
+        { key: '/admin/reports', icon: <FileTextOutlined />, label: 'Báo cáo hệ thống' },
+
+    ];
+
+    const handleClick = (e: { key: string }) => {
+        const selected = menuItems.find((item) => item.key === e.key);
+        if (selected) onMenuSelect(selected.label);
+        navigate(e.key);
     };
 
     return (
@@ -139,17 +148,9 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
                         background: 'transparent',
                         border: 'none',
                     }}
-                    onClick={handleMenuClick}
-                    items={[
-                        { key: '1', icon: <DashboardOutlined />, label: <Link to="/admin">Tổng quan</Link> },
-                        { key: '2', icon: <TeamOutlined />, label: <Link to="/admin/user">Quản lý tài khoản</Link> },
-                        { key: '3', icon: <BarChartOutlined />, label: <Link to="/admin">Thông kê và theo dõi</Link> },
-                        { key: '4', icon: <UserOutlined />, label: <Link to="/admin/">Quản lý vai trò</Link> },
-                        { key: '5', icon: <SafetyOutlined />, label: <Link to="/admin">Quản lý quyền</Link> },
-                        { key: '6', icon: <FileTextOutlined />, label: <Link to="/admin">Quản lý dữ liệu</Link> },
-                        { key: '7', icon: <SettingOutlined />, label: <Link to="/admin">Cài đặt hệ thống</Link> },
-                        { key: '8', icon: <FileTextOutlined />, label: <Link to="/admin">Báo cáo hệ thống</Link> },
-                    ]}
+
+                    onClick={handleClick}
+                    items={menuItems}
                 />
             </Sider>
         </div>

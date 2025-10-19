@@ -14,7 +14,6 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title }) => {
             style={{
                 height: 100,
                 background: '#ECF4E9',
-                width: '100%',
                 position: 'fixed',
                 left: 290,
                 right: 0,
