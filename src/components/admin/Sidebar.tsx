@@ -10,6 +10,8 @@ import {
 import { Menu } from 'antd';
 import Sider from 'antd/es/layout/Sider';
 import { Link } from 'react-router-dom';
+import logo from "../../assets/logo.png";
+
 
 
 type SideberProps = {
@@ -18,10 +20,10 @@ type SideberProps = {
 const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     const handleMenuClick = (e: { key: string }) => {
         const labelMap: Record<string, string> = {
-            1: 'Dashboard',
+            1: 'Tổng quan',
             2: 'Quản lý tài khoản',
             3: 'Thống kê và theo dõi',
-            4: 'Quản lý role',
+            4: 'Quản lý vai trò',
             5: 'Quản lý quyền',
             6: 'Quản lý dữ liệu',
             7: 'Cài đặt hệ thống',
@@ -67,21 +69,19 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
                             style={{
                                 width: 70,
                                 height: 70,
-                                background: 'white',
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                boxShadow: '0 0 6px rgba(0,0,0,0.1)',
                                 fontSize: '30px'
                             }}
                         >
-                            🗳️
+                            <img src={logo} alt="Logo trang web" width="120" height="170" />
                         </div>
 
                         <div style={{ lineHeight: '1.2' }}>
-                            <div style={{ fontWeight: '800', fontSize: '29px', color: '#124d2d' }}>Electoral</div>
-                            <div style={{ fontWeight: '800', fontSize: '29px', color: '#124d2d' }}>System</div>
+                            <div style={{ fontWeight: '710', fontSize: '29px', color: '#124d2d' }}>Hệ thống</div>
+                            <div style={{ fontWeight: '710', fontSize: '29px', color: '#124d2d', paddingLeft: '34px' }}>bầu cử</div>
                         </div>
                     </div>
 
@@ -141,10 +141,10 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
                     }}
                     onClick={handleMenuClick}
                     items={[
-                        { key: '1', icon: <DashboardOutlined />, label: <Link to="/admin">Dashboard</Link> },
-                        { key: '2', icon: <TeamOutlined />, label: <Link to="/admin">Quản lý tài khoản</Link> },
+                        { key: '1', icon: <DashboardOutlined />, label: <Link to="/admin">Tổng quan</Link> },
+                        { key: '2', icon: <TeamOutlined />, label: <Link to="/admin/user">Quản lý tài khoản</Link> },
                         { key: '3', icon: <BarChartOutlined />, label: <Link to="/admin">Thông kê và theo dõi</Link> },
-                        { key: '4', icon: <UserOutlined />, label: <Link to="/admin/">Quản lý role</Link> },
+                        { key: '4', icon: <UserOutlined />, label: <Link to="/admin/">Quản lý vai trò</Link> },
                         { key: '5', icon: <SafetyOutlined />, label: <Link to="/admin">Quản lý quyền</Link> },
                         { key: '6', icon: <FileTextOutlined />, label: <Link to="/admin">Quản lý dữ liệu</Link> },
                         { key: '7', icon: <SettingOutlined />, label: <Link to="/admin">Cài đặt hệ thống</Link> },
