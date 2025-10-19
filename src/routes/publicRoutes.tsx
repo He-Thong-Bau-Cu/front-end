@@ -5,6 +5,8 @@ import Forbidden403 from "../pages/Forbidden403";
 import { Navigate } from "react-router-dom";
 import Dashboard from "@/pages/admin/Dashboard";
 import ManagementUser from "@/pages/admin/ManagementUser";
+import AdminLayout from "@/layout/AdimLayout";
+import Statisctics from "@/pages/admin/Statistics";
 
 export const publicRoutes = [
   {
@@ -19,6 +21,14 @@ export const publicRoutes = [
   { path: "/404", element: <NotFound404 /> },
   { path: "/", element: <Navigate to="/login" replace /> },
   { path: "*", element: <Navigate to="/404" replace /> },
-  { path: "/admin", element: <Dashboard /> },
-  { path: "/admin/user", element: <ManagementUser /> },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <Dashboard /> }, // /admin
+      { path: "user", element: <ManagementUser /> }, // /admin/user
+      { path: "statistics", element: <Statisctics /> },
+    ],
+  },
+
 ];

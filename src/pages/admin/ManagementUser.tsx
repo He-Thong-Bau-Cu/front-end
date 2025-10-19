@@ -1,33 +1,14 @@
-import AdminHeader from "@/components/admin/Header";
-import Sideber from "@/components/admin/Sidebar";
-import { Layout } from "antd";
-import { Content } from "antd/es/layout/layout";
-import { useState } from "react";
+import UserList from "@/components/admin/management-user/UserList";
+import UserStats from "@/components/admin/management-user/UserStats";
 
 const ManagementUser = () => {
-    const [pageTitle, setPageTitle] = useState('Dashboard');
 
     return (
-        <Layout>
-            <Sideber onMenuSelect={setPageTitle} />
+        <div>
+            <UserStats />
+            <UserList />
 
-            <Layout style={{ paddingLeft: '290px' }}>
-                <AdminHeader title={pageTitle} />
-                <Content
-                    style={{
-                        marginTop: 100,
-                        padding: 24,
-                        background: '#EFF8EF',
-                        position: 'fixed',
-                        overflowY: "auto",
-                        height: "100vh",
-                        paddingBottom: '300px'
-                    }}
-                >
-                    haha
-                </Content>
-            </Layout>
-        </Layout >
+        </div>
     )
 
 }
