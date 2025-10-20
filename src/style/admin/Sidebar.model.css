@@ -1,0 +1,98 @@
+/* sidebar.model.css */
+
+/* ===== Sidebar tổng ===== */
+.custom-sider {
+  background: #ecf4e9 !important;
+  position: fixed !important;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  box-shadow: 4px 0 6px rgba(0, 0, 0, 0.1);
+  max-width: 290px;
+}
+
+/* ===== Header logo ===== */
+.sidebar-header {
+  padding: 25px 20px 50px 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sidebar-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.sidebar-logo-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+}
+
+.sidebar-title {
+  line-height: 1.2;
+}
+
+.sidebar-title-main {
+  font-weight: 710;
+  font-size: 29px;
+  color: #124d2d;
+}
+
+.sidebar-title-sub {
+  font-weight: 710;
+  font-size: 29px;
+  color: #124d2d;
+  padding-left: 34px;
+}
+
+.sidebar-subtext {
+  font-size: 15px;
+  color: #777;
+  margin-left: 20px;
+}
+
+/* ===== Menu items ===== */
+.ant-menu-item {
+  height: 55px !important;
+  width: 230px !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 17px !important;
+  border-radius: 10px !important;
+  padding-left: 20px !important;
+  color: #666 !important;
+  transition: all 0.2s ease !important;
+  margin-left: 20px !important;
+}
+
+.ant-menu-item .anticon {
+  font-size: 20px !important;
+  color: #666 !important;
+}
+
+.ant-menu-item:hover {
+  background-color: #d9ead3 !important;
+  color: #000 !important;
+}
+
+.ant-menu-item-selected {
+  background-color: #b6fbb0 !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+  border-left: 4px solid red !important;
+  border-radius: 8px !important;
+  padding-left: 16px !important;
+}
+
+.ant-menu-item-selected .anticon {
+  color: #000 !important;
+}

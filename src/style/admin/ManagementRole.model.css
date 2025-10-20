@@ -1,0 +1,177 @@
+.role-card {
+  text-align: center;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+
+.role-icon {
+  height: 60px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #124d2d;
+  border-radius: 50%;
+  margin: 0 auto;
+  background-color: #ecf4e9;
+}
+
+.role-value {
+  margin: 8px 0;
+}
+
+.role-label {
+  color: #777;
+}
+
+/* ===== Container chính ===== */
+.role-section {
+  margin-top: 32px;
+}
+
+/* ===== Card tổng ===== */
+.role-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.ant-card-head {
+  padding: 0 !important;
+}
+/* ===== Tiêu đề card ===== */
+.role-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+  background: linear-gradient(90deg, #bbf49c 0%, #a8e678 100%);
+  padding: 0 24px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.role-card-title {
+  color: #2e7d32;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.role-add-btn {
+  background: linear-gradient(90deg, #bbf49c 0%, #a8e678 100%);
+  border: none !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+.role-table {
+  border-radius: 16px;
+}
+
+.role-table .ant-table-thead > tr > th {
+  background: #f9fff8;
+  font-weight: 600;
+  color: #333;
+}
+
+.role-table .ant-table-tbody > tr:hover > td {
+  background: #f3fbee;
+}
+
+.role-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8ee283;
+}
+
+.role-desc {
+  font-size: 12px;
+  color: #777;
+}
+
+.role-tag {
+  background: transparent !important;
+  border: none !important;
+  color: #2c3e50 !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+.role-edit-btn {
+  border-radius: 8px;
+  color: #ffb300 !important;
+}
+
+.permission-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.permission-title {
+  color: #2e7d32;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.permission-placeholder {
+  text-align: center;
+  padding: 40px 0;
+  color: #777;
+}
+
+.permission-placeholder span {
+  font-size: 18px;
+  display: block;
+}
+
+.permission-card .ant-card-head {
+  padding: 0 !important;
+}
+
+.permission-card .ant-card-head-title {
+  padding: 0 !important;
+}
+
+.permission-card .ant-card-head {
+  background: linear-gradient(90deg, #bbf49c 0%, #a8e678 100%);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding-left: 24px !important;
+}
+
+.role-table .ant-table-container {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.role-edit-btn {
+  border-radius: 8px;
+  color: #ffb300 !important; /* vàng chỉnh sửa */
+}
+
+.role-delete-btn {
+  border-radius: 8px;
+  color: #e53935 !important; /* đỏ xóa */
+  transition: all 0.2s ease;
+}
+
+.role-delete-btn:hover {
+  color: #c62828 !important; /* đỏ đậm hơn khi hover */
+  transform: scale(1.1);
+}
+
+.role-edit-btn:hover {
+  color: #ffb300 !important; /* đỏ đậm hơn khi hover */
+  transform: scale(1.1);
+}

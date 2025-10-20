@@ -44,7 +44,7 @@ const DashboardActivity = () => {
 
     return (
         <Card
-            title={<span style={{ fontWeight: 600, fontSize: 16 }}>⚡ Hoạt động gần đây</span>}
+            title={<span style={{ fontWeight: 600, fontSize: 16, paddingLeft: 30 }}>⚡ Hoạt động gần đây</span>}
             style={{
                 borderRadius: "16px",
                 boxShadow: "0 4px 10px rgba(0,0,0,0.05)",

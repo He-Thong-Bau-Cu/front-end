@@ -27,7 +27,7 @@ const DashboardCharts = () => {
             }}
         >
             <Card
-                title="📈 Tỷ lệ tham gia theo thời gian"
+                title={<span style={{ paddingLeft: 30 }}>📈 Tỷ lệ tham gia theo thời gian</span>}
                 style={{
                     flex: 2,
                     borderRadius: '16px'
@@ -44,7 +44,7 @@ const DashboardCharts = () => {
             </Card>
 
             <Card
-                title="📊 Phân bố kết quả"
+                title={<span style={{ paddingLeft: 30 }}>📊 Phân bố kết quả</span>}
                 style={{
                     flex: 1,
                     borderRadius: '16px'

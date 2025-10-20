@@ -7,6 +7,7 @@ import Dashboard from "@/pages/admin/Dashboard";
 import ManagementUser from "@/pages/admin/ManagementUser";
 import AdminLayout from "@/layout/AdimLayout";
 import Statisctics from "@/pages/admin/Statistics";
+import ManagementRole from "@/pages/admin/ManagementRole";
 
 export const publicRoutes = [
   {
@@ -28,6 +29,8 @@ export const publicRoutes = [
       { index: true, element: <Dashboard /> }, // /admin
       { path: "user", element: <ManagementUser /> }, // /admin/user
       { path: "statistics", element: <Statisctics /> },
+      { path: "roles", element: <ManagementRole /> },
+
     ],
   },
 

@@ -27,7 +27,7 @@ const DashboardElections = () => {
             }}
         >
             <Card
-                title="🗳️ Bầu cử đang diễn ra"
+                title={<span style={{ paddingLeft: 30 }}>🗳️ Bầu cử đang diễn ra</span>}
                 style={{
                     flex: 2,
                     borderRadius: "16px",

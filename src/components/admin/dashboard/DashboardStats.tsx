@@ -5,6 +5,7 @@ import {
     PieChartOutlined,
     CheckCircleOutlined,
 } from "@ant-design/icons";
+import "../../../style/admin/dashboard.model.css";
 
 const DashboardStats = () => {
     const stats = [
@@ -39,67 +40,26 @@ const DashboardStats = () => {
     ];
 
     return (
-        <div
-            style={{
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "space-between",
-                gap: "24px",
-                margin: "20px auto",
-                padding: "0 32px",
-                boxSizing: "border-box",
-            }}
-        >
+        <div className="dashboard-stats">
             {stats.map((s, i) => (
                 <Card
                     key={i}
+                    className="dashboard-card"
                     style={{
-                        flex: "1 1 calc(25% - 24px)",
-                        minWidth: "250px",
-                        height: "160px",
-                        border: "1px solid #eee",
-                        borderRadius: "16px",
-                        boxShadow: "0 4px 8px rgba(0,0,0,0.05)",
-                        width: "400px",
                         borderTop: `5px solid ${s.color}`,
-                        transition: "transform 0.2s ease",
+                        gap: "24px"
                     }}
-                    bodyStyle={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "20px",
-                        padding: "20px 24px",
-                    }}
+                    bodyStyle={{ padding: 0 }}
                     hoverable
                 >
-                    <div
-                        style={{
-                            height: 90,
-                            width: 90,
-                            backgroundColor: "#ECF4E9",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            borderRadius: "12px",
-                        }}
-                    >
-                        {s.icon}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: "38px", fontWeight: 600, margin: "0" }}>
-                            {s.value}
-                        </p>
-                        <p style={{ color: "#666", margin: "0" }}>{s.title}</p>
-                        <p
-                            style={{
-                                color: "#27AE60",
-                                fontWeight: "bold",
-                                margin: "0",
-                                fontSize: "14px",
-                            }}
-                        >
-                            {s.change}
-                        </p>
+                    <div className="dashboard-card-body">
+                        <div className="dashboard-icon-box">{s.icon}</div>
+
+                        <div className="dashboard-content">
+                            <p className="dashboard-value">{s.value}</p>
+                            <p className="dashboard-title">{s.title}</p>
+                            <p className="dashboard-change">{s.change}</p>
+                        </div>
                     </div>
                 </Card>
             ))}
