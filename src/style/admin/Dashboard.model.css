@@ -1,0 +1,63 @@
+.dashboard-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 20px auto;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
+
+.dashboard-card {
+  flex: 1 1 calc(25% - 24px);
+  min-width: 250px;
+  height: 160px;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+}
+
+.dashboard-card-body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+}
+
+.dashboard-icon-box {
+  height: 90px;
+  width: 90px;
+  background-color: #ecf4e9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  margin-left: 20px;
+}
+
+.dashboard-content {
+  flex: 1;
+}
+
+.dashboard-value {
+  font-size: 38px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.dashboard-title {
+  color: #666;
+  margin: 0;
+}
+
+.dashboard-change {
+  color: #27ae60;
+  font-weight: bold;
+  margin: 0;
+  font-size: 14px;
+}
