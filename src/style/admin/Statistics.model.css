@@ -1,0 +1,278 @@
+/* ===== Container chính ===== */
+.statistics-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 20px auto;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
+
+/* ===== Card thống kê ===== */
+.statistics-card {
+  flex: 1 1 calc(25% - 24px);
+  min-width: 250px;
+  height: 160px;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.statistics-card:hover {
+  transform: translateY(-3px);
+}
+
+/* ===== Bên trong card ===== */
+.statistics-card-body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+}
+
+/* ===== Icon box ===== */
+.statistics-icon-box {
+  height: 90px;
+  width: 90px;
+  background-color: #ecf4e9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  margin-left: 20px;
+}
+
+/* ===== Phần nội dung ===== */
+.statistics-content {
+  flex: 1;
+}
+
+.statistics-value {
+  font-size: 38px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.statistics-title {
+  color: #666;
+  margin: 0;
+}
+
+.statistics-change {
+  color: #27ae60;
+  font-weight: bold;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ===== Card tổng “Dữ liệu thời gian thực” ===== */
+.realtime-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 32px;
+  margin-bottom: 24px;
+  background: #fff;
+}
+
+/* ===== Tiêu đề ===== */
+.realtime-title {
+  color: #2e7d32 !important;
+  padding-left: 20px !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+
+/* ===== Card con (4 ô dữ liệu) ===== */
+.realtime-item-card {
+  border-radius: 12px !important;
+  text-align: center !important;
+  border: 3px solid #27ae60 !important;
+  background-color: #eff8ef !important;
+}
+
+/* ===== Giá trị chính ===== */
+.realtime-item-value {
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  color: #1b5e20 !important;
+}
+
+/* ===== Nhãn (dòng chữ nhỏ bên dưới) ===== */
+.realtime-item-label {
+  color: #555 !important;
+  margin-top: 4px !important;
+}
+
+/* ===== Dòng mô tả nhỏ cuối cùng ===== */
+.realtime-item-desc {
+  color: #999 !important;
+  font-size: 12px !important;
+}
+
+/* ===== Filter Bar ===== */
+.statistics-filter-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  margin: 30px 32px;
+  padding: 0px 24px;
+}
+
+.statistics-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statistics-filter-label {
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.statistics-filter-input,
+.statistics-filter-select {
+  border-radius: 8px !important;
+  height: 40px;
+}
+
+.statistics-filter-btn {
+  width: 100%;
+  height: 42px;
+  background: linear-gradient(90deg, #27ae60 0%, #124d2d 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 27px;
+}
+
+.statistics-filter-btn:hover {
+  opacity: 0.9;
+}
+
+/* === Xuất dữ liệu & Báo cáo === */
+.statistics-report-section {
+  margin: 40px 32px;
+}
+
+.statistics-export-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding-bottom: 10px;
+  margin-bottom: 32px;
+}
+
+.statistics-export-title {
+  font-size: 18px;
+  color: #124d2d;
+}
+
+.statistics-export-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f8fafa;
+  padding: 16px;
+  border-radius: 12px;
+  justify-content: center;
+}
+
+.export-icon {
+  font-size: 40px;
+  color: #666;
+  padding-left: 10px;
+}
+
+.export-icon.pdf {
+  color: #e74c3c;
+}
+
+.export-icon.excel {
+  color: #27ae60;
+}
+
+.export-icon.print {
+  color: #c0392b;
+}
+
+.export-btn {
+  margin-top: 8px;
+  border-radius: 8px !important;
+  height: 36px;
+  font-weight: 600;
+  margin-left: 100px;
+}
+
+.export-btn.green {
+  background: linear-gradient(90deg, #27ae60, #124d2d);
+  color: #fff;
+  border: none !important;
+}
+
+.export-btn.red {
+  background: #e74c3c !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* === Mini Cards === */
+.statistics-bottom-row {
+  margin-top: 20px;
+}
+
+.statistics-mini-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 0 10px;
+}
+
+.statistics-mini-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.mini-icon {
+  font-size: 20px;
+  height: 50px;
+  width: 50px;
+  background-color: #eef0f3;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.mini-icon.gold {
+  color: #f1c40f;
+}
+
+.mini-icon.gray {
+  color: #34495e;
+}
+
+.mini-icon.yellow {
+  color: #f39c12;
+}
+
+.statistics-mini-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.statistics-mini-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.statistics-mini-list li span {
+  color: #27ae60;
+  font-weight: 600;
+}
