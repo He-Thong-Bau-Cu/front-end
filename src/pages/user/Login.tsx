@@ -210,7 +210,7 @@ export default function LoginScreen() {
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Ghi nhớ đăng nhập</Checkbox>
               </Form.Item>
-              <Link href="#" style={{ color: "#7cb342" }}>
+              <Link href="/forgotPassword" style={{ color: "#7cb342" }}>
                 Quên mật khẩu?
               </Link>
             </div>
