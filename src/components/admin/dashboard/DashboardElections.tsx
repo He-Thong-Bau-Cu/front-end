@@ -1,4 +1,5 @@
 import { Card, Progress, Tag } from "antd";
+import "../../../style/admin/Dashboard.model.css";
 
 const DashboardElections = () => {
     const elections = [
@@ -17,65 +18,19 @@ const DashboardElections = () => {
     };
 
     return (
-        <div
-            style={{
-                display: "flex",
-                gap: "24px",
-                marginBottom: "20px",
-                padding: "15px 32px",
-
-            }}
-        >
+        <div className="electionWrapper">
             <Card
-                title={<span style={{ paddingLeft: 30 }}>🗳️ Bầu cử đang diễn ra</span>}
-                style={{
-                    flex: 2,
-                    borderRadius: "16px",
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-                    border: "1px solid #eee",
-
-                }}
+                title={<span className="electionCardTitle">🗳️ Bầu cử đang diễn ra</span>}
+                className="electionCard"
                 bodyStyle={{ padding: "20px" }}
             >
                 {elections.map((e, i) => (
-                    <div
-                        key={i}
-                        style={{
-                            backgroundColor: "#f8f9fa",
-                            borderRadius: "12px",
-                            padding: "16px 20px",
-                            marginBottom: "16px",
-                            boxShadow: "inset 0 0 4px rgba(0,0,0,0.03)",
-                            borderLeft: '5px solid #27AE60',
-
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                marginBottom: "8px",
-                            }}
-                        >
-                            <h4
-                                style={{
-                                    fontWeight: 600,
-                                    fontSize: "16px",
-                                    margin: 0,
-                                    color: "#333",
-                                }}
-                            >
-                                {e.title}
-                            </h4>
+                    <div key={i} className="electionItem">
+                        <div className="electionHeader">
+                            <h4 className="electionTitle">{e.title}</h4>
                             <Tag
                                 color={colorByStatus(e.status)}
-                                style={{
-                                    fontWeight: 500,
-                                    fontSize: "13px",
-                                    borderRadius: "8px",
-                                    padding: "2px 8px",
-                                }}
+                                className="electionTag"
                             >
                                 {e.status}
                             </Tag>
@@ -85,18 +40,10 @@ const DashboardElections = () => {
                             percent={e.progress}
                             showInfo={false}
                             strokeColor="#22c55e"
-                            style={{ marginBottom: "6px" }}
+                            className="electionProgress"
                         />
 
-                        <p
-                            style={{
-                                fontSize: "13px",
-                                color: "#777",
-                                margin: 0,
-                            }}
-                        >
-                            {e.end}
-                        </p>
+                        <p className="electionEnd">{e.end}</p>
                     </div>
                 ))}
             </Card>
