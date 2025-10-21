@@ -8,6 +8,8 @@ import ManagementUser from "@/pages/admin/ManagementUser";
 import AdminLayout from "@/layout/AdimLayout";
 import Statisctics from "@/pages/admin/Statistics";
 import ManagementRole from "@/pages/admin/ManagementRole";
+import VoterLayout from "@/layout/VoterLayout";
+import DashboardVoter from "@/pages/voter/Dashboard";
 import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
 import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
 import VoterList from "@/pages/voter/VoterList";
@@ -29,8 +31,8 @@ export const publicRoutes = [
     path: "/admin",
     element: <AdminLayout />,
     children: [
-      { index: true, element: <Dashboard /> }, // /admin
-      { path: "user", element: <ManagementUser /> }, // /admin/user
+      { index: true, element: <Dashboard /> },
+      { path: "user", element: <ManagementUser /> },
       { path: "statistics", element: <Statisctics /> },
       { path: "roles", element: <ManagementRole /> },
 
@@ -52,13 +54,24 @@ export const publicRoutes = [
       </PublicRoute>
     ),
   },
-   {
+  {
     path: "/voter/list",
     element: (
       <PublicRoute>
         <VoterList />
       </PublicRoute>
     ),
+  },
+  {
+    path: "/",
+    element: <VoterLayout />,
+    children: [
+      { index: true, element: <DashboardVoter /> },
+      { path: "authorization", element: <DashboardVoter /> },
+      // { path: "statistics", element: <Statisctics /> },
+      // { path: "roles", element: <ManagementRole /> },
+
+    ],
   },
 
 ];
