@@ -5,7 +5,7 @@ import {
     PieChartOutlined,
     CheckCircleOutlined,
 } from "@ant-design/icons";
-import "../../../style/admin/dashboard.model.css";
+import "../../../style/admin/Dashboard.model.css";
 
 const DashboardStats = () => {
     const stats = [
