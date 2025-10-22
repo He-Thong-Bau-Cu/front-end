@@ -1,0 +1,285 @@
+/* 🌿 Welcome card container */
+.voter-welcome-card {
+  background: linear-gradient(90deg, #a8e678 0%, #7ecb50 100%);
+  border-radius: 16px;
+  padding: 0px 32px;
+  color: #124d2d;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 🌞 Title and subtitle */
+.voter-welcome-title {
+  font-size: 26px;
+  color: #ffffff;
+}
+
+.voter-welcome-subtitle {
+  margin-top: 6px;
+  color: #ffffff;
+}
+
+/* 👤 User info layout */
+.voter-welcome-user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* 🧑‍💼 Name and info */
+.voter-user-name {
+  font-size: 18px;
+  color: #124d2d;
+}
+
+.voter-user-info {
+  color: #124d2d;
+  font-size: 14px;
+}
+
+.voter-stats-container {
+  padding: 32px 0px;
+}
+
+/* 📊 Mỗi thẻ card */
+.voter-stat-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.voter-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* 🧭 Layout ngang */
+.voter-stat-horizontal .voter-stat-inner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 18px;
+}
+
+/* 🧩 Icon bên trái */
+.voter-stat-icon-box {
+  height: 90px;
+  width: 90px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16px;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+/* 🔠 Text bên phải */
+.voter-stat-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.voter-stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 2px;
+}
+
+.voter-stat-title {
+  color: #555;
+  margin: 0;
+  font-size: 15px;
+}
+
+.voter-stat-desc {
+  color: #888;
+  font-size: 13px;
+  margin: 2px 0 0 0;
+}
+
+/* ===== CARD CHÍNH ===== */
+.election-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+
+/* Nút "Xem tất cả" */
+.election-view-all {
+  color: #27ae60;
+  font-weight: 500;
+  margin-right: 40px;
+}
+
+/* ===== ITEM ===== */
+.election-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #f9fbf9;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  position: relative;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.election-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== BÊN TRÁI ===== */
+.election-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.election-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.election-date {
+  color: #777;
+  font-size: 14px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ===== BUTTONS ===== */
+.election-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.election-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.election-btn.primary:hover {
+  opacity: 0.9;
+}
+
+/* ===== TAG TRẠNG THÁI ===== */
+.election-status {
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  position: absolute;
+  right: 20px;
+  top: 18px;
+}
+
+/* ===== CARD CHÍNH ===== */
+.notification-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+
+/* "Tất cả →" link */
+.notification-view-all {
+  color: #27ae60;
+  font-weight: 500;
+}
+
+/* ===== ITEM ===== */
+.notification-item {
+  background: #f9fbf9;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 17px;
+  border-left: 4px solid #27ae60;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.notification-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== TEXT ===== */
+.notification-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+}
+
+.notification-desc {
+  color: #555;
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.notification-time {
+  color: #999;
+  font-size: 13px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== CARD CHÍNH ===== */
+.quick-actions-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 24px 0px;
+  padding-bottom: 12px;
+}
+
+/* ===== GRID 2x2 ===== */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+
+/* ===== MỖI Ô ===== */
+.quick-action-item {
+  background: #f9fbf9;
+  border-radius: 12px;
+  text-align: center;
+  padding: 18px 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 0 1px #eaeaea;
+  cursor: pointer;
+}
+
+.quick-action-item:hover {
+  background: #f3f8f3;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== ICON ===== */
+.quick-action-icon {
+  font-size: 28px;
+  color: #124d2d;
+  margin-bottom: 6px;
+}
+
+/* ===== LABEL ===== */
+.quick-action-label {
+  color: #333;
+  font-size: 15px;
+  display: block;
+}
