@@ -8,13 +8,16 @@ import {
     SearchOutlined,
 } from "@ant-design/icons";
 import React, { useState } from "react";
+import type { UserRecord } from "@/types/User.interface";
+import { TableProps } from "antd/lib";
+
 
 const { Option } = Select;
 
 const UserList = () => {
     const [page, setPage] = useState(1);
 
-    const users = [
+    const users: UserRecord[] = [
         {
             key: "1",
             name: "Nguyễn Văn An",
@@ -67,7 +70,7 @@ const UserList = () => {
         },
     ];
 
-    const columns = [
+    const columns: TableProps<UserRecord>["columns"] = [
         {
             title: "Người dùng",
             dataIndex: "name",
@@ -132,7 +135,7 @@ const UserList = () => {
             dataIndex: "status",
             key: "status",
             render: (status) => {
-                let color =
+                const color =
                     status === "Hoạt động"
                         ? "green"
                         : status === "Chờ xác thực"
