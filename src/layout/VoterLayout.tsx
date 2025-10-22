@@ -12,12 +12,12 @@ const VoterLayout = () => {
 
     useEffect(() => {
         const map: Record<string, string> = {
-            '/': 'Tổng quan',
-            '/authorization': 'Ủy quyền',
-            '/voting-history': 'Lịch sử bỏ phiếu',
-            '/ballots': 'Danh sách phiếu bầu',
-            '/results': 'Kết quả bỏ phiếu',
-            '/delegate-card': 'Thẻ đại biểu'
+            '/voter': 'Tổng quan',
+            '/voter/authorization': 'Ủy quyền',
+            '/voter/voting-history': 'Lịch sử bỏ phiếu',
+            '/voter/ballots': 'Danh sách phiếu bầu',
+            '/voter/results': 'Kết quả bỏ phiếu',
+            '/voter/delegate-card': 'Thẻ đại biểu'
         };
         setPageTitle(map[location.pathname] || 'Bảng điều khiển');
     }, [location.pathname]);

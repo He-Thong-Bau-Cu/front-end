@@ -22,32 +22,32 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
 
     const menuItems = [
         {
-            key: "/",
+            key: "/voter",
             icon: <DashboardOutlined />,
             label: "Tổng quan",
         },
         {
-            key: "/authorization",
+            key: "/voter/authorization",
             icon: <TeamOutlined />,
             label: "Ủy quyền",
         },
         {
-            key: "/voting-history",
+            key: "/voter/voting-history",
             icon: <HistoryOutlined />,
             label: "Lịch sử bỏ phiếu",
         },
         {
-            key: "/ballots",
+            key: "/voter/ballots",
             icon: <FileTextOutlined />,
             label: "Danh sách phiếu bầu",
         },
         {
-            key: "/results",
+            key: "/voter/results",
             icon: <CheckCircleOutlined />,
             label: "Kết quả bỏ phiếu",
         },
         {
-            key: "/delegate-card",
+            key: "/voter/delegate-card",
             icon: <IdcardOutlined />,
             label: "Thẻ đại biểu",
         },
