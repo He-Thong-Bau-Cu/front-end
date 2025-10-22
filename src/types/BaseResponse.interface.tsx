@@ -7,3 +7,5 @@ export interface BaseResponse<T = any> {
   path?: string;
   timestamp?: any;
 }
+
+

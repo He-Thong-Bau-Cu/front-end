@@ -8,7 +8,7 @@ const DashboardElections = () => {
         { title: "Bầu chọn đại diện công đoàn", progress: 92, status: "Hoàn thành", end: "Đã kết thúc" },
     ];
 
-    const colorByStatus = (status) => {
+    const colorByStatus = (status: string) => {
         switch (status) {
             case "Đang diễn ra": return "green";
             case "Sắp bắt đầu": return "orange";
