@@ -63,7 +63,7 @@ export const publicRoutes = [
     ),
   },
   {
-    path: "/",
+    path: "/voter",
     element: <VoterLayout />,
     children: [
       { index: true, element: <DashboardVoter /> },
