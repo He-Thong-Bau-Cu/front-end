@@ -14,6 +14,7 @@ import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
 import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
 import VoterList from "@/pages/voter/VoterList";
 import VotingHistory from "@/pages/voter/VotingHistory";
+import Authorization from "@/pages/voter/Authorization";
 
 export const publicRoutes = [
   {
@@ -68,9 +69,8 @@ export const publicRoutes = [
     element: <VoterLayout />,
     children: [
       { index: true, element: <DashboardVoter /> },
-      { path: "authorization", element: <DashboardVoter /> },
+      { path: "authorization", element: <Authorization /> },
       { path: "voting-history", element: <VotingHistory /> },
-      // { path: "roles", element: <ManagementRole /> },
 
     ],
   },
