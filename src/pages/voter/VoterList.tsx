@@ -1,15 +1,14 @@
-import React from "react";
-import { Layout, Menu, Button, Upload, Table, Input, Typography, Space } from "antd";
 import {
-  UserOutlined,
-  UploadOutlined,
-  FileAddOutlined,
-  HomeOutlined,
   CheckCircleOutlined,
-  TeamOutlined,
   DeleteOutlined,
   EditOutlined,
+  FileAddOutlined,
+  HomeOutlined,
+  TeamOutlined,
+  UploadOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
+import { Button, Input, Layout, Menu, Space, Table, Typography } from "antd";
 
 const { Sider, Header, Content } = Layout;
 const { Title, Text } = Typography;

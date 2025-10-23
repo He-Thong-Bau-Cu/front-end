@@ -1,0 +1,189 @@
+.voting-history-page {
+  padding: 24px 32px;
+}
+
+.voting-header-card {
+  border-radius: 16px;
+}
+
+/* HEADER */
+.voting-stat-card {
+  text-align: center;
+  border-radius: 12px;
+  background: #f9fff9;
+  border: 1px solid #d4eac8;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.voting-stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  border-color: #a8e678;
+  background: linear-gradient(90deg, #f5fff0 0%, #eaffd6 100%);
+}
+.voting-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.voting-stats-row {
+  margin-top: 10px;
+}
+
+.voting-stat-card {
+  text-align: center;
+  border-radius: 12px;
+  background: #f9fff9;
+  border: 1px solid #d4eac8;
+}
+
+.voting-stat-value {
+  font-size: 28px;
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.voting-stat-label {
+  color: #777;
+  margin: 0;
+}
+
+/* --- Toàn bộ khối nội dung --- */
+.voting-history-content {
+  margin-top: 24px;
+  background-color: #ffff;
+  padding-bottom: 30px;
+  border-radius: 18px;
+}
+
+/* --- Thẻ tìm kiếm --- */
+.voting-search-card {
+  margin-bottom: 24px;
+  padding: 0px 20px;
+  border-radius: 0px;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.voting-search-input {
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 10px;
+}
+
+/* --- Toàn bộ timeline --- */
+.voting-timeline {
+  position: relative;
+  padding-left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-right: 40px;
+}
+
+.voting-timeline::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 32px;
+  width: 3px;
+  height: calc(100% - 20px);
+  background-color: #8fd57f;
+  border-radius: 3px;
+}
+
+/* --- Card chính --- */
+.voting-timeline-card {
+  position: relative;
+  background: #f8f9fa;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  padding: 0px 28px;
+  margin-left: 16px;
+  transition: all 0.25s ease;
+}
+
+.voting-timeline-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+.voting-timeline-card::before {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: 26px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: #8fd57f;
+  border: 3px solid #d6f2cb;
+}
+
+/* --- Nội dung --- */
+.voting-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.voting-date {
+  color: #888;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- Info Items --- */
+.voting-info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: #124d2d;
+}
+
+.voting-info-item .ant-typography {
+  color: #999999 !important;
+}
+
+.voting-info-item-icon {
+  height: 50px;
+  width: 50px;
+  background-color: #f1f8ed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+}
+
+.voting-info-item strong {
+  margin-left: 4px;
+}
+
+/* --- Nút --- */
+.voting-buttons {
+  margin-top: 20px;
+}
+
+.voting-buttons button {
+  border-radius: 10px;
+  height: 38px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.voting-buttons button:hover {
+  background: #f6ffed;
+  border-color: #52c41a;
+  transform: translateY(-2px);
+}
