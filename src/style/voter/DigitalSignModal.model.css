@@ -1,0 +1,92 @@
+/* ===== Modal tổng thể ===== */
+.digital-sign-modal .ant-modal-content {
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Header */
+.digital-sign-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 20px 24px 12px 24px;
+}
+.digital-sign-icon {
+  color: #1677ff;
+  font-size: 20px;
+}
+.digital-sign-title {
+  margin: 0;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Body */
+.digital-sign-body {
+  padding: 16px 24px 8px 24px;
+}
+.field-group {
+  margin-bottom: 16px;
+}
+.hint {
+  font-size: 13px;
+  color: #888 !important;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Upload */
+.upload-row .ant-input {
+  background: #fafafa;
+  border-radius: 8px;
+}
+.upload-row button {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* Tài liệu box */
+.doc-info-box {
+  background: #f6fbff;
+  border: 1px solid #d9e8f5;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Footer */
+.digital-sign-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 12px 24px 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  background: #fafafa;
+}
+
+/* Nút hành động */
+.cancel-btn {
+  background: #f0f0f0 !important;
+  border: none !important;
+  color: #555 !important;
+  font-weight: 500;
+  border-radius: 8px !important;
+  height: 38px !important;
+}
+.cancel-btn:hover {
+  background: #e6e6e6 !important;
+}
+
+.confirm-btn {
+  background: #1677ff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  height: 38px !important;
+  box-shadow: 0 3px 6px rgba(22, 119, 255, 0.25);
+}
+.confirm-btn:hover {
+  background: #1468e9 !important;
+}
