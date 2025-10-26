@@ -1,16 +1,20 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Row, Table, Tag, Typography } from 'antd';
+import { TableProps } from 'antd/lib';
 import '../../../style/admin/ManagementRole.model.css';
+import type { RoleRecord } from "../../../types/Role.interface";
 
 const { Text } = Typography;
 
+
+
 const ListRoles = () => {
-    const columns = [
+    const columns: TableProps<RoleRecord>["columns"] = [
         {
             title: 'VAI TRÒ',
             dataIndex: 'role',
             key: 'role',
-            render: (text, record) => (
+            render: (text: string, record) => (
                 <div className="role-item">
                     <div className="role-dot" />
                     <div>
@@ -52,10 +56,10 @@ const ListRoles = () => {
         },
     ];
 
-    const data = [
+    const data: RoleRecord[] = [
         { key: 1, role: 'Quản trị hệ thống', desc: 'Quản trị toàn bộ hệ thống', users: 3, permissions: 25 },
         { key: 2, role: 'Ban giám sát', desc: 'Giám sát và điều hành bầu cử', users: 12, permissions: 18 },
-        { key: 3, role: 'Cử tri', desc: 'Cử tri tham gia bỏ phiếu', users: '1,089', permissions: 8 },
+        { key: 3, role: 'Cử tri', desc: 'Cử tri tham gia bỏ phiếu', users: 1089, permissions: 8 },
         { key: 4, role: 'Chủ tọa', desc: 'Theo dõi và giám sát bầu cử', users: 8, permissions: 6 },
     ];
 
@@ -82,13 +86,15 @@ const ListRoles = () => {
                         bodyStyle={{ padding: 0 }}
                         className="role-card"
                     >
-                        <Table
+                        <Table<RoleRecord>
+                            rowKey="key"
                             columns={columns}
                             dataSource={data}
                             pagination={false}
                             className="role-table"
-
                         />
+
+
                     </Card>
                 </Col>
 

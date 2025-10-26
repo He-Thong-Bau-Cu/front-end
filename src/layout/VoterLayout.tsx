@@ -17,9 +17,7 @@ const VoterLayout = () => {
             '/voting-history': 'Lịch sử bỏ phiếu',
             '/ballots': 'Danh sách phiếu bầu',
             '/results': 'Kết quả bỏ phiếu',
-            '/delegate-card': 'Thẻ đại biểu',
-            '/ballot_cumulative_voting': 'Bầu cử dồn phiếu',
-            '/ballot_resolution_voting': 'Bầu cử nghị quyết',
+            '/delegate-card': 'Thẻ đại biểu'
         };
         
         setPageTitle(map[location.pathname] || 'Bảng điều khiển');

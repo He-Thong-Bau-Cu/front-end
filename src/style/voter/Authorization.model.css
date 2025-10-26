@@ -1,0 +1,64 @@
+.delegation-input {
+  height: 42px;
+}
+
+.delegation-table {
+  font-weight: bold;
+}
+
+.delegation-notice {
+  background: #f1f8ed;
+  border-left: 5px solid #7ecb50;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.delegation-notice-title {
+  color: #124d2d;
+  font-size: 16px;
+}
+
+.delegation-notice-text {
+  color: #444;
+  margin-top: 8px;
+}
+
+/* Form ủy quyền */
+.delegation-form-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 24px 32px;
+}
+
+.delegation-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Lịch sử ủy quyền */
+.delegation-history-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 24px 32px;
+}
+
+.delegation-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #f3f3f3;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  border-left: 4px solid #27ae60;
+  cursor: pointer;
+}
+
+.delegation-history-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #5ba93b;
+}

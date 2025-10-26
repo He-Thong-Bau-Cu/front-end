@@ -1,7 +1,25 @@
+import ElectionList from "@/components/voter/dashboard/ElectionList";
+import NotificationPanel from "@/components/voter/dashboard/NotificationPanel";
+import QuickActions from "@/components/voter/dashboard/QuickActions";
+import VoterStats from "@/components/voter/dashboard/VoterStats";
+import WelcomeCard from "@/components/voter/dashboard/WelcomeCard";
+import { Col, Row } from "antd";
+
 const DashboardVoter = () => {
     return (
-        <div>
-            voter
+        <div style={{ padding: "30px 32px" }}>
+            <WelcomeCard />
+            <VoterStats />
+
+            <Row gutter={24} >
+                <Col xs={24} lg={16}>
+                    <ElectionList />
+                </Col>
+                <Col xs={24} lg={8}>
+                    <NotificationPanel />
+                    <QuickActions />
+                </Col>
+            </Row>
         </div>
     )
 }

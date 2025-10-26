@@ -16,6 +16,8 @@ import BallotList from "@/pages/voter/BallotList";
 import CumulativeVoting from "@/pages/voter/CumulativeVoting";
 import ResolutionVoting from "@/pages/voter/ResolutionVoting";
 import VoteSuccess from "@/pages/voter/VoteSuccess";
+import VotingHistory from "@/pages/voter/VotingHistory";
+import Authorization from "@/pages/voter/Authorization";
 
 export const publicRoutes = [
   {
@@ -59,7 +61,7 @@ export const publicRoutes = [
   },
   
   {
-    path: "/",
+    path: "/voter",
     element: <VoterLayout />,
     children: [
       { index: true, element: <DashboardVoter /> },
@@ -71,6 +73,8 @@ export const publicRoutes = [
 
       // { path: "statistics", element: <Statisctics /> },
       // { path: "roles", element: <ManagementRole /> },
+      { path: "authorization", element: <Authorization /> },
+      { path: "voting-history", element: <VotingHistory /> },
 
     ],
   },
