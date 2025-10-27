@@ -1,0 +1,104 @@
+.decision-stats-row {
+  margin: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 20px;
+}
+
+.decision-stat-card {
+  border-radius: 16px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 120px;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Hover mượt hơn, nổi rõ card */
+.decision-stat-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  background: #f9fff9;
+}
+
+.decision-stat-value {
+  font-size: 34px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.decision-stat-label {
+  color: #444;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Responsive xuống hàng khi màn hình nhỏ */
+@media (max-width: 1200px) {
+  .decision-stats-row {
+    flex-wrap: wrap;
+  }
+
+  .decision-stat-card {
+    height: 130px;
+    flex: 1 1 calc(50% - 16px);
+  }
+}
+
+/* --- Table Container --- */
+.decision-table-card {
+  border-radius: 16px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 8px 16px;
+}
+
+/* --- Toolbar --- */
+.decision-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* --- Toolbar buttons group --- */
+.decision-toolbar-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* --- Create Button --- */
+.btn-create {
+  background-color: #7ecb50 !important;
+  border: none;
+  color: white !important;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(126, 203, 80, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-create:hover {
+  background-color: #6ab441 !important;
+  transform: translateY(-2px);
+}
+
+/* --- Table --- */
+.decision-table .ant-table-thead > tr > th {
+  background-color: #f8faf7 !important;
+  font-weight: 600;
+}
+
+.decision-table .ant-table-tbody > tr:hover > td {
+  background-color: #f6fff2 !important;
+}
