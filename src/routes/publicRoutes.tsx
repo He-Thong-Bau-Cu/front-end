@@ -5,8 +5,7 @@ import Forbidden403 from "../pages/Forbidden403";
 import { Navigate } from "react-router-dom";
 import Dashboard from "@/pages/admin/Dashboard";
 import ManagementUser from "@/pages/admin/ManagementUser";
-import AdminLayout from "@/layout/AdimLayout";
-import Statisctics from "@/pages/admin/Statistics";
+import AdminLayout from "@/layout/AdminLayout";
 import ManagementRole from "@/pages/admin/ManagementRole";
 import VoterLayout from "@/layout/VoterLayout";
 import DashboardVoter from "@/pages/voter/Dashboard";
@@ -15,6 +14,9 @@ import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
 import VoterList from "@/pages/voter/VoterList";
 import VotingHistory from "@/pages/voter/VotingHistory";
 import Authorization from "@/pages/voter/Authorization";
+import PresideLayout from "@/layout/PresideLayout";
+import Statistics from "@/pages/admin/Statistics";
+import ManagementDecision from "@/pages/preside/ManagementDecision";
 
 export const publicRoutes = [
   {
@@ -35,7 +37,7 @@ export const publicRoutes = [
     children: [
       { index: true, element: <Dashboard /> },
       { path: "user", element: <ManagementUser /> },
-      { path: "statistics", element: <Statisctics /> },
+      { path: "statistics", element: <Statistics /> },
       { path: "roles", element: <ManagementRole /> },
 
     ],
@@ -71,6 +73,16 @@ export const publicRoutes = [
       { index: true, element: <DashboardVoter /> },
       { path: "authorization", element: <Authorization /> },
       { path: "voting-history", element: <VotingHistory /> },
+
+    ],
+  },
+
+  {
+    path: "/preside",
+    element: <PresideLayout />,
+    children: [
+      { path: "decision", element: <ManagementDecision /> },
+
 
     ],
   },
