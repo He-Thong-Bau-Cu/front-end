@@ -1,0 +1,234 @@
+.resolution-page {
+  padding: 32px;
+  background: #f5f9f5;
+  min-height: 100vh;
+}
+
+
+.status-tag {
+  font-size: 15px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: #e8f5e9;
+  color: #388e3c;
+  border: none;
+}
+
+/* Card */
+.resolution-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+}
+
+.section-title {
+  font-weight: 600;
+  color: #388e3c;
+  margin-bottom: 16px;
+}
+
+.resolution-intro {
+  border-left: 3px solid #7cb342;
+  padding-left: 16px;
+  margin-bottom: 16px;
+}
+
+/* Voting options */
+.vote-option {
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.25s ease;
+  padding: 12px 16px;
+}
+.vote-option:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.vote-option.active.agree {
+  background: #f1f8e9;
+  border: 2px solid #7cb342;
+}
+.vote-option.active.disagree {
+  background: #ffebee;
+  border: 2px solid #e53935;
+}
+.vote-option.active.neutral {
+  background: #fff8e1;
+  border: 2px solid #ffa000;
+}
+
+/* Icon colors */
+.icon.agree {
+  color: #7cb342;
+}
+.icon.disagree {
+  color: #e53935;
+}
+.icon.neutral {
+  color: #ffa000;
+}
+
+.comment-box {
+  border-radius: 12px;
+  background: #fafafa;
+  margin-top: 16px;
+}
+.vote-form-buttons {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+/* Nút Hủy */
+.cancel-btn {
+  flex: 1;
+  height: 44px !important;
+  background: #f2f2f2 !important;
+  color: #333 !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 500;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+}
+.cancel-btn:hover {
+  background: #e6e6e6 !important;
+  color: #000 !important;
+}
+
+/* Nút xác nhận */
+.confirm-btn {
+  flex: 1;
+  height: 44px !important;
+  background: #dfeeda !important; /* mờ khi chưa chọn */
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Khi hover và đã active */
+.confirm-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(124, 179, 66, 0.25);
+}
+
+/* Khi người dùng chọn (active) → sáng rõ */
+.confirm-btn.active {
+  background: #7cb342 !important;
+  box-shadow: 0 3px 10px rgba(124, 179, 66, 0.3);
+  color: #fff !important;
+}
+
+/* Khi disabled */
+.confirm-btn:disabled {
+  background: #e8f1e5 !important;
+  color: #fff !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+.vote-form-buttons {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+/* Countdown card */
+.countdown-card {
+  border-radius: 16px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.time-text {
+  color: #7cb342 !important;
+  font-size: 42px !important;
+  margin: 0 !important;
+}
+/* ==== HEADER GIỐNG ẢNH ==== */
+.resolution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 16px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eef3ea;
+  margin-bottom: 24px;
+}
+
+/* Trái: tiêu đề + thông tin */
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.header-title {
+  margin: 0;
+  color: #2a2a2a;
+  font-weight: 700;
+}
+
+.header-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #667085;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-icon {
+  color: #7cb342;
+  font-size: 16px;
+}
+
+/* Viên thuốc trạng thái */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #7cb342;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.status-pill svg {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .resolution-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

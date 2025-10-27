@@ -11,7 +11,10 @@ import VoterLayout from "@/layout/VoterLayout";
 import DashboardVoter from "@/pages/voter/Dashboard";
 import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
 import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
-import VoterList from "@/pages/voter/VoterList";
+import BallotList from "@/pages/voter/BallotList";
+import CumulativeVoting from "@/pages/voter/CumulativeVoting";
+import ResolutionVoting from "@/pages/voter/ResolutionVoting";
+import VoteSuccess from "@/pages/voter/VoteSuccess";
 import VotingHistory from "@/pages/voter/VotingHistory";
 import Authorization from "@/pages/voter/Authorization";
 import PresideLayout from "@/layout/PresideLayout";
@@ -58,19 +61,20 @@ export const publicRoutes = [
       </PublicRoute>
     ),
   },
-  {
-    path: "/voter/list",
-    element: (
-      <PublicRoute>
-        <VoterList />
-      </PublicRoute>
-    ),
-  },
+
   {
     path: "/voter",
     element: <VoterLayout />,
     children: [
       { index: true, element: <DashboardVoter /> },
+      { path: "authorization", element: <DashboardVoter /> },
+      { path: "ballots", element: <BallotList /> },
+      { path: "ballot_cumulative_voting", element: <CumulativeVoting /> },
+      { path: "ballot_resolution_voting", element: <ResolutionVoting /> },
+
+
+      // { path: "statistics", element: <Statisctics /> },
+      // { path: "roles", element: <ManagementRole /> },
       { path: "authorization", element: <Authorization /> },
       { path: "voting-history", element: <VotingHistory /> },
 
@@ -85,6 +89,15 @@ export const publicRoutes = [
 
 
     ],
+  },
+
+  {
+    path: "/vote-success",
+    element: (
+      <PublicRoute>
+        <VoteSuccess />
+      </PublicRoute>
+    ),
   },
 
 ];
