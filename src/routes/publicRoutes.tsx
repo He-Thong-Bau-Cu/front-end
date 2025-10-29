@@ -21,6 +21,8 @@ import PresideLayout from "@/layout/PresideLayout";
 import Statistics from "@/pages/admin/Statistics";
 import ManagementDecision from "@/pages/preside/ManagementDecision";
 import DashboardPreside from "@/pages/preside/Dashboard";
+import AuthorizationPreside from "@/pages/preside/Authorization";
+
 
 
 export const publicRoutes = [
@@ -87,6 +89,8 @@ export const publicRoutes = [
     children: [
       { index: true, element: <DashboardPreside /> },
       { path: "decision", element: <ManagementDecision /> },
+      { path: "authorization", element: <AuthorizationPreside /> },
+
 
 
     ],

@@ -14,7 +14,7 @@ const PresideLayout = () => {
         const map: Record<string, string> = {
             "/preside": "Tổng quan",
             "/preside/decision": "Quản lý quyết định",
-            "/preside/authorization-approval": "Phê duyệt ủy quyền",
+            "/preside/authorization": "Phê duyệt ủy quyền",
             "/preside/election-monitor": "Giám sát bầu cử",
             "/preside/reports": "Quản lý báo cáo",
         };
