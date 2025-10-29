@@ -22,8 +22,8 @@ import Statistics from "@/pages/admin/Statistics";
 import ManagementDecision from "@/pages/preside/ManagementDecision";
 import DashboardPreside from "@/pages/preside/Dashboard";
 import AuthorizationPreside from "@/pages/preside/Authorization";
-
-
+import ReportsPage from "@/pages/preside/manage_report/ReportsPage";
+import ElectionResultsPage from "@/pages/preside/voting_process/ElectionResultsPage";
 
 export const publicRoutes = [
   {
@@ -80,6 +80,7 @@ export const publicRoutes = [
       { path: "authorization", element: <Authorization /> },
       { path: "voting-history", element: <VotingHistory /> },
 
+
     ],
   },
 
@@ -90,8 +91,8 @@ export const publicRoutes = [
       { index: true, element: <DashboardPreside /> },
       { path: "decision", element: <ManagementDecision /> },
       { path: "authorization", element: <AuthorizationPreside /> },
-
-
+      { path: "manage-report", element: <ReportsPage /> },
+      { path: "voting-process", element: <ElectionResultsPage /> },
 
     ],
   },
