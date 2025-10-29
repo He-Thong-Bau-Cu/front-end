@@ -95,8 +95,8 @@ export const publicRoutes = [
       { index: true, element: <DashboardPreside /> },
       { path: "decision", element: <ManagementDecision /> },
       { path: "authorization", element: <AuthorizationPreside /> },
-      { path: "manage-report", element: <ReportsPage /> },
-      { path: "voting-process", element: <ElectionResultsPage /> },
+      { path: "reports", element: <ReportsPage /> },
+      { path: "election-monitor", element: <ElectionResultsPage /> },
 
     ],
   },
