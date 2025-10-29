@@ -31,7 +31,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Quản lý quyết định",
         },
         {
-            key: "/preside/authorization-approval",
+            key: "/preside/authorization",
             icon: <TeamOutlined />,
             label: "Phê duyệt ủy quyền",
         },
