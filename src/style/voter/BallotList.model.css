@@ -1,7 +1,6 @@
 .ballot-page {
-  background: #f1f8e9;
   min-height: 100vh;
-  padding: 40px 60px;
+  padding: 30px 32px;
 }
 
 /* Header */
@@ -80,15 +79,15 @@
 
 /* Mỗi cột chứa 1 thẻ */
 .ballot-card-wrapper {
-  display: flex;          /* 🔹 Đảm bảo card bên trong chiếm full chiều cao */
-  align-items: stretch;   /* 🔹 Kéo card cao bằng nhau */
+  display: flex; /* 🔹 Đảm bảo card bên trong chiếm full chiều cao */
+  align-items: stretch; /* 🔹 Kéo card cao bằng nhau */
   height: 100%;
 }
 
 /* Thẻ BallotCard chính */
 .ballot-card {
   width: 100%;
-  height: 100%;           /* 🔹 Bắt buộc để card bằng nhau */
+  height: 100%; /* 🔹 Bắt buộc để card bằng nhau */
   border-radius: 16px;
   background: #f7fbf5;
   border-top: 4px solid #7cb342;
@@ -121,4 +120,3 @@
     width: 100% !important;
   }
 }
-

@@ -1,0 +1,132 @@
+.voting-result-page {
+  padding: 20px 32px;
+}
+
+/* Header card */
+.voting-result-header-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  background: #fff;
+  padding-bottom: 10px;
+}
+
+.voting-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.voting-result-back-btn {
+  background: #f1f8ed;
+  color: #124d2d;
+  border: none;
+  border-radius: 8px;
+}
+
+.voting-result-back-btn:hover {
+  background: #e3f3d9;
+}
+
+/* Toolbar */
+.voting-result-list-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 14px;
+}
+
+.voting-result-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.voting-result-search {
+  width: 600px;
+  height: 40px;
+  margin-bottom: 20px;
+}
+
+.voting-result-filter-btn {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+}
+
+/* Cards */
+.voting-result-card {
+  border-radius: 12px;
+  border-top: 5px solid #a8e678;
+  transition: all 0.25s ease;
+  background-color: #f8f9fa;
+}
+
+.voting-result-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  border-top: 5px solid #a8e678;
+}
+
+.voting-result-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.voting-result-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: #8fd663;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 26px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+  margin: 20px;
+}
+
+.voting-result-icon:hover {
+  transform: scale(1.05);
+  background-color: #7ecb50;
+}
+
+.voting-result-title {
+  display: block;
+  font-size: 16px;
+  margin: 8px 0;
+  color: #124d2d;
+}
+
+.voting-result-description {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.voting-result-info p {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.voting-result-stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 22px 60px 0 60px;
+}
+
+.voting-result-stats div {
+  text-align: center;
+}
+
+.voting-result-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #888;
+  font-style: italic;
+}
