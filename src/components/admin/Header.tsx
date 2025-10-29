@@ -27,6 +27,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title }) => {
                 fontSize: '1.25rem',
                 fontWeight: 600,
                 borderLeft: '5px solid #c41d1d',
+                width: `calc(100% - 260px)`,
             }}
         >
             <div style={{ paddingLeft: '50px', fontWeight: '700', fontSize: '25px', color: '#124d2d', display: 'flex' }}>

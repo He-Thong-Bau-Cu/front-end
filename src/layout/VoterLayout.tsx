@@ -19,9 +19,10 @@ const VoterLayout = () => {
             '/voter/results': 'Kết quả bỏ phiếu',
             '/voter/delegate-card': 'Thẻ đại biểu',
             '/voter/ballot_cumulative_voting': 'Bỏ phiếu tích lũy',
-            '/voter/ballot_resolution_voting': 'Bỏ phiếu nghị quyết'
+            '/voter/ballot_resolution_voting': 'Bỏ phiếu nghị quyết',
+            '/voter/results/detail': 'Kết quả bỏ phiếu chi tiết'
         };
-        
+
         setPageTitle(map[location.pathname] || 'Bảng điều khiển');
     }, [location.pathname]);
 

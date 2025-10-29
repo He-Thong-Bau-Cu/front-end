@@ -1,6 +1,5 @@
+import { Card, Typography } from "antd";
 import React from "react";
-import { Card, Button, Typography } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -15,12 +14,6 @@ const VotingResultHeader: React.FC = () => {
                     </Text>
                 </div>
 
-                <Button
-                    icon={<ArrowLeftOutlined />}
-                    className="voting-result-back-btn"
-                >
-                    Quay lại
-                </Button>
             </div>
         </Card>
     );
