@@ -1,7 +1,6 @@
 /* ====== Tổng thể container ====== */
 .reports-container {
   padding: clamp(16px, 3vw, 32px);
-  background: #f6faf6;
   min-height: 100vh;
   box-sizing: border-box;
   display: flex;
@@ -12,7 +11,7 @@
 /* Giới hạn vùng nội dung để không quá rộng trên màn hình lớn */
 .reports-container > * {
   width: 100%;
-  max-width: 1280px;
+  /* max-width: 1280px; */
 }
 
 /* ====== Ô tìm kiếm ====== */

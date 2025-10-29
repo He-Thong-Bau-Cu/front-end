@@ -1,7 +1,6 @@
 /* ==== Layout chung ==== */
 .results-container {
-  padding: 24px;
-  background: #f9fafb;
+  padding: 20px 32px;
 }
 
 .results-grid {
@@ -91,7 +90,6 @@
     font-size: 26px;
   }
 }
-
 
 /* ==== Kết quả theo ứng viên ==== */
 .candidate-card {
