@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FileTextOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Card, Col, Input, Row, Tag, Typography } from "antd";
 
 const { Text } = Typography;
 
 interface VotingResult {
+    id: string; // thêm id để điều hướng
     title: string;
     description: string;
     date: string;
@@ -16,6 +18,7 @@ interface VotingResult {
 
 const elections: VotingResult[] = [
     {
+        id: "1",
         title: "Bầu cử Đại biểu Quốc hội Khóa XVI",
         description: "Bầu chọn đại biểu cho khu vực bầu cử số 1, Quận 1, TP. Hồ Chí Minh.",
         date: "15/12/2024 - 17:00",
@@ -25,6 +28,7 @@ const elections: VotingResult[] = [
         candidates: 5,
     },
     {
+        id: "2",
         title: "Bầu cử Hội đồng Nhân dân Thành phố",
         description: "Bầu chọn hội đồng nhân dân TP. Hồ Chí Minh nhiệm kỳ 2021-2026.",
         date: "28/06/2024 - 17:00",
@@ -34,9 +38,9 @@ const elections: VotingResult[] = [
         candidates: 12,
     },
     {
+        id: "3",
         title: "Biểu quyết Dự án Hạ tầng Giao thông",
-        description:
-            "Trưng cầu ý kiến nhân dân về dự án xây dựng đường vành đai 3 khu vực phía Đông TP.HCM.",
+        description: "Trưng cầu ý kiến nhân dân về dự án xây dựng đường vành đai 3 khu vực phía Đông TP.HCM.",
         date: "20/09/2024 - 17:00",
         location: "TP. Hồ Chí Minh",
         totalVotes: 32510,
@@ -47,18 +51,17 @@ const elections: VotingResult[] = [
 
 const normalizeText = (text: string): string =>
     text
-        .normalize("NFD")                // tách ký tự và dấu
-        .replace(/[\u0300-\u036f]/g, "") // xóa toàn bộ dấu tổ hợp
-        .replace(/đ/g, "d")              // chuyển đ → d
-        .replace(/Đ/g, "D")              // chuyển Đ → D
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
         .toLowerCase()
         .trim();
 
-
 const VotingResultList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
+    const navigate = useNavigate();
 
-    // Lọc dữ liệu bỏ dấu + không phân biệt hoa thường
     const filteredResults = elections.filter((e) => {
         const term = normalizeText(searchTerm);
         return (
@@ -69,10 +72,8 @@ const VotingResultList: React.FC = () => {
         );
     });
 
-
     return (
         <Card className="voting-result-list-card">
-            {/* --- Thanh tìm kiếm --- */}
             <div className="voting-result-toolbar">
                 <Input
                     placeholder="Tìm kiếm cuộc bầu cử"
@@ -84,24 +85,22 @@ const VotingResultList: React.FC = () => {
                 <Button className="voting-result-filter-btn">Tất cả cấp độ</Button>
             </div>
 
-            {/* --- Danh sách kết quả --- */}
             <Row gutter={[24, 24]} className="voting-result-cards">
                 {filteredResults.length > 0 ? (
-                    filteredResults.map((e, i) => (
-                        <Col xs={24} sm={12} md={8} key={i}>
+                    filteredResults.map((e) => (
+                        <Col xs={24} sm={12} md={8} key={e.id}>
                             <Card
                                 hoverable
+                                onClick={() => navigate(`/voter/results/detail`)}
                                 className="voting-result-card"
                                 title={
                                     <div className="voting-result-card-header">
                                         <FileTextOutlined className="voting-result-icon" />
-                                        <Tag style={{ marginRight: 30 }} color="green">Đã công bố</Tag>
+                                        <Tag color="green">Đã công bố</Tag>
                                     </div>
                                 }
                             >
-                                <Text strong className="voting-result-title">
-                                    {e.title}
-                                </Text>
+                                <Text strong className="voting-result-title">{e.title}</Text>
                                 <p className="voting-result-description">{e.description}</p>
                                 <div className="voting-result-info">
                                     <p>📅 Kết thúc: {e.date}</p>
