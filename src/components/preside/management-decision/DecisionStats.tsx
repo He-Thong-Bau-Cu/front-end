@@ -1,8 +1,15 @@
+import React from "react";
 import { Card, Row, Col, Typography } from "antd";
 
 const { Text } = Typography;
 
-const stats = [
+interface StatItem {
+    label: string;
+    value: number;
+    color: string;
+}
+
+const stats: StatItem[] = [
     { label: "Tổng quyết định", value: 38, color: "#A8E678" },
     { label: "Đang nhập dữ liệu", value: 8, color: "#f1c40f" },
     { label: "Đã phê duyệt", value: 25, color: "#27ae60" },
@@ -10,13 +17,16 @@ const stats = [
     { label: "Bản nháp", value: 3, color: "#95a5a6" },
 ];
 
-const DecisionStats = () => (
-    <Row gutter={[20, 20]} className="decision-stats-row">
+const DecisionStats: React.FC = () => (
+    <Row gutter={[16, 16]} className="decision-stats-row">
         {stats.map((item, i) => (
             <Col key={i} flex="1">
-                <Card style={{
-                    borderLeft: `6px solid ${item.color}`,
-                }} className="decision-stat-card">
+                <Card
+                    className="decision-stat-card"
+                    style={{
+                        borderLeft: `6px solid ${item.color}`,
+                    }}
+                >
                     <Text
                         className="decision-stat-value"
                         style={{ color: item.color }}

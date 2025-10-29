@@ -62,7 +62,6 @@ const data: Decision[] = [
     },
 ];
 
-/* ----------------------------- COLUMNS ----------------------------- */
 const columns = [
     {
         title: "SỐ QUYẾT ĐỊNH",
@@ -115,10 +114,8 @@ const columns = [
     },
 ];
 
-/* ----------------------------- COMPONENT ----------------------------- */
 const DecisionTable = () => (
     <Card className="decision-table-card">
-        {/* --- Thanh công cụ --- */}
         <div className="decision-toolbar">
             <Input
                 placeholder="Tìm kiếm theo số quyết định, kỳ bầu cử..."
