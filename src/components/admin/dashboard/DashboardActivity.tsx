@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import "../../../style/admin/Dashboard.model.css";
 
+
 const DashboardActivity = () => {
     const activities = [
         { icon: <ThunderboltOutlined style={{ color: "#16a34a", fontSize: 22 }} />, title: "Bầu cử 'Ban Giám đốc 2024' đã đạt 68% tỷ lệ tham gia", time: "15 phút trước" },

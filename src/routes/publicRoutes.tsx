@@ -20,6 +20,8 @@ import Authorization from "@/pages/voter/Authorization";
 import PresideLayout from "@/layout/PresideLayout";
 import Statistics from "@/pages/admin/Statistics";
 import ManagementDecision from "@/pages/preside/ManagementDecision";
+import DashboardPreside from "@/pages/preside/Dashboard";
+
 
 export const publicRoutes = [
   {
@@ -67,14 +69,12 @@ export const publicRoutes = [
     element: <VoterLayout />,
     children: [
       { index: true, element: <DashboardVoter /> },
-      { path: "authorization", element: <DashboardVoter /> },
+      { path: "authorization", element: <Authorization /> },
       { path: "ballots", element: <BallotList /> },
       { path: "ballot_cumulative_voting", element: <CumulativeVoting /> },
       { path: "ballot_resolution_voting", element: <ResolutionVoting /> },
-
-
-      // { path: "statistics", element: <Statisctics /> },
-      // { path: "roles", element: <ManagementRole /> },
+      { path: "statistics", element: <Statistics /> },
+      { path: "roles", element: <ManagementRole /> },
       { path: "authorization", element: <Authorization /> },
       { path: "voting-history", element: <VotingHistory /> },
 
@@ -85,6 +85,7 @@ export const publicRoutes = [
     path: "/preside",
     element: <PresideLayout />,
     children: [
+      { index: true, element: <DashboardPreside /> },
       { path: "decision", element: <ManagementDecision /> },
 
 
