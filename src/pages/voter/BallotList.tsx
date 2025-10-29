@@ -105,12 +105,12 @@ export default function BallotList() {
 
     // ---------------------- XỬ LÝ KHI CLICK CARD ----------------------
     const handleCardClick = (ballot) => {
-       if (ballot.status === "Đang diễn ra" && ballot.type === 1) navigate("/ballot_cumulative_voting");
-    else if (ballot.status === "Đang diễn ra" && ballot.type === 2) navigate("/ballot_resolution_voting");
+       if (ballot.status === "Đang diễn ra" && ballot.type === 1) navigate("/voter/ballot_resolution_voting");
+    else if (ballot.status === "Đang diễn ra" && ballot.type === 2) navigate("/voter/ballot_cumulative_voting");
     else message.warning("Phiếu này chưa mở hoặc đã kết thúc.");
     };
    
-
+ 
     // ---------------------- RENDER ----------------------
     return (
         <div className="ballot-page">
