@@ -1,0 +1,128 @@
+/* ====== Tổng thể container ====== */
+.reports-container {
+  padding: clamp(16px, 3vw, 32px);
+  background: #f6faf6;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Giới hạn vùng nội dung để không quá rộng trên màn hình lớn */
+.reports-container > * {
+  width: 100%;
+  max-width: 1280px;
+}
+
+/* ====== Ô tìm kiếm ====== */
+.reports-search {
+  margin-bottom: clamp(12px, 2vw, 20px);
+}
+
+/* ====== Bộ lọc tab ====== */
+.report-filter {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: clamp(16px, 3vw, 24px);
+}
+
+/* ====== Grid báo cáo ====== */
+.report-grid {
+  display: grid;
+  gap: clamp(16px, 2vw, 24px);
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+/* ====== Card báo cáo ====== */
+.report-card {
+  background: #fff;
+  border: 1px solid #e0f2e9;
+  border-radius: 12px;
+  padding: clamp(16px, 2vw, 24px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+}
+
+.report-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+}
+
+/* ====== Nội dung trong card ====== */
+.report-icon {
+  font-size: clamp(22px, 2vw, 28px);
+  color: #52c41a;
+  margin-bottom: 8px;
+}
+
+.report-title {
+  font-size: clamp(15px, 1.6vw, 18px);
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.report-desc {
+  color: #666;
+  margin: 8px 0 16px;
+  font-size: clamp(13px, 1.4vw, 14px);
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+/* ====== Nút xuất báo cáo ====== */
+.report-btn {
+  background: #b7eb8f;
+  border: none;
+  width: 100%;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #000;
+  height: 40px;
+  font-size: clamp(13px, 1.5vw, 14px);
+}
+
+.report-btn:hover {
+  background: #95de64 !important;
+}
+
+/* ====== Responsive đặc biệt cho màn nhỏ ====== */
+@media (max-width: 768px) {
+  .report-filter {
+    justify-content: center;
+  }
+
+  .report-btn {
+    height: 36px;
+  }
+
+  .report-card {
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-container {
+    padding: 16px;
+  }
+
+  .report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-title {
+    font-size: 15px;
+  }
+
+  .report-desc {
+    font-size: 13px;
+  }
+}
