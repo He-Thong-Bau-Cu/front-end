@@ -30,6 +30,9 @@ import SecretaryLayout from "@/layout/SecretaryLayout";
 import DashboardSecretary from "@/pages/secretary/Dashboard";
 import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
 import ManagementDocument from "@/pages/secretary/ManagementDocument";
+import OrganizingCommitteeLayout from "@/layout/OrganizingCommitteeLayout";
+import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
+
 
 
 export const publicRoutes = [
@@ -114,8 +117,17 @@ export const publicRoutes = [
       { index: true, element: <DashboardSecretary /> },
       { path: "drafting-documents", element: <DraftingDocuments /> },
       { path: "documents", element: <ManagementDocument /> },
-      // { path: "reports", element: <ReportsPage /> },
-      // { path: "election-monitor", element: <ElectionResultsPage /> },
+
+    ],
+  },
+
+  {
+    path: "/organizing-committee",
+    element: <OrganizingCommitteeLayout />,
+    children: [
+      { index: true, element: <DashboardOrganizingCommittee /> },
+      // { path: "drafting-documents", element: <DraftingDocuments /> },
+      // { path: "documents", element: <ManagementDocument /> },
 
     ],
   },
