@@ -6,8 +6,10 @@ import {
 } from "@ant-design/icons";
 import VotingLayout from "../../components/voter/resolution_voting/VotingLayout";
 import DigitalSignModal from "./DigitalSignModal";
+import { Resolution, VotingOption } from "@/types/Resolution.interface"; // 👈 import interface
 
-const data = {
+// ✅ Dữ liệu nghị quyết
+const data: Resolution = {
   title: "Nghị quyết phê duyệt Dự án Xây dựng Đường vành đai 3 TP.HCM",
   code: "HQ-15/2024/QH-16",
   date: "15/12/2024",
@@ -25,7 +27,8 @@ const data = {
   ],
 };
 
-const options = [
+// ✅ Danh sách lựa chọn biểu quyết
+const options: VotingOption[] = [
   {
     key: "agree",
     label: "Tán thành",
@@ -50,12 +53,10 @@ const options = [
 ];
 
 export default function ResolutionVoting() {
-  // ✅ Quản lý mở/đóng modal ký số
   const [openSignModal, setOpenSignModal] = useState(false);
 
   return (
     <>
-      {/* Giao diện biểu quyết */}
       <VotingLayout
         title="Biểu quyết Nghị quyết"
         status="Đang biểu quyết"
@@ -64,11 +65,10 @@ export default function ResolutionVoting() {
         countdown={{ minutes: 45, seconds: "30" }}
         onSubmit={(choice, comment) => {
           console.log("Lựa chọn:", choice, "Ghi chú:", comment);
-          setOpenSignModal(true); // 👈 Mở modal ký số sau khi ấn “Xác nhận biểu quyết”
+          setOpenSignModal(true);
         }}
       />
 
-      {/* Modal ký số */}
       <DigitalSignModal
         open={openSignModal}
         onClose={() => setOpenSignModal(false)}
