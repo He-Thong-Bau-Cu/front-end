@@ -1,0 +1,264 @@
+/* ====== PAGE ====== */
+.bks-page {
+  background: linear-gradient(180deg, #eefdec 0%, #ffffff 50%);
+  min-height: 100vh;
+  padding: 28px 32px;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+/* ====== HEADER ====== */
+.bks-header {
+  background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.bks-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.bks-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.bks-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.bks-username {
+  margin: 0;
+  font-weight: 700;
+  color: #fff;
+}
+
+.bks-role {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 13px;
+}
+
+/* ====== CARD ====== */
+.bks-card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+}
+
+/* ====== SECTION TITLE ====== */
+.bks-section-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #111;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ====== LIST ITEM ====== */
+.bks-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f0f0f0;
+  padding: 10px 0;
+}
+
+.bks-list-title {
+  font-weight: 600;
+  color: #111;
+}
+
+.bks-list-sub {
+  color: #777;
+  font-size: 13px;
+}
+
+.bks-action {
+  background: #52c41a;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+}
+
+.bks-action:hover {
+  background: #73d13d;
+}
+
+/* ====== LIVE MONITORING ====== */
+.bks-monitor-box {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+}
+
+.bks-monitor-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.bks-tag-live {
+  font-weight: 600;
+}
+
+.bks-monitor-stats {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.bks-monitor-stats span {
+  color: #777;
+  font-size: 13px;
+}
+
+.bks-join-btn {
+  width: 100%;
+  text-align: center;
+  background: #f6ffed;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #52c41a;
+  border: none;
+}
+
+.bks-join-btn:hover {
+  background: #eaffd0;
+}
+
+/* ====== LOGS ====== */
+.bks-log-item {
+  border-top: 1px solid #f0f0f0;
+  padding: 10px 0;
+}
+
+.bks-log-content {
+  font-weight: 500;
+}
+
+.bks-log-time {
+  font-size: 13px;
+  color: #777;
+}
+/* ===== CARD WRAPPER ===== */
+.signature-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  padding: 20px 24px;
+}
+
+/* ===== HEADER ===== */
+.bks-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.bks-card-icon {
+  font-size: 18px;
+  color: #52c41a;
+}
+
+.bks-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #111;
+}
+
+/* ===== LIST ===== */
+.bks-request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== ITEM ===== */
+.bks-request-item {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.bks-request-divider {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* ===== LEFT SECTION ===== */
+.bks-request-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bks-request-title {
+  font-weight: 700;
+  color: #111;
+  font-size: 15px;
+}
+
+.bks-request-type {
+  color: #777;
+  font-size: 13px;
+}
+
+/* ===== MIDDLE SECTION ===== */
+.bks-request-time {
+  text-align: right;
+  font-size: 13px;
+  color: #444;
+}
+
+.bks-request-time span {
+  font-weight: 500;
+}
+
+/* ===== BUTTON ===== */
+.bks-request-btn {
+  background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0 14px;
+  transition: all 0.25s ease;
+}
+
+.bks-request-btn:hover {
+  background: linear-gradient(135deg, #95de64 0%, #389e0d 100%);
+  transform: translateY(-1px);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .bks-request-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .bks-request-time {
+    text-align: left;
+    color: #555;
+  }
+
+  .bks-request-btn {
+    width: 100%;
+    justify-self: start;
+  }
+}
