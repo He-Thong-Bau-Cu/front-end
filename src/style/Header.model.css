@@ -1,0 +1,96 @@
+.secretary-header {
+  height: 100px;
+  background: #ecf4e9;
+  position: fixed;
+  top: 0;
+  left: 290px;
+  right: 0;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-left: 5px solid #c41d1d;
+  transition: all 0.3s ease;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 40px;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.header-title {
+  font-weight: 700;
+  font-size: 25px;
+  color: #124d2d;
+  flex: 1;
+  min-width: 250px;
+}
+
+/* Icon chuông */
+.header-icon {
+  font-size: 22px;
+  color: #c41d1d;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.header-icon:hover {
+  transform: scale(1.15);
+}
+
+/* Hành động (thông báo + avatar) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* User info */
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-avatar {
+  background-color: #c41d1d;
+  vertical-align: middle;
+}
+
+.header-username {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Responsive cho màn nhỏ */
+@media (max-width: 992px) {
+  .secretary-header {
+    left: 0;
+    width: 100%;
+  }
+
+  .header-container {
+    padding: 0 20px;
+  }
+
+  .header-title {
+    font-size: 20px;
+  }
+
+  .header-username {
+    display: none; /* Ẩn chữ, chỉ để icon avatar */
+  }
+}
