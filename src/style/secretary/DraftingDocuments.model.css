@@ -1,0 +1,143 @@
+.meeting-container {
+  padding: 24px 32px;
+}
+
+.meeting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.meeting-content {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.meeting-left {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.meeting-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.meeting-card {
+  border-radius: 12px;
+}
+
+.form-item {
+  margin-bottom: 12px;
+}
+
+.form-item label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-item.half {
+  flex: 1;
+}
+
+.participant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 8px 0;
+}
+
+.participant-item p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.add-link {
+  color: #1a7c3f;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  padding-right: 30px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.file-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-name {
+  margin: 0;
+  font-weight: 500;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #888;
+}
+
+.agenda-meta {
+  color: #666;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.participant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 8px 0;
+}
+
+.participant-item p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.add-link {
+  color: #1a7c3f;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.add-link:hover {
+  text-decoration: underline;
+  color: #16833a;
+}
+
+.meeting-side-card {
+  border-radius: 16px;
+}
