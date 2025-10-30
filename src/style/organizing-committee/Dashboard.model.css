@@ -1,0 +1,293 @@
+/* ================================
+   BUTTON "TẠO CUỘC HỌP MỚI"
+   ================================ */
+
+/* Hover – làm đậm màu một chút */
+.btn-report-summary:hover {
+  background: linear-gradient(90deg, #9edb6e, #b3f18e) !important;
+  color: #124d2d !important;
+}
+
+/* Khi click (active) */
+.btn-report-summary:active {
+  background: linear-gradient(90deg, #8ed35f, #a4e77c) !important;
+  color: #124d2d !important;
+  transform: scale(0.98);
+}
+
+/* Khi focus hoặc giữ chuột */
+.btn-report-summary:focus,
+.btn-report-summary:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(168, 230, 120, 0.4) !important; /* ánh sáng xanh lá nhạt */
+}
+/* ================================
+   CHECK-IN PANEL STYLE
+   ================================ */
+
+.checkin-card {
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding-bottom: 10px;
+  margin-left: 32px;
+}
+
+.checkin-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #000;
+  padding-left: 20px;
+}
+
+.checkin-icon {
+  color: #124d2d;
+  font-size: 17px;
+}
+
+.checkin-card .ant-card-head-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Vùng hiển thị camera */
+.qr-area {
+  width: 100%;
+  height: 500px;
+  background: #0f0f10;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.qr-placeholder {
+  color: #999;
+  text-align: center;
+  font-size: 14px;
+}
+
+.qr-placeholder .qr-icon {
+  font-size: 40px;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+/* Nút quét QR */
+.scan-btn-container {
+  background: #e6f9e6;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 12px;
+  margin: 30px 0;
+}
+
+.scan-btn {
+  width: 100%;
+  border: none;
+  background: linear-gradient(90deg, #a8e678, #bbf49c);
+  color: #124d2d;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.scan-btn:hover {
+  background: linear-gradient(90deg, #9fdc70, #b5ee94);
+  color: #124d2d;
+}
+
+/* Thẻ hiển thị kết quả */
+.valid-card {
+  background: #f3fff3 !important;
+  border: 1px solid #bdf5c3 !important;
+  border-left: 4px solid #22c55e !important;
+  border-radius: 8px !important;
+  padding: 0px 14px 10px 14px;
+  margin-top: 30px;
+}
+
+.valid-title {
+  color: #22c55e;
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.valid-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.valid-code {
+  color: #444;
+  font-size: 12px;
+}
+
+.scan-btn-container {
+  background: #e6f9e6;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+.scan-btn {
+  width: 100%;
+  border: none !important;
+  background: linear-gradient(90deg, #a8e678, #bbf49c) !important;
+  color: #124d2d !important;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+.scan-btn:hover {
+  background: linear-gradient(90deg, #9edb6e, #b7f295) !important;
+  color: #124d2d !important;
+}
+
+.scan-btn:active {
+  background: linear-gradient(90deg, #8ed35f, #a8ea85) !important;
+  color: #124d2d !important;
+  transform: scale(0.98);
+}
+
+.scan-btn:focus-visible,
+.scan-btn:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.3) !important; /* ánh sáng xanh lá nhạt */
+}
+
+/* ================================
+   VERIFICATION PANEL STYLE
+   ================================ */
+
+.verification-card {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background: #fff !important;
+  margin-bottom: 20px;
+  margin-right: 32px;
+}
+
+.verification-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #000;
+  padding-left: 20px;
+}
+
+.verification-icon {
+  color: #124d2d;
+  font-size: 17px;
+}
+
+.verification-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #222;
+  font-size: 14px;
+}
+
+.verification-input {
+  border-radius: 8px !important;
+  margin-bottom: 12px !important;
+  height: 40px !important;
+}
+
+.verification-button {
+  background: #f4f6f4 !important;
+  color: #222 !important;
+  font-weight: 600 !important;
+  border: none !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+/* Hover & Active states */
+.verification-button:hover {
+  background: #e8ece8 !important;
+  color: #124d2d !important;
+}
+
+.verification-button:active {
+  background: #dce2dc !important;
+  transform: scale(0.98);
+}
+
+.verification-button:focus,
+.verification-button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.3) !important;
+}
+
+/* ================================
+   DELEGATE MANAGEMENT PANEL STYLE
+   ================================ */
+
+.delegate-card {
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  margin-right: 32px;
+}
+
+.delegate-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #000;
+  padding-left: 20px;
+}
+
+.delegate-icon {
+  color: #124d2d;
+  font-size: 17px;
+}
+
+/* Nút trong card */
+.delegate-btn {
+  background: #f4f6f4 !important;
+  color: #222 !important;
+  font-weight: 600 !important;
+  border: none !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+/* Hover & Active */
+.delegate-btn:hover {
+  background: #e8ece8 !important;
+  color: #124d2d !important;
+}
+
+.delegate-btn:active {
+  background: #dce2dc !important;
+  transform: scale(0.98);
+}
+
+/* Focus */
+.delegate-btn:focus,
+.delegate-btn:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25) !important;
+}
