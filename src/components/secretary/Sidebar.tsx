@@ -21,7 +21,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
 
     const menuItems = [
         { key: "/secretary", icon: <DashboardOutlined />, label: "Tổng quan" },
-        { key: "/secretary/drafts", icon: <FileAddOutlined />, label: "Soạn thảo tài liệu" },
+        { key: "/secretary/drafting-documents", icon: <FileAddOutlined />, label: "Soạn thảo tài liệu" },
         { key: "/secretary/documents", icon: <FolderOpenOutlined />, label: "Quản lý tài liệu" },
         { key: "/secretary/notifications", icon: <BellOutlined />, label: "Trung tâm thông báo" },
         { key: "/secretary/reports", icon: <TrophyOutlined />, label: "Trung tâm báo cáo" },
