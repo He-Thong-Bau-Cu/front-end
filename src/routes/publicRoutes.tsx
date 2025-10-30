@@ -32,6 +32,7 @@ import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
 import ManagementDocument from "@/pages/secretary/ManagementDocument";
 import OrganizingCommitteeLayout from "@/layout/OrganizingCommitteeLayout";
 import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
+import Checkin from "@/pages/organizing-committee/Checkin";
 
 
 
@@ -126,7 +127,7 @@ export const publicRoutes = [
     element: <OrganizingCommitteeLayout />,
     children: [
       { index: true, element: <DashboardOrganizingCommittee /> },
-      // { path: "drafting-documents", element: <DraftingDocuments /> },
+      { path: "checkin", element: <Checkin /> },
       // { path: "documents", element: <ManagementDocument /> },
 
     ],
