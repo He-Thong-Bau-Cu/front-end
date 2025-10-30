@@ -1,0 +1,449 @@
+/* ======= PAGE BACKDROP ======= */
+.organizer-wrap {
+  min-height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+/* ======= HEADER GREEN ======= */
+.header-card {
+  background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%);
+  color: #fff;
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 32px rgba(82, 196, 26, 0.18);
+}
+
+.header-title {
+  margin: 0;
+  color: #fff !important;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  font-size: 26px;
+}
+
+.header-sub {
+  opacity: 0.9;
+  margin-top: 2px;
+  display: block;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.person-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff;
+  color: #52c41a;
+  font-weight: 800;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.25) inset;
+}
+
+.header-right .ant-btn {
+  height: 36px;
+  border-radius: 20px;
+  padding: 0 14px;
+  background: #ffffff1f;
+  border: 1px solid #ffffff4a;
+  color: #fff;
+  font-weight: 600;
+}
+
+.header-right .ant-btn:hover {
+  background: #ffffff38 !important;
+  border-color: #fff;
+}
+
+/* ======= WHITE ELEVATED CARDS ======= */
+.elevated {
+  background: #fff;
+  border: 1px solid #eef5ee;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* ======= STAT CARDS (4 ô) ======= */
+.stat-card {
+  padding: 18px;
+}
+
+.stat-label {
+  color: #7b8a7b;
+  font-weight: 600;
+}
+
+.stat-number {
+  margin-top: 8px;
+  font-size: 34px;
+  font-weight: 800;
+  color: #111;
+  line-height: 1;
+}
+
+.stat-card--highlight {
+  /* Bỏ border viền xanh, giữ bóng nhẹ như card thường */
+  border-color: #eef5ee !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Card */
+.task-card {
+  border-radius: 12px;
+}
+
+/* Header với đường kẻ mảnh */
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.task-header.with-divider {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.task-icon {
+  color: #6b7280;
+  font-size: 18px;
+}
+
+.task-title {
+  margin: 0 !important;
+  font-weight: 700;
+}
+
+/* Body */
+.task-body {
+  padding: 10px 16px 14px 16px;
+}
+
+.task-row {
+  padding: 8px 0;
+}
+
+/* Checkbox căn lề giống ảnh */
+.task-checkbox .ant-checkbox {
+  margin-right: 10px;
+}
+
+.task-text {
+  color: #111827;
+  font-size: 15px;
+}
+
+/* Dòng ô vuông xanh */
+.task-square-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-square {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  /* vuông bo nhẹ */
+}
+
+.task-text.is-done {
+  color: #6b7280;
+  text-decoration: line-through;
+}
+
+/* Giảm khoảng trắng mặc định của checkbox để canh hàng gọn gàng */
+.ant-checkbox-wrapper {
+  gap: 8px;
+}
+
+/* ======= EVENT PROGRESS BLOCK (ĐANG DIỄN RA) ======= */
+.event-progress-card {
+  padding: 20px 24px;
+  border: none !important;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.event-progress-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.event-progress-title {
+  color: #2f7f2f !important;
+  font-weight: 800;
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.2px;
+}
+
+/* Legend (Bắt đầu / Tạm dừng / Kết thúc) */
+.event-progress-legend {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.legend-item.start {
+  background: #f0fff0;
+  border-color: #b9e6b9;
+  color: #2f7f2f;
+}
+
+.legend-item.pause {
+  background: #fff7e6;
+  border-color: #ffd591;
+  color: #b36b00;
+}
+
+.legend-item.end {
+  background: #fff1f0;
+  border-color: #ffccc7;
+  color: #a8071a;
+}
+
+/* Hai khối song song */
+.event-progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.progress-box {
+  background: #ffffff;
+  border: 1px solid #eef3ee;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.progress-box:hover {
+  box-shadow: 0 4px 14px rgba(82, 196, 26, 0.12);
+  transform: translateY(-2px);
+}
+
+.progress-label {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.progress-bar {
+  margin-bottom: 6px;
+}
+
+.progress-percent {
+  font-size: 28px;
+  font-weight: 900;
+  color: #111;
+  line-height: 1.2;
+}
+
+.progress-foot {
+  display: block;
+  font-size: 13px;
+  color: #7a7a7a;
+}
+
+
+
+/* ======= CHECKLIST ======= */
+.block-title {
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.checklist .ant-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 9px 0;
+}
+
+/* ======= RECENT ACTIVITY ======= */
+.activity-card {
+  padding: 16px 18px;
+}
+
+.activity-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  line-height: 1.45;
+}
+
+.activity-icon {
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.activity-text {
+  font-size: 14px;
+  color: #4a4a4a;
+  flex: 1;
+}
+
+/* ===== RecentActivity (Right column card) ===== */
+.activity-card {
+  border-radius: 12px;
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.activity-header--with-divider {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-headicon {
+  color: #6b7280;
+  font-size: 18px;
+}
+
+.activity-title {
+  margin: 0 !important;
+  font-weight: 800;
+}
+
+.activity-body {
+  padding: 6px 16px 12px 16px;
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.activity-row--with-divider {
+  border-top: 1px solid #f5f5f5;
+}
+
+.activity-bullet {
+  font-size: 18px;
+  color: #52c41a;
+  /* xanh lá giống ảnh */
+}
+
+.activity-text {
+  color: #111827;
+  font-size: 15px;
+}
+
+.activity-text strong {
+  font-weight: 700;
+}
+/* ===== Upcoming (Sự kiện sắp diễn ra) ===== */
+.upcoming-card{
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+/* header có đường kẻ ngay dưới */
+.up-head{
+  padding: 2px 0 12px 0;
+  border-bottom: 1px solid #eff3ef;
+}
+.up-title{
+  margin: 0;
+  color: #111 !important;
+}
+
+/* từng hàng */
+.up-row{
+  display: grid;
+  grid-template-columns: 2fr 1.7fr auto; /* Tên | Bắt đầu | Trạng thái/Link */
+  gap: 12px;
+  align-items: center;
+  padding: 14px 8px;
+  border-bottom: 1px solid #eff3ef;
+}
+.up-row:last-child{ border-bottom: none; }
+
+.up-name{
+  font-weight: 800;
+  color: #111;
+  line-height: 1.25;
+}
+
+/* text “Bắt đầu …” xám nhạt giống ảnh */
+.up-time{
+  color: #6b7280;            /* gray-500 */
+  font-weight: 500;
+}
+
+/* cột phải: trạng thái + link */
+.up-actions{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+/* trạng thái là chữ cam (không badge) */
+.status-warn{
+  color: #faad14;            /* orange-6 */
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* link xanh, đậm, underline khi hover */
+.up-link{
+  color: #1677ff;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.up-link:hover{ text-decoration: underline; }
+
+/* bo góc & đổ bóng tổng thể giống ảnh (nếu thiếu) */
+.elevated{
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+  border-radius: 12px;
+}
+
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 992px) {
+  .event-progress-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .up-row{
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .up-actions{ justify-content: flex-start; }
+}

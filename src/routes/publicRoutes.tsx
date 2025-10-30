@@ -33,7 +33,12 @@ import ManagementDocument from "@/pages/secretary/ManagementDocument";
 import OrganizingCommitteeLayout from "@/layout/OrganizingCommitteeLayout";
 import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
 import Checkin from "@/pages/organizing-committee/Checkin";
-
+import DelegateCardPage from "@/pages/voter/DelegateCardPage";
+import HeadOfTheOrganizingCommitteeLayout from "@/layout/HeadOfTheOrganizingCommitteeLayout";
+import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/OrganizerDashboardPage";
+import MeetingListPage from "@/pages/head_of_the_organizing_comittee/MeetingListPage";
+import CreateDelegateCardPage from "@/pages/head_of_the_organizing_comittee/CreateDelegateCardPage";
+import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
 
 
 export const publicRoutes = [
@@ -92,6 +97,7 @@ export const publicRoutes = [
       { path: "voting-history", element: <VotingHistory /> },
       { path: "results", element: <VotingResult /> },
       { path: "results/detail", element: <VotingResultDetail /> },
+      { path: "delegate-card", element: <DelegateCardPage /> },
 
 
     ],
@@ -129,6 +135,17 @@ export const publicRoutes = [
       { index: true, element: <DashboardOrganizingCommittee /> },
       { path: "checkin", element: <Checkin /> },
       // { path: "documents", element: <ManagementDocument /> },
+    ],
+  },
+   {
+    path: "/head_of_the_Organizing_committee",
+    element: <HeadOfTheOrganizingCommitteeLayout />,
+    children: [
+      { index: true, element: <OrganizerDashboardPage /> },
+      { path: "list_meeting", element: <MeetingListPage/> },
+      { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
+      { path: "election_tracking", element: <VotingDashboardPage/> },
+
 
     ],
   },
