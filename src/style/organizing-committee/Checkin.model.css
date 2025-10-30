@@ -1,0 +1,145 @@
+/* ================================
+   CHECKIN PAGE LAYOUT
+   ================================ */
+
+.checkin-container {
+  padding: 24px 32px;
+}
+
+/* QR Panel */
+.qr-panel {
+  background: #1e1e1e;
+  border-radius: 8px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.qr-card {
+  background: #fff;
+  border-radius: 12px !important;
+  padding: 30px;
+  text-align: center;
+  width: 420px;
+}
+
+.qr-box {
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  height: 180px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.qr-icon {
+  font-size: 48px;
+  color: #c7c7c7;
+}
+
+.qr-text h4 {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.qr-text p {
+  color: #777;
+  font-size: 13px;
+}
+
+/* Sidebar */
+.checkin-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checkin-card {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.checkin-card .ant-card-body {
+  padding: 5px 24px;
+}
+
+.sidebar-title-qr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #000;
+  font-size: 15px;
+  padding-bottom: 8px; /* tạo khoảng cách giữa text và border */
+  border-bottom: 1px solid #e0e0e0; /* đường kẻ xám nhạt */
+  margin-bottom: 12px; /* khoảng cách với nội dung dưới */
+}
+
+.sidebar-title-qr .p {
+  margin: 0px;
+}
+
+.checkin-progress .ant-progress-bg {
+  background-color: #16a34a !important; /* xanh lá cây */
+  height: 10px !important; /* to hơn một chút */
+  border-radius: 8px !important;
+}
+
+.sidebar-event-name {
+  font-weight: 600;
+}
+
+.sidebar-event-time {
+  color: #555;
+}
+
+.sidebar-progress {
+  font-weight: 500;
+  text-align: right;
+  color: #124d2d;
+}
+
+/* Button check-in */
+.checkin-btn {
+  background: #f4f6f4 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s;
+}
+
+.checkin-btn:hover {
+  background: #e8ece8 !important;
+  color: #124d2d !important;
+}
+
+/* Hoạt động gần nhất */
+.checkin-log {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.checkin-log.success {
+  background: #f0fff4;
+  border-left: 4px solid #22c55e;
+  color: #124d2d;
+}
+
+.checkin-log.error {
+  background: #fff0f0;
+  border-left: 4px solid #e74c3c;
+  color: #b91c1c;
+}
+
+.checkin-log p {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+}
