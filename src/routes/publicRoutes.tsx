@@ -29,6 +29,7 @@ import VotingResultDetail from "@/components/voter/voting-result/VotingResultDet
 import SecretaryLayout from "@/layout/SecretaryLayout";
 import DashboardSecretary from "@/pages/secretary/Dashboard";
 import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
+import ManagementDocument from "@/pages/secretary/ManagementDocument";
 
 
 export const publicRoutes = [
@@ -112,7 +113,7 @@ export const publicRoutes = [
     children: [
       { index: true, element: <DashboardSecretary /> },
       { path: "drafting-documents", element: <DraftingDocuments /> },
-      // { path: "authorization", element: <AuthorizationPreside /> },
+      { path: "documents", element: <ManagementDocument /> },
       // { path: "reports", element: <ReportsPage /> },
       // { path: "election-monitor", element: <ElectionResultsPage /> },
 
