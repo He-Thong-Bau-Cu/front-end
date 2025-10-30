@@ -26,6 +26,9 @@ import VotingResult from "@/pages/voter/VotingResult";
 import ReportsPage from "@/pages/preside/manage_report/ReportsPage";
 import ElectionResultsPage from "@/pages/preside/voting_process/ElectionResultsPage";
 import VotingResultDetail from "@/components/voter/voting-result/VotingResultDetail";
+import SecretaryLayout from "@/layout/SecretaryLayout";
+import DashboardSecretary from "@/pages/secretary/Dashboard";
+
 
 export const publicRoutes = [
   {
@@ -97,6 +100,20 @@ export const publicRoutes = [
       { path: "authorization", element: <AuthorizationPreside /> },
       { path: "reports", element: <ReportsPage /> },
       { path: "election-monitor", element: <ElectionResultsPage /> },
+
+    ],
+  },
+
+
+  {
+    path: "/secretary",
+    element: <SecretaryLayout />,
+    children: [
+      { index: true, element: <DashboardSecretary /> },
+      // { path: "decision", element: <ManagementDecision /> },
+      // { path: "authorization", element: <AuthorizationPreside /> },
+      // { path: "reports", element: <ReportsPage /> },
+      // { path: "election-monitor", element: <ElectionResultsPage /> },
 
     ],
   },
