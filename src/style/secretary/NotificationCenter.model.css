@@ -1,0 +1,123 @@
+.nc-page {
+  min-height: 100vh;
+  padding: 20px 24px;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+/* ==== MAIN CARD ==== */
+.nc-card {
+  border-radius: 14px;
+  border: 1px solid #eef3ee;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04);
+  padding: 5px 26px;
+}
+
+/* ==== HEADER ==== */
+.nc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.nc-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.nc-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+}
+
+/* ==== FILTER ROW ==== */
+.nc-filter-row {
+  gap: 8px;
+}
+.nc-filter-btn {
+  border-radius: 8px;
+  color: #444;
+  font-weight: 600;
+  border: 1px solid #ffffff;
+  background: #fff;
+  height: 32px;
+}
+.nc-filter-btn.active {
+  background: #f6ffed;
+  color: #52c41a;
+  border-color: #b7eb8f;
+}
+.nc-filter-btn:hover {
+  border-color: #52c41a;
+  color: #52c41a;
+  background: #fcfff9;
+}
+
+/* ==== MARK ALL BUTTON ==== */
+.nc-mark-all {
+  color: #555;
+  font-weight: 500;
+  margin-top: 4px;
+  border: 1px solid #eef3ee;
+}
+
+/* ==== SECTION ==== */
+.nc-section {
+  margin-top: 20px;
+}
+.nc-section-title {
+  display: block;
+  color: #777;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ==== ITEM ==== */
+.nc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  transition: all 0.25s ease;
+}
+.nc-item:hover {
+  background: #f9fff6;
+}
+.success-bg {
+  background: #f6ffed;
+}
+.nc-item-content {
+  display: flex;
+  gap: 12px;
+}
+.nc-icon {
+  font-size: 16px;
+  margin-top: 3px;
+}
+.nc-message {
+  color: #111;
+  line-height: 1.4;
+}
+.nc-time {
+  font-size: 12.5px;
+  color: #888;
+  margin-top: 2px;
+}
+.nc-more {
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+}
+.nc-unread {
+  background: #f6ffed !important;
+  border-color: #b7eb8f !important;
+}
+
+.nc-unread:hover {
+  background: #f0ffde !important;
+}

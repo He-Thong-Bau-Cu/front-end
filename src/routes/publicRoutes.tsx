@@ -39,6 +39,10 @@ import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/Orga
 import MeetingListPage from "@/pages/head_of_the_organizing_comittee/MeetingListPage";
 import CreateDelegateCardPage from "@/pages/head_of_the_organizing_comittee/CreateDelegateCardPage";
 import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
+import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
+import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
+import BoardOfControlLayout from "@/layout/BoardOfControlLayout";
+import DashboardBoardOfControlPage from "@/pages/board_of_control/DashboardBoardOfControl";
 
 
 export const publicRoutes = [
@@ -124,6 +128,8 @@ export const publicRoutes = [
       { index: true, element: <DashboardSecretary /> },
       { path: "drafting-documents", element: <DraftingDocuments /> },
       { path: "documents", element: <ManagementDocument /> },
+      { path: "notifications", element: <NotificationCenterPage /> },
+      { path: "reports", element: <ReportCenterPage /> },
 
     ],
   },
@@ -137,15 +143,28 @@ export const publicRoutes = [
       // { path: "documents", element: <ManagementDocument /> },
     ],
   },
-   {
+  {
     path: "/head_of_the_Organizing_committee",
     element: <HeadOfTheOrganizingCommitteeLayout />,
     children: [
       { index: true, element: <OrganizerDashboardPage /> },
-      { path: "list_meeting", element: <MeetingListPage/> },
+      { path: "list_meeting", element: <MeetingListPage /> },
       { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
-      { path: "election_tracking", element: <VotingDashboardPage/> },
+      { path: "election_tracking", element: <VotingDashboardPage /> },
 
+
+    ],
+  },
+
+  {
+    path: "/board-of-control",
+    element: <BoardOfControlLayout />,
+    children: [
+      { index: true, element: <DashboardBoardOfControlPage /> },
+      { path: "achive-reports", element: <DraftingDocuments /> },
+      { path: "control-reports", element: <ManagementDocument /> },
+      { path: "verify-results", element: <NotificationCenterPage /> },
+      { path: "voting-process", element: <ReportCenterPage /> },
 
     ],
   },
