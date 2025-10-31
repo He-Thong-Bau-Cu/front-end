@@ -1,0 +1,335 @@
+.event-status-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  padding: 0px 12px !important;
+  background: #ffffff;
+}
+
+.event-status-card .ant-card-body {
+  padding-top: 0px;
+}
+
+.event-status-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.event-status-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.event-status-tag {
+  background: #dff5e0 !important;
+  color: #124d2d !important;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 4px 12px;
+  margin-bottom: 12px;
+  margin-top: 20px;
+}
+
+.event-status-timer {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+.event-status-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.pause-btn {
+  width: 85%;
+  background: #feefc3 !important;
+  border-color: #fddc8c !important;
+  color: #b45309 !important;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.pause-btn:hover,
+.pause-btn:focus,
+.pause-btn:active {
+  background: #fde68a !important; /* vàng đậm hơn khi hover */
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+}
+
+.stop-btn {
+  width: 85%;
+  background: #f8d7da !important;
+  border-color: #f1aeb5 !important;
+  color: #842029 !important;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin-bottom: 10px;
+}
+
+.stop-btn:hover,
+.stop-btn:focus,
+.stop-btn:active {
+  background: #f5b7b1 !important; /* đỏ nhẹ hơn */
+  border-color: #ec8e8e !important;
+  color: #6c1a1a !important;
+}
+
+.pause-btn:focus,
+.pause-btn:active,
+.stop-btn:focus,
+.stop-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.event-status-progress {
+  width: 100%;
+  margin-top: 20px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 8px;
+}
+
+.progress-row span {
+  font-size: 14px;
+  color: #444;
+  white-space: nowrap;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.progress-row .percent {
+  font-weight: 600;
+  color: #222;
+  margin-left: 8px;
+}
+
+.stage-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  padding: 0px 24px !important;
+}
+
+.stage-card .ant-card-body {
+  padding-top: 0px;
+}
+
+.stage-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.stage-timeline {
+  position: relative;
+  border-left: 2px solid #e5e7eb;
+  margin-left: 18px;
+  padding-left: 20px;
+}
+
+.stage-item {
+  position: relative;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.stage-icon {
+  position: absolute;
+  left: -28px;
+  top: 0;
+  background: #fff;
+  border-radius: 50%;
+  font-size: 18px;
+  color: #999;
+}
+
+.stage-item.completed .stage-icon {
+  color: #16a34a; /* xanh check */
+}
+
+.stage-item.active .stage-icon {
+  color: #124d2d;
+}
+
+.stage-item.pending .stage-icon {
+  color: #666;
+}
+
+.stage-content strong {
+  font-weight: 600;
+  color: #111;
+}
+
+.stage-content p {
+  margin: 4px 0 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.end-vote-btn {
+  background: #dff5e0 !important;
+  border: 1px solid #124d2d !important;
+  color: #124d2d !important;
+  font-weight: 600;
+  margin-top: 8px;
+  height: 40px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.end-vote-btn:hover,
+.end-vote-btn:focus,
+.end-vote-btn:active {
+  background: #baf3c0 !important;
+  border-color: #124d2d !important;
+  color: #0f3d23 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.announcement-card {
+  border-radius: 16px !important;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0px 24px !important;
+  transition: all 0.25s ease;
+}
+
+.announcement-card .ant-card-body {
+  padding-top: 0px;
+}
+
+.announcement-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.announcement-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 6px;
+}
+
+.announcement-input {
+  resize: none !important;
+  border-radius: 8px !important;
+  border: 1px solid #dcdcdc !important;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.announcement-input:focus {
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.15);
+}
+
+.announcement-button {
+  margin-top: 14px;
+  background: linear-gradient(135deg, #4caf50, #2e7d32) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  height: 40px;
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+}
+
+.announcement-button:hover {
+  background: linear-gradient(135deg, #43a047, #1b5e20) !important;
+}
+
+.announcement-button:focus,
+.announcement-button:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ===== CARD WRAPPER ===== */
+.support-card {
+  border-radius: 16px !important;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0px 24px !important;
+  transition: all 0.25s ease;
+  margin-top: 20px;
+}
+
+.support-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== TITLE ===== */
+.support-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.support-card .ant-card-body {
+  padding-top: 0px;
+}
+
+/* ===== LIST STYLING ===== */
+.support-list {
+  background: transparent;
+}
+
+/* Item từng dòng */
+.support-item {
+  border: none !important;
+  padding: 6px 0 !important;
+  transition: background-color 0.2s ease;
+}
+
+.support-item:hover {
+  background-color: #f9f9f9 !important;
+  border-radius: 6px;
+}
+
+/* Text trong item */
+.support-text {
+  color: #444;
+  font-size: 14px;
+}
+
+/* Link “Xử lý” */
+.support-action {
+  color: #1677ff !important;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.support-action:hover {
+  color: #0a53be !important;
+  text-decoration: underline;
+}

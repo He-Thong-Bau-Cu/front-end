@@ -49,6 +49,7 @@ import VotingProcess from "@/pages/board_of_control/VotingProcess";
 import ElectionVerificationPage from "@/pages/board_of_control/ElectionVerificationPage";
 import VerifyDelegates from "@/pages/organizing-committee/VerifyDelegates";
 import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
+import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/ManagementMeeting";
 
 
 export const publicRoutes = [
@@ -157,10 +158,9 @@ export const publicRoutes = [
     children: [
       { index: true, element: <OrganizerDashboardPage /> },
       { path: "list_meeting", element: <MeetingListPage /> },
+      { path: "meetings", element: <ManagementMeeting /> },
       { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
       { path: "election_tracking", element: <VotingDashboardPage /> },
-
-
     ],
   },
 
