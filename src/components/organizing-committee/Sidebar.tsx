@@ -34,9 +34,9 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Xác thực đại biểu",
         },
         {
-            key: "/organizing-committee/import-delegates",
+            key: "/organizing-committee/manage-delegates",
             icon: <FileTextOutlined />,
-            label: "Nhập danh sách đại biểu và cổ đông",
+            label: "Quản lý sách đại biểu và cổ đông",
         },
     ];
 

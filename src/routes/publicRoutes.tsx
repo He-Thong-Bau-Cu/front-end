@@ -48,6 +48,7 @@ import SystemAuditReportPage from "@/pages/board_of_control/SystemAuditReportPag
 import VotingProcess from "@/pages/board_of_control/VotingProcess";
 import ElectionVerificationPage from "@/pages/board_of_control/ElectionVerificationPage";
 import VerifyDelegates from "@/pages/organizing-committee/VerifyDelegates";
+import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
 
 
 export const publicRoutes = [
@@ -146,6 +147,8 @@ export const publicRoutes = [
       { index: true, element: <DashboardOrganizingCommittee /> },
       { path: "checkin", element: <Checkin /> },
       { path: "verify-delegates", element: <VerifyDelegates /> },
+      { path: "manage-delegates", element: <ManagementDelegates /> },
+
     ],
   },
   {
