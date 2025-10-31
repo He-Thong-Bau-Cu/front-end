@@ -1,10 +1,7 @@
 import {
-    BarChartOutlined,
-    CheckCircleOutlined,
     DashboardOutlined,
     FileTextOutlined,
     HistoryOutlined,
-    IdcardOutlined,
     TeamOutlined
 } from "@ant-design/icons";
 import { Menu } from "antd";
@@ -21,7 +18,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-     const menuItems = [
+    const menuItems = [
         {
             key: "/head_of_the_Organizing_committee",
             icon: <DashboardOutlined />,
@@ -32,8 +29,8 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <FileTextOutlined />,
             label: "Danh sách cuộc họp",
         },
-         {
-            key: "/head_of_the_Organizing_committee/mettings",
+        {
+            key: "/head_of_the_Organizing_committee/meetings",
             icon: <FileTextOutlined />,
             label: "Quản lý cuộc họp",
         },
