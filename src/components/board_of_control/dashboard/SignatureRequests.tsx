@@ -8,44 +8,37 @@ interface Props {
 
 export default function SignatureRequests({ data }: Props) {
   return (
-    <Card className="bks-card signature-card" bordered={false}>
-      <div className="bks-card-header">
-        <FileTextOutlined className="bks-card-icon" />
-        <h3 className="bks-section-title">
+    <div className="sr-card">
+      {/* ===== HEADER ===== */}
+      <div className="sr-header">
+        <FileTextOutlined className="sr-header-icon" />
+        <h3 className="sr-header-title">
           Yêu cầu Chờ Xác thực & Ký số ({data.length})
         </h3>
       </div>
 
-      <div className="bks-request-list">
+      {/* ===== LIST ===== */}
+      <div className="sr-list">
         {data.map((item, index) => (
           <div
             key={index}
-            className={`bks-request-item ${
-              index !== data.length - 1 ? "bks-request-divider" : ""
-            }`}
+            className={`sr-item ${index !== data.length - 1 ? "sr-divider" : ""}`}
           >
-            {/* Cột trái */}
-            <div className="bks-request-info">
-              <div className="bks-request-title">{item.title}</div>
-              <div className="bks-request-type">Loại: {item.type}</div>
+            <div className="sr-left">
+              <div className="sr-title">{item.title}</div>
+              <div className="sr-type">Loại: {item.type}</div>
             </div>
 
-            {/* Cột giữa */}
-            <div className="bks-request-time">
+            <div className="sr-middle">
               Gửi lúc: <span>{item.time}</span>
             </div>
 
-            {/* Cột phải */}
-            <Button
-              icon={<EditOutlined />}
-              className="bks-request-btn"
-              type="default"
-            >
-              Xem & Ký số
-            </Button>
+            <button className="sr-btn">
+              <EditOutlined /> <span>Xem & Ký số</span>
+            </button>
           </div>
         ))}
       </div>
-    </Card>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 /* ====== PAGE ====== */
 .bks-page {
-  background: linear-gradient(180deg, #eefdec 0%, #ffffff 50%);
   min-height: 100vh;
   padding: 28px 32px;
   font-family: Inter, "Segoe UI", Arial, sans-serif;
@@ -8,8 +7,8 @@
 
 /* ====== HEADER ====== */
 .bks-header {
-  background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #b7eb8f 0%, #b8fc96 100%);
+  color: #000000;
   border-radius: 16px;
   padding: 28px;
   margin-bottom: 24px;
@@ -36,7 +35,7 @@
 .bks-username {
   margin: 0;
   font-weight: 700;
-  color: #fff;
+  color: #000000;
 }
 
 .bks-role {
@@ -45,220 +44,460 @@
   font-size: 13px;
 }
 
-/* ====== CARD ====== */
-.bks-card {
+/* ====== CARD CONTAINER ====== */
+.sr-card {
   background: #fff;
-  border: 1px solid #f0f0f0;
-  border-radius: 16px;
-  padding: 20px 22px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f2f2f2;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  overflow: hidden;
 }
 
-/* ====== SECTION TITLE ====== */
-.bks-section-title {
-  font-weight: 700;
-  font-size: 16px;
-  color: #111;
-  margin-bottom: 12px;
+/* ====== HEADER ====== */
+.sr-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #eee;
 }
 
-/* ====== LIST ITEM ====== */
-.bks-list-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid #f0f0f0;
-  padding: 10px 0;
+.sr-header-icon {
+  font-size: 17px;
+  color: #333;
 }
 
-.bks-list-title {
-  font-weight: 600;
-  color: #111;
-}
-
-.bks-list-sub {
-  color: #777;
-  font-size: 13px;
-}
-
-.bks-action {
-  background: #52c41a;
-  color: #fff;
-  border: none;
-  font-weight: 600;
-}
-
-.bks-action:hover {
-  background: #73d13d;
-}
-
-/* ====== LIVE MONITORING ====== */
-.bks-monitor-box {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 10px;
-}
-
-.bks-monitor-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.bks-tag-live {
-  font-weight: 600;
-}
-
-.bks-monitor-stats {
-  display: flex;
-  justify-content: space-between;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.bks-monitor-stats span {
-  color: #777;
-  font-size: 13px;
-}
-
-.bks-join-btn {
-  width: 100%;
-  text-align: center;
-  background: #f6ffed;
-  border-radius: 8px;
-  font-weight: 600;
-  color: #52c41a;
-  border: none;
-}
-
-.bks-join-btn:hover {
-  background: #eaffd0;
-}
-
-/* ====== LOGS ====== */
-.bks-log-item {
-  border-top: 1px solid #f0f0f0;
-  padding: 10px 0;
-}
-
-.bks-log-content {
-  font-weight: 500;
-}
-
-.bks-log-time {
-  font-size: 13px;
-  color: #777;
-}
-/* ===== CARD WRAPPER ===== */
-.signature-card {
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-  padding: 20px 24px;
-}
-
-/* ===== HEADER ===== */
-.bks-card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.bks-card-icon {
-  font-size: 18px;
-  color: #52c41a;
-}
-
-.bks-section-title {
+.sr-header-title {
   font-size: 16px;
   font-weight: 700;
+  color: #111;
   margin: 0;
-  color: #111;
 }
 
-/* ===== LIST ===== */
-.bks-request-list {
+/* ====== LIST ====== */
+.sr-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
-/* ===== ITEM ===== */
-.bks-request-item {
+/* ====== ITEM ====== */
+.sr-item {
   display: grid;
-  grid-template-columns: 1.2fr 1fr auto;
+  grid-template-columns: 1.4fr 1fr auto;
   align-items: center;
-  padding: 12px 0;
+  padding: 14px 22px;
+  background: #fff;
 }
 
-.bks-request-divider {
+.sr-divider {
   border-bottom: 1px solid #f0f0f0;
 }
 
-/* ===== LEFT SECTION ===== */
-.bks-request-info {
+/* ====== LEFT (TITLE + TYPE) ====== */
+.sr-left {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.bks-request-title {
-  font-weight: 700;
-  color: #111;
+.sr-title {
   font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
 }
 
-.bks-request-type {
+.sr-type {
+  font-size: 13px;
   color: #777;
-  font-size: 13px;
 }
 
-/* ===== MIDDLE SECTION ===== */
-.bks-request-time {
-  text-align: right;
-  font-size: 13px;
+/* ====== MIDDLE (TIME) ====== */
+.sr-middle {
+  font-size: 14px;
   color: #444;
+  text-align: left;
 }
 
-.bks-request-time span {
-  font-weight: 500;
-}
-
-/* ===== BUTTON ===== */
-.bks-request-btn {
-  background: linear-gradient(135deg, #b7eb8f 0%, #52c41a 100%);
-  border: none;
-  color: #fff;
+.sr-middle span {
   font-weight: 600;
-  border-radius: 8px;
-  padding: 0 14px;
-  transition: all 0.25s ease;
 }
 
-.bks-request-btn:hover {
-  background: linear-gradient(135deg, #95de64 0%, #389e0d 100%);
+/* ====== BUTTON (ACTION) ====== */
+.sr-btn {
+  background: #b8fa96;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.25);
+}
+
+.sr-btn:hover {
+  background: #46b312;
+  box-shadow: 0 6px 16px rgba(82, 196, 26, 0.35);
   transform: translateY(-1px);
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .bks-request-item {
-    grid-template-columns: 1fr;
-    gap: 6px;
-    text-align: left;
+/* ====== RESPONSIVE ====== */
+@media (max-width: 900px) {
+  .sr-item {
+    grid-template-columns: 1fr auto;
+    row-gap: 12px;
   }
 
-  .bks-request-time {
-    text-align: left;
-    color: #555;
-  }
-
-  .bks-request-btn {
-    width: 100%;
+  .sr-btn {
     justify-self: start;
+  }
+}
+
+@media (max-width: 600px) {
+  .sr-item {
+    grid-template-columns: 1fr;
+  }
+
+  .sr-middle {
+    margin-top: 4px;
+  }
+
+  .sr-btn {
+    margin-top: 8px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ====== OUTER CARD ====== */
+.lm-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f2f2f2;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* ====== HEADER ====== */
+.lm-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #eee;
+}
+
+.lm-header-icon {
+  font-weight: 800;
+  font-size: 16px;
+  color: #222;
+}
+
+.lm-header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+/* ====== INNER BOX ====== */
+.lm-inner {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  margin: 18px 22px;
+  padding: 18px 20px;
+}
+
+/* ====== TITLE AREA ====== */
+.lm-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.lm-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+}
+
+/* ====== LIVE TAG ====== */
+.lm-tag-live {
+  background: #fff1f0 !important;
+  color: #f5222d !important;
+  border: none !important;
+  border-radius: 6px;
+  font-weight: 700;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+/* ====== STATS ====== */
+.lm-stats {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  padding: 6px 0 14px;
+}
+
+.lm-stat-item {
+  flex: 1;
+}
+
+.lm-stat-label {
+  color: #666;
+  font-size: 13.5px;
+  margin-bottom: 2px;
+}
+
+.lm-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+}
+
+/* ====== BUTTON ====== */
+.lm-btn {
+  width: 100%;
+  background: #f7f7f7;
+  border: none;
+  border-radius: 8px;
+  color: #16b316;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 0;
+  margin-top: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lm-btn:hover {
+  background: #eefcec;
+  color: #189618;
+  transform: translateY(-1px);
+}
+
+.lm-btn svg {
+  font-size: 16px;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 768px) {
+  .lm-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+/* ====== CARD CONTAINER ====== */
+.rs-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f2f2f2;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* ====== HEADER ====== */
+.rs-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #eee;
+}
+
+.rs-header-icon {
+  font-size: 17px;
+  color: #222;
+}
+
+.rs-header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+/* ====== BODY ====== */
+.rs-body {
+  padding: 18px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ====== FIELD GROUP ====== */
+.rs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rs-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+/* ====== INPUT ====== */
+.rs-input {
+  border-radius: 8px !important;
+  border: 1px solid #ddd !important;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.rs-input::placeholder {
+  color: #aaa;
+}
+
+/* ====== SELECT ====== */
+.rs-select .ant-select-selector {
+  background: #f5f5f5 !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e5e5 !important;
+  font-weight: 600;
+  color: #111 !important;
+  height: 38px !important;
+  display: flex;
+  align-items: center;
+}
+
+/* ====== BUTTON ====== */
+.rs-btn {
+  background: #fff;
+  border: 1px solid #111;
+  border-radius: 8px;
+  color: #111;
+  font-weight: 600;
+  padding: 8px 12px;
+  height: 40px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.rs-btn:hover {
+  background: #fafafa;
+  border-color: #000;
+  color: #000;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 768px) {
+  .rs-body {
+    padding: 16px;
+  }
+}
+
+/* ====== CARD CONTAINER ====== */
+.sl-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f2f2f2;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* ====== HEADER ====== */
+.sl-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 22px;
+  border-bottom: 1px solid #eee;
+}
+
+.sl-header-icon {
+  font-size: 17px;
+  color: #222;
+}
+
+.sl-header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+/* ====== LIST ====== */
+.sl-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ====== ITEM ====== */
+.sl-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 22px;
+}
+
+.sl-divider {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* ====== ICON ====== */
+.sl-icon {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1677ff; /* màu xanh kiểu chữ ký */
+  line-height: 1;
+  font-family: cursive;
+}
+
+/* ====== CONTENT ====== */
+.sl-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sl-text {
+  color: #111;
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
+.sl-text b,
+.sl-text strong {
+  font-weight: 700;
+  color: #111;
+}
+
+.sl-time {
+  font-size: 13px;
+  color: #777;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 768px) {
+  .sl-item {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sl-icon {
+    font-size: 18px;
   }
 }

@@ -1,5 +1,7 @@
 import { Card, Button, Tag } from "antd";
+import { MonitorOutlined } from "@ant-design/icons";
 import { LiveMonitor } from "../../../types/DashBoardBoardOfControl.interface";
+import "../../../style/board-of-control/DashBoard.model.css"
 
 interface Props {
   monitor: LiveMonitor;
@@ -7,38 +9,46 @@ interface Props {
 
 export default function LiveMonitoring({ monitor }: Props) {
   return (
-    <Card className="bks-card">
-      <h3 className="bks-section-title">📡 Giám sát Bầu cử Trực tiếp</h3>
+    <div className="lm-card">
+      {/* ===== HEADER ===== */}
+      <div className="lm-header">
+        <span className="lm-header-icon">‘A’</span>
+        <h3 className="lm-header-title">Giám sát Bầu cử Trực tiếp</h3>
+      </div>
 
-      <div className="bks-monitor-box">
-        <div className="bks-monitor-info">
-          <h4 className="bks-monitor-title">{monitor.title}</h4>
+      {/* ===== INNER BOX ===== */}
+      <div className="lm-inner">
+        <div className="lm-top">
+          <div className="lm-title">{monitor.title}</div>
           {monitor.isLive && (
-            <Tag color="red" className="bks-tag-live">
-              TRỰC TIẾP
-            </Tag>
+            <Tag className="lm-tag-live">TRỰC TIẾP</Tag>
           )}
         </div>
 
-        <div className="bks-monitor-stats">
-          <div>
-            <span>Tỷ lệ tham gia</span>
-            <h3>{monitor.participationRate}%</h3>
+        {/* ===== STATS ===== */}
+        <div className="lm-stats">
+          <div className="lm-stat-item">
+            <div className="lm-stat-label">Tỷ lệ tham gia</div>
+            <div className="lm-stat-value">{monitor.participationRate}%</div>
           </div>
-          <div>
-            <span>Tổng số phiếu</span>
-            <h3>{monitor.totalVotes}</h3>
+          <div className="lm-stat-item">
+            <div className="lm-stat-label">Tổng số phiếu</div>
+            <div className="lm-stat-value">
+              {monitor.totalVotes.toLocaleString()}
+            </div>
           </div>
-          <div>
-            <span>Thời gian còn lại</span>
-            <h3>{monitor.remainingTime}</h3>
+          <div className="lm-stat-item">
+            <div className="lm-stat-label">Thời gian còn lại</div>
+            <div className="lm-stat-value">{monitor.remainingTime}</div>
           </div>
         </div>
 
-        <Button type="link" className="bks-join-btn">
-          🕹️ Vào phòng giám sát chi tiết
-        </Button>
+        {/* ===== BUTTON ===== */}
+        <button className="lm-btn">
+          <MonitorOutlined />
+          <span>Vào phòng giám sát chi tiết</span>
+        </button>
       </div>
-    </Card>
+    </div>
   );
 }

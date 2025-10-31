@@ -1,28 +1,38 @@
 import { Card, Input, Select, Button } from "antd";
 import { SearchOutlined, InboxOutlined } from "@ant-design/icons";
-
+import "../../../style/board-of-control/DashBoard.model.css"
 export default function ReportStorage() {
   return (
-    <Card className="bks-card">
-      <h3 className="bks-section-title">
-        <InboxOutlined /> Kho Báo cáo & Lưu trữ
-      </h3>
+    <div className="rs-card">
+      {/* Header */}
+      <div className="rs-header">
+        <InboxOutlined className="rs-header-icon" />
+        <h3 className="rs-header-title">Kho Báo cáo & Lưu trữ</h3>
+      </div>
 
-      <Input
-        placeholder="Tìm kiếm theo tên"
-        className="bks-input"
-        style={{ marginBottom: 10 }}
-      />
+      {/* Form */}
+      <div className="rs-body">
+        <div className="rs-field">
+          <label className="rs-label">Tìm kiếm theo tên</label>
+          <Input
+            placeholder="VD: Báo cáo tài chính Q3..."
+            className="rs-input"
+          />
+        </div>
 
-      <Select defaultValue="Tất cả" className="bks-select" style={{ width: "100%" }}>
-        <Select.Option value="all">Tất cả</Select.Option>
-        <Select.Option value="finance">Tài chính</Select.Option>
-        <Select.Option value="audit">Kiểm toán</Select.Option>
-      </Select>
+        <div className="rs-field">
+          <label className="rs-label">Loại báo cáo</label>
+          <Select defaultValue="Tất cả" className="rs-select" style={{ width: "100%" }}>
+            <Select.Option value="all">Tất cả</Select.Option>
+            <Select.Option value="finance">Tài chính</Select.Option>
+            <Select.Option value="audit">Kiểm toán</Select.Option>
+          </Select>
+        </div>
 
-      <Button icon={<SearchOutlined />} type="default" className="bks-search-btn">
-        Tìm kiếm
-      </Button>
-    </Card>
+        <Button className="rs-btn" icon={<SearchOutlined />}>
+          Tìm kiếm
+        </Button>
+      </div>
+    </div>
   );
 }
