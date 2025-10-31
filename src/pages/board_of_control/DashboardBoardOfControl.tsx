@@ -60,11 +60,13 @@ export default function DashboardBoardOfControlPage() {
       <Row gutter={[20, 20]} align="top">
         <Col xs={24} lg={16}>
           <SignatureRequests data={requests} />
+          <div style={{ height: 20 }}></div>
           <LiveMonitoring monitor={monitor} />
         </Col>
 
         <Col xs={24} lg={8}>
           <ReportStorage />
+          <div style={{ height: 20 }}></div>
           <SignatureLogs logs={logs} />
         </Col>
       </Row>

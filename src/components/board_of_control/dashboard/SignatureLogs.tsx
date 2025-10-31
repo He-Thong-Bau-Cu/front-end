@@ -1,6 +1,7 @@
 import { Card } from "antd";
 import { HistoryOutlined } from "@ant-design/icons";
 import { SignatureLog } from "../../../types/DashBoardBoardOfControl.interface";
+import "../../../style/board-of-control/DashBoard.model.css"
 
 interface Props {
   logs: SignatureLog[];
@@ -8,16 +9,30 @@ interface Props {
 
 export default function SignatureLogs({ logs }: Props) {
   return (
-    <Card className="bks-card">
-      <h3 className="bks-section-title">
-        <HistoryOutlined /> Nhật ký Hoạt động Ký số
-      </h3>
-      {logs.map((log, i) => (
-        <div key={i} className="bks-log-item">
-          <div className="bks-log-content">{log.content}</div>
-          <div className="bks-log-time">{log.time}</div>
-        </div>
-      ))}
-    </Card>
+    <div className="sl-card">
+      {/* Header */}
+      <div className="sl-header">
+        <HistoryOutlined className="sl-header-icon" />
+        <h3 className="sl-header-title">Nhật ký Hoạt động Ký số</h3>
+      </div>
+
+      {/* List */}
+      <div className="sl-list">
+        {logs.map((log, index) => (
+          <div
+            key={index}
+            className={`sl-item ${
+              index !== logs.length - 1 ? "sl-divider" : ""
+            }`}
+          >
+            <div className="sl-icon">𝒩</div>
+            <div className="sl-content">
+              <div className="sl-text">{log.content}</div>
+              <div className="sl-time">Lúc {log.time}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

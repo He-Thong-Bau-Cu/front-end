@@ -1,0 +1,335 @@
+/* ===== PAGE BACKDROP ===== */
+.sar-page {
+  margin-top: 30px;
+  padding: 24px;
+  box-sizing: border-box;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: #1a1a1a;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+.ant-card,
+.ant-card-body {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* ===== TOP BAR ACTIONS ===== */
+.sar-topbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+  margin-top: 24px;
+}
+
+.sar-topbar .ant-btn {
+  height: 32px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.sar-topbar .ant-btn-dangerous {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ===== HEADER BLOCK ===== */
+.sar-headerCard {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.04);
+  padding: 20px 24px;
+}
+
+.sar-headline {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+}
+
+.sar-desc {
+  margin: 4px 0 20px 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* small info grid under header */
+.sar-infogrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-row-gap: 12px;
+  grid-column-gap: 16px;
+}
+
+.sar-infolabel {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.sar-infovalue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.sar-status-badge {
+  color: #d48806;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ===== SECTION HEADER TITLE (blue line left like in mock) ===== */
+.sar-section-wrap {
+  margin-top: 24px;
+}
+
+.sar-section-header {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  line-height: 1.2;
+  font-family: inherit;
+}
+.sar-section-header::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 24px;
+  border-radius: 2px;
+  background: #1677ff;
+  margin-right: 10px;
+}
+
+/* ===== SUMMARY CARDS ===== */
+.sar-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.sar-summary-card {
+  display: flex;
+  align-items: flex-start;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 16px 20px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+/* vertical accent bar on the left of each card */
+.sar-summary-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent-color, #1677ff);
+}
+
+/* icon block */
+.sar-summary-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--icon-bg, #f0f5ff);
+  color: var(--accent-color, #1677ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+/* text block */
+.sar-summary-text {
+  display: flex;
+  flex-direction: column;
+}
+.sar-summary-label {
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.3;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.sar-summary-value {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #1a1a1a;
+  letter-spacing: -0.03em;
+}
+.sar-summary-valid {
+  color: #389e0d;
+}
+
+/* ===== TABS + TABLE SECTION ===== */
+.sar-tabs-card {
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.sar-tabs-header {
+  padding: 16px 20px 0 20px;
+}
+
+/* override Ant Tabs */
+.sar-tabs-card .ant-tabs-nav {
+  margin-bottom: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.sar-tabs-card .ant-tabs-tab {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+}
+.sar-tabs-card .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #1677ff;
+  font-weight: 600;
+}
+.sar-tabs-card .ant-tabs-ink-bar {
+  height: 2px;
+  background: #1677ff;
+  border-radius: 2px;
+}
+
+/* table wrapper to match mock spacing */
+.sar-table-wrapper {
+  padding: 12px 20px 20px 20px;
+}
+.sar-table-wrapper .ant-table-thead > tr > th {
+  background: #f9fafb;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+.sar-table-wrapper .ant-table-tbody > tr > td {
+  font-size: 13px;
+  color: #1f2937;
+  border-bottom: 1px solid #f1f1f1;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* ===== SIGNATURE BOX ===== */
+.sar-signature-card {
+  margin-top: 24px;
+  border: 1px solid #9fd2ff;
+  background: #dff2ff;
+  box-shadow: 0 16px 40px rgba(24, 144, 255, 0.08);
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+.sar-sign-header {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.sar-sign-desc {
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #4b5563;
+  margin-bottom: 16px;
+}
+
+.sar-sign-desc b {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.sar-sign-confirm {
+  text-align: center;
+  font-size: 13px;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.sar-sign-action {
+  display: flex;
+  justify-content: center;
+}
+
+.sar-sign-btn {
+  min-width: 200px;
+  height: 38px;
+  border-radius: 6px;
+  background: #389e0d;
+  border: 1px solid #389e0d;
+  box-shadow: 0 12px 32px rgba(56, 158, 13, 0.3);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sar-sign-btn[disabled] {
+  background: #d9d9d9;
+  border-color: #d9d9d9;
+  box-shadow: none;
+  color: #8c8c8c;
+  font-weight: 500;
+  cursor: not-allowed;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .sar-topbar {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .sar-infogrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sar-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .sar-headline {
+    font-size: 18px;
+  }
+
+  .sar-summary-value {
+    font-size: 20px;
+  }
+}

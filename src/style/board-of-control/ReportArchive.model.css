@@ -1,0 +1,133 @@
+/* ===== PAGE ===== */
+.ra-page {
+    min-height: 100vh;
+    padding: 28px 32px;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+/* ===== HEADER ===== */
+.ra-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+
+.ra-header-icon {
+    font-size: 22px;
+    color: #111;
+}
+
+.ra-header-title {
+    display: flex;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: #111;
+}
+
+.ra-header-subtitle {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* ===== SEARCH CARD ===== */
+.ra-search-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    padding: 20px 22px 28px;
+    margin-bottom: 24px;
+}
+
+.ra-input,
+.ra-date,
+.ra-select {
+    border-radius: 8px !important;
+    font-size: 14px;
+}
+
+.ra-btn-search {
+    background: #52c41a;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin-top: 6px;
+    box-shadow: 0 6px 16px rgba(82, 196, 26, 0.25);
+}
+
+.ra-btn-search:hover {
+    background: #3fa812;
+}
+
+/* ===== TABLE CARD ===== */
+.ra-table-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    padding: 20px 20px 20px;
+}
+
+.ra-result {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.ra-signer-icon {
+    color: #1677ff;
+    font-family: cursive;
+    margin-right: 4px;
+    font-size: 16px;
+}
+
+.ra-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.ra-icon {
+    font-size: 16px;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ra-icon:hover {
+    color: #1677ff;
+}
+
+/* ===== ANT TABLE OVERRIDE ===== */
+.ant-table-thead>tr>th {
+    background: #fafafa !important;
+    font-weight: 600;
+    color: #333;
+    font-size: 13.5px;
+}
+
+.ant-table-tbody>tr>td {
+    font-size: 14px;
+    color: #202020;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .ra-header-title {
+        font-size: 20px;
+    }
+
+    .ra-search-card {
+        padding: 16px;
+    }
+
+    .ra-table-card {
+        padding: 12px;
+    }
+}

@@ -43,6 +43,10 @@ import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
 import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
 import BoardOfControlLayout from "@/layout/BoardOfControlLayout";
 import DashboardBoardOfControlPage from "@/pages/board_of_control/DashboardBoardOfControl";
+import ReportArchivePage from "@/pages/board_of_control/ReportArchivePage";
+import SystemAuditReportPage from "@/pages/board_of_control/SystemAuditReportPage";
+import VotingProcess from "@/pages/board_of_control/VotingProcess";
+import ElectionVerificationPage from "@/pages/board_of_control/ElectionVerificationPage";
 
 
 export const publicRoutes = [
@@ -161,10 +165,10 @@ export const publicRoutes = [
     element: <BoardOfControlLayout />,
     children: [
       { index: true, element: <DashboardBoardOfControlPage /> },
-      { path: "achive-reports", element: <DraftingDocuments /> },
-      { path: "control-reports", element: <ManagementDocument /> },
-      { path: "verify-results", element: <NotificationCenterPage /> },
-      { path: "voting-process", element: <ReportCenterPage /> },
+      { path: "achive-reports", element: <ReportArchivePage /> },
+      { path: "control-reports", element: <SystemAuditReportPage /> },
+      { path: "verify-results", element: <ElectionVerificationPage /> },
+      { path: "voting-process", element: <VotingProcess /> },
 
     ],
   },
