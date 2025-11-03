@@ -1,9 +1,9 @@
 import React from "react";
 import { Row, Col } from "antd";
-import LiveResult from "../../components/head_of_the_organizing_committee/voting_process/LiveResult";
-import LiveVoteFlow from "../../components/head_of_the_organizing_committee/voting_process/LiveVoteFlow";
-import CountdownControl from "../../components/head_of_the_organizing_committee/voting_process/CountdownControl";
-import SummaryStats from "../../components/head_of_the_organizing_committee/voting_process/SummaryStats";
+import LiveResult from "../../components/board_of_control/voting_process/LiveResult";
+import LiveVoteFlow from "../../components/board_of_control/voting_process/LiveVoteFlow";
+import CountdownControl from "../../components/board_of_control/voting_process/CountdownControl";
+import SummaryStats from "../../components/board_of_control/voting_process/SummaryStats";
 import {
   Candidate,
   VoteLog,

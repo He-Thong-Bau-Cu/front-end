@@ -35,7 +35,7 @@ const DelegateCard = ({ delegate }) => {
       </div>
 
       {/* Main Card */}
-      <Card className="delegate-card">
+      <Card className="delegatmain-card">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={6}>
             <div className="delegate-avatar">
