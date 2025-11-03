@@ -1,0 +1,401 @@
+/* ✅ Xóa nền ngoài cùng, xóa viền bo */
+.attendance-container-tracking {
+  margin: 0px 32px;
+}
+
+.checkin-summary-card {
+  text-align: center;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fdf9 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  padding-top: 10px;
+  cursor: pointer;
+}
+
+:where(.ant-card).checkin-summary-card .ant-card-body {
+  padding: 20px 0px;
+}
+
+/* Hiệu ứng hover nhẹ */
+/* .checkin-summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+} */
+
+.checkin-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #444;
+  display: block;
+  margin-bottom: 12px;
+  width: 100%; /* 🔥 chiếm toàn chiều ngang card */
+  padding-bottom: 8px; /* tạo khoảng cách giữa text và line */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  text-align: center; /* giữ text ở giữa */
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+/* Biểu đồ */
+.checkin-progress-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Tỷ lệ */
+.checkin-total {
+  margin-top: 10px;
+  color: #333;
+  font-size: 15px;
+}
+
+/* Hiệu ứng "nhịp" nhẹ của biểu đồ */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.checkin-stats-grid {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  transition: all 0.25s ease;
+  height: 297px;
+}
+
+.checkin-stats-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 16px;
+}
+
+.checkin-stat-box {
+  border-radius: 12px;
+  padding: 18px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  height: 105px;
+}
+
+.checkin-stat-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.checkin-stat-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 10px;
+}
+
+.checkin-stat-info h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.checkin-stat-info p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #555;
+}
+
+/* ===== Card container ===== */
+.quick-actions-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  padding: 12px 16px;
+}
+
+.quick-actions-card-track {
+  border-radius: 16px;
+  margin-bottom: 30px;
+}
+
+.quick-actions-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Inner layout ===== */
+.quick-actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===== Buttons ===== */
+.quick-btn {
+  height: 42px;
+  border-radius: 12px !important;
+  font-weight: 600;
+  font-size: 15px;
+  border: 1px solid transparent;
+  background: #f9fafb;
+  color: #333;
+  transition: all 0.25s ease;
+}
+
+.quick-btn:hover {
+  background: #e6f4ea;
+  color: #16794d;
+  transform: translateY(-2px);
+  border-color: #b3e6c2;
+}
+
+/* ===== Individual accents ===== */
+.print-btn:hover {
+  background: #f0f9ff;
+  color: #0284c7;
+  border-color: #bae6fd;
+}
+
+.report-btn:hover {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.support-btn:hover {
+  background: #f9fafb;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+
+.quick-actions-card-track .ant-card-head-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-left: 20px; /* thêm chút margin-left cho mềm */
+}
+
+/* ================================
+   📦 Checkin Tools Card Styling
+================================ */
+.checkin-tools-card {
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  width: 100%;
+  font-size: 16px;
+}
+
+.checkin-tools-card .ant-card-head-title {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: 12px;
+  padding-left: 20px;
+}
+
+/* .checkin-tools-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+} */
+
+/* === Title === */
+.checkin-tools-card .ant-card-head {
+  border-bottom: none;
+  padding: 0 0 12px 10px;
+}
+
+.checkin-tools-card .ant-card-head-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #124d2d;
+}
+
+/* === Input Fields === */
+.checkin-tools-input {
+  border-radius: 10px !important;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.25s ease;
+}
+
+.checkin-tools-input:hover {
+  border-color: #52c41a;
+}
+
+.checkin-tools-input:focus,
+.checkin-tools-input:focus-within {
+  border-color: #52c41a !important;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+/* === Button === */
+/* === Button === */
+.checkin-tools-btn {
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #16a34a, #4ade80);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+  border: none !important;
+  color: #fff;
+  outline: none !important;
+  box-shadow: none !important; /* ❌ bỏ viền xanh */
+}
+
+.checkin-tools-btn:hover {
+  background: linear-gradient(135deg, #15803d, #22c55e);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.35);
+}
+
+/* Khi click giữ */
+.checkin-tools-btn:active {
+  transform: scale(0.97);
+  background: linear-gradient(135deg, #0f5d2b, #1b873d);
+  box-shadow: none;
+  outline: none;
+}
+
+/* Khi focus (bị tab hoặc click focus) */
+.checkin-tools-btn:focus,
+.checkin-tools-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.checkin-live-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+}
+
+.checkin-live-card .ant-card-head-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1c3b28;
+}
+
+/* === ITEM CHUNG === */
+.checkin-live-item {
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.checkin-live-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* === MÀU NỀN TỪNG TRẠNG THÁI === */
+.checkin-live-item.success {
+  background: #f6ffed;
+  border-left: 5px solid #52c41a;
+}
+
+.checkin-live-item.error {
+  background: #fff2f0;
+  border-left: 5px solid #ff4d4f;
+}
+
+.checkin-live-item.manual {
+  background: #f0f5ff;
+  border-left: 5px solid #1677ff;
+}
+
+/* === ICON === */
+.icon-success {
+  color: #16a34a;
+  font-size: 20px;
+  margin-right: 10px;
+  padding: 0px 15px;
+}
+
+.icon-error {
+  color: #ef4444;
+  font-size: 20px;
+  margin-right: 10px;
+  padding: 0px 15px;
+}
+
+.icon-manual {
+  color: #2563eb;
+  font-size: 20px;
+  margin-right: 10px;
+  padding: 0px 15px;
+}
+
+/* === CẤU TRÚC === */
+.checkin-live-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.checkin-info b {
+  font-size: 14px;
+  color: #222;
+}
+
+.checkin-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+}
+
+.checkin-reason {
+  color: #888;
+  font-style: italic;
+}
+
+.checkin-time {
+  font-size: 12px;
+  color: #555;
+  text-align: right;
+  min-width: 85px;
+  padding-right: 25px;
+}
+
+/* === Hiệu ứng xuất hiện === */
+.checkin-live-item {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkin-live-card .ant-card-head-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1c3b28;
+  padding-left: 20px;
+}
