@@ -40,7 +40,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Tạo cuộc họp",
         },
         {
-            key: "/head_of_the_Organizing_committee/attendence_confirm_tracking",
+            key: "/head_of_the_Organizing_committee/attendance_confirm",
             icon: <HistoryOutlined />,
             label: "Bảng theo dõi xác nhận tham dự",
         },
