@@ -185,9 +185,9 @@ export const publicRoutes = [
       { path: "control-reports", element: <SystemAuditReportPage /> },
       { path: "verify-results", element: <ElectionVerificationPage /> },
       { path: "voting-process", element: <VotingProcess /> },
-      { path: "list_meeting", element: <MeetingListPage/> },
+      { path: "list_meeting", element: <MeetingListPage /> },
       { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
-      { path: "election_tracking", element: <VotingDashboardPage/> },
+      { path: "election_tracking", element: <VotingDashboardPage /> },
 
 
     ],

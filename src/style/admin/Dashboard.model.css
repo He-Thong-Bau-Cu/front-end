@@ -11,7 +11,7 @@
 .dashboard-card {
   flex: 1 1 calc(25% - 24px);
   min-width: 250px;
-  height: 160px;
+  height: 140px;
   border: 1px solid #eee;
   border-radius: 16px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
@@ -26,12 +26,12 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px 24px;
+  padding: 20px 10px 0px 10px;
 }
 
 .dashboard-icon-box {
-  height: 90px;
-  width: 90px;
+  height: 60px;
+  width: 60px;
   background-color: #ecf4e9;
   display: flex;
   justify-content: center;
@@ -45,7 +45,7 @@
 }
 
 .dashboard-value {
-  font-size: 38px;
+  font-size: 25px;
   font-weight: 600;
   margin: 0;
 }
@@ -59,7 +59,7 @@
   color: #27ae60;
   font-weight: bold;
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .cardContainer {
@@ -126,7 +126,7 @@
   display: flex;
   gap: 24px;
   margin-bottom: 20px;
-  padding: 15px 32px;
+  padding: 15px 11px 15px 32px;
 }
 
 .electionCard {

@@ -8,10 +8,10 @@
   bottom: 0;
   left: 0;
   box-shadow: 4px 0 6px rgba(0, 0, 0, 0.1);
-  width: 270px !important;
-  max-width: 270px !important;
-  min-width: 270px !important;
-  flex: 0 0 270px !important;
+  width: 250px !important;
+  max-width: 250px !important;
+  min-width: 250px !important;
+  flex: 0 0 250px !important;
 }
 
 /* ===== Header logo ===== */
@@ -46,30 +46,30 @@
 
 .sidebar-title-main {
   font-weight: 710;
-  font-size: 25px;
+  font-size: 22px;
   color: #124d2d;
 }
 
 .sidebar-title-sub {
   font-weight: 710;
-  font-size: 25px;
+  font-size: 22px;
   color: #124d2d;
-  padding-left: 30px;
+  padding-left: 26px;
 }
 
 .sidebar-subtext {
   font-size: 13px;
   color: #777;
-  margin-left: 20px;
+  margin-left: 26px;
 }
 
 /* ===== Menu items ===== */
 .ant-menu-item {
-  height: 52px !important;
-  width: 210px !important;
+  height: 50px !important;
+  width: 200px !important;
   display: flex !important;
   align-items: center !important;
-  font-size: 15px !important;
+  font-size: 14px !important;
   border-radius: 10px !important;
   padding-left: 20px !important;
   color: #666 !important;
