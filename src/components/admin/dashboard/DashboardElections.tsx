@@ -22,7 +22,7 @@ const DashboardElections = () => {
             <Card
                 title={<span className="electionCardTitle">🗳️ Bầu cử đang diễn ra</span>}
                 className="electionCard"
-                bodyStyle={{ padding: "20px" }}
+                bodyStyle={{ padding: "20px " }}
             >
                 {elections.map((e, i) => (
                     <div key={i} className="electionItem">

@@ -1,6 +1,5 @@
 import {
     BarChartOutlined,
-    CheckCircleOutlined,
     FileTextOutlined,
     HistoryOutlined,
     UserSwitchOutlined
@@ -39,7 +38,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <UserSwitchOutlined />,
             label: "Xác minh kết quả",
         },
-         {
+        {
             key: "/board-of-control/voting-process",
             icon: <HistoryOutlined />,
             label: "Gíam sát bỏ phiếu",
@@ -58,7 +57,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             <div className="sidebar-header">
                 <div className="sidebar-logo-row">
                     <div className="sidebar-logo-circle">
-                        <img src={logo} alt="Logo trang web" width="120" height="170" />
+                        <img src={logo} alt="Logo trang web" width="110" height="160" />
                     </div>
 
                     <div className="sidebar-title">

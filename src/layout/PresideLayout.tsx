@@ -29,7 +29,7 @@ const PresideLayout = () => {
             <Sideber onMenuSelect={setPageTitle} />
 
             <Layout style={{
-                marginLeft: 270,
+                marginLeft: 250,
                 background: "#EFF8EF",
                 display: "flex",
                 flexDirection: "column",

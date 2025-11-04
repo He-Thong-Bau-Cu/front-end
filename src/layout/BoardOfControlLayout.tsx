@@ -16,7 +16,7 @@ const BoardOfControlLayout = () => {
             "/board-of-control/achive-reports": "Bao cáo đã lưu trữ",
             "/board-of-control/control-reports": "Báo cáo kiểm soát",
             "/board-of-control/verify-results": "Xác minh kết quả",
-             "/board-of-control/voting-process": "Giam sát bỏ phiếu",
+            "/board-of-control/voting-process": "Giam sát bỏ phiếu",
         };
 
         setPageTitle(map[location.pathname] || "Trang quản lý Ban Tổ chức");
@@ -27,7 +27,7 @@ const BoardOfControlLayout = () => {
             <Sideber onMenuSelect={setPageTitle} />
 
             <Layout style={{
-                marginLeft: 290,
+                marginLeft: 250,
                 background: "#EFF8EF",
                 display: "flex",
                 flexDirection: "column",
