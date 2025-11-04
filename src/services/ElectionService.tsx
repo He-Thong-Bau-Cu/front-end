@@ -1,7 +1,7 @@
 import BaseService from "./BaseService";
 
 class ElectionService extends BaseService {
-  constructor(){
+  constructor() {
     super("elections");
   }
 }

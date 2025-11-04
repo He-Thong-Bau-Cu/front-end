@@ -51,6 +51,7 @@ import VerifyDelegates from "@/pages/organizing-committee/VerifyDelegates";
 import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
 import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/ManagementMeeting";
 import AttendanceConfirm from "@/pages/head_of_the_organizing_comittee/AttendanceConfirm";
+import HomePage from "@/pages/head_of_the_organizing_comittee/HomePage";
 
 
 export const publicRoutes = [
@@ -153,11 +154,17 @@ export const publicRoutes = [
 
     ],
   },
+
+  {
+    path: "/head_of_the_Organizing_committee",
+    element: <HomePage />,
+  },
+
   {
     path: "/head_of_the_Organizing_committee",
     element: <HeadOfTheOrganizingCommitteeLayout />,
     children: [
-      { index: true, element: <OrganizerDashboardPage /> },
+      { path: "dashboard", element: <OrganizerDashboardPage /> },
       { path: "list_meeting", element: <MeetingListPage /> },
       { path: "meetings", element: <ManagementMeeting /> },
       { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
@@ -166,6 +173,8 @@ export const publicRoutes = [
 
     ],
   },
+
+
 
   {
     path: "/board-of-control",

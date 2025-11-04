@@ -12,7 +12,7 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
 
     useEffect(() => {
         const map: Record<string, string> = {
-            "/head_of_the_Organizing_committee": "Tổng quan",
+            "/head_of_the_Organizing_committee/dashboard": "Tổng quan",
             "/head_of_the_Organizing_committee/list_meeting": "Danh sách cuộc họp",
             "/head_of_the_Organizing_committee/meetings": "Quản lý cuộc họp",
             "/head_of_the_Organizing_committee/create_meeting": "Tạo cuộc họp",
@@ -31,7 +31,7 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
             <Sideber onMenuSelect={setPageTitle} />
 
             <Layout style={{
-                marginLeft: 290,
+                marginLeft: 270,
                 background: "#EFF8EF",
                 display: "flex",
                 flexDirection: "column",

@@ -8,7 +8,10 @@
   bottom: 0;
   left: 0;
   box-shadow: 4px 0 6px rgba(0, 0, 0, 0.1);
-  max-width: 290px;
+  width: 270px !important;
+  max-width: 270px !important;
+  min-width: 270px !important;
+  flex: 0 0 270px !important;
 }
 
 /* ===== Header logo ===== */
@@ -43,30 +46,30 @@
 
 .sidebar-title-main {
   font-weight: 710;
-  font-size: 29px;
+  font-size: 25px;
   color: #124d2d;
 }
 
 .sidebar-title-sub {
   font-weight: 710;
-  font-size: 29px;
+  font-size: 25px;
   color: #124d2d;
-  padding-left: 34px;
+  padding-left: 30px;
 }
 
 .sidebar-subtext {
-  font-size: 15px;
+  font-size: 13px;
   color: #777;
   margin-left: 20px;
 }
 
 /* ===== Menu items ===== */
 .ant-menu-item {
-  height: 55px !important;
-  width: 230px !important;
+  height: 52px !important;
+  width: 210px !important;
   display: flex !important;
   align-items: center !important;
-  font-size: 17px !important;
+  font-size: 15px !important;
   border-radius: 10px !important;
   padding-left: 20px !important;
   color: #666 !important;
