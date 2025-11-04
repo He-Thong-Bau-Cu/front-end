@@ -29,7 +29,7 @@ const AdminLayout = () => {
             <Sideber onMenuSelect={setPageTitle} />
 
             <Layout style={{
-                marginLeft: 290,
+                marginLeft: 270,
                 background: "#EFF8EF",
                 display: "flex",
                 flexDirection: "column",

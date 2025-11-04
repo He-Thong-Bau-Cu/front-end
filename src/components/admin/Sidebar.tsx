@@ -39,7 +39,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     };
 
     return (
-        <Sider className="custom-sider" width={290}>
+        <Sider className="custom-sider" >
             {/* Header Logo */}
             <div className="sidebar-header">
                 <div className="sidebar-logo-row">

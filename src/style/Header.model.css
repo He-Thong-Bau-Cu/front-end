@@ -3,7 +3,7 @@
   background: #ecf4e9;
   position: fixed;
   top: 0;
-  left: 290px;
+  left: 270px;
   right: 0;
   z-index: 10;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -33,10 +33,11 @@
 
 .header-title {
   font-weight: 700;
-  font-size: 25px;
+  font-size: 22px !important;
   color: #124d2d;
   flex: 1;
   min-width: 250px;
+  color: #124d2d !important;
 }
 
 /* Icon chuông */
@@ -84,10 +85,6 @@
 
   .header-container {
     padding: 0 20px;
-  }
-
-  .header-title {
-    font-size: 20px;
   }
 
   .header-username {
