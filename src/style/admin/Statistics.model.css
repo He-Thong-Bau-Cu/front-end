@@ -13,7 +13,7 @@
 .statistics-card {
   flex: 1 1 calc(25% - 24px);
   min-width: 250px;
-  height: 160px;
+  height: 140px;
   border: 1px solid #eee;
   border-radius: 16px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
@@ -34,14 +34,14 @@
 
 /* ===== Icon box ===== */
 .statistics-icon-box {
-  height: 90px;
-  width: 90px;
+  height: 60px;
+  width: 60px;
   background-color: #ecf4e9;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 12px;
-  margin-left: 20px;
+  margin-left: 10px;
 }
 
 /* ===== Phần nội dung ===== */
@@ -50,7 +50,7 @@
 }
 
 .statistics-value {
-  font-size: 38px;
+  font-size: 24px;
   font-weight: 600;
   margin: 0;
 }
@@ -64,7 +64,7 @@
   color: #27ae60;
   font-weight: bold;
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /* ===== Card tổng “Dữ liệu thời gian thực” ===== */
@@ -178,6 +178,23 @@
   padding: 16px;
   border-radius: 12px;
   justify-content: center;
+}
+
+.statistics-export-item {
+  display: flex;
+  align-items: center;
+}
+
+.statistics-export-item .left {
+  flex: 2;
+  display: flex;
+  align-items: center;
+}
+
+.statistics-export-item .right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .export-icon {

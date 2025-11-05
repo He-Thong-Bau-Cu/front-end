@@ -1,8 +1,7 @@
 import {
     DashboardOutlined,
     FileTextOutlined,
-    HistoryOutlined,
-    TeamOutlined
+    HistoryOutlined
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -34,11 +33,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <FileTextOutlined />,
             label: "Quản lý cuộc họp",
         },
-        {
-            key: "/head_of_the_Organizing_committee/create_meeting",
-            icon: <TeamOutlined />,
-            label: "Tạo cuộc họp",
-        },
+
         {
             key: "/head_of_the_Organizing_committee/attendance_confirm",
             icon: <HistoryOutlined />,

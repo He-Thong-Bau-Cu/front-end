@@ -245,7 +245,7 @@ const UserList = () => {
                 <Input
                     placeholder="Tìm kiếm theo tên, email, phòng ban..."
                     prefix={<SearchOutlined />}
-                    style={{ width: 1050, height: 45 }}
+                    style={{ width: 730, height: 45 }}
                 />
                 <Select defaultValue="Tất cả trạng thái" style={{ width: 170, height: 45, paddingLeft: 10 }}>
                     <Option value="all">Tất cả trạng thái</Option>

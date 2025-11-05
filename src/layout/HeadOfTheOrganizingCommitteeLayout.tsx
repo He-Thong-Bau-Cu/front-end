@@ -15,7 +15,6 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
             "/head_of_the_Organizing_committee/dashboard": "Tổng quan",
             "/head_of_the_Organizing_committee/list_meeting": "Danh sách cuộc họp",
             "/head_of_the_Organizing_committee/meetings": "Quản lý cuộc họp",
-            "/head_of_the_Organizing_committee/create_meeting": "Tạo cuộc họp",
             "/head_of_the_Organizing_committee/attendance_confirm": "Bảng theo dõi xác nhận tham dự",
             "/head_of_the_Organizing_committee/election_tracking": "Bảng theo dõi cuộc bầu cử",
             "/head_of_the_Organizing_committee/create-delegate-card": "Phát hành thẻ đại biểu",
