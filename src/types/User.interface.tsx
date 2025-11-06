@@ -8,3 +8,23 @@ export interface UserRecord {
     lastLogin: string;
     color: string;
 }
+
+
+export interface User {
+    _id: string;
+    username: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    position: string;
+    department: string;
+    address: string;
+    dateOfBirth: string;
+    citizenId: string;
+    roleId: string;
+    status: string;
+    image: string;
+    isTempPassword: boolean;
+
+}
+

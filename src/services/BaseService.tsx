@@ -14,29 +14,35 @@ export default class BaseService<T = any> {
     });
     this.endpoint = endpoint;
 
-    this.api.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem("accessToken");
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
+    // this.api.interceptors.request.use(
+    //   (config: InternalAxiosRequestConfig) => {
+    //     const token = localStorage.getItem("accessToken");
+    //     if (token) {
+    //       config.headers.Authorization = `Bearer ${token}`;
+    //     }
+    //     return config;
+    //   },
+    //   (error) => Promise.reject(error)
+    // );
 
-    this.api.interceptors.response.use(
-      (response: AxiosResponse) => response.data,
-      (error) => {
-        if (error.response?.status === 401) {
-          console.warn("Unauthorized! Token có thể đã hết hạn.");
-          window.location.href = "/login";
-        }
+    // this.api.interceptors.response.use(
+    //   (response: AxiosResponse) => response.data,
+    //   (error) => {
+    //     if (error.response?.status === 401) {
+    //       console.warn("Unauthorized! Token có thể đã hết hạn.");
 
-        console.error("API Error:", error.response.data || error.message);
-        return Promise.reject(error);
-      }
-    );
+    //       // ✅ Chỉ redirect nếu KHÔNG đang ở trang login
+    //       if (window.location.pathname !== "/login") {
+    //         localStorage.removeItem("accessToken");
+    //         window.location.href = "/login";
+    //       }
+    //     }
+
+
+    //     console.error("API Error:", error.response.data || error.message);
+    //     return Promise.reject(error);
+    //   }
+    // );
   }
 
   // GET toàn bộ
@@ -56,7 +62,7 @@ export default class BaseService<T = any> {
 
   // CREATE
   async add(data: Partial<T>): Promise<T> {
-    return await this.api.post(`${this.endpoint}/create`, data);
+    return await this.api.post(`${this.endpoint}`, data);
   }
 
   // UPDATE
@@ -68,4 +74,9 @@ export default class BaseService<T = any> {
   async delete(id: string | number): Promise<void> {
     await this.api.delete(`${this.endpoint}/delete/${id}`);
   }
+
+
 }
+
+
+

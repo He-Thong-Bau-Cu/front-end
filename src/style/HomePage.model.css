@@ -1,0 +1,82 @@
+.home-header {
+  background: #ecf4e9;
+  border-bottom: 2px solid #e6f2ea;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-title {
+  margin: 0;
+  font-weight: 710 !important;
+  font-size: 22px;
+  color: #124d2d;
+  letter-spacing: 0.5px;
+  padding-left: 15px;
+}
+
+.header-avatar {
+  background-color: #c8e6c9 !important;
+  color: #124d2d !important;
+  font-weight: 600;
+}
+
+.header-username {
+  color: #124d2d;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+/* Nút Đăng xuất */
+.header-logout {
+  background-color: #4caf50 !important;
+  color: white !important;
+  font-weight: 600;
+  border: 1px solid #3e8e41 !important;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+  margin-left: 20px;
+}
+
+/* Hover: đậm hơn và nổi nhẹ */
+.header-logout:hover {
+  background-color: #43a047 !important;
+  border-color: #2e7d32 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+}
+
+/* Xóa viền đen khi click hoặc focus */
+.header-logout:focus,
+.header-logout:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.profile-modal .ant-modal-content {
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(18, 77, 45, 0.15);
+}
+
+.btn-save {
+  background: linear-gradient(90deg, #6fc56a, #4d9950);
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+  background: linear-gradient(90deg, #7dd67c, #57ad5c);
+  transform: translateY(-1px);
+}
+
+.ant-btn-text:hover {
+  background: #e6f2ea !important;
+  color: #124d2d !important;
+  transform: scale(1.02);
+}
