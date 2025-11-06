@@ -80,3 +80,105 @@
   color: #124d2d !important;
   transform: scale(1.02);
 }
+
+.election-card {
+  border-radius: 12px;
+  background: #f8fcf7;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+  border: none;
+
+  padding: 20px 24px;
+}
+
+.election-title {
+  font-size: 17px;
+  color: #124d2d;
+}
+
+.view-all {
+  color: #3ca860;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.election-item {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 14px;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.election-card .ant-list-item {
+  align-items: flex-start !important;
+  padding-left: 20px;
+}
+
+.election-item:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.election-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.election-item-title {
+  flex: 1;
+}
+
+/* Tag trạng thái ép về phải hoàn toàn */
+.status-tag {
+  margin-left: auto; /* đẩy tag sang phải */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 3px 10px;
+  border: none;
+  line-height: 1.2;
+}
+
+.tag-upcoming {
+  background: #fff7e6;
+  color: #d48806;
+}
+
+.tag-completed {
+  background: #e6f4ff;
+  color: #1677ff;
+}
+
+.election-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.calendar-icon {
+  color: #888;
+}
+
+.election-date {
+  font-size: 14px;
+  color: #666;
+}
+
+.role-tag {
+  border-radius: 6px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #124d2d;
+  font-weight: 500;
+  padding-left: 0px !important;
+}

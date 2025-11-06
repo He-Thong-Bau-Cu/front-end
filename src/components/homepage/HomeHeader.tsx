@@ -54,7 +54,7 @@ const HomeHeader: React.FC = () => {
             key: "profile",
             label: "Hồ sơ cá nhân",
             icon: <IdcardOutlined />,
-            onClick: handleOpenProfile, // ✅ Mở popup thay vì navigate
+            onClick: handleOpenProfile,
         },
         {
             key: "settings",
