@@ -1,63 +1,40 @@
 import React from 'react';
 import { Avatar, Badge, Layout } from 'antd';
 import { BellFilled } from '@ant-design/icons';
-
+import '../../style/Header.model.css';
 
 const { Header } = Layout;
 
 interface VoterHeaderProps {
     title: string;
 }
+
 const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
     return (
-        <Header
-            style={{
-                height: 100,
-                background: '#ECF4E9',
-                position: 'fixed',
-                left: 290,
-                right: 0,
-                top: 0,
-                zIndex: 10,
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0 24px',
-                fontSize: '1.25rem',
-                fontWeight: 600,
-                borderLeft: '5px solid #c41d1d',
-            }}
-        >
-            <div style={{ paddingLeft: '50px', fontWeight: '700', fontSize: '25px', color: '#124d2d', display: 'flex' }}>
-                <div style={{ width: '1300px' }}>{title}</div>
+        <Header className="secretary-header">
+            <div className="header-container">
+                {/* Tiêu đề */}
+                <div className="header-title">{title}</div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    {/* Thông báo */}
+                {/* Thông báo + Avatar */}
+                <div className="header-actions">
                     <Badge count={3} size="small">
-                        <BellFilled style={{ fontSize: 22, color: '#c41d1d', cursor: 'pointer' }} />
+                        <BellFilled className="header-icon" />
                     </Badge>
 
-                    {/* Avatar  */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Avatar
-                            style={{
-                                backgroundColor: '#c41d1d',
-                                verticalAlign: 'middle',
-                            }}
-                            size="large"
-                        >
-                            C
+                    <div className="header-user">
+                        <Avatar className="header-avatar" size="large">
+                            A
                         </Avatar>
-                        <span style={{ fontWeight: 600, color: '#333' }}>Cử tri</span>
+                        <span className="header-username">Voter</span>
                     </div>
                 </div>
             </div>
-
-
-
         </Header>
     );
 };
 
 export default VoterHeader;
+
+
+

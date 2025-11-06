@@ -6,8 +6,8 @@ const { Title, Text } = Typography;
 
 const RoleStats = () => {
     const stats = [
-        { icon: <TeamOutlined style={{ fontSize: 30, color: '#1e4841' }} />, label: 'Vai trò', value: '4' },
-        { icon: <UserOutlined style={{ fontSize: 30, color: '#1e4841' }} />, label: 'Người dùng', value: '1,112' },
+        { icon: <TeamOutlined style={{ fontSize: 20, color: '#1e4841' }} />, label: 'Vai trò', value: '4' },
+        { icon: <UserOutlined style={{ fontSize: 20, color: '#1e4841' }} />, label: 'Người dùng', value: '1,112' },
         { icon: <SolutionOutlined style={{ fontSize: 30, color: '#1e4841' }} />, label: 'Quyền hạn', value: '57' },
         { icon: <BarChartOutlined style={{ fontSize: 30, color: '#1e4841' }} />, label: 'Hoạt động', value: '85%' },
     ];

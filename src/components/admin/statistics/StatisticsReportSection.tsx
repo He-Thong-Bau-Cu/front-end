@@ -24,44 +24,44 @@ const StatisticsReportSection = () => {
                 <Row gutter={16} style={{ marginTop: 20 }}>
                     <Col xs={24} md={8}>
                         <div className="statistics-export-item">
-                            <div style={{ flex: 1 }}>
+                            <div className="left">
                                 <FilePdfOutlined className="export-icon pdf" />
                                 <Text style={{ marginLeft: 15 }} strong>Tải báo cáo PDF</Text>
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <Button type="default" className="export-btn">
-                                    Xuất PDF
-                                </Button>
+                            <div className="right">
+                                <Button type="default" className="export-btn">Xuất PDF</Button>
                             </div>
                         </div>
+
+
                     </Col>
 
                     <Col xs={24} md={8}>
+
                         <div className="statistics-export-item">
-                            <div style={{ flex: 1 }}>
+                            <div className="left">
                                 <FileExcelOutlined className="export-icon excel" />
                                 <Text style={{ marginLeft: 15 }} strong>Xuất Excel</Text>
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <Button type="primary" className="export-btn green">
-                                    Xuất Excel
-                                </Button>
+                            <div className="right">
+                                <Button type="primary" className="export-btn green">Xuất PDF</Button>
                             </div>
                         </div>
+
                     </Col>
 
                     <Col xs={24} md={8}>
+
                         <div className="statistics-export-item">
-                            <div style={{ flex: 1 }}>
+                            <div className="left">
                                 <PrinterOutlined className="export-icon print" />
                                 <Text style={{ marginLeft: 15 }} strong>In báo cáo</Text>
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <Button danger className="export-btn red">
-                                    In
-                                </Button>
+                            <div className="right">
+                                <Button danger className="export-btn red">In</Button>
                             </div>
                         </div>
+
                     </Col>
                 </Row>
             </Card>
@@ -125,7 +125,7 @@ const StatisticsReportSection = () => {
                     </Card>
                 </Col>
             </Row>
-        </div>
+        </div >
     );
 };
 

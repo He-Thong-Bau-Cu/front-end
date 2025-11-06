@@ -17,6 +17,7 @@
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.3",
     "echarts": "^6.0.0",
+    "framer-motion": "^12.23.24",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

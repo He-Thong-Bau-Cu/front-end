@@ -1,57 +1,57 @@
-import LoginScreen from "../pages/user/Login";
-import PublicRoute from "../components/auth/PublicRoute";
-import NotFound404 from "../pages/NotFound404";
-import Forbidden403 from "../pages/Forbidden403";
-import { Navigate } from "react-router-dom";
-import Dashboard from "@/pages/admin/Dashboard";
-import ManagementUser from "@/pages/admin/ManagementUser";
-import AdminLayout from "@/layout/AdminLayout";
-import ManagementRole from "@/pages/admin/ManagementRole";
-import VoterLayout from "@/layout/VoterLayout";
-import DashboardVoter from "@/pages/voter/Dashboard";
-import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
-import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
-import BallotList from "@/pages/voter/BallotList";
-import CumulativeVoting from "@/pages/voter/CumulativeVoting";
-import ResolutionVoting from "@/pages/voter/ResolutionVoting";
-import VoteSuccess from "@/pages/voter/VoteSuccess";
-import VotingHistory from "@/pages/voter/VotingHistory";
-import Authorization from "@/pages/voter/Authorization";
-import PresideLayout from "@/layout/PresideLayout";
-import Statistics from "@/pages/admin/Statistics";
-import ManagementDecision from "@/pages/preside/ManagementDecision";
-import DashboardPreside from "@/pages/preside/Dashboard";
-import AuthorizationPreside from "@/pages/preside/Authorization";
-import VotingResult from "@/pages/voter/VotingResult";
-import ReportsPage from "@/pages/preside/manage_report/ReportsPage";
-import ElectionResultsPage from "@/pages/preside/voting_process/ElectionResultsPage";
 import VotingResultDetail from "@/components/voter/voting-result/VotingResultDetail";
-import SecretaryLayout from "@/layout/SecretaryLayout";
-import DashboardSecretary from "@/pages/secretary/Dashboard";
-import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
-import ManagementDocument from "@/pages/secretary/ManagementDocument";
-import OrganizingCommitteeLayout from "@/layout/OrganizingCommitteeLayout";
-import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
-import Checkin from "@/pages/organizing-committee/Checkin";
-import DelegateCardPage from "@/pages/voter/DelegateCardPage";
-import HeadOfTheOrganizingCommitteeLayout from "@/layout/HeadOfTheOrganizingCommitteeLayout";
-import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/OrganizerDashboardPage";
-import MeetingListPage from "@/pages/head_of_the_organizing_comittee/MeetingListPage";
-import CreateDelegateCardPage from "@/pages/head_of_the_organizing_comittee/CreateDelegateCardPage";
-import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
-import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
-import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
+import AdminLayout from "@/layout/AdminLayout";
 import BoardOfControlLayout from "@/layout/BoardOfControlLayout";
+import HeadOfTheOrganizingCommitteeLayout from "@/layout/HeadOfTheOrganizingCommitteeLayout";
+import OrganizingCommitteeLayout from "@/layout/OrganizingCommitteeLayout";
+import PresideLayout from "@/layout/PresideLayout";
+import SecretaryLayout from "@/layout/SecretaryLayout";
+import VoterLayout from "@/layout/VoterLayout";
+import Dashboard from "@/pages/admin/Dashboard";
+import ManagementRole from "@/pages/admin/ManagementRole";
+import ManagementUser from "@/pages/admin/ManagementUser";
+import Statistics from "@/pages/admin/Statistics";
 import DashboardBoardOfControlPage from "@/pages/board_of_control/DashboardBoardOfControl";
+import ElectionVerificationPage from "@/pages/board_of_control/ElectionVerificationPage";
 import ReportArchivePage from "@/pages/board_of_control/ReportArchivePage";
 import SystemAuditReportPage from "@/pages/board_of_control/SystemAuditReportPage";
 import VotingProcess from "@/pages/board_of_control/VotingProcess";
-import ElectionVerificationPage from "@/pages/board_of_control/ElectionVerificationPage";
-import VerifyDelegates from "@/pages/organizing-committee/VerifyDelegates";
-import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
-import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/ManagementMeeting";
 import AttendanceConfirm from "@/pages/head_of_the_organizing_comittee/AttendanceConfirm";
-import HomePage from "@/pages/head_of_the_organizing_comittee/HomePage";
+import CreateDelegateCardPage from "@/pages/head_of_the_organizing_comittee/CreateDelegateCardPage";
+import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/ManagementMeeting";
+import MeetingListPage from "@/pages/head_of_the_organizing_comittee/MeetingListPage";
+import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/OrganizerDashboardPage";
+import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
+import HomePage from "@/pages/HomePage";
+import Checkin from "@/pages/organizing-committee/Checkin";
+import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
+import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
+import VerifyDelegates from "@/pages/organizing-committee/VerifyDelegates";
+import AuthorizationPreside from "@/pages/preside/Authorization";
+import DashboardPreside from "@/pages/preside/Dashboard";
+import ReportsPage from "@/pages/preside/manage_report/ReportsPage";
+import ManagementDecision from "@/pages/preside/ManagementDecision";
+import ElectionResultsPage from "@/pages/preside/voting_process/ElectionResultsPage";
+import DashboardSecretary from "@/pages/secretary/Dashboard";
+import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
+import ManagementDocument from "@/pages/secretary/ManagementDocument";
+import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
+import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
+import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
+import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
+import Authorization from "@/pages/voter/Authorization";
+import BallotList from "@/pages/voter/BallotList";
+import CumulativeVoting from "@/pages/voter/CumulativeVoting";
+import DashboardVoter from "@/pages/voter/Dashboard";
+import DelegateCardPage from "@/pages/voter/DelegateCardPage";
+import ResolutionVoting from "@/pages/voter/ResolutionVoting";
+import VoteSuccess from "@/pages/voter/VoteSuccess";
+import VotingHistory from "@/pages/voter/VotingHistory";
+import VotingResult from "@/pages/voter/VotingResult";
+import { Navigate } from "react-router-dom";
+import PublicRoute from "../components/auth/PublicRoute";
+import Forbidden403 from "../pages/Forbidden403";
+import NotFound404 from "../pages/NotFound404";
+import LoginScreen from "../pages/user/Login";
 
 export const publicRoutes = [
   {
@@ -92,6 +92,11 @@ export const publicRoutes = [
         <VerifyEmailScreen />
       </PublicRoute>
     ),
+  },
+
+  {
+    path: "/home",
+    element: <HomePage />,
   },
 
   {

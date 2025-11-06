@@ -1,7 +1,7 @@
 .meeting-page {
   padding: 20px 24px;
   min-height: 100vh;
-  font-family: Inter, "Segoe UI", sans-serif;
+  /* font-family: Inter, "Segoe UI", sans-serif; */
 }
 
 /* ====== FILTER BAR ====== */
@@ -93,8 +93,6 @@
   background-color: #fafafa;
 }
 
-
-
 /* ====== HEADER TABLE ====== */
 .meeting-table .ant-table-thead > tr > th {
   background-color: #e4e4e4 !important;
@@ -170,7 +168,6 @@
   align-items: center;
   gap: 8px;
 }
-
 
 /* ====== RESPONSIVE ====== */
 @media (max-width: 992px) {

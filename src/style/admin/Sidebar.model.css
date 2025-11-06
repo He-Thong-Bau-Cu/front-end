@@ -38,10 +38,12 @@
   align-items: center;
   justify-content: center;
   font-size: 30px;
+  padding-left: 30px;
 }
 
 .sidebar-title {
   line-height: 1.2;
+  padding-left: 10px !important;
 }
 
 .sidebar-title-main {
@@ -60,7 +62,7 @@
 .sidebar-subtext {
   font-size: 13px;
   color: #777;
-  margin-left: 26px;
+  margin-left: 18px;
 }
 
 /* ===== Menu items ===== */
