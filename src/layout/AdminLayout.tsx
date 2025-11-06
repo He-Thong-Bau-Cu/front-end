@@ -19,7 +19,7 @@ const AdminLayout = () => {
             '/admin/permissions': 'Quản lý quyền',
             '/admin/data': 'Quản lý dữ liệu',
             '/admin/settings': 'Cài đặt hệ thống',
-            '/admin/reports': 'Béo cáo hệ thống'
+            '/admin/reports': 'Báo cáo hệ thống'
         };
         setPageTitle(map[location.pathname] || 'Bảng điều khiển');
     }, [location.pathname]);

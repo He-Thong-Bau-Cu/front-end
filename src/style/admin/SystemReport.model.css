@@ -1,0 +1,540 @@
+/* ======================
+   SYSTEM REPORT CONTAINER
+   ====================== */
+.system-report-container {
+  padding: 0;
+  margin-left: -24px;
+  margin-right: -14px;
+  background: transparent;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Override Ant Design Content background */
+.system-report-container,
+.system-report-container > * {
+  background: transparent !important;
+}
+
+/* ======================
+   PAGE HEADER
+   ====================== */
+.system-report-header {
+  background: #fff !important;
+  border-radius: 12px;
+  padding: 24px 32px;
+  margin-top: 5px;
+  margin-bottom: 24px;
+  margin-left: 0 !important;
+  margin-right: 10px !important;
+  width: calc(100% - 10px) !important;
+  max-width: calc(100% - 10px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  box-sizing: border-box;
+}
+
+.system-report-header-left {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.system-report-main-title {
+  margin: 0 0 8px 0 !important;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.system-report-title-icon {
+  color: #22c55e;
+  font-size: 20px;
+}
+
+.system-report-subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  display: block;
+  margin: 0;
+}
+
+.system-report-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.system-report-date-label {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.system-report-date-picker {
+  border-radius: 8px;
+  background: #fff;
+}
+
+.system-report-date-picker .ant-picker {
+  background: #fff;
+  border-color: #d1d5db;
+}
+
+.system-report-date-picker .ant-picker-input > input {
+  background: #fff;
+}
+
+.system-report-export-btn {
+  background: #22c55e;
+  border-color: #22c55e;
+  border-radius: 8px;
+  height: 38px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.system-report-export-btn:hover {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+/* ======================
+   STATS SECTION
+   ====================== */
+.system-report-stats-section {
+  margin-bottom: 24px;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.report-stats-container {
+  background: transparent;
+  padding: 0;
+  margin-left: 0 !important;
+  margin-right: 10px !important;
+  width: calc(100% - 10px) !important;
+  max-width: calc(100% - 10px) !important;
+  box-sizing: border-box;
+}
+
+.report-stats-container .ant-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.report-stats-container .stats-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.report-stats-container .stats-row .stats-col {
+  box-sizing: border-box;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 5px;
+  flex: 0 0 calc((100% - 30px) / 5);
+  max-width: calc((100% - 30px) / 5);
+  min-width: 0;
+}
+
+.report-stats-container .stats-row .stats-col:first-child {
+  margin-left: 0 !important;
+}
+
+.report-stats-container .stats-row .stats-col:nth-child(5) {
+  margin-right: 10px;
+}
+
+.report-stats-container .stats-row .stats-col:nth-child(6) {
+  margin-right: 0;
+  margin-left: 0 !important;
+}
+
+/* Override for smaller screens to use Ant Design's responsive system */
+@media (max-width: 1200px) {
+  .report-stats-container .stats-row .stats-col {
+    flex: none;
+    max-width: none;
+  }
+}
+
+@media (max-width: 992px) {
+  .report-stats-container .stats-row .stats-col {
+    flex: none;
+    max-width: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-stats-container .stats-row .stats-col {
+    flex: none;
+    max-width: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .report-stats-container .stats-row .stats-col {
+    flex: none;
+    max-width: none;
+  }
+}
+
+.report-stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  padding-left: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+}
+
+.report-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.report-stat-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.report-stat-icon-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-stat-icon {
+  font-size: 20px;
+}
+
+.report-stat-value {
+  font-weight: 700;
+  font-size: 32px;
+  color: #111827;
+  margin: 36px 0 8px 0 !important;
+  line-height: 1.2;
+}
+
+.report-stat-change {
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ======================
+   BOTTOM SECTION (CHART & ACTIVITY)
+   ====================== */
+.system-report-bottom-section {
+  margin-bottom: 24px;
+  margin-left: 0 !important;
+  margin-right: 10px !important;
+  width: calc(100% - 10px) !important;
+  max-width: calc(100% - 10px) !important;
+  box-sizing: border-box;
+}
+
+.system-report-bottom-section .ant-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100%;
+}
+
+.system-report-bottom-section .ant-col {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box;
+}
+
+.system-report-bottom-section .chart-col {
+  padding-right: 0 !important;
+  margin-right: 20px;
+  width: calc(66.67% - 20px) !important; /* lg={16} = 16/24 = 66.67%, trừ 20px cho spacing */
+  flex: 0 0 calc(66.67% - 20px) !important;
+  max-width: calc(66.67% - 20px) !important;
+}
+
+.system-report-bottom-section .activity-col {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-right: 0;
+  width: 33.33% !important; /* lg={8} = 8/24 = 33.33% */
+  flex: 0 0 33.33% !important;
+  max-width: 33.33% !important;
+}
+
+/* ======================
+   CHART CARD
+   ====================== */
+.report-chart-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  height: 100%;
+  padding-right: 20px !important;
+  padding-left: 20px !important;
+}
+
+.report-chart-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+}
+
+.report-chart-card .ant-card-head-title {
+  padding: 0;
+}
+
+.report-chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.report-chart-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #111827;
+}
+
+.report-chart-card-title-icon {
+  color: #22c55e;
+  font-size: 18px;
+}
+
+.report-chart-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.report-chart-card-action-icon {
+  color: #6b7280;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.report-chart-card-action-icon:hover {
+  color: #22c55e;
+}
+
+.chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  background: #fafafa;
+  border-radius: 10px;
+  border: 1px dashed #d1d5db;
+  padding: 40px;
+  gap: 12px;
+}
+
+.chart-placeholder-icon {
+  font-size: 48px;
+  color: #9ca3af;
+}
+
+.chart-placeholder-text {
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ======================
+   ACTIVITY CARD
+   ====================== */
+.report-activity-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #fff;
+  height: 100%;
+  padding-right: 20px !important;
+  padding-left: 20px !important;
+}
+
+.report-activity-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+}
+
+.report-activity-card .ant-card-head-title {
+  padding: 0;
+}
+
+.report-activity-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.report-activity-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #111827;
+}
+
+.report-activity-card-title-icon {
+  color: #fbbf24;
+  font-size: 18px;
+}
+
+.report-activity-card-refresh-icon {
+  color: #6b7280;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.report-activity-card-refresh-icon:hover {
+  color: #22c55e;
+}
+
+.report-activity-card .ant-card-body {
+  padding: 24px;
+}
+
+.report-chart-card .ant-card-body {
+  padding: 24px;
+}
+
+.report-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.report-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.report-activity-item:last-child {
+  border-bottom: none;
+}
+
+.report-activity-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.report-activity-icon {
+  font-size: 20px;
+}
+
+.report-activity-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.report-activity-title {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.report-activity-desc {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.report-activity-time {
+  font-size: 12px;
+  color: #9ca3af;
+  white-space: nowrap;
+  margin-left: auto;
+  padding-left: 16px;
+}
+
+/* ======================
+   RESPONSIVE
+   ====================== */
+@media (max-width: 1200px) {
+  .report-stat-value {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .system-report-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .system-report-header-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .report-stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .report-stat-icon {
+    font-size: 18px;
+  }
+
+  .report-stat-value {
+    font-size: 24px;
+  }
+}

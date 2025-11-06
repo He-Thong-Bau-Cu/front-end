@@ -1,0 +1,260 @@
+/* Permission List Container */
+.permission-list-container {
+  width: 100%;
+}
+
+.permission-list-header {
+  background: #e6ffe6;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #d9f7be;
+}
+
+.permission-list-title {
+  flex: 1;
+}
+
+.permission-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Permission Table */
+.permission-table {
+  border-radius: 8px;
+}
+
+.permission-table .ant-table-thead > tr > th {
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+  color: #333;
+  padding: 12px 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.permission-table .ant-table-tbody > tr > td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 13px;
+}
+
+.permission-table .ant-table-tbody > tr:hover > td {
+  background: #f9f9f9;
+}
+
+/* Permission Item */
+.permission-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.permission-icon {
+  flex-shrink: 0;
+}
+
+.permission-icon-bg {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.permission-desc {
+  color: #666;
+  font-size: 13px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.permission-tag {
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border: none;
+}
+
+.permission-action {
+  display: flex;
+  gap: 8px;
+}
+
+.permission-edit-btn,
+.permission-delete-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+}
+
+.permission-edit-btn:hover {
+  background: #f6ffed;
+  border-color: #52c41a;
+}
+
+.permission-delete-btn:hover {
+  background: #fff2f0;
+  border-color: #ff4d4f;
+}
+
+/* Permission Detail */
+.permission-detail-container {
+  width: 100%;
+}
+
+.permission-detail-header {
+  background: #e6ffe6;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #d9f7be;
+}
+
+.permission-detail-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #999;
+}
+
+/* Stats Cards */
+.permission-stats-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.permission-stats-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.permission-layout-container {
+  display: grid;
+  grid-template-columns: 70% 28%;
+  gap: 2%;
+  width: 100%;
+  padding: 0 32px;
+  align-items: start;
+}
+
+/* Danh sách */
+.permission-list-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+}
+
+.permission-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.permission-list-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.permission-search {
+  width: 260px;
+  border-radius: 6px;
+  height: 32px;
+}
+
+.permission-bulk-btn {
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  color: #333;
+  border-radius: 6px;
+  height: 32px;
+}
+
+.permission-add-btn {
+  background: #52c41a !important;
+  border-color: #52c41a !important;
+  border-radius: 6px;
+  height: 32px;
+}
+
+/* Table */
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.permission-icon-bg {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.permission-desc {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Chi tiết quyền hạn */
+.permission-detail-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+}
+
+.permission-detail-empty {
+  margin-top: 40px;
+  text-align: center;
+  color: #666;
+}
+
+.permission-detail-empty .emoji {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .permission-list-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .permission-list-actions {
+    justify-content: center;
+  }
+  
+  .permission-list-actions .ant-input {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 8px;
+  }
+}
