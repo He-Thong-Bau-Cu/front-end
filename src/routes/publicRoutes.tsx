@@ -53,7 +53,6 @@ import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/Managemen
 import AttendanceConfirm from "@/pages/head_of_the_organizing_comittee/AttendanceConfirm";
 import HomePage from "@/pages/head_of_the_organizing_comittee/HomePage";
 
-
 export const publicRoutes = [
   {
     path: "/login",
@@ -155,10 +154,6 @@ export const publicRoutes = [
     ],
   },
 
-  {
-    path: "/head_of_the_Organizing_committee",
-    element: <HomePage />,
-  },
 
   {
     path: "/head_of_the_Organizing_committee",
@@ -188,10 +183,9 @@ export const publicRoutes = [
       { path: "list_meeting", element: <MeetingListPage /> },
       { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
       { path: "election_tracking", element: <VotingDashboardPage /> },
-
-
     ],
-  },
+  }, 
+ 
 
   {
     path: "/vote-success",
