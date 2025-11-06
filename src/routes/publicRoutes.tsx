@@ -52,6 +52,11 @@ import PublicRoute from "../components/auth/PublicRoute";
 import Forbidden403 from "../pages/Forbidden403";
 import NotFound404 from "../pages/NotFound404";
 import LoginScreen from "../pages/user/Login";
+import ManagementPermission from "@/pages/admin/ManagementPermission";
+import ManagementData from "@/pages/admin/ManagementData";
+import SystemSettings from "@/pages/admin/SystemSettings";
+import SystemReport from "@/pages/admin/SystemReport";
+
 
 export const publicRoutes = [
   {
@@ -74,6 +79,10 @@ export const publicRoutes = [
       { path: "user", element: <ManagementUser /> },
       { path: "statistics", element: <Statistics /> },
       { path: "roles", element: <ManagementRole /> },
+      { path: "permissions", element: <ManagementPermission /> },
+      { path: "data", element: <ManagementData /> },
+      { path: "settings", element: <SystemSettings /> },
+      { path: "reports", element: <SystemReport /> },
 
     ],
   },
