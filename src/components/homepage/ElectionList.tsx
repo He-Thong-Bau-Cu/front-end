@@ -1,126 +1,98 @@
+import { CalendarOutlined } from "@ant-design/icons";
+import { Card, List, Tag, Typography } from "antd";
 import React from "react";
-import { Card, List, Tag, Space, Button, Empty, Typography } from "antd";
-import { ThunderboltOutlined, CalendarOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 
-export interface ElectionItem {
-    id?: string | number;
-    title?: string;
-    startDate?: string;
-    endDate?: string;
-    status?: string;
-    role?: string;
+interface ElectionItem {
+    id: string | number;
+    title: string;
+    startDate: string;
+    status: "upcoming" | "completed";
+    role: string;
+    actionLabel: string;
+    actionType: "green" | "blue";
 }
 
-interface ElectionListProps {
-    elections: ElectionItem[];
-}
+const ElectionList: React.FC = () => {
+    const elections: ElectionItem[] = [
+        {
+            id: 1,
+            title: "Bầu cử nghị quyết số 30",
+            startDate: "15/11/2025",
+            status: "upcoming",
+            role: "Chủ tọa",
+            actionLabel: "Xem nghị quyết",
+            actionType: "green",
+        },
+        {
+            id: 2,
+            title: "Bầu cử Phó chủ tịch hội đồng quản trị khóa 10",
+            startDate: "20/11/2025",
+            status: "upcoming",
+            role: "Đại biểu",
+            actionLabel: "Xem ứng viên",
+            actionType: "green",
+        },
+        {
+            id: 3,
+            title: "Bầu cử bãi nhiệm tổng giám đốc",
+            startDate: "25/08/2025",
+            status: "completed",
+            role: "Quan sát viên",
+            actionLabel: "Xem kết quả",
+            actionType: "blue",
+        },
+        {
+            id: 4,
+            title: "Bầu cử tăng vốn đầu tư",
+            startDate: "10/05/2025",
+            status: "completed",
+            role: "Thành viên HĐQT",
+            actionLabel: "Xem kết quả",
+            actionType: "blue",
+        },
+    ];
 
-const ElectionList: React.FC<ElectionListProps> = ({ elections }) => {
     return (
         <Card
             title={
-                <Space>
-                    <ThunderboltOutlined style={{ color: "#3ca860" }} />
-                    <Text strong style={{ fontSize: 17, color: "#124d2d" }}>
-                        Các cuộc bầu cử của bạn
-                    </Text>
-                </Space>
+                <Text strong className="election-title">
+                    Các kỳ bầu cử
+                </Text>
             }
-            style={{
-                borderRadius: 16,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-                border: "1px solid #e6f4ea",
-            }}
-            bodyStyle={{ paddingTop: 0 }}
+            extra={
+                <Text className="view-all">Xem tất cả →</Text>
+            }
+            className="election-card"
         >
-            {elections.length ? (
-                <List
-                    itemLayout="vertical"
-                    dataSource={elections}
-                    renderItem={(item) => (
-                        <List.Item
-                            key={item.id}
-                            style={{
-                                borderBottom: "1px solid #f0f4f2",
-                                paddingBottom: 12,
-                                marginBottom: 16,
-                            }}
-                            actions={[
-                                <Button
-                                    key="detail"
-                                    type="link"
-                                    style={{ color: "#2e7d32", fontWeight: 500 }}
-                                >
-                                    Chi tiết
-                                </Button>,
-                                <Button
-                                    key="action"
-                                    type="primary"
-                                    style={{
-                                        background: "#3ca860",
-                                        borderColor: "#3ca860",
-                                        borderRadius: 8,
-                                        fontWeight: 500,
-                                    }}
-                                >
-                                    Tham gia
-                                </Button>,
-                            ]}
-                        >
-                            <List.Item.Meta
-                                title={
-                                    <Text strong style={{ fontSize: 16, color: "#124d2d" }}>
-                                        {item.title}
-                                    </Text>
-                                }
-                                description={
-                                    <Space size={12} wrap>
-                                        <Tag
-                                            color="green"
-                                            style={{
-                                                background: "#e8f5e9",
-                                                borderColor: "#a5d6a7",
-                                                color: "#2e7d32",
-                                                fontWeight: 500,
-                                            }}
-                                        >
-                                            Vai trò: {item.role?.toUpperCase()}
-                                        </Tag>
-                                        <Tag
-                                            color={
-                                                item.status === "active"
-                                                    ? "green"
-                                                    : item.status === "upcoming"
-                                                        ? "orange"
-                                                        : "blue"
-                                            }
-                                            style={{
-                                                textTransform: "capitalize",
-                                                fontWeight: 500,
-                                            }}
-                                        >
-                                            {item.status}
-                                        </Tag>
-                                        <Space size={6}>
-                                            <CalendarOutlined style={{ color: "#388e3c" }} />
-                                            <Text style={{ color: "#333" }}>
-                                                {item.startDate} → {item.endDate}
-                                            </Text>
-                                        </Space>
-                                    </Space>
-                                }
-                            />
-                        </List.Item>
-                    )}
-                />
-            ) : (
-                <Empty
-                    description="Chưa có cuộc bầu cử nào"
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
-            )}
+            <List
+                dataSource={elections}
+                renderItem={(item) => (
+                    <List.Item className="election-item">
+                        <div className="election-header">
+                            <Text strong className="election-item-title">
+                                {item.title}
+                            </Text>
+                            <Tag
+                                className={`status-tag ${item.status === "upcoming" ? "tag-upcoming" : "tag-completed"
+                                    }`}
+                            >
+                                {item.status === "upcoming" ? "Sắp diễn ra" : "Đã hoàn thành"}
+                            </Tag>
+                        </div>
+
+                        <div className="election-meta">
+                            <CalendarOutlined className="calendar-icon" />
+                            <Text type="secondary" className="election-date">
+                                Ngày bầu cử: {item.startDate}
+                            </Text>
+                        </div>
+                        <Tag className="role-tag">Vai trò: {item.role}</Tag>
+
+                    </List.Item>
+                )}
+            />
         </Card>
     );
 };

@@ -1,36 +1,18 @@
-import React, { useState } from "react";
-import { Layout, Row, Col, Space } from "antd";
-import HomeHeader from "@/components/homepage/HomeHeader";
 import ElectionList from "@/components/homepage/ElectionList";
-import WelcomeCard from "@/components/homepage/WelcomeCard";
+import HomeHeader from "@/components/homepage/HomeHeader";
 import QuickActions from "@/components/homepage/QuickActions";
-import "../style/HomePage.model.css"
+import WelcomeCard from "@/components/homepage/WelcomeCard";
+import { Col, Layout, Row, Space } from "antd";
+import React from "react";
+import "../style/HomePage.model.css";
 
 
 const { Content } = Layout;
 
 const HomePage: React.FC = () => {
-    const [elections] = useState<ElectionItem[]>([
-        {
-            id: 1,
-            title: "Đại hội cổ đông thường niên 2025",
-            startDate: "15/03/2025",
-            endDate: "16/03/2025",
-            status: "active",
-            role: "Chủ tọa",
-        },
-        {
-            id: 2,
-            title: "Bầu ban kiểm soát nhiệm kỳ 2025-2030",
-            startDate: "20/04/2025",
-            endDate: "21/04/2025",
-            status: "upcoming",
-            role: "Đại biểu",
-        },
-    ]);
+
 
     const userName = "Nguyễn Văn Bảnh";
-    const userRoleCode = "ADMIN";
 
     return (
         <Layout
@@ -41,11 +23,11 @@ const HomePage: React.FC = () => {
                 paddingBottom: "32px",
             }}
         >
-            <HomeHeader userName={userName} userRoleCode={userRoleCode} />
+            <HomeHeader />
             <Content style={{ padding: "40px 48px" }}>
                 <Row gutter={[24, 24]}>
                     <Col xs={24} lg={16}>
-                        <ElectionList elections={elections} />
+                        <ElectionList />
                     </Col>
                     <Col xs={24} lg={8}>
                         <Space direction="vertical" style={{ width: "100%" }} size={24}>

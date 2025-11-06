@@ -61,7 +61,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
             open={open}
             onCancel={onClose}
             footer={null}
-            width={760}
+            width={660}
             centered
             className="profile-modal"
             style={{
@@ -73,7 +73,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
                 style={{
                     display: "flex",
                     minHeight: 460,
-                    background: "linear-gradient(180deg, #f8fdf8, #ffffff)",
+                    // background: "linear-gradient(180deg, #f8fdf8, #ffffff)",
                     borderRadius: 12,
                     overflow: "hidden",
                 }}
@@ -117,8 +117,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
                 <div
                     style={{
                         flex: 1,
-                        padding: "24px 32px",
-                        minHeight: 560, // 👈 chiều cao cố định tối thiểu
+                        padding: "0px 32px",
+                        minHeight: 470, // 👈 chiều cao cố định tối thiểu
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "space-between",
@@ -162,12 +162,19 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
                                         icon={!user?.image ? <UserOutlined /> : undefined}
                                         style={{
                                             backgroundColor: "#eaf5ea",
-                                            marginTop: 12,
-                                            marginBottom: 16,
+                                            marginTop: 20,
+                                            marginBottom: 35,
                                         }}
                                     />
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        gap: 12, // khoảng cách giữa 2 nút
+                                    }}
+                                >
                                     <Upload
                                         listType="picture"
                                         maxCount={1}
@@ -177,16 +184,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
                                     >
                                         <Button icon={<PictureOutlined />}>Tải ảnh mới</Button>
                                     </Upload>
-                                    <Button danger style={{ marginTop: 12 }}>
-                                        Xóa ảnh
-                                    </Button>
+
+                                    <Button danger>Xóa ảnh</Button>
                                 </div>
+
 
 
                                 <p style={{ color: "gray", marginTop: 16 }}>
                                     Ảnh JPG, PNG hoặc GIF. Dung lượng tối đa 5MB.
                                 </p>
-                                <div style={{ textAlign: "right", marginTop: 16 }}>
+                                <div style={{ textAlign: "right", marginTop: 30 }}>
                                     <Button onClick={onClose} style={{ marginRight: 8 }}>
                                         Hủy
                                     </Button>
@@ -199,7 +206,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
 
                         {activeTab === "security" && (
                             <motion.div key="security" {...fadeMotion}>
-                                <Title level={5}>Bảo mật tài khoản</Title>
+                                <Title style={{ marginTop: 4 }} level={4}>Bảo mật tài khoản</Title>
                                 <Form layout="vertical" style={{ marginTop: 16 }}>
                                     <Form.Item label="Mật khẩu hiện tại">
                                         <Input.Password placeholder="••••••••" />
@@ -210,7 +217,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
                                     <Form.Item label="Xác nhận mật khẩu mới">
                                         <Input.Password placeholder="••••••••" />
                                     </Form.Item>
-                                    <div style={{ textAlign: "right" }}>
+                                    <div style={{ textAlign: "right", paddingTop: 50 }}>
                                         <Button type="primary" className="btn-save">
                                             Lưu thay đổi
                                         </Button>
