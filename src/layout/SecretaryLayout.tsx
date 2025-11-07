@@ -38,7 +38,7 @@ const SecretaryLayout = () => {
                 <Content
                     style={{
                         flex: 1,
-                        padding: '100px 24px 24px',
+                        padding: '10px 24px 24px',
                         background: '#EFF8EF',
                         overflowY: 'auto',
                         overflowX: 'hidden',
