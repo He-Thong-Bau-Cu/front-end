@@ -8,6 +8,11 @@ import {
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import ElectionService from "@/services/ElectionService";
+import AuthService from "@/services/AuthService";
+import { useNavigate } from "react-router-dom";
+import { PATH } from "@/enums/PATH";
+import { setLocalStorage } from "@/utils/auth";
+import { jwtDecode } from "jwt-decode";
 
 const { Title, Text, Link } = Typography;
 
@@ -15,39 +20,35 @@ export default function LoginScreen() {
   const [form] = Form.useForm();
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchData();
+
   }, []);
 
-  const fetchData = async () => {
-    try {
-      let body = {
-        title: "Đại hội đồng cổ đông 2025",
-        type: "Annual Meeting",
-        startDate: "2025-10-15T08:00:00Z",
-        endDate: "2025-10-15T12:00:00Z",
-        status: "active",
-        companyType: "Joint-stock",
-      };
-      const response = await ElectionService.search(body);
-      console.log(response);
-    } catch (error) {
-      notify("Đã có lỗi xảy ra khi tải dữ liệu", "error");
-    }
-  };
-
-  const onFinish = (values: any) => {
+  const onFinish = async (values: any) => {
     console.log("Login values:", values);
-    setTimeout(() => {
+    try {
       showLoading();
-      setTimeout(() => {
-        hideLoading();
-        notify("Đăng nhập thành công!", "success");
-      }, 1000);
-    }, 500);
-
-    // Xử lý đăng nhập ở đây
+      const response = await AuthService.login(values);
+      if(response.data.success){
+        if(response.data.data.requireTwoFa){
+          navigate(PATH.VERIFY_EMAIL, {state: {userId: response.data.data.userId, isSetting: response.data.data.isSetting} });
+          notify("Đang chuyển hướng ...", "info");
+        }else{
+          const data = response.data.data;
+          const decoded = jwtDecode(data.accessToken) as any;
+          setLocalStorage(data.accessToken, decoded.sub, decoded.role, decoded.fullname, decoded.permissions || []);
+          notify(data.message, "success");
+        }
+      }else{
+        notify(response.data.message, "error");
+      }
+    } catch (error) {
+      notify("Đăng nhập thất bại. Vui lòng thử lại.", "error");
+    }finally{
+      hideLoading();
+    }
   };
 
   // Reset body styles

@@ -14,35 +14,35 @@ export default class BaseService<T = any> {
     });
     this.endpoint = endpoint;
 
-    // this.api.interceptors.request.use(
-    //   (config: InternalAxiosRequestConfig) => {
-    //     const token = localStorage.getItem("accessToken");
-    //     if (token) {
-    //       config.headers.Authorization = `Bearer ${token}`;
-    //     }
-    //     return config;
-    //   },
-    //   (error) => Promise.reject(error)
-    // );
+    this.api.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
 
-    // this.api.interceptors.response.use(
-    //   (response: AxiosResponse) => response.data,
-    //   (error) => {
-    //     if (error.response?.status === 401) {
-    //       console.warn("Unauthorized! Token có thể đã hết hạn.");
+    this.api.interceptors.response.use(
+      (response: AxiosResponse) => response.data,
+      (error) => {
+        if (error.response?.status === 401) {
+          console.warn("Unauthorized! Token có thể đã hết hạn.");
 
-    //       // ✅ Chỉ redirect nếu KHÔNG đang ở trang login
-    //       if (window.location.pathname !== "/login") {
-    //         localStorage.removeItem("accessToken");
-    //         window.location.href = "/login";
-    //       }
-    //     }
+          // ✅ Chỉ redirect nếu KHÔNG đang ở trang login
+          if (window.location.pathname !== "/login") {
+            localStorage.removeItem("accessToken");
+            window.location.href = "/login";
+          }
+        }
 
 
-    //     console.error("API Error:", error.response.data || error.message);
-    //     return Promise.reject(error);
-    //   }
-    // );
+        console.error("API Error:", error.response.data || error.message);
+        return Promise.reject(error);
+      }
+    );
   }
 
   // GET toàn bộ
