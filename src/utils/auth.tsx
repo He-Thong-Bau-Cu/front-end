@@ -15,6 +15,20 @@ interface LoginData {
   refreshToken?: string;
 }
 
+export const setLocalStorage = (
+  token: string,
+  userId: string,
+  role: string,
+  name: string,
+  permissions: string[]
+) => {
+  localStorage.setItem("accessToken", token);
+  localStorage.setItem("userId", userId);
+  localStorage.setItem("role", role);
+  localStorage.setItem("name", name);
+  localStorage.setItem("permissions", JSON.stringify(permissions));
+};
+
 export const getCurrentUser = (): any | null => {
   try {
     const user = localStorage.getItem("user");

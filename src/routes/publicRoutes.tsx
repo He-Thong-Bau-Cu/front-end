@@ -56,6 +56,7 @@ import ManagementPermission from "@/pages/admin/ManagementPermission";
 import ManagementData from "@/pages/admin/ManagementData";
 import SystemSettings from "@/pages/admin/SystemSettings";
 import SystemReport from "@/pages/admin/SystemReport";
+import ElectionDashboard from "@/pages/user/DashboardUser";
 
 
 export const publicRoutes = [
@@ -99,6 +100,14 @@ export const publicRoutes = [
     element: (
       <PublicRoute>
         <VerifyEmailScreen />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <PublicRoute>
+        <ElectionDashboard />
       </PublicRoute>
     ),
   },
@@ -198,8 +207,8 @@ export const publicRoutes = [
       { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
       { path: "election_tracking", element: <VotingDashboardPage /> },
     ],
-  }, 
- 
+  },
+
 
   {
     path: "/vote-success",
