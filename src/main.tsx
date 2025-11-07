@@ -9,9 +9,9 @@ dayjs.locale("vi");
 import viVN from 'antd/locale/vi_VN';
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  // <StrictMode>
     <ConfigProvider locale={viVN}>
       <App />
     </ConfigProvider>
-  </StrictMode>,
+  // </StrictMode>,
 )
