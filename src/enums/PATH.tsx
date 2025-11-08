@@ -6,4 +6,5 @@ export enum PATH {
   FORGOT_PASSWORD = "/forgot-password",
   RESET_PASSWORD = "/reset-password",
   VERIFY_EMAIL = "/verify-email",
+  HOME = "/home",
 }

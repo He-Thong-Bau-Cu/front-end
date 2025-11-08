@@ -10,7 +10,7 @@ export default class BaseService<T = any> {
 
   constructor(endpoint: string) {
     this.api = axios.create({
-      baseURL: `http://localhost:3000/`,
+      baseURL: import.meta.env.VITE_API_URL,
     });
     this.endpoint = endpoint;
 

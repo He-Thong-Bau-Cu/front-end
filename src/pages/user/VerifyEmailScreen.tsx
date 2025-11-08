@@ -7,6 +7,7 @@ import { useNotification } from "@/contexts/NotificationContext";
 import { setLocalStorage } from "@/utils/auth";
 import { jwtDecode } from "jwt-decode";
 import { PATH } from "@/enums/PATH";
+import { time } from "console";
 
 const { Title, Text, Link } = Typography;
 
@@ -27,12 +28,8 @@ export default function VerifyEmailScreen() {
   useEffect(() => {
     if (isSetting) {
       setStep("otp");
-      if (step === "otp") {
-        const timer =
-          countdown > 0 && setInterval(() => setCountdown((c) => c - 1), 1000);
-        return () => clearInterval(timer as any);
-      }
     } else {
+      if(step === "otp") return;
       fetchQrCode(userId);
       setStep("qr");
     }
@@ -96,7 +93,7 @@ export default function VerifyEmailScreen() {
         const data = response.data.data;
         const decoded = jwtDecode(data.accessToken) as any;
         setLocalStorage(data.accessToken, decoded.sub, decoded.role, decoded.fullname, decoded.permissions || []);
-        navigate(PATH.DASHBOARD);
+        navigate(PATH.HOME);
       }else{
         notify(response.data.message, "error");
       }

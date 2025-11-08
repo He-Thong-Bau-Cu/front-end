@@ -87,27 +87,12 @@ const HomePage: React.FC = () => {
                     initial="hidden"
                     animate="visible"
                 >
-               
-
-                    {/* Statistics Dashboard */}
-                    <motion.div variants={itemVariants} style={{ marginBottom: 24 }}>
-                        <StatisticsDashboard />
-                    </motion.div>
 
                     {/* Main Content Row */}
                     <Row gutter={[32, 32]}>
                         {/* Left Column - Main Content */}
                         <Col xs={24} lg={16}>
                             <Space direction="vertical" size={24} style={{ width: "100%" }}>
-                                {/* Countdown Timer */}
-                                <motion.div variants={itemVariants}>
-                                    <CountdownTimer
-                                        targetDate="2025-11-15T00:00:00"
-                                        electionTitle="Bầu cử nghị quyết số 30"
-                                    />
-                                </motion.div>
-
-                                {/* Election List */}
                                 <motion.div variants={itemVariants}>
                                     <ElectionList />
                                 </motion.div>
@@ -123,12 +108,6 @@ const HomePage: React.FC = () => {
                             >
                                 <motion.div variants={itemVariants}>
                                     <WelcomeCard userName={userName} />
-                                </motion.div>
-                                <motion.div variants={itemVariants}>
-                                    <QuickActions />
-                                </motion.div>
-                                <motion.div variants={itemVariants}>
-                                    <ActivityTimeline />
                                 </motion.div>
                             </Space>
                         </Col>
