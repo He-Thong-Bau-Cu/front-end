@@ -38,7 +38,6 @@ export default class BaseService<T = any> {
           }
         }
 
-
         console.error("API Error:", error.response.data || error.message);
         return Promise.reject(error);
       }
@@ -72,11 +71,10 @@ export default class BaseService<T = any> {
 
   // DELETE
   async delete(id: string | number): Promise<void> {
-    await this.api.delete(`${this.endpoint}/delete/${id}`);
+    return await this.api.delete(`${this.endpoint}/delete/${id}`);
   }
 
-
+  async detail(id: string | number): Promise<T> {
+    return await this.api.get(`${this.endpoint}/detail/${id}`);
+  }
 }
-
-
-

@@ -7,15 +7,10 @@ const { Title, Text } = Typography;
 
 interface WelcomeCardProps {
     userName: string;
+    stats: any;
 }
 
-const WelcomeCard: React.FC<WelcomeCardProps> = ({ userName }) => {
-    // Mock data - có thể lấy từ API sau
-    const stats = {
-        totalElections: 12,
-        upcomingElections: 3,
-        completedElections: 9,
-    };
+const WelcomeCard: React.FC<WelcomeCardProps> = ({ userName, stats }) => {
 
     return (
         <Card

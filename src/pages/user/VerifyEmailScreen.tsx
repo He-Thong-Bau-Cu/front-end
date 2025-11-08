@@ -4,10 +4,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useLoading } from "@/contexts/LoadingContext";
 import AuthService from "@/services/AuthService";
 import { useNotification } from "@/contexts/NotificationContext";
-import { setLocalStorage } from "@/utils/auth";
+import { getUserLogin, setLocalStorage } from "@/utils/auth";
 import { jwtDecode } from "jwt-decode";
 import { PATH } from "@/enums/PATH";
 import { time } from "console";
+import { USER_ROLE } from "@/enums/STATUS";
 
 const { Title, Text, Link } = Typography;
 
@@ -29,7 +30,7 @@ export default function VerifyEmailScreen() {
     if (isSetting) {
       setStep("otp");
     } else {
-      if(step === "otp") return;
+      if (step === "otp") return;
       fetchQrCode(userId);
       setStep("qr");
     }
@@ -79,22 +80,37 @@ export default function VerifyEmailScreen() {
       showLoading();
       const code = otp.join("");
       if (code.length !== 6) return alert("Vui lòng nhập đủ 6 chữ số");
-      if(!userId) {
+      if (!userId) {
         notify("ID người dùng không hợp lệ.", "error");
         return;
       }
       let body = {
         userId: userId,
         token: code,
-      }
+      };
       const response = await AuthService.twoFaLogin(body);
-      if(response.data.success){
+      if (response.data.success) {
         notify("Đăng nhập thành công!!!", "success");
         const data = response.data.data;
         const decoded = jwtDecode(data.accessToken) as any;
-        setLocalStorage(data.accessToken, decoded.sub, decoded.role, decoded.fullname, decoded.permissions || []);
-        navigate(PATH.HOME);
-      }else{
+        setLocalStorage(
+          data.accessToken,
+          decoded.sub,
+          decoded.role,
+          decoded.fullname,
+          decoded.permissions || []
+        );
+        if (decoded.role === USER_ROLE.ADMIN) {
+        } else if (decoded.role === USER_ROLE.PRESIDE) {
+        } else {
+          const user = await getUserLogin();
+          if (user && user.isTempPassword) {
+            navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+          } else {
+            navigate(PATH.HOME);
+          }
+        }
+      } else {
         notify(response.data.message, "error");
       }
     } catch (error) {

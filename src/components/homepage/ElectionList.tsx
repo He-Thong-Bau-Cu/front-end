@@ -9,11 +9,11 @@ import {
 } from "@ant-design/icons";
 import { Card, List, Tag, Typography, Button, Space, Tooltip, Progress } from "antd";
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useEffect } from "react";
 
 const { Text } = Typography;
 
-interface ElectionItem {
+export interface ElectionItem {
     id: string | number;
     title: string;
     startDate: string;
@@ -27,59 +27,11 @@ interface ElectionItem {
     totalVoters?: number;
 }
 
-const ElectionList: React.FC = () => {
-    const elections: ElectionItem[] = [
-        {
-            id: 1,
-            title: "Bầu cử nghị quyết số 30",
-            startDate: "15/11/2025",
-            endDate: "20/11/2025",
-            status: "upcoming",
-            role: "Chủ tọa",
-            actionLabel: "Xem nghị quyết",
-            actionType: "green",
-            participants: 45,
-            totalVoters: 50,
-        },
-        {
-            id: 2,
-            title: "Bầu cử Phó chủ tịch hội đồng quản trị khóa 10",
-            startDate: "20/11/2025",
-            endDate: "25/11/2025",
-            status: "upcoming",
-            role: "Đại biểu",
-            actionLabel: "Xem ứng viên",
-            actionType: "green",
-            participants: 38,
-            totalVoters: 45,
-        },
-        {
-            id: 3,
-            title: "Bầu cử bãi nhiệm tổng giám đốc",
-            startDate: "25/08/2025",
-            endDate: "30/08/2025",
-            status: "completed",
-            role: "Quan sát viên",
-            actionLabel: "Xem kết quả",
-            actionType: "blue",
-            participants: 52,
-            totalVoters: 55,
-            progress: 100,
-        },
-        {
-            id: 4,
-            title: "Bầu cử tăng vốn đầu tư",
-            startDate: "10/05/2025",
-            endDate: "15/05/2025",
-            status: "completed",
-            role: "Thành viên HĐQT",
-            actionLabel: "Xem kết quả",
-            actionType: "blue",
-            participants: 40,
-            totalVoters: 42,
-            progress: 100,
-        },
-    ];
+interface ElectionListProps {
+  data: ElectionItem[];
+}
+
+const ElectionList: React.FC<ElectionListProps> = ({data}) => {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -123,7 +75,7 @@ const ElectionList: React.FC = () => {
             }}
         >
             <List
-                dataSource={elections}
+                dataSource={data}
                 renderItem={(item, index) => (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}

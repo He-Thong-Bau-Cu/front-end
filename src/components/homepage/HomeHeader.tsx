@@ -18,6 +18,7 @@ import { MenuProps } from "antd/lib";
 import React, { useEffect, useState } from "react";
 import { User } from "../../types/User.interface";
 import ProfileModal from "./ProfileModal";
+import { getUserLogin } from "@/utils/auth";
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -29,11 +30,9 @@ const HomeHeader: React.FC = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const fakeUserId = "690cb011b6575af1f9ef7e99";
-                const userData = await UserService.getByUserId(fakeUserId);
+                const userData = await getUserLogin();
                 setUser(userData);
             } catch (error) {
-                console.error("Không thể lấy thông tin user:", error);
                 message.error("Không thể tải thông tin người dùng!");
             }
         };
@@ -41,8 +40,7 @@ const HomeHeader: React.FC = () => {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("userId");
+        localStorage.clear();
         window.location.href = "/login";
     };
 
@@ -75,7 +73,7 @@ const HomeHeader: React.FC = () => {
 
     return (
         <>
-            <Header 
+            <Header
                 className="home-header"
                 style={{
                     position: "sticky",

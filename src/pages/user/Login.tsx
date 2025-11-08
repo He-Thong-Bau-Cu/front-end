@@ -11,7 +11,7 @@ import ElectionService from "@/services/ElectionService";
 import AuthService from "@/services/AuthService";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "@/enums/PATH";
-import { setLocalStorage } from "@/utils/auth";
+import { getUserLogin, setLocalStorage } from "@/utils/auth";
 import { jwtDecode } from "jwt-decode";
 import { USER_ROLE } from "@/enums/STATUS";
 
@@ -23,38 +23,49 @@ export default function LoginScreen() {
   const { notify } = useNotification();
   const navigate = useNavigate();
 
-  useEffect(() => {
-
-  }, []);
+  useEffect(() => {}, []);
 
   const onFinish = async (values: any) => {
-    console.log("Login values:", values);
     try {
       showLoading();
       const response = await AuthService.login(values);
-      if(response.data.success){
-        if(response.data.data.requireTwoFa){
-          navigate(PATH.VERIFY_EMAIL, {state: {userId: response.data.data.userId, isSetting: response.data.data.isSetting} });
+      if (response.data.success) {
+        if (response.data.data.requireTwoFa) {
+          navigate(PATH.VERIFY_EMAIL, {
+            state: {
+              userId: response.data.data.userId,
+              isSetting: response.data.data.isSetting,
+            },
+          });
           notify("Đang chuyển hướng ...", "info");
-        }else{
+        } else {
           const data = response.data.data;
           const decoded = jwtDecode(data.accessToken) as any;
-          setLocalStorage(data.accessToken, decoded.sub, decoded.role, decoded.fullname, decoded.permissions || []);
+          setLocalStorage(
+            data.accessToken,
+            decoded.sub,
+            decoded.role,
+            decoded.fullname,
+            decoded.permissions || []
+          );
           notify(data.message, "success");
-          if(decoded.role === USER_ROLE.ADMIN){
-
-          }else if (decoded.role === USER_ROLE.PRESIDE){
-            
-          }else{
-            navigate(PATH.HOME)
+          if (decoded.role === USER_ROLE.ADMIN) {
+          } else if (decoded.role === USER_ROLE.PRESIDE) {
+          } else {
+            const user = await getUserLogin();
+            if (user && user.isTempPassword) {
+              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+            } else {
+              navigate(PATH.HOME);
+            }
           }
         }
-      }else{
+      } else {
         notify(response.data.message, "error");
       }
     } catch (error) {
       notify("Đăng nhập thất bại. Vui lòng thử lại.", "error");
-    }finally{
+    } finally {
       hideLoading();
     }
   };
