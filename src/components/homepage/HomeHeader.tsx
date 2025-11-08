@@ -75,7 +75,15 @@ const HomeHeader: React.FC = () => {
 
     return (
         <>
-            <Header className="home-header">
+            <Header 
+                className="home-header"
+                style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1000,
+                    width: "100%",
+                }}
+            >
                 <Space size={16} align="center">
                     <div className="sidebar-logo-circle">
                         <img src={logo} alt="Logo trang web" width="110" height="160" />

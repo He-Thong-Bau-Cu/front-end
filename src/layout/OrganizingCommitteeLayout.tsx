@@ -22,7 +22,7 @@ const OrganizingCommitteeLayout = () => {
     }, [location.pathname]);
 
     return (
-        <Layout style={{ minHeight: '100vh', width: '100vw', overflow: 'hidden' }}>
+        <Layout style={{ minHeight: '10vh', width: '100vw', overflow: 'hidden' }}>
             <Sideber onMenuSelect={setPageTitle} />
 
             <Layout style={{
