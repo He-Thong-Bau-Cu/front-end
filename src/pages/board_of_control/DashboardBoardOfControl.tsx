@@ -1,25 +1,18 @@
-import React from "react";
-import { Row, Col } from "antd";
+import { Col, Row } from "antd";
 import {
-  BKSUserInfo,
-  SignatureRequest,
   LiveMonitor,
   SignatureLog,
+  SignatureRequest
 } from "../../types/DashBoardBoardOfControl.interface";
 
-import  Header from "../../components/board_of_control/dashboard/Header";
-import SignatureRequests from "../../components/board_of_control/dashboard/SignatureRequests";
-import ReportStorage from "../../components/board_of_control/dashboard/ReportStorage";
+import Header from "../../components/board_of_control/dashboard/Header";
 import LiveMonitoring from "../../components/board_of_control/dashboard/LiveMonitoring";
+import ReportStorage from "../../components/board_of_control/dashboard/ReportStorage";
 import SignatureLogs from "../../components/board_of_control/dashboard/SignatureLogs";
+import SignatureRequests from "../../components/board_of_control/dashboard/SignatureRequests";
 import "../../style/board-of-control/DashBoard.model.css";
 
 export default function DashboardBoardOfControlPage() {
-  const user: BKSUserInfo = {
-    name: "Nhân viên Lưu Hồng Nhật",
-    role: "Ban kiểm soát",
-    department: "Hội đồng Bầu cử khóa 10",
-  };
 
   const requests: SignatureRequest[] = [
     {
@@ -55,9 +48,9 @@ export default function DashboardBoardOfControlPage() {
 
   return (
     <div className="bks-page">
-      <Header user={user} />
+      <Header />
 
-      <Row gutter={[20, 20]} align="top">
+      <Row gutter={[20, 20]} align="top" style={{ paddingTop: 24 }}>
         <Col xs={24} lg={16}>
           <SignatureRequests data={requests} />
           <div style={{ height: 20 }}></div>

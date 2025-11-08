@@ -46,7 +46,7 @@ export default class BaseService<T = any> {
 
   // GET toàn bộ
   async getAll(params?: Record<string, any>): Promise<T[]> {
-    return await this.api.get(`${this.endpoint}/all`, { params });
+    return await this.api.get(`${this.endpoint}`, { params });
   }
 
   // GET theo id
