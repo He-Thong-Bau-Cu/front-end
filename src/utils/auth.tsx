@@ -1,3 +1,4 @@
+import UserService from "@/services/UserService";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
 interface CustomJwtPayload extends JwtPayload {
@@ -51,6 +52,21 @@ export const getCurrentUser = (): any | null => {
   } catch (error: any) {
     console.error("Error getting current user:", error.message);
     return null;
+  }
+};
+
+export const getUserLogin = async () => {
+  try {
+    const userId = localStorage.getItem("userId") || "";
+    const response = await UserService.detail(userId);
+    if(response.success){
+      return response.data;
+    }else{
+      console.error("Failed to fetch user details:", response.message);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting user ID:", error);
   }
 };
 

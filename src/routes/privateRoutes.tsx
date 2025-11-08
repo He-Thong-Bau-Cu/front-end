@@ -41,6 +41,9 @@ import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
 import ManagementDocument from "@/pages/secretary/ManagementDocument";
 import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
 import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
+import FirstTimeChangePasswordScreen from "@/pages/user/ChangePasswordFirstTime";
+import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
+import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
 import Authorization from "@/pages/voter/Authorization";
 import BallotList from "@/pages/voter/BallotList";
 import CumulativeVoting from "@/pages/voter/CumulativeVoting";
@@ -184,6 +187,16 @@ export const privateRoutes = [
       {
         index: true,
         element: <HomePage />,
+      },
+    ],
+  },
+  {
+    path: "/change-password-first-time",
+    element: <PrivateRoute />,
+    children: [
+      {
+        index: true,
+        element: <FirstTimeChangePasswordScreen />,
       },
     ],
   },
