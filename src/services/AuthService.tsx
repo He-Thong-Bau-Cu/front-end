@@ -6,7 +6,7 @@ class AuthService {
     protected endpoint: string;
     constructor() {
       this.api = axios.create({
-      baseURL: `http://localhost:3000/`,
+      baseURL: import.meta.env.VITE_API_URL,
     });
     this.endpoint = 'auth';
     }

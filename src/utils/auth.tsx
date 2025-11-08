@@ -22,6 +22,7 @@ export const setLocalStorage = (
   name: string,
   permissions: string[]
 ) => {
+  localStorage.setItem("user", JSON.stringify({ userId, role, name }));
   localStorage.setItem("accessToken", token);
   localStorage.setItem("userId", userId);
   localStorage.setItem("role", role);

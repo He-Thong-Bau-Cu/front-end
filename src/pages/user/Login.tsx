@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { PATH } from "@/enums/PATH";
 import { setLocalStorage } from "@/utils/auth";
 import { jwtDecode } from "jwt-decode";
+import { USER_ROLE } from "@/enums/STATUS";
 
 const { Title, Text, Link } = Typography;
 
@@ -40,6 +41,13 @@ export default function LoginScreen() {
           const decoded = jwtDecode(data.accessToken) as any;
           setLocalStorage(data.accessToken, decoded.sub, decoded.role, decoded.fullname, decoded.permissions || []);
           notify(data.message, "success");
+          if(decoded.role === USER_ROLE.ADMIN){
+
+          }else if (decoded.role === USER_ROLE.PRESIDE){
+            
+          }else{
+            navigate(PATH.HOME)
+          }
         }
       }else{
         notify(response.data.message, "error");
