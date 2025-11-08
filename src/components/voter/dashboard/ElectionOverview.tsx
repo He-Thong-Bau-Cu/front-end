@@ -30,7 +30,7 @@ const ElectionOverview = () => {
         const fetchElection = async () => {
             try {
                 // ✅ Fix cứng ID 
-                const res = await ElectionService.getElectionId("651f0a7c1f2b4d1a12345678");
+                const res = await ElectionService.getElectionId("690f9baf3bc11cae5498b0e5");
                 setElection(res);
             } catch (error) {
                 console.error("Lỗi khi lấy chi tiết kỳ bầu cử:", error);
@@ -168,7 +168,7 @@ const ElectionOverview = () => {
                             <CalendarOutlined />{" "}
                             <Text>
                                 Bắt đầu:{" "}
-                                {new Date(election.startDate).toLocaleString("vi-VN", {
+                                {new Date(election.start_date).toLocaleString("vi-VN", {
                                     hour12: false,
                                 })}
                             </Text>
@@ -177,7 +177,7 @@ const ElectionOverview = () => {
                             <ClockCircleOutlined />{" "}
                             <Text>
                                 Kết thúc:{" "}
-                                {new Date(election.endDate).toLocaleString("vi-VN", {
+                                {new Date(election.end_date).toLocaleString("vi-VN", {
                                     hour12: false,
                                 })}
                             </Text>
