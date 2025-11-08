@@ -1,5 +1,4 @@
 import axios, { AxiosInstance } from "axios";
-import BaseService from "./BaseService";
 
 class AuthService {
   protected api: AxiosInstance;

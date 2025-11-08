@@ -3,8 +3,8 @@ export interface Election {
     title: string;
     electionType: string;
     votingMethod: string;
-    startDate: string;
-    endDate: string;
+    start_date: string;
+    end_date: string;
     status: "DRAFT" | "ACTIVE" | "CLOSED" | "ARCHIVED";
     createdBy: number;
     companyType: string;

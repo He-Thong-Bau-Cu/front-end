@@ -1,12 +1,10 @@
-import VoteSuccess from "@/pages/voter/VoteSuccess";
+import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
+import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
 import { Navigate } from "react-router-dom";
 import PublicRoute from "../components/auth/PublicRoute";
 import Forbidden403 from "../pages/Forbidden403";
 import NotFound404 from "../pages/NotFound404";
 import LoginScreen from "../pages/user/Login";
-import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
-import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
-import HomePage from "@/pages/HomePage";
 
 
 export const publicRoutes = [

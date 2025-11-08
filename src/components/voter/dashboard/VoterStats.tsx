@@ -16,6 +16,7 @@ const VoterStats = () => {
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
+
         async function fetchParticipants() {
             try {
                 const electionId = "651f0a7c1f2b4d1a12345678"; // tạm fix cứng
