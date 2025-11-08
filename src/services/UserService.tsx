@@ -1,6 +1,5 @@
 import BaseService from "./BaseService";
 import { User } from "../types/User.interface";
-import { ApiResponse } from "../types/ApiResponse.interface";
 
 
 
@@ -11,10 +10,10 @@ class UserService extends BaseService {
 
 
     async getByUserId(id: string | number): Promise<User> {
-        const response = await this.api.get<ApiResponse<User>>(
+        const response = await this.api.get<User>(
             `${this.endpoint}/${id}`
         );
-        return response.data.data;
+        return response.data ;
     }
 }
 
