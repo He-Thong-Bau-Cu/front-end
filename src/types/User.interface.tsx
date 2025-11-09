@@ -24,6 +24,7 @@ export interface User {
     roleId: string;
     status: string;
     image: string;
+    imageKey: string;
     isTempPassword: boolean;
 
 }

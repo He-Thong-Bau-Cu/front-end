@@ -8,4 +8,12 @@ export enum PATH {
   VERIFY_EMAIL = "/verify-email",
   HOME = "/home",
   CHANGE_PASSWORD_FIRST_TIME = "/change-password-first-time",
+  ADMIN = "/admin",
+  VOTER = "/voter",
+  SECRETARY = "/secretary",
+  USER = "/user",
+  PRESIDE = "/preside",
+  ORGANIZING_COMMITTEE = "/organizing-committee",
+  BOARD_OF_CONTROL = "/board-of-control",
+  HEAD_OF_THE_ORGANIZING_COMMITTEE = "/head_of_the_Organizing_committee",
 }
