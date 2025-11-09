@@ -1,5 +1,4 @@
-import ElectionList from "@/components/voter/dashboard/ElectionList";
-import NotificationPanel from "@/components/voter/dashboard/NotificationPanel";
+import ElectionOverview from "@/components/voter/dashboard/ElectionOverview";
 import QuickActions from "@/components/voter/dashboard/QuickActions";
 import VoterStats from "@/components/voter/dashboard/VoterStats";
 import WelcomeCard from "@/components/voter/dashboard/WelcomeCard";
@@ -11,12 +10,11 @@ const DashboardVoter = () => {
             <WelcomeCard />
             <VoterStats />
 
-            <Row gutter={24} >
+            <Row gutter={24}>
                 <Col xs={24} lg={16}>
-                    <ElectionList />
+                    <ElectionOverview />
                 </Col>
                 <Col xs={24} lg={8}>
-                    <NotificationPanel />
                     <QuickActions />
                 </Col>
             </Row>

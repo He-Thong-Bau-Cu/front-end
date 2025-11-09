@@ -1,6 +1,5 @@
 import BaseService from "./BaseService";
 import { User } from "../types/User.interface";
-import { ApiResponse } from "../types/ApiResponse.interface";
 
 class UserService extends BaseService {
   constructor() {

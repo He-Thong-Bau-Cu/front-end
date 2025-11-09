@@ -26,7 +26,6 @@ import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/Managemen
 import MeetingListPage from "@/pages/head_of_the_organizing_comittee/MeetingListPage";
 import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/OrganizerDashboardPage";
 import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
-import Home from "@/pages/Home";
 import HomePage from "@/pages/HomePage";
 import Checkin from "@/pages/organizing-committee/Checkin";
 import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
