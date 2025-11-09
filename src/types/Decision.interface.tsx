@@ -1,12 +1,23 @@
+import { ElectionTypes } from "./ElectionTypes.interface";
+import { Threshols } from "./Threshols.interface";
+import { User } from "./User.interface";
+import { VotingMethods } from "./VotingMethods.interface";
+
 export interface Decision {
-    key: string;
-    code: string;
+    _id: string;
     title: string;
-    election: string;
-    date: string;
-    location: string;
-    level: string;
+    typeId: ElectionTypes;
+    votingMethodId: VotingMethods;
+    thresholdId: Threshols;
+    startDate: string;
+    endDate: string;
+    delegationStart: string;
+    delegationEnd: string;
     status: string;
-    createdAt: string;
-    creator: string;
+    statusData: string;
+    decisionNumber: string;
+    decisionName: string;
+    createdByUserId: User;
+    createdAt: Date;
+    updatedAt: Date;
 }
