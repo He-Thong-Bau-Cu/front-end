@@ -5,6 +5,20 @@
   padding: 0px 32px;
   color: #124d2d;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: none !important;
+}
+
+.voter-welcome-card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
+}
+
+.voter-welcome-card .ant-card-body {
+  transition: none !important;
+}
+
+.voter-welcome-card .ant-card-body:hover {
+  transform: none !important;
 }
 
 /* 🌞 Title and subtitle */
@@ -448,18 +462,6 @@
 
 .election-overview-card .ant-card-body:hover {
   transform: none !important;
-}
-
-.election-overview-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #27ae60 0%, #2ecc71 50%, #27ae60 100%);
-  background-size: 200% 100%;
-  animation: gradientShift 3s ease infinite;
 }
 
 @keyframes gradientShift {
@@ -1224,8 +1226,22 @@
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin: 24px 0px;
+  margin: 0px 0px;
   padding-bottom: 12px;
+  transition: none !important;
+}
+
+.quick-actions-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
+}
+
+.quick-actions-card .ant-card-body {
+  transition: none !important;
+}
+
+.quick-actions-card .ant-card-body:hover {
+  transform: none !important;
 }
 
 /* ===== GRID 2x2 ===== */

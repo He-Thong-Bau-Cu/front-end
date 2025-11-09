@@ -17,9 +17,9 @@ const actions = [
 ];
 
 const QuickActions = () => (
-    <Card title={<Text style={{ paddingLeft: 25, fontSize: 17 }} strong>⚡Thao tác nhanh</Text>} className="">
+    <Card title={<Text style={{ paddingLeft: 25, fontSize: 17 }} strong>⚡Thao tác nhanh</Text>} className="quick-actions-card">
 
-        <div className="quick-actionquick-actions-cards-grid">
+        <div className="quick-actions-grid">
             {actions.map((a, i) => (
                 <div key={i} className="quick-action-item">
                     <div className="quick-action-icon">{a.icon}</div>
