@@ -78,6 +78,9 @@ const HomePage: React.FC = () => {
       notify("Không tìm thấy cuộc bầu cử", "error");
       return;
     }
+
+    localStorage.setItem("currentElectionId", electionId);
+
     switch (election.roleCode) {
       case USER_ROLE.PRESIDE_SECRETARY:
         navigate(PATH.SECRETARY, { state: { electionId } });

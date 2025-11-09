@@ -1,8 +1,8 @@
-import { Card, Typography, Avatar, Spin } from "antd";
-import { UserOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-import UserService from "@/services/UserService";
 import { User } from "@/types/User.interface";
+import { getUserLogin } from "@/utils/auth";
+import { UserOutlined } from "@ant-design/icons";
+import { Avatar, Card, Spin, Typography } from "antd";
+import { useEffect, useState } from "react";
 import "../../../style/voter/Dashboard.model.css";
 
 const { Text } = Typography;
@@ -17,7 +17,7 @@ const WelcomeCard = () => {
                 setLoading(true);
                 const userId = localStorage.getItem("userId");
                 if (userId) {
-                    const userData = await UserService.getByUserId(userId);
+                    const userData = await getUserLogin();
                     setUser(userData);
                 }
             } catch (error) {
@@ -30,12 +30,12 @@ const WelcomeCard = () => {
         fetchUserData();
     }, []);
 
-    const formatVoterCode = (userId: string) => {
-        if (!userId) return "N/A";
-        // Tạo mã cử tri từ _id (ví dụ: lấy 8 ký tự cuối)
-        const shortId = userId.slice(-8).toUpperCase();
-        return `CT-${shortId}`;
-    };
+    // const formatVoterCode = (userId: string) => {
+    //     if (!userId) return "N/A";
+    //     // Tạo mã cử tri từ _id (ví dụ: lấy 8 ký tự cuối)
+    //     const shortId = userId.slice(-8).toUpperCase();
+    //     return `CT-${shortId}`;
+    // };
 
     if (loading) {
         return (
@@ -55,19 +55,19 @@ const WelcomeCard = () => {
             </p>
 
             <div className="voter-welcome-user">
-                <Avatar 
-                    size={70} 
-                    src={user?.image} 
+                <Avatar
+                    size={70}
+                    src={user?.image}
                     icon={user?.image ? undefined : <UserOutlined />}
                 />
                 <div>
                     <Text strong className="voter-user-name">
                         {user?.fullName || "Người dùng"}
                     </Text>
-                    <div className="voter-user-info">
-                        Mã cử tri: {user ? formatVoterCode(user._id) : "N/A"} | 
+                    {/* <div className="voter-user-info">
+                        Mã cử tri: {user ? formatVoterCode(user._id) : "N/A"} |
                         Khu vực: {user?.address || "Chưa cập nhật"}
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </Card>

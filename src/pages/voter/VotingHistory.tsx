@@ -5,7 +5,7 @@ import VotingHistoryContent from "@/components/voter/voting-history/VotingHistor
 const VotingHistory = () => {
     return (
         <div className="voting-history-page">
-            <VotingHeader />
+            {/* <VotingHeader /> */}
             <VotingHistoryContent />
 
         </div>
