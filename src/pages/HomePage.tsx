@@ -12,6 +12,9 @@ import "../style/HomePage.model.css";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useLoading } from "@/contexts/LoadingContext";
 import ElectionParticipantsService from "@/services/ElectionParticipantsService";
+import { USER_ROLE } from "@/enums/STATUS";
+import { useNavigate } from "react-router-dom";
+import { PATH } from "@/enums/PATH";
 
 const { Content } = Layout;
 
@@ -21,6 +24,7 @@ const HomePage: React.FC = () => {
   const [stats, setStats] = useState<any>({});
   const { notify } = useNotification();
   const { showLoading, hideLoading } = useLoading();
+  const navigate = useNavigate();
 
   // Animation variants
   const containerVariants = {
@@ -63,6 +67,35 @@ const HomePage: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+    }
+  };
+
+  const handleRedirect = (electionId: string) => {
+    const election = dataElection.find(
+      (item) => item.id === electionId
+    ) as ElectionItem;
+    if (!election) {
+      notify("Không tìm thấy cuộc bầu cử", "error");
+      return;
+    }
+    switch (election.roleCode) {
+      case USER_ROLE.PRESIDE_SECRETARY:
+        navigate(PATH.SECRETARY, { state: { electionId } });
+        break;
+      case USER_ROLE.ORGANIZING_COMMITTEE_MEMBERS:
+        navigate(PATH.ORGANIZING_COMMITTEE, { state: { electionId } });
+        break;
+      case USER_ROLE.BOARD_OF_CONTROL:
+        navigate(PATH.BOARD_OF_CONTROL, { state: { electionId } });
+        break;
+      case USER_ROLE.VOTER:
+        navigate(PATH.VOTER, { state: { electionId } });
+        break;
+      case USER_ROLE.HEAD_OF_THE_ORGANIZING_COMMITTEE:
+        navigate(PATH.HEAD_OF_THE_ORGANIZING_COMMITTEE, { state: { electionId } });
+        break;
+      default:
+        break;
     }
   };
 
@@ -116,6 +149,7 @@ const HomePage: React.FC = () => {
         startDate: election.startDate || "", // default string nếu null
         endDate: election.endDate || undefined,
         status,
+        roleCode: item.roleId.roleCode,
         role: item.roleId.roleName || item.position || "",
         actionLabel:
           election.statusData === "WAIT_APPROVAL"
@@ -187,7 +221,7 @@ const HomePage: React.FC = () => {
             <Col xs={24} lg={16}>
               <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 <motion.div variants={itemVariants}>
-                  <ElectionList data={dataElection} />
+                  <ElectionList data={dataElection} onSelectElection={handleRedirect} />
                 </motion.div>
               </Space>
             </Col>

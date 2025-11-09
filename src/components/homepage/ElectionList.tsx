@@ -19,6 +19,7 @@ export interface ElectionItem {
     startDate: string;
     endDate?: string;
     status: "upcoming" | "completed" | "ongoing";
+    roleCode: string;
     role: string;
     actionLabel: string;
     actionType: "green" | "blue";
@@ -29,9 +30,10 @@ export interface ElectionItem {
 
 interface ElectionListProps {
   data: ElectionItem[];
+  onSelectElection: (electionId: string) => void;
 }
 
-const ElectionList: React.FC<ElectionListProps> = ({data}) => {
+const ElectionList: React.FC<ElectionListProps> = ({data, onSelectElection}) => {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -42,6 +44,10 @@ const ElectionList: React.FC<ElectionListProps> = ({data}) => {
             default:
                 return <ClockCircleOutlined />;
         }
+    };
+
+    const onClickElection = (electionId: string) => {
+        onSelectElection(electionId);
     };
 
     return (
@@ -82,7 +88,7 @@ const ElectionList: React.FC<ElectionListProps> = ({data}) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1, duration: 0.3 }}
                     >
-                        <List.Item className="election-item">
+                        <List.Item className="election-item" onClick={() => onClickElection(item.id.toString())}>
                             <div style={{ width: "100%" }}>
                                 <div className="election-header">
                                     <div style={{ flex: 1, paddingRight: 12 }}>
@@ -163,30 +169,6 @@ const ElectionList: React.FC<ElectionListProps> = ({data}) => {
                                             </div>
                                         )}
                                     </Space>
-                                </div>
-
-                                <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-                                    <Button
-                                        type={item.actionType === "green" ? "primary" : "default"}
-                                        icon={<EyeOutlined />}
-                                        size="small"
-                                        style={{
-                                            borderRadius: 8,
-                                            fontWeight: 500,
-                                            ...(item.actionType === "green"
-                                                ? {
-                                                    background: "linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)",
-                                                    border: "none",
-                                                    boxShadow: "0 2px 6px rgba(76, 175, 80, 0.25)",
-                                                }
-                                                : {
-                                                    borderColor: "#a5d6a7",
-                                                    color: "#124d2d",
-                                                }),
-                                        }}
-                                    >
-                                        {item.actionLabel}
-                                    </Button>
                                 </div>
                             </div>
                         </List.Item>

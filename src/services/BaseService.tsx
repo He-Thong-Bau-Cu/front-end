@@ -65,7 +65,7 @@ export default class BaseService<T = any> {
   }
 
   // UPDATE
-  async update(id: string | number, data: Partial<T>): Promise<T> {
+  async update(id: string, data: Partial<T>): Promise<T> {
     return await this.api.put(`${this.endpoint}/update/${id}`, data);
   }
 

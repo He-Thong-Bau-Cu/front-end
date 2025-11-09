@@ -1,5 +1,5 @@
 import "../../style/HomePage.model.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Avatar,
   Button,
@@ -27,6 +27,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { UploadChangeParam } from "antd/es/upload";
 import type { UploadFile } from "antd/es/upload/interface";
 import { User } from "@/types/User.interface";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import UserService from "@/services/UserService";
+import FileService from "@/services/FileService";
+import { FILE_TYPE } from "@/enums/FILE_TYPE";
 
 const { Title, Text } = Typography;
 
@@ -34,9 +39,10 @@ interface ProfileModalProps {
   open: boolean;
   onClose: () => void;
   user: User | null;
+  handleCloseProfile: () => void;
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
+const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handleCloseProfile }) => {
   const [activeTab, setActiveTab] = useState<
     "info" | "avatar" | "security" | "notification"
   >("info");
@@ -44,8 +50,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
   const [infoForm] = Form.useForm();
   const [securityForm] = Form.useForm();
   const [notificationForm] = Form.useForm();
-
+  const {showLoading, hideLoading} = useLoading();
+  const {notify} = useNotification();
   const [passwordStrength, setPasswordStrength] = useState(0);
+
 
   // Tính độ mạnh của mật khẩu
   const calculatePasswordStrength = (password: string) => {
@@ -73,23 +81,34 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
 
   const handleUploadChange = (info: UploadChangeParam<UploadFile<any>>) => {
     setFileList(info.fileList.slice(-1));
-    message.success("Ảnh đã được tải lên tạm thời");
+    notify("Ảnh đã được tải lên tạm thời", "info");
   };
 
   /** Xử lý lưu form */
   const handleSubmit = async () => {
     try {
+      showLoading();
       if (activeTab === "info") {
         const values = await infoForm.validateFields();
-        console.log("🧩 Dữ liệu info:", values);
-        // TODO: gọi API updateUser(values)
-        message.success("Cập nhật thông tin cá nhân thành công!");
+        let body = {
+          ...values,
+        }
+        const userId = localStorage.getItem("userId") as string;
+        const response = await UserService.update(userId, body);
+        if(response.success){
+          notify(response.message, "success");
+        }else{
+          notify(response.message, "error");
+        }
       }
 
       if (activeTab === "avatar") {
-        console.log("🧩 File upload:", fileList);
-        // TODO: upload fileList[0].originFileObj -> API upload
-        message.success("Cập nhật ảnh đại diện thành công!");
+        const response = await UserService.uploadAvatar(fileList[0].originFileObj as File);
+        if(response.success){
+          notify(response.message, "success");
+        }else{
+          notify(response.message, "error");
+        }
       }
 
       if (activeTab === "security") {
@@ -98,20 +117,24 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
           message.error("Mật khẩu xác nhận không khớp!");
           return;
         }
-        console.log("🧩 Dữ liệu đổi mật khẩu:", values);
-        // TODO: gọi API đổi mật khẩu
-        message.success("Cập nhật mật khẩu thành công!");
-      }
-
-      if (activeTab === "notification") {
-        const values = await notificationForm.validateFields();
-        console.log("🧩 Cài đặt thông báo:", values);
-        // TODO: gọi API lưu cài đặt thông báo
-        message.success("Lưu cài đặt thông báo thành công!");
+        let body = {
+          userId: localStorage.getItem("userId") as string,
+          oldPassword: values.currentPassword,
+          newPassword: values.newPassword
+        }
+        const response = await UserService.changePassword(body);
+        if(response.success){
+          notify(response.message, "success");
+        }else{
+          notify(response.message, "error");
+        }
       }
     } catch (err) {
       console.error(err);
       message.error("Vui lòng kiểm tra lại thông tin!");
+    }finally{
+      hideLoading();
+      handleCloseProfile();
     }
   };
 
@@ -258,8 +281,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user }) => {
               >
                 <Avatar
                   size={250}
-                  src={user?.image}
-                  icon={!user?.image ? <UserOutlined /> : undefined}
+                  src={user?.imageKey}
+                  icon={user?.imageKey ? <UserOutlined /> : undefined}
                   style={{
                     backgroundColor: "#eaf5ea",
                     marginTop: 20,

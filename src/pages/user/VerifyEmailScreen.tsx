@@ -101,7 +101,9 @@ export default function VerifyEmailScreen() {
           decoded.permissions || []
         );
         if (decoded.role === USER_ROLE.ADMIN) {
+          navigate(PATH.ADMIN);
         } else if (decoded.role === USER_ROLE.PRESIDE) {
+          navigate(PATH.PRESIDE);
         } else {
           const user = await getUserLogin();
           if (user && user.isTempPassword) {

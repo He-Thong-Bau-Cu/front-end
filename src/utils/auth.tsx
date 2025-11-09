@@ -1,3 +1,4 @@
+import FileService from "@/services/FileService";
 import UserService from "@/services/UserService";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
@@ -59,9 +60,15 @@ export const getUserLogin = async () => {
   try {
     const userId = localStorage.getItem("userId") || "";
     const response = await UserService.detail(userId);
-    if(response.success){
+    if (response.data.image) {
+      const avt = await FileService.getPresignedUrlByKey(response.data.image);
+      if (avt.success) {
+        response.data.imageKey = avt.data.url;
+      }
+    }
+    if (response.success) {
       return response.data;
-    }else{
+    } else {
       console.error("Failed to fetch user details:", response.message);
       return null;
     }
