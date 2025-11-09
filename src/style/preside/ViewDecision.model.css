@@ -1,0 +1,59 @@
+.view-decision-modal .ant-modal-content {
+  border-radius: 18px;
+  box-shadow: 0 10px 32px rgba(82, 196, 26, 0.25);
+  overflow: hidden;
+}
+
+.decision-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgb(239, 248, 239);
+  color: #000000;
+  padding: 16px 20px;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.25);
+}
+
+.decision-view-header .header-icon {
+  font-size: 28px;
+  color: #000000;
+}
+
+.decision-view-header .header-text {
+  flex: 1;
+  padding-left: 8px;
+}
+
+.decision-view-header .header-title {
+  margin: 0;
+  color: #000000 !important;
+  font-weight: 700;
+}
+
+.decision-view-header .header-sub {
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 13px;
+  opacity: 0.95;
+}
+
+.decision-view-card {
+  border-radius: 12px;
+  border: 1px solid #e6f4ea;
+  background: #f6ffed;
+  box-shadow: 0 4px 14px rgba(82, 196, 26, 0.12);
+}
+
+/* 🌿 Nút đóng trong header */
+.btn-close-header {
+  background: rgb(177, 183, 170) !important;
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.btn-close-header:hover {
+  background: rgba(47, 136, 9, 0.4) !important;
+  transform: rotate(90deg);
+}
