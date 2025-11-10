@@ -1,7 +1,8 @@
+import { useLoading } from "@/contexts/LoadingContext";
 import { User } from "@/types/User.interface";
 import { getUserLogin } from "@/utils/auth";
 import { UserOutlined } from "@ant-design/icons";
-import { Avatar, Card, Spin, Typography } from "antd";
+import { Avatar, Card, Typography } from "antd";
 import { useEffect, useState } from "react";
 import "../../../style/voter/Dashboard.model.css";
 
@@ -9,12 +10,12 @@ const { Text } = Typography;
 
 const WelcomeCard = () => {
     const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const { showLoading, hideLoading } = useLoading();
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                setLoading(true);
+                showLoading();
                 const userId = localStorage.getItem("userId");
                 if (userId) {
                     const userData = await getUserLogin();
@@ -23,7 +24,7 @@ const WelcomeCard = () => {
             } catch (error) {
                 console.error("Error fetching user data:", error);
             } finally {
-                setLoading(false);
+                hideLoading();
             }
         };
 
@@ -37,15 +38,6 @@ const WelcomeCard = () => {
     //     return `CT-${shortId}`;
     // };
 
-    if (loading) {
-        return (
-            <Card className="voter-welcome-card">
-                <div style={{ textAlign: "center", padding: "40px 0" }}>
-                    <Spin size="large" />
-                </div>
-            </Card>
-        );
-    }
 
     return (
         <Card className="voter-welcome-card">
