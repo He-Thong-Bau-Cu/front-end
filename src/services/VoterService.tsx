@@ -9,6 +9,7 @@ class VoterService extends BaseService {
 
 
 
+
     async getDashboardVoterByElectionId(id: string | number): Promise<DashboardVoterStats> {
         const response = await this.api.get(`${this.endpoint}/dashboard/${id}`) as ApiResponse<DashboardVoterStats>;
         return response.data;

@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
-import { Card, Col, Row, Typography, Spin, message } from "antd";
-import {
-    FileDoneOutlined,
-    CheckCircleOutlined,
-    BarChartOutlined,
-    BellOutlined,
-    UserOutlined,
-} from "@ant-design/icons";
+import { useLoading } from "@/contexts/LoadingContext";
 import VoterService from "@/services/VoterService";
+import {
+    BarChartOutlined,
+    CheckCircleOutlined,
+    FileDoneOutlined,
+    UserOutlined
+} from "@ant-design/icons";
+import { Card, Col, Row, Typography, message } from "antd";
+import { useEffect, useState } from "react";
 import "../../../style/voter/Dashboard.model.css";
+
 
 const { Text } = Typography;
 
@@ -18,12 +19,15 @@ const VoterStats = () => {
         totalParticipants: 0,
         participationPercentage: 0,
     });
+    const { showLoading, hideLoading } = useLoading();
 
-    const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
         async function fetchStats() {
             try {
+                showLoading();
+
                 const electionId = localStorage.getItem("currentElectionId");
 
                 if (!electionId) {
@@ -38,7 +42,7 @@ const VoterStats = () => {
                 console.error(error);
                 message.error("Không thể lấy thống kê cho voter");
             } finally {
-                setLoading(false);
+                hideLoading();
             }
         }
 
@@ -77,13 +81,6 @@ const VoterStats = () => {
 
     ];
 
-    if (loading)
-        return (
-            <Spin
-                tip="Đang tải thống kê..."
-                style={{ display: "flex", justifyContent: "center", marginTop: 50 }}
-            />
-        );
 
     return (
         <Row gutter={[16, 16]} className="voter-stats-container">

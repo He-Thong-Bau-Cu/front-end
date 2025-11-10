@@ -13,17 +13,19 @@ import {
     StopOutlined,
     TrophyOutlined
 } from "@ant-design/icons";
-import { Card, Typography } from "antd";
+import { Card, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "../../../style/voter/Dashboard.model.css";
+import { useLoading } from "@/contexts/LoadingContext";
+
 
 
 const { Text, Title } = Typography;
 
 const ElectionOverview = () => {
     const [election, setElection] = useState<Election | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const { showLoading, hideLoading } = useLoading();
 
     const location = useLocation();
     const electionId = location.state?.electionId || localStorage.getItem("currentElectionId");
@@ -31,20 +33,28 @@ const ElectionOverview = () => {
     useEffect(() => {
         const fetchElection = async () => {
             try {
+                showLoading();
                 const res = await ElectionService.getElectionId(electionId);
                 setElection(res);
             } catch (error) {
                 console.error("Lỗi khi lấy chi tiết kỳ bầu cử:", error);
             } finally {
-                setLoading(false);
+                hideLoading();
             }
         };
         fetchElection();
     }, []);
 
-    if (loading || !election) {
-        return <p style={{ padding: 20 }}>Đang tải thông tin kỳ bầu cử...</p>;
+    if (!election) {
+        return (
+            <Card className="election-overview-card">
+                <div style={{ padding: "40px", textAlign: "center" }}>
+                    <Spin size="large" />
+                </div>
+            </Card>
+        );
     }
+
 
     // 🧩 Map trạng thái DB → tiếng Việt
     const mapStatus = (status: string) => {
