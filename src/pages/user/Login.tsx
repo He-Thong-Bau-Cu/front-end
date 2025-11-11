@@ -7,7 +7,6 @@ import {
 } from "@ant-design/icons";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import ElectionService from "@/services/ElectionService";
 import AuthService from "@/services/AuthService";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "@/enums/PATH";
