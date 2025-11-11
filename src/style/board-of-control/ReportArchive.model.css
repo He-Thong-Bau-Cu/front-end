@@ -104,6 +104,13 @@
     color: #1677ff;
 }
 
+/* ===== PAGINATION ===== */
+.ra-pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
 /* ===== ANT TABLE OVERRIDE ===== */
 .ant-table-thead>tr>th {
     background: #fafafa !important;

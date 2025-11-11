@@ -8,37 +8,68 @@ import {
     Form,
     Input,
     Row,
-    Select,
-    Typography,
     Upload,
     Space,
     Avatar,
     Descriptions,
+    Typography,
+    message
 } from "antd";
+import DelegationService from "@/services/DelegationService";
+import { useLoading } from "@/contexts/LoadingContext";
 import { User } from "@/types/User.interface";
+import dayjs from "dayjs";
+import { useNotification } from "@/contexts/NotificationContext";
 
 const { Text, Title } = Typography;
-const { Option } = Select;
 
 interface AuthorizationRequestFormProps {
     selectedUser: User;
     onBack: () => void;
+    electionId: string;
+    delegatorId: string;
 }
 
-const AuthorizationRequestForm = ({ selectedUser, onBack }: AuthorizationRequestFormProps) => {
+export default function AuthorizationRequestForm({
+    selectedUser,
+    onBack,
+    electionId,
+}: AuthorizationRequestFormProps) {
+
     const [form] = Form.useForm();
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();  // ✅ ADD
 
-    interface AuthorizationRequestValues {
-        relation: string;
-        authorizationDate: unknown;
-        reason: string;
-        upload?: unknown;
-        agreement: boolean;
-    }
 
-    const handleSubmit = (values: AuthorizationRequestValues) => {
-        console.log("Authorization request:", values);
-        // TODO: Call API to submit authorization request
+    const handleSubmit = async (values: any) => {
+        try {
+            showLoading();
+
+            const myId = localStorage.getItem("userId");
+
+            const payload = {
+                delegationType: "election",
+                electionId,
+                delegatorId: myId,
+                delegateId: selectedUser._id,
+                startDate: values.startDate.toISOString(),
+                endDate: values.endDate.toISOString(),
+                documentId: null,
+                delegateReason: values.reason,
+                signature: null,
+                status: "PENDING"
+            };
+
+            await DelegationService.add(payload);
+
+            notify("Gửi yêu cầu ủy quyền thành công!", "success");
+            onBack();
+        } catch (error: any) {
+            console.error(error);
+            notify(error?.message || "Lỗi gửi yêu cầu ủy quyền", "error");
+        } finally {
+            hideLoading();
+        }
     };
 
     return (
@@ -57,7 +88,7 @@ const AuthorizationRequestForm = ({ selectedUser, onBack }: AuthorizationRequest
                 </Space>
             }
         >
-            {/* Thông tin người được ủy quyền */}
+            {/* ===== Thông tin người được ủy quyền ===== */}
             <Card
                 style={{
                     marginBottom: 24,
@@ -80,10 +111,10 @@ const AuthorizationRequestForm = ({ selectedUser, onBack }: AuthorizationRequest
                         </div>
                     </Space>
                     <Descriptions column={2} bordered size="small">
-                        <Descriptions.Item label="CCCD/CMND">
+                        <Descriptions.Item label="CCCD">
                             {selectedUser.citizenId}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Số điện thoại">
+                        <Descriptions.Item label="Điện thoại">
                             {selectedUser.phone}
                         </Descriptions.Item>
                         <Descriptions.Item label="Ngày sinh">
@@ -102,65 +133,71 @@ const AuthorizationRequestForm = ({ selectedUser, onBack }: AuthorizationRequest
                 </Space>
             </Card>
 
-            {/* Form ủy quyền */}
-            <Form 
-                form={form}
-                layout="vertical" 
-                onFinish={handleSubmit}
-            >
-                {/* Quan hệ và Ngày ủy quyền */}
+            {/* ===== Form ===== */}
+            <Form layout="vertical" form={form} onFinish={handleSubmit}>
+                {/* Ngày bắt đầu / kết thúc */}
                 <Row gutter={16}>
                     <Col xs={24} md={12}>
                         <Form.Item
-                            className="delegation-table"
-                            label="Quan hệ với bạn *"
-                            name="relation"
-                            rules={[{ required: true, message: "Vui lòng chọn quan hệ" }]}
-                        >
-                            <Select className="delegation-input" placeholder="Chọn quan hệ">
-                                <Option value="ban">Bạn</Option>
-                                <Option value="dongnghiep">Đồng nghiệp</Option>
-                                <Option value="nguoi_than">Người thân</Option>
-                                <Option value="khac">Khác</Option>
-                            </Select>
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item
-                            className="delegation-table"
-                            label="Ngày ủy quyền *"
-                            name="authorizationDate"
-                            rules={[{ required: true, message: "Vui lòng chọn ngày ủy quyền" }]}
+                            label="Ngày bắt đầu ủy quyền *"
+                            name="startDate"
+                            rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
                         >
                             <DatePicker
-                                className="delegation-input"
                                 style={{ width: "100%" }}
-                                placeholder="Chọn ngày ủy quyền"
                                 format="DD/MM/YYYY"
+                                disabledDate={(current) => {
+                                    return current && current < dayjs().startOf("day");
+                                }}
+                            />
+                        </Form.Item>
+                    </Col>
+
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            label="Ngày kết thúc ủy quyền *"
+                            name="endDate"
+                            dependencies={["startDate"]}
+                            rules={[
+                                { required: true, message: "Vui lòng chọn ngày kết thúc!" },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        const start = getFieldValue("startDate");
+                                        if (!start || !value) return Promise.resolve();
+                                        if (value.isBefore(start)) {
+                                            return Promise.reject("Ngày kết thúc không thể trước ngày bắt đầu!");
+                                        }
+                                        return Promise.resolve();
+                                    }
+                                })
+                            ]}
+                        >
+                            <DatePicker
+                                style={{ width: "100%" }}
+                                format="DD/MM/YYYY"
+                                disabledDate={(current) => {
+                                    const start = form.getFieldValue("startDate");
+                                    if (!start) {
+                                        return current && current < dayjs().startOf("day");
+                                    }
+                                    return current && current < dayjs(start).startOf("day");
+                                }}
                             />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                {/* Lý do ủy quyền */}
+                {/* Lý do */}
                 <Form.Item
-                    className="delegation-table"
                     label="Lý do ủy quyền *"
                     name="reason"
-                    rules={[{ required: true, message: "Vui lòng nhập lý do ủy quyền" }]}
+                    rules={[{ required: true, message: "Vui lòng nhập lý do" }]}
                 >
-                    <Input.TextArea
-                        placeholder="Nếu lý do tạo ủy quyền là do không thể tham gia bỏ phiếu trực tiếp (ốm đau, công tác xa, du học...)"
-                        rows={3}
-                    />
+                    <Input.TextArea rows={3} />
                 </Form.Item>
 
-                {/* Upload */}
-                <Form.Item
-                    className="delegation-table"
-                    label="Tải lên giấy tờ chứng minh"
-                    name="upload"
-                >
+                {/* Upload chứng từ (optional) */}
+                <Form.Item label="Tải lên giấy tờ chứng minh" name="upload">
                     <Upload.Dragger multiple>
                         <p className="ant-upload-drag-icon">
                             <UploadOutlined style={{ color: "#27ae60", fontSize: 24 }} />
@@ -172,35 +209,30 @@ const AuthorizationRequestForm = ({ selectedUser, onBack }: AuthorizationRequest
                     </Upload.Dragger>
                 </Form.Item>
 
-                {/* Checkbox điều khoản */}
+                {/* Check điều khoản */}
                 <Form.Item
                     name="agreement"
+                    valuePropName="checked"
                     rules={[
                         {
-                            validator: (_, value) =>
-                                value
-                                    ? Promise.resolve()
-                                    : Promise.reject(new Error("Vui lòng đồng ý với điều khoản")),
-                        },
+                            validator: (_, val) =>
+                                val ? Promise.resolve() : Promise.reject("Bạn cần đồng ý điều khoản!")
+                        }
                     ]}
                 >
                     <Checkbox>
-                        Tôi xác nhận đã kiểm tra và đồng ý với{" "}
-                        <a href="#">điều khoản ủy quyền</a>.
+                        Tôi xác nhận đã đọc và đồng ý với <a href="#">điều khoản ủy quyền</a>.
                     </Checkbox>
                 </Form.Item>
 
-                {/* Nút hành động */}
+                {/* Buttons */}
                 <div className="delegation-form-actions">
-                    <Button onClick={onBack}>Hủy bỏ</Button>
+                    <Button onClick={onBack}>Hủy</Button>
                     <Button type="primary" htmlType="submit" style={{ background: "#7ECB50", border: "none" }}>
-                        Gửi yêu cầu ủy quyền
+                        Gửi yêu cầu
                     </Button>
                 </div>
             </Form>
         </Card>
     );
-};
-
-export default AuthorizationRequestForm;
-
+}
