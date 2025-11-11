@@ -5,12 +5,17 @@ import AuthorizationHistory from "@/components/voter/authorization/Authorization
 import UserSelection from "@/components/voter/authorization/UserSelection";
 import AuthorizationRequestForm from "@/components/voter/authorization/AuthorizationRequestForm";
 import { User } from "@/types/User.interface";
+import { useLocation } from "react-router-dom";
 
 type ViewMode = "selection" | "create" | "authorize";
 
 const Authorization = () => {
     const [viewMode, setViewMode] = useState<ViewMode>("selection");
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const location = useLocation();
+
+    const electionId = location.state?.electionId || localStorage.getItem("currentElectionId");
+    const delegatorId = localStorage.getItem("userId");
 
     const handleSelectUser = (user: User) => {
         setSelectedUser(user);
@@ -44,6 +49,8 @@ const Authorization = () => {
                 <AuthorizationRequestForm
                     selectedUser={selectedUser}
                     onBack={handleBackToSelection}
+                    electionId={electionId}
+                    delegatorId={delegatorId}
                 />
             )}
             <AuthorizationHistory />

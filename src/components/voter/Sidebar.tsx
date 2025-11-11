@@ -39,7 +39,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
         {
             key: "/voter/ballots",
             icon: <FileTextOutlined />,
-            label: "Danh sách phiếu bầu",
+            label: "Bỏ phiếu",
         },
         {
             key: "/voter/results",

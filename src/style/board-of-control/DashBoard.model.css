@@ -146,6 +146,10 @@
   transform: translateY(-1px);
 }
 
+.ant-row {
+  row-gap: 0 !important;
+}
+
 /* ====== RESPONSIVE ====== */
 @media (max-width: 900px) {
   .sr-item {
@@ -201,7 +205,7 @@
 
 .lm-header-title {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: #111;
   margin: 0;
 }
@@ -260,8 +264,8 @@
 }
 
 .lm-stat-value {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 25px;
+  font-weight: 600;
   color: #111;
 }
 
