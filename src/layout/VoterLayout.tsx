@@ -15,11 +15,11 @@ const VoterLayout = () => {
             '/': 'Tổng quan',
             '/voter/authorization': 'Ủy quyền',
             '/voter/voting-history': 'Lịch sử bỏ phiếu',
-            '/voter/ballots': 'Danh sách phiếu bầu',
+            '/voter/ballots': 'Phiếu bầu',
             '/voter/results': 'Kết quả bỏ phiếu',
             '/voter/delegate-card': 'Thẻ đại biểu',
-            '/voter/ballot_cumulative_voting': 'Bỏ phiếu tích lũy',
-            '/voter/ballot_resolution_voting': 'Bỏ phiếu nghị quyết',
+            '/voter/ballot_cumulative_voting': 'Bỏ phiếu',
+            '/voter/ballot_resolution_voting': 'Bỏ phiếu',
             '/voter/results/detail': 'Kết quả bỏ phiếu chi tiết'
         };
 

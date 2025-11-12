@@ -149,3 +149,90 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(82, 196, 26, 0.2);
 }
+
+/* --- Thông báo chưa bỏ phiếu --- */
+.no-voting-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fff9 100%);
+}
+
+.no-voting-container {
+  text-align: center;
+  padding: 0px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.no-voting-icon {
+  font-size: 80px;
+  color: #d4eac8;
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.no-voting-title {
+  color: #124d2d !important;
+  margin-bottom: 16px !important;
+  font-weight: 600 !important;
+}
+
+.no-voting-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #666;
+  display: block;
+  margin-bottom: 24px;
+}
+
+.no-voting-button {
+  background: #7cb342 !important;
+  border-color: #7cb342 !important;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 0 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.no-voting-button:hover {
+  background: #558b2f !important;
+  border-color: #558b2f !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 179, 66, 0.3);
+}
+
+/* Responsive cho no-voting */
+@media (max-width: 768px) {
+  .no-voting-container {
+    padding: 30px 16px;
+  }
+
+  .no-voting-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+  }
+
+  .no-voting-title {
+    font-size: 20px !important;
+  }
+
+  .no-voting-description {
+    font-size: 14px;
+  }
+}

@@ -3,120 +3,152 @@
   padding: 30px 32px;
 }
 
-/* Header */
-.header-container {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  padding: 20px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Page Header */
+.page-header {
+  margin-bottom: 24px;
 }
 
-/* Tabs Ant Design mặc định nhưng chỉnh màu xanh lá */
-.tabs-container {
-  background: #fff;
-  border-radius: 12px;
-  margin-top: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  padding: 0 20px;
+.header-content {
+  max-width: 1200px;
 }
 
-/* Đổi màu highlight của tab đang chọn */
-.ant-tabs-ink-bar {
-  background: #7cb342 !important;
+.page-title {
+  margin-bottom: 12px !important;
+  color: #212121;
+  font-weight: 700;
 }
 
-.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #7cb342 !important;
-  font-weight: 600;
+.page-description {
+  color: #666;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 0;
 }
 
-.ant-tabs-tab:hover .ant-tabs-tab-btn {
-  color: #558b2f !important;
-}
-
-/* Khối chứa tìm kiếm + danh sách thẻ phiếu */
+/* Khối chứa phiếu bầu và thông tin bổ sung */
 .ballot-wrapper {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  padding: 20px;
-  margin-top: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px 40px;
 }
 
-.search-row {
+/* Row chứa ballot và info */
+.ballot-row {
+  width: 100%;
+  align-items: flex-start;
+}
+
+/* Phần chứa ballot card - bên trái */
+.ballot-left-col {
   display: flex;
+  flex-direction: column;
+}
+
+/* Tiêu đề phiếu bầu */
+.ballot-title {
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
+  color: #124d2d !important;
+  line-height: 1.5 !important;
+}
+
+/* Divider thông tin bổ sung */
+.info-divider {
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
+  border-top: none !important;
+}
+
+/* Ẩn đường kẻ 2 bên của Divider */
+.info-divider::before,
+.info-divider::after {
+  display: none !important;
+}
+
+/* Info Section - bên phải */
+.info-section-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container cho nút lịch sử */
+.history-button-container {
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+/* Container cho single ballot card */
+.single-ballot-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Hiệu ứng cho BallotCard */
+.ballot-card-container:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(124, 179, 66, 0.25);
+  background: #ffffff;
 }
 
 .no-result {
   text-align: center;
-  padding: 40px 0;
-}
-
-/* Hiệu ứng cho BallotCard */
-/* .ballot-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(124, 179, 66, 0.2);
-  border: 1px solid #a5d6a7;
-} */
-.ballot-card-container:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(124, 179, 66, 0.2);
-  background: #ffffff;
-}
-/* ============================
-   GRID CARD ĐỒNG KÍCH THƯỚC
-============================ */
-
-/* Lưới chứa BallotCard */
-.ballot-grid {
+  padding: 60px 0;
   width: 100%;
 }
 
-/* Mỗi cột chứa 1 thẻ */
-.ballot-card-wrapper {
-  display: flex; /* 🔹 Đảm bảo card bên trong chiếm full chiều cao */
-  align-items: stretch; /* 🔹 Kéo card cao bằng nhau */
-  height: 100%;
-}
-
-/* Thẻ BallotCard chính */
-.ballot-card {
-  width: 100%;
-  height: 100%; /* 🔹 Bắt buộc để card bằng nhau */
-  border-radius: 16px;
-  background: #f7fbf5;
-  border-top: 4px solid #7cb342;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-/* Hover nhẹ */
-.ballot-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(124, 179, 66, 0.25);
-  background: #fff;
-  cursor: pointer !important;
-}
-
-/* Responsive padding */
+/* Responsive */
 @media (max-width: 768px) {
+  .ballot-page {
+    padding: 16px;
+  }
+
+  .page-header {
+    margin-bottom: 16px;
+  }
+
+  .page-title {
+    font-size: 24px !important;
+  }
+
+  .page-description {
+    font-size: 14px;
+  }
+
   .ballot-wrapper {
-    padding: 10px;
+    padding: 24px 16px;
   }
-  .search-row {
-    flex-direction: column;
-    gap: 10px;
+
+  .ballot-row {
+    gap: 24px;
   }
-  .search-row .ant-select {
-    width: 100% !important;
+
+  .ballot-left-col {
+    margin-bottom: 24px;
+  }
+
+  .history-button-container {
+    margin-bottom: 16px;
+  }
+
+  .single-ballot-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ballot-wrapper {
+    padding: 20px 12px;
+  }
+
+  .ballot-content {
+    min-height: auto;
+  }
+
+  .page-title {
+    font-size: 20px !important;
   }
 }

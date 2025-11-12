@@ -41,7 +41,6 @@ const VotingLayout: React.FC<VotingLayoutProps> = ({
 
   return (
     <div className="resolution-page">
-      {/* ✅ HEADER CHUẨN GIỐNG ẢNH */}
       <div className="resolution-header">
         <div className="header-left">
           <Title level={3} className="header-title">

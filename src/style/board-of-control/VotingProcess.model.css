@@ -1,0 +1,11 @@
+.live-result-table .ant-table-tbody > tr.ant-table-row:hover > td,
+.live-result-table .ant-table-tbody > tr:hover > td,
+.live-result-table .ant-table-tbody > tr.ant-table-row-selected > td {
+  background-color: inherit !important;
+  transition: none !important;
+}
+
+.live-result-table .ant-table-tbody > tr > td {
+  transition: none !important;
+}
+

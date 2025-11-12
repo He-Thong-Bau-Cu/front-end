@@ -32,15 +32,16 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Ủy quyền",
         },
         {
-            key: "/voter/voting-history",
-            icon: <HistoryOutlined />,
-            label: "Lịch sử bỏ phiếu",
-        },
-        {
             key: "/voter/ballots",
             icon: <FileTextOutlined />,
             label: "Bỏ phiếu",
         },
+        {
+            key: "/voter/voting-history",
+            icon: <HistoryOutlined />,
+            label: "Lịch sử bỏ phiếu",
+        },
+
         {
             key: "/voter/results",
             icon: <CheckCircleOutlined />,
@@ -80,7 +81,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             {/* Menu */}
             <Menu
                 mode="inline"
-                defaultSelectedKeys={[location.pathname]}
+                selectedKeys={[location.pathname]}
                 style={{
                     background: "transparent",
                     border: "none",

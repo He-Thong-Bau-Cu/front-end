@@ -1,13 +1,45 @@
-// src/interfaces/Ballot.ts
 export interface Ballot {
-  id: number;
-  title: string;
-  desc: string;
-  endTime: string;
-  status: "Đang diễn ra" | "Chưa bắt đầu" | "Đã kết thúc";
-  type: 1 | 2; // 1 = Biểu quyết nghị quyết, 2 = Bầu cử dồn phiếu
+  _id: string;
+  electionId: {
+    _id: string;
+    title: string;
+    startDate: string | null;
+    endDate: string | null;
+    delegationStart: string | null;
+    delegationEnd: string | null;
+    status: string;
+    statusData: string;
+    decisionNumber: string;
+    decisionName: string;
+  };
+  voterId: {
+    _id: string;
+    electionId: string;
+    userId: {
+      _id: string;
+      username: string;
+      fullName: string;
+      email: string;
+      position: string;
+    };
+    eligible: boolean;
+    status: string;
+    updatedAt: string;
+    createdAt: string;
+    __v: number;
+  };
+  voteValue: string | null;
+  encryptedVote: string | null;
+  status: string;
+  issuedAt: string | null;
+  castAt: string | null;
+  updatedAt: string;
+  createdAt: string;
+  allocations: {
+    entityId: string;
+    voteValue: number;
+  }[];
 }
-
 
 
 export interface BallotCast {
