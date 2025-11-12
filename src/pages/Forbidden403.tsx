@@ -7,17 +7,27 @@ const { Title, Text } = Typography;
 export default function Forbidden403() {
   const handleGoHome = () => {
     console.log('Navigating to home...');
-    // window.location.href = '/';
+    const role = localStorage.getItem('role') || '';
+    switch (role) {
+      case 'ADMIN':
+        window.location.href = '/admin';
+        break;
+      case 'PRESIDE':
+        window.location.href = '/preside';
+        break;
+      default:
+        window.location.href = '/home';
+    }
   };
 
   const handleLogin = () => {
     console.log('Navigating to login...');
-    // window.location.href = '/login';
+    window.location.href = '/login';
   };
 
   const handleGoBack = () => {
     console.log('Going back...');
-    // window.history.back();
+    window.history.back();
   };
 
   // Reset body styles

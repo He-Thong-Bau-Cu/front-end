@@ -26,6 +26,8 @@ export interface ElectionItem {
     participants?: number;
     progress?: number; // 0-100 for ongoing elections
     totalVoters?: number;
+    permissionElections?: string[];
+    voter?: string
 }
 
 interface ElectionListProps {

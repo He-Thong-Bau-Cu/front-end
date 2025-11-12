@@ -9,200 +9,241 @@ import {
   DownloadOutlined,
   CheckSquareOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Switch, Table, Tag, Typography, Input } from "antd";
+import {
+  Button,
+  Card,
+  Switch,
+  Table,
+  Tag,
+  Typography,
+  Input,
+  Pagination,
+  Select,
+  Modal,
+} from "antd";
 import { TableProps } from "antd/lib";
 import "../../../style/admin/ManagementPermission.model.css";
+import { useState } from "react";
+import AddPermissionModal from "./AddPermissionModal";
+import { STATUS_COLOR, STATUS_ELECTION, STATUS_ROLE } from "@/enums/STATUS";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import SystemService from "@/services/SystemService";
 
 const { Text } = Typography;
 
-type PermissionRecord = {
-  key: number;
-  name: string;
-  desc: string;
-  category: string;
-  level: string;
-  status: boolean;
-  icon: React.ReactNode;
-};
+interface ListPermissionsProps {
+  permissions?: any[];
+  total?: number;
+  onSearch?: (values: any) => void;
+}
 
-const ListPermissions = () => {
-  const columns: TableProps<PermissionRecord>["columns"] = [
+const ListPermissions = ({
+  permissions,
+  total,
+  onSearch,
+}: ListPermissionsProps) => {
+  const [values, setValues] = useState({
+    permissionName: "",
+    page: 1,
+    limit: 10,
+  });
+  const [searchValue, setSearchValue] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedPermission, setSelectedPermission] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
+
+  const showModal = () => setIsModalVisible(true);
+  const handleCancel = () => setIsModalVisible(false);
+
+  const handleAddPermission = async (values: any) => {
+    try {
+      showLoading();
+      const response = await SystemService.addPermission(values);
+      if (response.success) {
+        notify(response.message, "success");
+        if (onSearch) onSearch({ page: 1, limit: 10 });
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      hideLoading();
+    }
+    console.log("New permission:", values);
+    setIsModalVisible(false);
+  };
+
+  const handleSelectPermission = (record: any) => {
+    setSelectedPermission(record);
+    setIsEditing(false);
+  };
+
+  const handleEdit = (record: any) => {
+    setSelectedPermission(record);
+    setIsEditing(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      showLoading();
+      if (!selectedPermission) return;
+      let body = {
+        ...selectedPermission,
+        permissionId: selectedPermission._id,
+      }
+      const response = await SystemService.updatePermission(body);
+      if (response.success) {
+        notify(response.message, "success");
+        if (onSearch) onSearch({ page: 1, limit: 10 });
+      }
+    } catch (error) {
+    } finally {
+      hideLoading();
+      setIsEditing(false);
+    }
+  };
+
+  const handleChangeField = (field: keyof any, value: any) => {
+    if (selectedPermission) {
+      setSelectedPermission({ ...selectedPermission, [field]: value });
+    }
+  };
+
+  const handleTableChange = (newPagination: any) => {
+    try {
+      setValues(newPagination);
+      let values = {
+        page: newPagination.page,
+        limit: newPagination.limit,
+      };
+      if (onSearch) onSearch(values);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSearch = () => {
+    let body = {
+      permissionName: searchValue,
+      page: values.page,
+      limit: values.limit,
+    };
+    if (onSearch) onSearch(body);
+  };
+
+  const handleDelete = async (record: any) => {
+    Modal.confirm({
+      title: "Xác nhận xoá quyền",
+      content: (
+        <>
+          <p>Bạn có chắc chắn muốn xoá quyền này không?</p>
+          <strong>{record?.permissionName}</strong>
+        </>
+      ),
+      okText: "Xóa",
+      cancelText: "Hủy",
+      okButtonProps: {
+        style: { backgroundColor: "#ef4444", border: "none" },
+      },
+      onOk: async () => {
+        try {
+          showLoading();
+          const response = await SystemService.deletePermission(
+            record._id
+          );
+          if (response.success) {
+            notify(response.message, "success");
+            if (onSearch) onSearch({ page: 1, limit: 10 });
+          }
+        } catch (error) {
+          console.log(error);
+        } finally {
+          hideLoading();
+        }
+      },
+    });
+  }
+
+  const columns: TableProps<any>["columns"] = [
     {
-      title: "QUYỀN HẠN",
-      dataIndex: "name",
-      key: "name",
+      title: "STT",
+      dataIndex: "index",
+      key: "index",
+      width: "5%",
+      align: "center",
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: "Quyền hạn",
+      dataIndex: "permissionName",
+      key: "permissionName",
+      width: "30%",
       render: (_: string, record) => (
         <div className="permission-item">
-          <div className="permission-icon">{record.icon}</div>
           <div>
             <Text strong style={{ fontSize: "14px" }}>
-              {record.name}
+              {record.permissionName}
             </Text>
-            <div className="permission-desc">{record.desc}</div>
           </div>
         </div>
       ),
     },
     {
-      title: "DANH MỤC",
-      dataIndex: "category",
-      key: "category",
-      render: (cat) => {
-        const colorMap: Record<string, string> = {
-          "Hệ Thống": "red",
-          "Bầu Cử": "orange",
-          "Người Dùng": "blue",
-          "Báo Cáo": "yellow",
-          "Dữ Liệu": "purple",
-        };
-        return (
-          <Tag
-            color={colorMap[cat] || "default"}
-            style={{ borderRadius: "12px", fontSize: "12px" }}
-          >
-            {cat}
-          </Tag>
-        );
-      },
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+      width: "40%",
     },
     {
-      title: "MỨC ĐỘ",
-      dataIndex: "level",
-      key: "level",
-      render: (level) => {
-        const colorMap: Record<string, string> = {
-          "QUAN TRỌNG": "red",
-          "CAO": "orange",
-          "BÌNH THƯỜNG": "blue",
-          "THẤP": "green",
-        };
-        return (
-          <Tag
-            color={colorMap[level] || "default"}
-            style={{ borderRadius: "12px", fontSize: "12px" }}
-          >
-            {level}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: "TRẠNG THÁI",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (active) => (
-        <Switch
-          checked={active}
-          style={{ backgroundColor: active ? "#52c41a" : "#d9d9d9" }}
-        />
-      ),
+      render: (status) => {
+        const color =
+          status === STATUS_ROLE.ACTIVE
+            ? "green"
+            : status === STATUS_ROLE.INACTIVE
+              ? "gold"
+              : "red";
+        return (
+          <Tag
+            color={color}
+            style={{
+              borderRadius: 16,
+              fontWeight: 500,
+              textTransform: "capitalize",
+            }}
+          >
+            {status}
+          </Tag>
+        );
+      },
     },
     {
-      title: "HÀNH ĐỘNG",
+      title: "Hành động",
       key: "action",
-      render: () => (
+      render: (record) => (
         <div className="permission-action">
-          <Button type="text" icon={<EditOutlined />} style={{ color: "#52c41a" }} />
-          <Button type="text" icon={<DeleteOutlined />} style={{ color: "#ff4d4f" }} />
-        </div>
-      ),
-    },
-  ];
-
-  const data: PermissionRecord[] = [
-    {
-      key: 1,
-      name: "Quản lý hệ thống",
-      desc: "Toàn quyền quản lý và cấu hình hệ thống",
-      category: "Hệ Thống",
-      level: "QUAN TRỌNG",
-      status: true,
-      icon: (
-        <div
-          className="permission-icon-bg"
-          style={{ backgroundColor: "#ff4d4f" }}
-        >
-          <SettingOutlined style={{ color: "white", fontSize: "12px" }} />
-        </div>
-      ),
-    },
-    {
-      key: 2,
-      name: "Tạo bầu cử",
-      desc: "Tạo và quản lý cuộc bầu cử mới",
-      category: "Bầu Cử",
-      level: "CAO",
-      status: true,
-      icon: (
-        <div
-          className="permission-icon-bg"
-          style={{ backgroundColor: "#13c2c2" }}
-        >
-          <CheckSquareOutlined style={{ color: "white", fontSize: "12px" }} />
-        </div>
-      ),
-    },
-    {
-      key: 3,
-      name: "Quản lý người dùng",
-      desc: "Thêm, sửa, xóa người dùng và phân quyền",
-      category: "Người Dùng",
-      level: "QUAN TRỌNG",
-      status: true,
-      icon: (
-        <div
-          className="permission-icon-bg"
-          style={{ backgroundColor: "#1890ff" }}
-        >
-          <UserOutlined style={{ color: "white", fontSize: "12px" }} />
-        </div>
-      ),
-    },
-    {
-      key: 4,
-      name: "Xem báo cáo",
-      desc: "Truy cập và xem các báo cáo hệ thống",
-      category: "Báo Cáo",
-      level: "BÌNH THƯỜNG",
-      status: true,
-      icon: (
-        <div
-          className="permission-icon-bg"
-          style={{ backgroundColor: "#faad14" }}
-        >
-          <BarChartOutlined style={{ color: "white", fontSize: "12px" }} />
-        </div>
-      ),
-    },
-    {
-      key: 5,
-      name: "Xuất dữ liệu",
-      desc: "Xuất dữ liệu và kết quả bầu cử",
-      category: "Dữ Liệu",
-      level: "BÌNH THƯỜNG",
-      status: true,
-      icon: (
-        <div
-          className="permission-icon-bg"
-          style={{ backgroundColor: "#722ed1" }}
-        >
-          <DownloadOutlined style={{ color: "white", fontSize: "12px" }} />
-        </div>
-      ),
-    },
-    {
-      key: 6,
-      name: "Bỏ phiếu",
-      desc: "Tham gia bỏ phiếu trong cuộc bầu cử",
-      category: "Bầu Cử",
-      level: "THẤP",
-      status: true,
-      icon: (
-        <div
-          className="permission-icon-bg"
-          style={{ backgroundColor: "#13c2c2" }}
-        >
-          <CheckSquareOutlined style={{ color: "white", fontSize: "12px" }} />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            style={{ color: "#52c41a" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(record);
+            }}
+          />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            style={{ color: "#ff4d4f" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(record);
+            }}
+          />
         </div>
       ),
     },
@@ -219,6 +260,7 @@ const ListPermissions = () => {
         marginTop: "12px",
         paddingRight: "8px",
         boxSizing: "border-box",
+        height: "calc(100vh - 180px)",
       }}
     >
       {/* DANH SÁCH QUYỀN HẠN */}
@@ -232,6 +274,7 @@ const ListPermissions = () => {
           overflow: "hidden",
         }}
       >
+        {/* Header */}
         <div
           style={{
             background: "linear-gradient(180deg, #b7f59f 0%, #a7f08c 100%)",
@@ -245,6 +288,7 @@ const ListPermissions = () => {
             color: "#2f7a32",
             fontSize: "15px",
             boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+            flexShrink: 0,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -261,18 +305,10 @@ const ListPermissions = () => {
                 background: "#fff",
                 border: "1px solid #d9d9d9",
               }}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onPressEnter={handleSearch}
             />
-            <Button
-              style={{
-                borderRadius: "6px",
-                height: "32px",
-                border: "1px solid #d9d9d9",
-                background: "#fff",
-                fontSize: "13px",
-              }}
-            >
-              Hàng loạt
-            </Button>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -283,31 +319,69 @@ const ListPermissions = () => {
                 backgroundColor: "#52c41a",
                 borderColor: "#52c41a",
               }}
+              onClick={showModal}
             >
               Thêm mới
             </Button>
           </div>
         </div>
-  
+
+        {/* Bảng danh sách */}
         <Card
-          bodyStyle={{ padding: 0 }}
           style={{
-            flexGrow: 1,
+            flex: 1,
             border: "none",
             borderRadius: "0 0 12px 12px",
             background: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+          bodyStyle={{
+            padding: 0,
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
           }}
         >
-          <Table<PermissionRecord>
-            rowKey="key"
-            columns={columns}
-            dataSource={data}
-            pagination={false}
-            size="small"
-          />
+          {/* Table có scroll riêng */}
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            <Table
+              rowKey="key"
+              columns={columns}
+              dataSource={permissions}
+              pagination={false}
+              size="small"
+              onRow={(record) => ({
+                onClick: () => handleSelectPermission(record),
+              })}
+              sticky
+            />
+          </div>
+
+          {/* Phân trang GHIM DƯỚI CÙNG */}
+          <div
+            style={{
+              padding: "10px 0 12px",
+              borderTop: "1px solid #f0f0f0",
+              display: "flex",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Pagination
+              current={values.page}
+              total={total}
+              pageSize={values.limit}
+              showSizeChanger
+              onChange={(page, pageSize) =>
+                handleTableChange({ page, limit: pageSize || values.limit })
+              }
+            />
+          </div>
         </Card>
       </div>
-  
+
       {/* CHI TIẾT QUYỀN HẠN */}
       <div
         style={{
@@ -331,34 +405,157 @@ const ListPermissions = () => {
             display: "flex",
             alignItems: "center",
             gap: "8px",
+            flexShrink: 0,
           }}
         >
           📄 Chi tiết quyền hạn
         </div>
-  
+
         <div
           style={{
-            flexGrow: 1,
+            flex: 1,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
             background: "#fff",
-            padding: "40px 16px",
+            padding: "24px 28px",
+            boxSizing: "border-box",
+            overflowY: "auto",
           }}
         >
-          <span style={{ fontSize: "30px", marginBottom: "8px" }}>👈</span>
-          <Typography.Text strong style={{ fontSize: "14px", color: "#2d2d2d" }}>
-            Chọn một quyền hạn
-          </Typography.Text>
-          <p style={{ fontSize: "13px", color: "#888", marginTop: "2px" }}>
-            để xem chi tiết và chỉnh sửa
-          </p>
+          {selectedPermission ? (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 18,
+                  flex: 1,
+                }}
+              >
+                <div>
+                  <Text strong>Tên quyền:</Text>
+                  <Input
+                    value={selectedPermission.permissionName}
+                    onChange={(e) =>
+                      handleChangeField("permissionName", e.target.value)
+                    }
+                    style={{ marginTop: 4, width: "100%" }}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div>
+                  <Text strong>Mã quyền:</Text>
+                  <Input
+                    value={selectedPermission.permissionCode}
+                    onChange={(e) =>
+                      handleChangeField("permissionCode", e.target.value)
+                    }
+                    style={{ marginTop: 4, width: "100%" }}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div>
+                  <Text strong>Mô tả:</Text>
+                  <Input.TextArea
+                    value={selectedPermission.description}
+                    onChange={(e) =>
+                      handleChangeField("description", e.target.value)
+                    }
+                    rows={3}
+                    style={{ marginTop: 4, width: "100%" }}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div>
+                  <Text strong>URL:</Text>
+                  <Input
+                    value={selectedPermission.url}
+                    onChange={(e) => handleChangeField("url", e.target.value)}
+                    style={{ marginTop: 4, width: "100%" }}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div>
+                  <Text strong>Trạng thái:</Text>
+                  <div style={{ marginTop: 6 }}>
+                    <Select
+                      value={selectedPermission.status}
+                      style={{ width: "100%" }}
+                      onChange={(value) => handleChangeField("status", value)}
+                      disabled={!isEditing}
+                    >
+                      <Select.Option value="ACTIVE">Hoạt động</Select.Option>
+                      <Select.Option value="INACTIVE">
+                        Không hoạt động
+                      </Select.Option>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: "24px",
+                  borderTop: "1px solid #f0f0f0",
+                  paddingTop: "16px",
+                  flexShrink: 0,
+                }}
+              >
+                <Button
+                  type="primary"
+                  size="middle"
+                  onClick={handleUpdate}
+                  block
+                  style={{
+                    backgroundColor: "#52c41a",
+                    borderColor: "#52c41a",
+                    height: "38px",
+                    fontWeight: 500,
+                  }}
+                  disabled={!isEditing}
+                >
+                  Cập nhật
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div
+              style={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                textAlign: "center",
+                padding: "60px 16px",
+              }}
+            >
+              <span style={{ fontSize: "36px", marginBottom: "10px" }}>👈</span>
+              <Typography.Text
+                strong
+                style={{ fontSize: "15px", color: "#2d2d2d" }}
+              >
+                Chọn một quyền hạn
+              </Typography.Text>
+              <p style={{ fontSize: "13px", color: "#888", marginTop: "2px" }}>
+                để xem chi tiết và chỉnh sửa
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      <AddPermissionModal
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        onAdd={handleAddPermission}
+      />
     </div>
-  );  
+  );
 };
 
 export default ListPermissions;

@@ -1,46 +1,43 @@
 import { Card, Typography } from "antd";
 import { UserOutlined, CheckCircleOutlined, AppstoreOutlined, TeamOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { useEffect } from "react";
 
 const { Text } = Typography;
 
-const PermissionStats = () => {
+interface PermissionStatProps {
+  data?: any
+}
+
+const PermissionStats = ({ data }: PermissionStatProps) => {
   const stats = [
     {
       label: "Tổng quyền hạn",
-      value: 32,
+      value: data.totalPermission,
       bgColor: "#d9f7be",
       iconColor: "#52c41a",
       icon: <UserOutlined style={{ fontSize: "20px" }} />,
     },
     {
-      label: "Đã kích hoạt",
-      value: 28,
+      label: "Đang hoạt động",
+      value: data.activePermission,
       bgColor: "#d9f7be",
       iconColor: "#52c41a",
       icon: <CheckCircleOutlined style={{ fontSize: "20px" }} />,
     },
     {
-      label: "Danh mục",
-      value: 6,
+      label: "Không hoạt động",
+      value: data.inactivePermission,
       bgColor: "#d9f7be",
       iconColor: "#52c41a",
-      icon: <AppstoreOutlined style={{ fontSize: "20px" }} />,
-    },
-    {
-      label: "Vai trò sử dụng",
-      value: 4,
-      bgColor: "#d9f7be",
-      iconColor: "#52c41a",
-      icon: <TeamOutlined style={{ fontSize: "20px" }} />,
-    },
-    {
-      label: "Mức độ cao",
-      value: 3,
-      bgColor: "#fff7e6",
-      iconColor: "#faad14",
       icon: <ExclamationCircleOutlined style={{ fontSize: "20px" }} />,
-    },
+    }
   ];
+
+  useEffect(() => {
+    stats[0].value = data.totalPermission;
+    stats[1].value = data.activePermission;
+    stats[2].value = data.inactivePermission;
+  }, [data]);
 
   return (
     <div

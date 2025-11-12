@@ -15,10 +15,14 @@ export default class BaseService<T = any> {
     this.endpoint = endpoint;
 
     this.api.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
+      async (config: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem("accessToken");
+        const clientIp = await this.initClientIp();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+        }
+        if(clientIp) {
+          config.headers["X-Client-IP"] = clientIp;
         }
         return config;
       },
@@ -33,7 +37,7 @@ export default class BaseService<T = any> {
 
           // ✅ Chỉ redirect nếu KHÔNG đang ở trang login
           if (window.location.pathname !== "/login") {
-            localStorage.removeItem("accessToken");
+            localStorage.clear();
             window.location.href = "/login";
           }
         }
@@ -42,6 +46,15 @@ export default class BaseService<T = any> {
         return Promise.reject(error);
       }
     );
+  }
+
+  private async initClientIp() {
+    try {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_IP}`);
+      return data.ip || null;
+    } catch (error) {
+      console.warn("Không lấy được IP public:", error);
+    }
   }
 
   // GET toàn bộ
@@ -55,22 +68,22 @@ export default class BaseService<T = any> {
   }
 
   // SEARCH
-  async search(body: Partial<T>): Promise<T[]> {
+  async search(body: Partial<T>): Promise<any> {
     return await this.api.post(`${this.endpoint}/search`, body);
   }
 
   // CREATE
-  async add(data: Partial<T>): Promise<T> {
-    return await this.api.post(`${this.endpoint}`, data);
+  async create(data: Partial<T>): Promise<any> {
+    return await this.api.post(`${this.endpoint}/create`, data);
   }
 
   // UPDATE
-  async update(id: string, data: Partial<T>): Promise<T> {
+  async update(id: string, data: Partial<T>): Promise<any> {
     return await this.api.put(`${this.endpoint}/update/${id}`, data);
   }
 
   // DELETE
-  async delete(id: string | number): Promise<void> {
+  async delete(id: string | number): Promise<any> {
     return await this.api.delete(`${this.endpoint}/delete/${id}`);
   }
 

@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { isAuthenticated } from "../../utils/auth";
 import { jwtDecode, JwtPayload } from "jwt-decode";
+import { USER_ROLE } from "@/enums/STATUS";
 
 interface CustomJwtPayload extends JwtPayload {
   role?: {
@@ -15,7 +16,13 @@ interface CustomJwtPayload extends JwtPayload {
 const PrivateRoute: React.FC = () => {
   const location = useLocation();
   const isAuth = isAuthenticated();
-  const permissions: string[] = JSON.parse(localStorage.getItem("permissions") || "[]");
+  const permissions: string[] = JSON.parse(
+    localStorage.getItem("permissions") || "[]"
+  );
+  const permissionsElections = JSON.parse(
+    localStorage.getItem("permissionsElections") || "[]"
+  );
+
   const userRole = localStorage.getItem("role");
   const currentPath = location.pathname;
   const accessToken = localStorage.getItem("accessToken");
@@ -47,9 +54,17 @@ const PrivateRoute: React.FC = () => {
   //   (userRole === "admin" && currentPath === "/admin/dashboard") ||
   //   (userRole !== "admin" && currentPath === "/employee/dashboard");
 
-  // if (!permissions.includes(currentPath) && !isDashboard) {
-  //   return <Navigate to="/403" replace state={{ unauthorized: true }} />;
-  // }
+  if (!permissions.includes(currentPath)) {
+    return <Navigate to="/403" replace state={{ unauthorized: true }} />;
+  }
+
+  if (userRole === USER_ROLE.USER) {
+    if (permissionsElections.length > 0) {
+      if (!permissionsElections.includes(currentPath)) {
+        return <Navigate to="/403" replace state={{ unauthorized: true }} />;
+      }
+    }
+  }
 
   return <Outlet />;
 };

@@ -19,6 +19,8 @@ type SideberProps = {
 const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
+    const permissionsElections = JSON.parse(localStorage.getItem("permissionsElections") || "[]");
 
     const menuItems = [
         {
@@ -51,7 +53,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <IdcardOutlined />,
             label: "Thẻ đại biểu",
         },
-    ];
+    ].filter((item) => permissions.includes(item.key) || permissionsElections.includes(item.key));
 
     const handleClick = (e: { key: string }) => {
         const selected = menuItems.find((item) => item.key === e.key);

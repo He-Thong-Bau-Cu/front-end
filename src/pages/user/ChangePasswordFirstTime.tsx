@@ -45,7 +45,9 @@ export default function FirstTimeChangePasswordScreen() {
         notify(response.message, "success");
         let role = localStorage.getItem("role");
         if (role === USER_ROLE.ADMIN) {
+          navigate(PATH.ADMIN);
         } else if (role === USER_ROLE.PRESIDE) {
+          navigate(PATH.PRESIDE);
         } else {
           navigate(PATH.HOME);
         }

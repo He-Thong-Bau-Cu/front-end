@@ -36,3 +36,30 @@ export enum STATUS_ROLE {
   UNVERIFIED = 'UNVERIFIED',
   SUBMITTED = 'SUBMITTED',
 }
+
+
+export const STATUS_ELECTION = {
+  WAIT_APPROVAL: 'Chờ duyệt',
+  DELETED: 'Đã xóa',
+  WAIT_ENTER_DATA: 'Chờ nhập dữ liệu',
+  ACTIVE: 'Đang hoạt động',
+  INACTIVE: 'Không hoạt động',
+}
+
+export const STATUS_COLOR = {
+  ACTIVE: '#52c41a',
+  INACTIVE: '#bfbfbf',
+}
+
+export const PROGRESS_STATUS = {
+  WAIT_APPROVAL: 50,
+  WAIT_ENTER_DATA: 20,
+  DELETED: 100,
+  COMPLETE: 100
+}
+
+export const COLOR_ROLE = {
+  USER: '#1890ff',
+  ADMIN: '#fa541c',
+  PRESIDE: '#722ed1',
+}

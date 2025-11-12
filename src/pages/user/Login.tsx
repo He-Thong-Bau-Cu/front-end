@@ -48,11 +48,21 @@ export default function LoginScreen() {
             decoded.fullname,
             decoded.permissions || []
           );
-          notify(data.message, "success");
+          notify("Đăng nhập thành công!!!", "success");
           if (decoded.role === USER_ROLE.ADMIN) {
-            navigate(PATH.ADMIN);
+            const user = await getUserLogin();
+            if (user && user.isTempPassword) {
+              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+            }else{
+              navigate(PATH.ADMIN);
+            }
           } else if (decoded.role === USER_ROLE.PRESIDE) {
-            navigate(PATH.PRESIDE);
+            const user = await getUserLogin();
+            if (user && user.isTempPassword) {
+              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+            }else{
+              navigate(PATH.PRESIDE);
+            }
           } else {
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
