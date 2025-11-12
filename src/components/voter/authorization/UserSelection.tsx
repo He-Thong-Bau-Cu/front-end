@@ -1,65 +1,62 @@
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import UserService from "@/services/UserService";
+import { User } from "@/types/User.interface";
+import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
+    Alert,
+    Avatar,
+    Button,
     Card,
     Input,
-    Table,
-    Typography,
-    Button,
-    Avatar,
-    Tag,
     Space,
-    Alert,
-    message
+    Table,
+    Tag,
+    Typography
 } from "antd";
-import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
-import { User } from "@/types/User.interface";
-import UserService from "@/services/UserService";
-import { useLoading } from "@/contexts/LoadingContext";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
 const { Search } = Input;
 
-interface UserSelectionProps {
-    onSelectUser: (user: User) => void;
-    onCreateNew: () => void;
-}
-
-const removeVietnameseTones = (str: string): string => {
-    if (!str) return "";
-    return str
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/đ/g, "d")
-        .replace(/Đ/g, "D");
-};
-
-const normalizeSearchText = (text: string): string => {
-    return removeVietnameseTones(text.toLowerCase().trim());
-};
-
-const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
+// ❗ Không cần props nữa
+const UserSelection = () => {
     const [searchText, setSearchText] = useState("");
-    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [users, setUsers] = useState<User[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
 
+    const navigate = useNavigate();
+
+
+    const location = useLocation();
+    const electionId = location.state?.electionId || localStorage.getItem("currentElectionId");
+
+    const removeVietnameseTones = (str: string): string => {
+        if (!str) return "";
+        return str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D");
+    };
+
+    const normalizeSearchText = (text: string): string =>
+        removeVietnameseTones(text.toLowerCase().trim());
+
+    // 🔹 Lấy danh sách người dùng
     useEffect(() => {
         const fetchUsers = async () => {
             try {
                 showLoading();
                 const usersData = await UserService.getAllUser();
-
                 setUsers(usersData);
                 setError(null);
-            } catch (err: unknown) {
-                const msg =
-                    err instanceof Error
-                        ? err.message
-                        : "Không thể tải danh sách người dùng";
-                setError(msg);
-                message.error(msg);
+            } catch {
+                notify("Không thể tải danh sách người dùng");
             } finally {
                 hideLoading();
             }
@@ -68,6 +65,7 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
         fetchUsers();
     }, []);
 
+    // 🔹 Lọc theo từ khóa
     const filteredUsers = users.filter((user) => {
         const normalized = normalizeSearchText(searchText);
         if (!normalized) return true;
@@ -83,6 +81,7 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
         );
     });
 
+    // 🔹 Cấu hình cột bảng
     const columns = [
         {
             title: "Người dùng",
@@ -100,17 +99,17 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
                         </Text>
                     </div>
                 </Space>
-            )
+            ),
         },
         {
             title: "Phòng ban",
             dataIndex: "department",
-            key: "department"
+            key: "department",
         },
         {
             title: "Chức vụ",
             dataIndex: "position",
-            key: "position"
+            key: "position",
         },
         {
             title: "Trạng thái",
@@ -119,7 +118,7 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
                 <Tag color={record.status === "ACTIVE" ? "green" : "default"}>
                     {record.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
                 </Tag>
-            )
+            ),
         },
         {
             title: "Hành động",
@@ -128,32 +127,58 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
                 <Button
                     type="primary"
                     style={{
-                        background:
-                            selectedUserId === record._id ? "#5ba93b" : "#7ECB50",
-                        border: "none"
+                        background: "#7ECB50",
+                        border: "none",
                     }}
                     onClick={() => {
-                        setSelectedUserId(record._id);
-                        onSelectUser(record);
+                        navigate("/voter/request-authorization", {
+                            state: {
+                                selectedUser: record,
+                                electionId: electionId,
+                                delegatorId: localStorage.getItem("userId"),
+                            },
+                        });
                     }}
+
                 >
-                    {selectedUserId === record._id ? "Đã chọn" : "Chọn"}
+                    Chọn
                 </Button>
-            )
-        }
+            ),
+        },
     ];
 
     return (
         <Card
             className="delegation-form-card"
             title={
-                <Title level={5} style={{ margin: 0, paddingLeft: 20 }}>
-                    👥 Chọn người được ủy quyền
-                </Title>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <Title level={5} style={{ margin: 0, paddingLeft: 10 }}>
+                        👥 Chọn người được ủy quyền
+                    </Title>
+                    <Button
+                        type="default"
+                        size="middle"
+                        style={{
+                            borderColor: "#7ECB50",
+                            color: "#7ECB50",
+                            fontWeight: 500,
+                            marginRight: 20,
+                        }}
+                        onClick={() => navigate(-1)}
+                    >
+                        Quay lại
+                    </Button>
+                </div>
             }
         >
             <Space direction="vertical" style={{ width: "100%" }} size="large">
-                {/* Search & Create new */}
+                {/* Thanh tìm kiếm & tạo mới */}
                 <Space style={{ width: "100%", justifyContent: "space-between" }}>
                     <Search
                         placeholder="Tìm kiếm người dùng"
@@ -166,14 +191,14 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
                     <Button
                         icon={<UserAddOutlined />}
                         size="large"
-                        onClick={onCreateNew}
+                        onClick={() => navigate("/voter/create-authorization/new-user")}
                         style={{ borderColor: "#7ECB50", color: "#7ECB50" }}
                     >
                         Tạo người dùng mới
                     </Button>
                 </Space>
 
-                {/* Error message */}
+                {/* Thông báo lỗi */}
                 {error && (
                     <Alert
                         message="Lỗi tải dữ liệu"
@@ -185,7 +210,7 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
                     />
                 )}
 
-                {/* Table (no local loading) */}
+                {/* Bảng người dùng */}
                 <Table
                     dataSource={filteredUsers}
                     columns={columns}
@@ -193,13 +218,10 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
                     pagination={{
                         pageSize: 5,
                         showSizeChanger: true,
-                        showTotal: (total) => `Tổng ${total} người dùng`
+                        showTotal: (total) => `Tổng ${total} người dùng`,
                     }}
-                    rowClassName={(record) =>
-                        selectedUserId === record._id ? "selected-row" : ""
-                    }
                     locale={{
-                        emptyText: "Không có dữ liệu"
+                        emptyText: "Không có dữ liệu",
                     }}
                 />
             </Space>
