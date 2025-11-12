@@ -40,12 +40,13 @@ export default function ArchiveSearchBar({ onSearch, availableTypes }: Props) {
       <Row gutter={[16, 0]} align="middle">
         <Col xs={24} sm={16} md={18} lg={20}>
           <Input
-            placeholder="Tìm kiếm theo tên báo cáo hoặc Mã Lưu trữ"
+            placeholder="Tìm kiếm theo tên báo cáo"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="ra-input"
             allowClear
           />
+
         </Col>
 
         <Col xs={24} sm={8} md={6} lg={4}>

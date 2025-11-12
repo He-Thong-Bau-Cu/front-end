@@ -1,4 +1,5 @@
 import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
 import VoterService from "@/services/VoterService";
 import {
     BarChartOutlined,
@@ -6,7 +7,7 @@ import {
     FileDoneOutlined,
     UserOutlined
 } from "@ant-design/icons";
-import { Card, Col, Row, Typography, message } from "antd";
+import { Card, Col, Row, Typography } from "antd";
 import { useEffect, useState } from "react";
 import "../../../style/voter/Dashboard.model.css";
 
@@ -18,8 +19,11 @@ const VoterStats = () => {
         totalVoters: 0,
         totalParticipants: 0,
         participationPercentage: 0,
+        voterNotActive: 0,
     });
     const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
+
 
 
 
@@ -27,20 +31,17 @@ const VoterStats = () => {
         async function fetchStats() {
             try {
                 showLoading();
-
                 const electionId = localStorage.getItem("currentElectionId");
-
                 if (!electionId) {
-                    message.error("Không tìm thấy electionId");
+                    notify("Không tìm thấy electionId", "error");
                     return;
                 }
-
                 const data = await VoterService.getDashboardVoterByElectionId(electionId);
                 setStatsData(data);
 
             } catch (error) {
                 console.error(error);
-                message.error("Không thể lấy thống kê cho voter");
+                notify("Không thể lấy thống kê cho voter", "error");
             } finally {
                 hideLoading();
             }
@@ -74,7 +75,7 @@ const VoterStats = () => {
         {
             icon: <UserOutlined />,
             title: "Chưa tham gia",
-            value: statsData.totalVoters - statsData.totalParticipants,
+            value: `${statsData.voterNotActive}%`,
             color: "#8E44AD",
             bg: "#F4E6FA",
         }

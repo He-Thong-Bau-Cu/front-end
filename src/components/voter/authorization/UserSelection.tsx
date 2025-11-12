@@ -147,7 +147,7 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
         <Card
             className="delegation-form-card"
             title={
-                <Title level={4} style={{ margin: 0, paddingLeft: 20 }}>
+                <Title level={5} style={{ margin: 0, paddingLeft: 20 }}>
                     👥 Chọn người được ủy quyền
                 </Title>
             }

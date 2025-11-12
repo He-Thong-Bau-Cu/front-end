@@ -1,51 +1,64 @@
-import { Card, Row, Col, Typography, Button, Tag, Descriptions, Divider, message } from "antd";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import BallotService from "@/services/BallotService";
+import { BallotCast } from "@/types/Ballot.interface";
 import {
+    AuditOutlined,
     CalendarOutlined,
-    EnvironmentOutlined,
-    UserOutlined,
-    FileTextOutlined,
-    CopyOutlined,
-    PrinterOutlined,
     CheckCircleOutlined,
     ClockCircleOutlined,
-    SafetyOutlined,
+    CopyOutlined,
+    FileTextOutlined,
+    PrinterOutlined,
+    UserOutlined
 } from "@ant-design/icons";
+import { Button, Card, Col, Descriptions, Divider, Row, Tag, Typography } from "antd";
+import { useEffect, useState } from "react";
 import "../../../style/voter/VotingHistory.model.css";
+
 
 const { Text, Title } = Typography;
 
-const voteHistory = {
-    electionTitle: "Bầu cử Đại biểu Quốc hội Khóa XVI",
-    ballotCode: "#VT2024-001",
-    status: "Đã hoàn thành",
-    issuedAt: "15 tháng 9, 2024 - 08:00 AM",
-    castAt: "15 tháng 9, 2024 - 09:30 AM",
-    method: "Trực tiếp",
-    location: "Quận 1, TP.HCM",
-    otpCode: "A7B9C2",
-    signature: "0x3f5a8b2c...",
-    voteValue: "Ứng viên Nguyễn Văn A",
-    entityName: "Đại biểu Quốc hội",
-};
-
 const VotingHistoryContent = () => {
-    const handleCopyCode = async () => {
+    const [ballot, setBallot] = useState<BallotCast | null>(null);
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
+
+    // 👉 Fix cứng voterId để test
+    const voterId = "6910f2016e3b3c1fb79a1f9d";
+
+    useEffect(() => {
+        const fetchBallot = async () => {
+            try {
+                showLoading();
+                const data = await BallotService.getBallotStatusCastByVoterId(voterId);
+                setBallot(data[0]);
+            } catch {
+                notify("Không thể tải dữ liệu phiếu bầu", "error");
+            } finally {
+                hideLoading();
+            }
+        };
+        fetchBallot();
+    }, []);
+
+    const handleCopy = async (text: string, label: string) => {
         try {
-            await navigator.clipboard.writeText(voteHistory.ballotCode);
-            message.success("Đã sao chép mã phiếu!");
+            await navigator.clipboard.writeText(text);
+            notify(`Đã sao chép ${label}!`, "success");
         } catch {
-            message.error("Không thể sao chép mã phiếu");
+            notify(`Không thể sao chép ${label}`, "error");
         }
     };
 
-    const handleCopyOTP = async () => {
-        try {
-            await navigator.clipboard.writeText(voteHistory.otpCode);
-            message.success("Đã sao chép mã OTP!");
-        } catch {
-            message.error("Không thể sao chép mã OTP");
-        }
-    };
+
+    if (!ballot?._id) return <Text type="secondary">Không có dữ liệu phiếu bầu.</Text>;
+
+
+    const electionTitle = ballot.voterId?.userId?.fullName
+        ? `Phiếu bầu của ${ballot.voterId.userId.fullName}`
+        : "Thông tin phiếu bầu";
+    const status = ballot.castAt ? "Đã hoàn thành" : "Chưa bỏ phiếu";
 
     return (
         <div className="voting-history-content">
@@ -53,20 +66,20 @@ const VotingHistoryContent = () => {
                 {/* Header */}
                 <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
                     <Col>
-                        <Title level={4} style={{ marginBottom: 6, marginTop: 0, color: "#124d2d" }}>
-                            Chi tiết lịch sử bỏ phiếu
+                        <Title level={5} style={{ marginBottom: 6, marginTop: 0, color: "#124d2d" }}>
+                            🗳️ Chi tiết lịch sử bỏ phiếu của bạn
                         </Title>
                         <Text type="secondary" style={{ fontSize: 14 }}>
-                            {voteHistory.electionTitle}
+                            {electionTitle}
                         </Text>
                     </Col>
                     <Col>
                         <Tag
-                            color={voteHistory.status === "Đã hoàn thành" ? "green" : "blue"}
+                            color={status === "Đã hoàn thành" ? "green" : "blue"}
                             icon={<CheckCircleOutlined />}
                             style={{ borderRadius: 16, fontWeight: 500, fontSize: 14, padding: "6px 16px" }}
                         >
-                            {voteHistory.status}
+                            {status}
                         </Tag>
                     </Col>
                 </Row>
@@ -79,39 +92,85 @@ const VotingHistoryContent = () => {
                         Thông tin phiếu bầu
                     </Title>
                     <Row gutter={[16, 16]}>
-                        <Col xs={24} sm={12} md={8}>
+                        <Col xs={24} sm={12} md={12}>
                             <div className="voting-info-item">
                                 <div className="voting-info-item-icon">
-                                    <FileTextOutlined style={{ color: '#A8E678', fontSize: 20 }} />
+                                    <FileTextOutlined style={{ color: "#A8E678", fontSize: 20 }} />
                                 </div>
                                 <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Mã phiếu</Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{voteHistory.ballotCode}</strong>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        Mã phiếu
+                                    </Text>
+                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{ballot._id}</strong>
                                 </div>
                             </div>
                         </Col>
-                        <Col xs={24} sm={12} md={8}>
+                        {/* <Col xs={24} sm={12} md={8}>
                             <div className="voting-info-item">
                                 <div className="voting-info-item-icon">
-                                    <SafetyOutlined style={{ color: '#A8E678', fontSize: 20 }} />
+                                    <SafetyOutlined style={{ color: "#A8E678", fontSize: 20 }} />
                                 </div>
                                 <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Mã OTP</Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{voteHistory.otpCode}</strong>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        Mã OTP
+                                    </Text>
+                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{otpCode}</strong>
+                                </div>
+                            </div>
+                        </Col> */}
+                        <Col xs={24} sm={12} md={12}>
+                            <div className="voting-info-item">
+                                <div className="voting-info-item-icon">
+                                    <UserOutlined style={{ color: "#A8E678", fontSize: 20 }} />
+                                </div>
+                                <div>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        Người bỏ phiếu
+                                    </Text>
+                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
+                                        {ballot.voterId.userId.fullName}
+                                    </strong>
                                 </div>
                             </div>
                         </Col>
-                        <Col xs={24} sm={12} md={8}>
+                    </Row>
+                </div>
+
+
+                {/* Thông tin thời gian */}
+                <div style={{ marginBottom: 20 }}>
+                    <Title level={5} style={{ marginBottom: 12, color: "#124d2d" }}>
+                        Thông tin bầu cử
+                    </Title>
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} sm={12}>
                             <div className="voting-info-item">
                                 <div className="voting-info-item-icon">
-                                    <UserOutlined style={{ color: '#A8E678', fontSize: 20 }} />
+                                    <AuditOutlined style={{ color: "#A8E678", fontSize: 20 }} />
                                 </div>
                                 <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Phương thức</Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{voteHistory.method}</strong>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        Tên cuộc bầu cử                                    </Text>
+                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
+                                        {ballot.electionId.title}
+                                    </strong>
                                 </div>
                             </div>
                         </Col>
+                        {/* <Col xs={24} sm={12}>
+                            <div className="voting-info-item">
+                                <div className="voting-info-item-icon">
+                                    <CalendarOutlined style={{ color: "#A8E678", fontSize: 20 }} />
+                                </div>
+                                <div>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        Địa điểm                                    </Text>
+                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
+                                        {ballot.electionId.decisionName}
+                                    </strong>
+                                </div>
+                            </div>
+                        </Col> */}
                     </Row>
                 </div>
 
@@ -124,107 +183,86 @@ const VotingHistoryContent = () => {
                         <Col xs={24} sm={12}>
                             <div className="voting-info-item">
                                 <div className="voting-info-item-icon">
-                                    <ClockCircleOutlined style={{ color: '#A8E678', fontSize: 20 }} />
+                                    <ClockCircleOutlined style={{ color: "#A8E678", fontSize: 20 }} />
                                 </div>
                                 <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Thời gian phát hành</Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{voteHistory.issuedAt}</strong>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        Phát hành
+                                    </Text>
+                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
+                                        {ballot.issuedAt || "Chưa có"}
+                                    </strong>
                                 </div>
                             </div>
                         </Col>
                         <Col xs={24} sm={12}>
                             <div className="voting-info-item">
                                 <div className="voting-info-item-icon">
-                                    <CalendarOutlined style={{ color: '#A8E678', fontSize: 20 }} />
+                                    <CalendarOutlined style={{ color: "#A8E678", fontSize: 20 }} />
                                 </div>
                                 <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>Thời gian bỏ phiếu</Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{voteHistory.castAt}</strong>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        Bỏ phiếu
+                                    </Text>
+                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
+                                        {ballot.castAt || "Chưa bỏ"}
+                                    </strong>
                                 </div>
                             </div>
                         </Col>
                     </Row>
                 </div>
 
-                {/* Thông tin lựa chọn */}
+                {/* Lựa chọn */}
                 <div style={{ marginBottom: 20 }}>
                     <Title level={5} style={{ marginBottom: 12, color: "#124d2d" }}>
                         Lựa chọn đã bỏ phiếu
                     </Title>
-                    <Card 
-                        size="small" 
-                        style={{ 
-                            background: "#f6ffed", 
+                    <Card
+                        size="small"
+                        style={{
+                            background: "#f6ffed",
                             border: "none",
                             borderRadius: 12,
-                            boxShadow: "none"
+                            boxShadow: "none",
                         }}
                     >
                         <Descriptions column={1} size="small">
-                            <Descriptions.Item label="Đối tượng bầu cử">
-                                <Text strong>{voteHistory.entityName}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Lựa chọn">
-                                <Text strong style={{ color: "#52c41a" }}>{voteHistory.voteValue}</Text>
-                            </Descriptions.Item>
+                            {ballot.allocations.map((a, i) => (
+                                <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
+                                    <Text strong style={{ color: "#52c41a" }}>
+                                        {a.entityId} — Số phiếu: {a.voteValue}
+                                    </Text>
+                                </Descriptions.Item>
+                            ))}
                         </Descriptions>
+
                     </Card>
                 </div>
 
-                {/* Thông tin địa điểm */}
-                <div style={{ marginBottom: 20 }}>
-                    <Title level={5} style={{ marginBottom: 12, color: "#124d2d" }}>
-                        Địa điểm bỏ phiếu
-                    </Title>
-                    <div className="voting-info-item">
-                        <div className="voting-info-item-icon">
-                            <EnvironmentOutlined style={{ color: '#A8E678', fontSize: 20 }} />
-                        </div>
-                        <div>
-                            <Text type="secondary" style={{ fontSize: 13 }}>Địa điểm</Text>
-                            <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{voteHistory.location}</strong>
-                        </div>
-                    </div>
-                </div>
+
+
+
 
                 {/* Nút hành động */}
                 <Row gutter={12} className="voting-buttons" style={{ marginTop: 20 }}>
-                    <Col xs={24} sm={8}>
-                        <Button 
-                            block 
-                            icon={<CopyOutlined />} 
-                            size="large"
-                            onClick={handleCopyCode}
-                        >
+                    <Col xs={24} sm={12}>
+                        <Button block icon={<CopyOutlined />} size="large" onClick={() => handleCopy(ballot._id, "mã phiếu")}>
                             Sao chép mã phiếu
                         </Button>
                     </Col>
-                    <Col xs={24} sm={8}>
-                        <Button 
-                            block 
-                            icon={<CopyOutlined />} 
-                            size="large"
-                            onClick={handleCopyOTP}
-                        >
-                            Sao chép mã OTP
-                        </Button>
-                    </Col>
-                    <Col xs={24} sm={8}>
-                        <Button 
-                            block 
-                            icon={<PrinterOutlined />} 
-                            size="large"
-                        >
+
+                    <Col xs={24} sm={12}>
+                        <Button block icon={<PrinterOutlined />} size="large">
                             In xác nhận
                         </Button>
                     </Col>
                 </Row>
             </Card>
+
+
         </div>
     );
 };
 
 export default VotingHistoryContent;
-
-
-
