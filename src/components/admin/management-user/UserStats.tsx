@@ -6,35 +6,36 @@ import {
     PlusSquareOutlined,
 } from "@ant-design/icons";
 import "../../../style/admin/ManagementUser.model.css";
+import { stat } from "fs";
 
-const UserStats = () => {
+interface UserStatsProps {
+  statsData?: any
+}
+
+const UserStats = ({ statsData }: UserStatsProps) => {
     const stats = [
         {
             icon: <UsergroupAddOutlined style={{ fontSize: 36, color: "#1d4dc4" }} />,
             title: "Tổng người dùng",
-            value: "1,234",
-            change: "+45 tháng này",
+            value: statsData.totalUsers || 0,
             color: "#1d4dc4",
         },
         {
             icon: <CheckOutlined style={{ fontSize: 36, color: "#27AE60" }} />,
             title: "Đang hoạt động",
-            value: "1,089",
-            change: "+12 hôm nay",
+            value: statsData.activeUsers || 0,
             color: "#27AE60",
         },
         {
             icon: <CloseOutlined style={{ fontSize: 36, color: "#c41d1d" }} />,
             title: "Không hoạt động",
-            value: "145",
-            change: "-3 tuần này",
+            value: statsData.inactiveUsers || 0,
             color: "#c41d1d",
         },
         {
             icon: <PlusSquareOutlined style={{ fontSize: 36, color: "#f39c12" }} />,
-            title: "Mới tháng này",
-            value: "45",
-            change: "+15 hôm nay",
+            title: "Người dùng mới",
+            value: statsData.newUsers || 0,
             color: "#f39c12",
         },
     ];
@@ -55,7 +56,6 @@ const UserStats = () => {
                         <div className="user-card-content">
                             <p className="user-value">{s.value}</p>
                             <p className="user-title">{s.title}</p>
-                            <p className="user-change">{s.change}</p>
                         </div>
                     </div>
                 </Card>

@@ -7,7 +7,18 @@ const { Title, Text } = Typography;
 export default function NotFound404() {
   const handleGoHome = () => {
     console.log('Navigating to home...');
-    window.location.href = '/';
+    const role = localStorage.getItem('role') || '';
+    switch (role) {
+      case 'ADMIN':
+        window.location.href = '/admin';
+        break;
+      case 'PRESIDE':
+        window.location.href = '/preside';
+        break;
+      default:
+        window.location.href = '/home';
+    }
+    // window.location.href = '/';
   };
 
   const handleGoBack = () => {

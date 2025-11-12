@@ -1,19 +1,22 @@
 import { Card } from "antd";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-const DashboardCharts = () => {
-    const lineData = [
-        { month: "Th1", rate: 70 },
-        { month: "Th2", rate: 74 },
-        { month: "Th3", rate: 78 },
-        { month: "Th4", rate: 81 },
-        { month: "Th5", rate: 87 },
-    ];
+export interface LineData {
+  month: string;
+  rate: number;
+}
 
-    const pieData = [
-        { name: "Đạt", value: 68 },
-        { name: "Chưa đạt", value: 32 },
-    ];
+export interface PieData {
+  name: string;
+  value: number;
+}
+
+interface DashboardChartsProps {
+  lineData?: LineData[];
+  pieData?: PieData[];
+}
+
+const DashboardCharts = ({lineData = [], pieData = []} : DashboardChartsProps) => {
     const COLORS = ["#22c55e", "#ef4444"];
 
     return (
@@ -44,7 +47,7 @@ const DashboardCharts = () => {
             </Card>
 
             <Card
-                title={<span style={{ paddingLeft: 30 }}>📊 Phân bố kết quả</span>}
+                title={<span style={{ paddingLeft: 30 }}>📊 Người dùng hoạt động</span>}
                 style={{
                     flex: 1,
                     borderRadius: '16px'
@@ -53,7 +56,7 @@ const DashboardCharts = () => {
                 <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                         <Pie
-                            data={pieData}
+                            data={pieData as any || []}
                             dataKey="value"
                             nameKey="name"
                             outerRadius={90}

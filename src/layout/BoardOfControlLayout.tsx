@@ -9,7 +9,6 @@ const BoardOfControlLayout = () => {
     const [pageTitle, setPageTitle] = useState('Dashboard');
     const location = useLocation();
 
-
     useEffect(() => {
         const map: Record<string, string> = {
             "/board-of-control": "Tổng quan",

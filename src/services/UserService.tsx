@@ -7,6 +7,10 @@ class UserService extends BaseService {
     super("users");
   }
 
+  async statistics(): Promise<any> {
+    return await this.api.get(`${this.endpoint}/statistics/get`);
+  }
+
   async changePassword(data: any): Promise<any> {
     return await this.api.post(`auth/change-password`, data);
   }

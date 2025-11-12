@@ -50,6 +50,7 @@ const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
+    localStorage.removeItem("permissionsElections");
     showLoading();
     fetchData();
     hideLoading();
@@ -78,9 +79,8 @@ const HomePage: React.FC = () => {
       notify("Không tìm thấy cuộc bầu cử", "error");
       return;
     }
-
+    localStorage.setItem("permissionsElections", JSON.stringify(election.permissionElections));
     localStorage.setItem("currentElectionId", electionId);
-
     switch (election.roleCode) {
       case USER_ROLE.PRESIDE_SECRETARY:
         navigate(PATH.SECRETARY, { state: { electionId } });
@@ -163,6 +163,8 @@ const HomePage: React.FC = () => {
         participants: undefined, // nếu có dữ liệu từ API bạn fill vào
         progress: undefined, // nếu muốn tính % từ start/endDate
         totalVoters: undefined, // nếu API trả về
+        permissionElections: item?.permissionElections || [],
+        voter: item?.voter || null,
       };
     });
   };

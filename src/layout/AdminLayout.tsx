@@ -19,12 +19,10 @@ const AdminLayout = () => {
   const [pageTitle, setPageTitle] = useState("Tổng quan");
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
-  const {showLoading, hideLoading} = useLoading();
+  const { showLoading, hideLoading } = useLoading();
 
   useEffect(() => {
-    showLoading();
     fetchDataUser();
-    hideLoading();
   }, []);
 
   const fetchDataUser = async () => {
@@ -35,7 +33,6 @@ const AdminLayout = () => {
       console.error("Error fetching user:", error);
     }
   };
-
 
   useEffect(() => {
     const map: Record<string, string> = {
@@ -57,24 +54,21 @@ const AdminLayout = () => {
 
       <Layout
         style={{
-          marginLeft: 250,
-          background: "#EFF8EF",
+          marginLeft: 250, // bằng đúng width sidebar
+          height: "calc(100vh - 64px)",
           display: "flex",
           flexDirection: "column",
-          width: "calc(100vw - 290px)",
           minHeight: "100vh",
-          overflow: "hidden",
+          overflow: "hidden", // ẩn scroll ngoài
         }}
       >
-        <AdminHeader title={pageTitle} user={user}/>
+        <AdminHeader title={pageTitle} user={user} />
         <Content
           style={{
-            flex: 1,
+            height: "calc(100vh - 64px)",
+            overflow: "auto",
             padding: "10px 24px 24px",
             background: "#EFF8EF",
-            overflowY: "auto",
-            overflowX: "hidden",
-            boxSizing: "border-box",
           }}
         >
           <Outlet />

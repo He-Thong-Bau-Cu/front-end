@@ -18,6 +18,7 @@ type SideberProps = {
 const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
 
     const menuItems = [
         {
@@ -45,7 +46,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <BarChartOutlined />,
             label: "Quản lý báo cáo",
         },
-    ];
+    ].filter((item) => permissions.includes(item.key));
 
     const handleClick = (e: { key: string }) => {
         const selected = menuItems.find((item) => item.key === e.key);
