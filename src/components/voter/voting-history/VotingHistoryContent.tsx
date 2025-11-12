@@ -10,11 +10,17 @@ import {
     CopyOutlined,
     FileTextOutlined,
     PrinterOutlined,
-    UserOutlined
+    UserOutlined,
+    InboxOutlined,
+    RightOutlined
 } from "@ant-design/icons";
 import { Button, Card, Col, Descriptions, Divider, Row, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../../style/voter/VotingHistory.model.css";
+import dayjs from "dayjs";
+import "dayjs/locale/vi"; // ✅ hiển thị tiếng Việt
+dayjs.locale("vi");
 
 
 const { Text, Title } = Typography;
@@ -23,6 +29,7 @@ const VotingHistoryContent = () => {
     const [ballot, setBallot] = useState<BallotCast | null>(null);
     const { showLoading, hideLoading } = useLoading();
     const { notify } = useNotification();
+    const navigate = useNavigate();
 
     // 👉 Fix cứng voterId để test
     const voterId = "6910f2016e3b3c1fb79a1f9d";
@@ -40,6 +47,7 @@ const VotingHistoryContent = () => {
             }
         };
         fetchBallot();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleCopy = async (text: string, label: string) => {
@@ -52,7 +60,35 @@ const VotingHistoryContent = () => {
     };
 
 
-    if (!ballot?._id) return <Text type="secondary">Không có dữ liệu phiếu bầu.</Text>;
+    // Hiển thị thông báo khi chưa có dữ liệu (chưa bỏ phiếu)
+    if (!ballot?._id) {
+        return (
+            <div className="voting-history-content">
+                <Card className="voting-single-card no-voting-card">
+                    <div className="no-voting-container">
+                        <div className="no-voting-icon">
+                            <InboxOutlined />
+                        </div>
+                        <Title level={4} className="no-voting-title">
+                            Bạn chưa bỏ phiếu
+                        </Title>
+                        <Text type="secondary" className="no-voting-description">
+                            Hiện tại bạn chưa có lịch sử bỏ phiếu nào. Vui lòng thực hiện bỏ phiếu để xem thông tin chi tiết tại đây.
+                        </Text>
+                        <Button
+                            type="primary"
+                            size="large"
+                            icon={<RightOutlined />}
+                            className="no-voting-button"
+                            onClick={() => navigate("/voter/ballots")}
+                        >
+                            Đi đến bỏ phiếu
+                        </Button>
+                    </div>
+                </Card>
+            </div>
+        );
+    }
 
 
     const electionTitle = ballot.voterId?.userId?.fullName
@@ -190,8 +226,9 @@ const VotingHistoryContent = () => {
                                         Phát hành
                                     </Text>
                                     <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
-                                        {ballot.issuedAt || "Chưa có"}
+                                        {ballot.issuedAt ? dayjs(ballot.issuedAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa có"}
                                     </strong>
+
                                 </div>
                             </div>
                         </Col>
@@ -205,8 +242,9 @@ const VotingHistoryContent = () => {
                                         Bỏ phiếu
                                     </Text>
                                     <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
-                                        {ballot.castAt || "Chưa bỏ"}
+                                        {ballot.castAt ? dayjs(ballot.castAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa bỏ"}
                                     </strong>
+
                                 </div>
                             </div>
                         </Col>

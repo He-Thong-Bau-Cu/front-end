@@ -86,11 +86,11 @@
 }
 
 /* Welcome Card Enhancement */
-.ant-card {
+.homepage-content .ant-card {
   transition: all 0.3s ease;
 }
 
-.ant-card:hover {
+.homepage-content .ant-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(18, 77, 45, 0.12) !important;
 }
@@ -485,11 +485,11 @@ html {
 }
 
 /* Enhanced hover effects for cards */
-.ant-card {
+.homepage-content .ant-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.ant-card:hover {
+.homepage-content .ant-card:hover {
   transform: translateY(-4px) !important;
 }
 
