@@ -1,141 +1,210 @@
-import React from "react";
-import {
-    Modal,
-    Typography,
-    Descriptions,
-    Divider,
-    Tag,
-    Button,
-    Spin,
-} from "antd";
-import {
-    FileTextOutlined,
-    CalendarOutlined,
-    CloseCircleFilled,
-} from "@ant-design/icons";
+import React, { useState } from "react";
+import { Modal, Typography, Spin, Button, Space, message } from "antd";
 import "../../../style/preside/ViewDecision.model.css";
 import { Decision } from "@/types/Decision.interface";
+import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
+
 interface ViewDecisionModalProps {
-    open: boolean;
-    onClose: () => void;
-    data?: Decision;
-    loading?: boolean;
+  open: boolean;
+  onClose: () => void;
+  onSign?: () => void;
+  data?: Decision;
+  loading?: boolean;
 }
+
 const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
-    open,
-    onClose,
-    data,
-    loading = false,
+  open,
+  onClose,
+  onSign,
+  data,
+  loading = false,
 }) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
 
-    const formatDate = (dateString: string | Date | null | undefined): string => {
-        if (!dateString) return "";
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return "";
-            return date.toLocaleDateString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        } catch {
-            return "";
-        }
-    };
+  const handleViewDecision = async (record: Decision) => {
+    try {
+      showLoading();
+      setModalOpen(true);
+    } catch (error: any) {
+      console.error("Error loading decision details:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Không thể tải chi tiết quyết định. Vui lòng thử lại.";
+      message.error(errorMessage);
+      setModalOpen(false);
+    } finally {
+      hideLoading();
+    }
+  };
 
-    // Map status từ English sang tiếng Việt
-    const statusMap: { [key: string]: string } = {
-        "APPROVED_SIGNED": "Đã phê duyệt",
-        "WAIT_APPROVAL": "Chờ duyệt",
-        "REQUEST_EDIT": "Yêu cầu chỉnh sửa",
-        "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
-        "DELETED": "Đã đóng",
-    };
-   
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "......../......../..........";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
-    return (
-        <Modal
-            open={open}
-            onCancel={onClose}
-            footer={null}
-            width={900}
-            centered
-            className="view-decision-modal"
-            closeIcon={null} // ❌ Ẩn hoàn toàn dấu X mặc định
-        >
-            <Spin spinning={loading}>
-                {!data && !loading ? (
-                    <div style={{ padding: "40px", textAlign: "center" }}>
-                        <Text>Không có dữ liệu</Text>
-                    </div>
-                ) : data ? (
-                    <>
-                        {/* Header */}
-                        <div className="decision-view-header">
-                            <FileTextOutlined className="header-icon" />
-                            <div className="header-text">
-                                <Title level={4} className="header-title">
-                                    {data.decisionName}
-                                </Title>
-                                <Text className="header-sub">
-                                    Số quyết định: {data.decisionNumber}
-                                </Text>
-                            </div>
+  return (
+    <>
+      <Modal
+        open={open}
+        onCancel={onClose}
+        footer={null}
+        width={1050}
+        centered
+        className="decision-modal-wrapper"
+        destroyOnClose
+      >
+        <Spin spinning={loading}>
+          <div className="decision-modal-body">
+            {/* ===== PAPER (A4) ===== */}
+            <div className="decision-paper-a4">
+              {/* ===== HEADER ===== */}
+              <div className="paper-header">
+                <div className="header-left">
+                  <Text className="company-name">
+                    CÔNG TY CỔ PHẦN PHÁT TRIỂN ĐIỆN LỰC VIỆT NAM
+                  </Text>
+                  <Text className="doc-number">
+                    Số: {data?.decisionNumber || "1632/QĐ-HĐQT"}
+                  </Text>
+                </div>
+                <div className="header-right">
+                  <Text className="nation">
+                    CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+                  </Text>
+                  <Text className="motto">Độc lập - Tự do - Hạnh phúc</Text>
+                  <Text className="location-date">
+                    Hà Nội, ngày {formatDate(data?.startDate)}
+                  </Text>
+                </div>
+              </div>
 
-                            {/* ✅ Nút đóng tinh tế trong header */}
-                            <Button
-                                type="text"
-                                icon={<CloseCircleFilled style={{ color: "#fff", fontSize: 20 }} />}
-                                onClick={onClose}
-                                className="btn-close-header"
-                            />
-                        </div>
+              {/* ===== TITLE ===== */}
+              <div className="paper-title-section">
+                <Text className="paper-title">QUYẾT ĐỊNH</Text>
+                <Text className="paper-subtitle">
+                  Về việc triệu tập Đại hội đồng cổ đông bất thường năm 2023
+                </Text>
+                <Text className="paper-author">
+                  HỘI ĐỒNG QUẢN TRỊ CÔNG TY CỔ PHẦN PHÁT TRIỂN ĐIỆN LỰC VIỆT NAM
+                </Text>
+              </div>
 
-                        <Divider style={{ margin: "12px 0" }} />
-                        {/* Thông tin tổng quan */}
-                        <Descriptions bordered size="small" column={2}>
-                            <Descriptions.Item label="Ngày ban hành">
-                                <CalendarOutlined /> {formatDate(data.startDate)}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Ngày kết thúc">
-                                <CalendarOutlined /> {formatDate(data.endDate)}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Ngày bắt đầu ủy quyền">
-                                <CalendarOutlined /> {formatDate(data.delegationStart)}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Ngày kết thúc ủy quyền">
-                                <CalendarOutlined /> {formatDate(data.delegationEnd)}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Tác giả">
-                                {data.createdByUserId?.fullName}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Loại bầu cử">
-                                {data.typeId?.typeName || "Không có"}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Phương pháp bầu cử">
-                                {data.votingMethodId?.methodName || "Không có"}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Ngưỡng phê duyệt">
-                                {data.thresholdId?.thresholdName || "Không có"}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Trạng thái">
-                                <Tag color={data.statusData === "APPROVED_SIGNED" ? "green" : data.statusData === "WAIT_ENTER_DATA" ? "orange" :
-                                    data.statusData === "WAIT_APPROVAL" ? "yellow" :data.statusData === "REQUEST_EDIT" ? "pink" : data.statusData === "DELETED" ? "red" : "gray"}>
-                                    {statusMap[data.statusData ] || data.statusData }
-                                </Tag>
-                            </Descriptions.Item>
-                        </Descriptions>
+              {/* ===== BODY ===== */}
+              <div className="paper-body">
+                <p>
+                  Căn cứ Luật Doanh nghiệp số 59/2020/QH14;
+                  <br />
+                  Căn cứ Điều lệ Công ty Cổ phần Phát triển Điện lực Việt Nam
+                  được ban hành theo Quyết định số 727/QĐ-HĐQT ngày 10/5/2023;
+                  <br />
+                  Căn cứ Quy chế nội bộ về quản trị được ban hành theo Quyết
+                  định số 729/QĐ-HĐQT ngày 10/5/2023;
+                  <br />
+                  Căn cứ Nghị quyết số 1497/NQ-HĐQT ngày 10/10/2023 của Hội đồng
+                  quản trị Công ty về việc triệu tập Đại hội đồng cổ đông bất
+                  thường năm 2023;
+                  <br />
+                  Căn cứ danh sách cổ đông được Tổng công ty Lưu ký và Bù trừ
+                  chứng khoán Việt Nam chốt ngày 31/10/2023.
+                </p>
 
-                        <div style={{ textAlign: "right", marginTop: 16 }}>
-                            <Button onClick={onClose}>Đóng</Button>
-                        </div>
-                    </>
-                ) : null}
-            </Spin>
-        </Modal>
-    );
+                <p className="decision-line">QUYẾT ĐỊNH:</p>
+
+                <p>
+                  <strong>Điều 1.</strong> {data?.decisionName} của Công ty Cổ phần Phát triển Điện lực Việt
+                  Nam, chi tiết như sau:
+                </p>
+                <ul>
+                  <li>
+                    <b>1. Thời gian:</b> ........
+                  </li>
+                  <li>
+                    <b>2. Địa điểm:</b> .........
+                  </li>
+                  <li>
+                    <b>3. Hình thức tổ chức Đại hội:</b> {data?.votingMethodId?.methodName}
+                  </li>
+                  <li>
+                    <b>4. Nội dung Đại hội:</b> Được đính kèm theo Quyết định
+                    này;
+                  </li>
+                  <li>
+                    <b>5. Thành phần và thời điểm chốt danh sách cổ đông:</b> ..... 
+                    theo danh sách do Trung tâm Lưu ký chứng khoán Việt Nam
+                    cung cấp.
+                  </li>
+                </ul>
+
+                <p>
+                  <strong>Điều 2.</strong> Các thành viên HĐQT, Tổng Giám đốc
+                  Công ty, các đơn vị liên quan và cổ đông Công ty chịu trách
+                  nhiệm thi hành Quyết định này.
+                </p>
+              </div>
+
+              {/* ===== FOOTER ===== */}
+              <div className="paper-footer">
+                <div className="footer-left">
+                  <Text className="footer-heading">Nơi nhận:</Text>
+                  <ul>
+                    <li>Như Điều 2;</li>
+                    <li>PH (đăng web Cty);</li>
+                    <li>Lưu: VT, VP HĐQT.</li>
+                  </ul>
+                </div>
+                <div className="footer-right">
+                  <Text className="footer-company">
+                    TM. HỘI ĐỒNG QUẢN TRỊ
+                  </Text>
+                  <Text className="footer-role">CHỦ TỊCH</Text>
+                  <div className="footer-sign">(Đã ký)</div>
+                  <Text className="footer-name">Nguyễn Hoàng Đạo</Text>
+                </div>
+              </div>
+            </div>
+
+            {/* ===== BUTTONS (OUTSIDE PAPER) ===== */}
+            <div className="decision-action-buttons">
+              <Space>
+                <Button onClick={onClose}>Đóng</Button>
+                {data?.statusData === "WAIT_APPROVAL" && (
+                  <Button
+                    type="primary"
+                    onClick={() => handleViewDecision(data)}
+                    style={{
+                      background: "#52C41A",
+                      border: "none",
+                    }}
+                  >
+                    Ký số
+                  </Button>
+                )}
+              </Space>
+            </div>
+          </div>
+        </Spin>
+      </Modal>
+
+      {/* ===== DIGITAL SIGN MODAL ===== */}
+      <DigitalSignModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={() => setModalOpen(true)}
+      />
+    </>
+  );
 };
 
 export default ViewDecisionModal;

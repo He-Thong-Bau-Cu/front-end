@@ -7,12 +7,12 @@ const { Title, Text } = Typography;
 export default function NotFound404() {
   const handleGoHome = () => {
     console.log('Navigating to home...');
-    // window.location.href = '/';
+    window.location.href = '/';
   };
 
   const handleGoBack = () => {
     console.log('Going back...');
-    // window.history.back();
+    window.history.back();
   };
 
   // Reset body styles

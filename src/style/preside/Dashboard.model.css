@@ -234,10 +234,11 @@
    ============================== */
 
 .decision-list-card {
-  border-radius: 16px !important;
   margin-right: 32px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   background: #fff;
+   border-radius: 16px !important;
+  margin-left: 32px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .decision-list-link {

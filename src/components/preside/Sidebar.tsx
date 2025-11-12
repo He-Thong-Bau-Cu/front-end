@@ -68,7 +68,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
                     </div>
                 </div>
 
-                <div className="sidebar-subtext">Sự lựa chọn của doanh nghiệp</div>
+                {/* <div className="sidebar-subtext">Sự lựa chọn của doanh nghiệp</div> */}
             </div>
 
             {/* Menu */}

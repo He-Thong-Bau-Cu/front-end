@@ -26,11 +26,10 @@ import ViewDecisionModal from "@/components/preside/management-decision/ViewDeci
 import DecisionService from "@/services/DecisionService";
 import * as XLSX from "xlsx";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-
+import { useNotification } from "@/contexts/NotificationContext";
 const { Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
-
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
 const formatDate = (dateString: string | Date | null | undefined): string => {
   if (!dateString) return "";
@@ -53,7 +52,7 @@ const statusMap: { [key: string]: string } = {
   "WAIT_APPROVAL": "Chờ duyệt",
   "REQUEST_EDIT": "Yêu cầu chỉnh sửa",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
-  "DELETED": "Đã đóng",
+  "DRAFT": "Đã xóa",
 };
 const DecisionTable = () => {
 
@@ -67,7 +66,7 @@ const DecisionTable = () => {
   const [data, setData] = useState<Decision[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("Tất cả trạng thái");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -75,28 +74,16 @@ const DecisionTable = () => {
   });
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<Decision | null>(null);
-
+  const { notify } = useNotification();
   // Load danh sách decisions khi component mount
   useEffect(() => {
     loadDecisions(1, pagination.pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [statusFilter, searchText]);
 
-  // Reload khi status filter thay đổi
-  // Khi có filter status, load tất cả dữ liệu để filter ở client-side
-  // Khi không có filter, load với pagination bình thường
-  useEffect(() => {
-    // Load lại dữ liệu khi filter thay đổi
-    // Reset về trang 1 khi filter thay đổi
-    setPagination(prev => ({ ...prev, current: 1 }));
-    loadDecisions(1, pagination.pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
-
-  // Reload khi search text thay đổi (với debounce)
   useEffect(() => {
     // Bỏ qua lần mount đầu tiên
-    if (searchText === "" && statusFilter === "Tất cả trạng thái") {
+    if (searchText === "" && statusFilter === "") {
       return;
     }
 
@@ -111,95 +98,26 @@ const DecisionTable = () => {
   const loadDecisions = async (page: number = 1, limit: number = 10) => {
     setLoading(true);
     try {
-      // Nếu có filter status, load tất cả dữ liệu (limit lớn) để filter ở client-side
-      // Vì backend chưa hỗ trợ filter theo statusData
-      const hasStatusFilter = statusFilter !== "Tất cả trạng thái";
-      const loadPage = hasStatusFilter ? 1 : page;
-      const loadLimit = hasStatusFilter ? 10000 : limit; // Load nhiều hơn khi có filter
-
-      console.log("Loading decisions with params:", {
-        page: loadPage,
-        limit: loadLimit,
-        textSearch: searchText,
-        statusFilter,
-        hasStatusFilter
-      });
-
       const response = await DecisionService.getAllDecisions({
-        page: loadPage,
-        limit: loadLimit,
+        page,
+        limit,
         textSearch: searchText.trim() || undefined,
-        status: statusFilter 
+        statusData: statusFilter || undefined, 
       });
 
-      console.log("API Response received:", response);
-      console.log("Content items:", response.content);
-
-      // Kiểm tra nếu không có dữ liệu
-      if (!response.content || response.content.length === 0) {
-        console.warn("No data received from API");
-        setData([]);
-        setPagination({
-          current: 1,
-          pageSize: limit,
-          total: 0,
-        });
-        return;
-      }
-
-
-      console.log("Formatted decisions:", response.content);
-
-      // Lưu dữ liệu vào state
-      setData(response.content);
-
-      // Cập nhật pagination
-      // Nếu có filter status, pagination sẽ được tính trên filteredData (ở client-side)
-      // Nếu không filter, dùng pagination từ server
-      if (hasStatusFilter) {
-        // Khi có filter, lưu tổng số từ server để biết có thể còn dữ liệu không
-        // Pagination thực tế sẽ được tính trên filteredData
-        setPagination({
-          current: 1,
-          pageSize: limit,
-          total: response.totalItems, // Tổng số từ server
-        });
-      } else {
-        // Không có filter, dùng pagination từ server
-        setPagination({
-          current: response.page,
-          pageSize: response.limit,
-          total: response.totalItems,
-        });
-      }
-
-      console.log("Data state updated, total items:", response.content.length);
-    } catch (error: any) {
-      console.error("Error loading decisions:", error);
-      console.error("Error details:", {
-        message: error.message,
-        response: error.response,
-        data: error.response?.data,
-      });
-
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Không thể tải danh sách quyết định. Vui lòng thử lại sau.";
-
-      message.error(errorMessage);
-
-      // Set empty data on error
-      setData([]);
+      setData(response?.content || []);
       setPagination({
-        current: 1,
-        pageSize: pagination.pageSize,
-        total: 0,
+        current: response.page || page,
+        pageSize: response.limit || limit,
+        total: response.totalItems || 0,
       });
+    } catch (error: any) {
+      message.error("Không thể tải danh sách nghị quyết.");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
     try {
@@ -210,7 +128,7 @@ const DecisionTable = () => {
         decisionName: values.decisionName,
         title: values.decisionName,
       };
-       const apiData2: any = {
+      const apiData2: any = {
         decisionNumber: values.decisionNumber,
         decisionName: values.decisionName,
         title: values.decisionName,
@@ -221,15 +139,19 @@ const DecisionTable = () => {
       if (isEdit && id) {
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
+          notify(response.message, "success");
           message.success("Cập nhật nghị quyết thành công!");
         } else {
+          notify(response.message, "error");
           message.error("Không thể cập nhật nghị quyết. Vui lòng thử lại.");
         }
       } else {
         response = await DecisionService.createDecision(apiData2);
         if (response.status === 201 && response.success) {
+          notify(response.message, "success");
           message.success("Tạo nghị quyết thành công!");
         } else {
+          notify(response.message, "error");
           message.error("Không thể tạo nghị quyết. Vui lòng thử lại.");
         }
       }
@@ -272,32 +194,28 @@ const DecisionTable = () => {
   };
 
   const handleEditDecision = async (record: Decision) => {
-  try {
-    setEditLoading(true);
-    setEditMode(true);
-    const decisionDetail = await DecisionService.getElectionById(record._id);
-    setEditingDecision(decisionDetail);
-    setOpen(true);
-  } catch (error: any) {
-    message.error(error.response?.data?.message || "Không thể tải dữ liệu chỉnh sửa.");
-  } finally {
-    setEditLoading(false);
-  }
-};
+    try {
+      setEditLoading(true);
+      setEditMode(true);
+      const decisionDetail = await DecisionService.getElectionById(record._id);
+      setEditingDecision(decisionDetail);
+      setOpen(true);
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Không thể tải dữ liệu chỉnh sửa.");
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   // Handle pagination change
   // Nếu đang filter, không gọi API mà chỉ thay đổi pagination state
   // Nếu không filter, gọi API với page và pageSize mới
-  const handleTableChange = (page: number, pageSize: number) => {
-    if (statusFilter !== "Tất cả trạng thái") {
-      // Đang filter client-side, chỉ cập nhật pagination
-      setPagination(prev => ({ ...prev, current: page, pageSize }));
-    } else {
-      // Không filter, gọi API với pagination mới
-      loadDecisions(page, pageSize);
-    }
+  const handleTableChange = (pagination: any) => {
+    const { current, pageSize } = pagination;
+    setPagination((prev) => ({ ...prev, current, pageSize }));
+    loadDecisions(current, pageSize); // ✅ luôn gọi API với statusFilter hiện tại
+    console.log(statusFilter)
   };
-
   // Hàm xuất Excel
 
 
@@ -309,26 +227,14 @@ const DecisionTable = () => {
       const response = await DecisionService.getAllDecisions({
         page: 1,
         limit: pagination.total || 10000, // lấy tất cả
-        status:
-          statusFilter !== "Tất cả trạng thái"
-            ? statusFilter === "Đã phê duyệt"
-              ? "APPROVED_SIGNED"
-              : statusFilter === "Chờ nhập dữ liệu"
-                ? "WAIT_ENTER_DATA"
-                : statusFilter === "Chờ duyệt"
-                  ? "WAIT_APPROVAL"
-                  : statusFilter === "Yêu cầu chỉnh sửa"
-                    ? "REQUEST_EDIT"
-                    : statusFilter === "Đã đóng"
-                      ? "DELETED"
-                      : undefined
-            : undefined,
+        statusData: statusFilter || undefined,
         textSearch: searchText?.trim() || undefined,
       });
 
       // 🔹 Kiểm tra dữ liệu phản hồi
       const data = response?.content;
       if (!data || !Array.isArray(data) || data.length === 0) {
+        notify("Không có dữ liệu để xuất.", "warning");
         message.warning({ content: "Không có dữ liệu để xuất.", key: "export" });
         return;
       }
@@ -382,32 +288,17 @@ const DecisionTable = () => {
         .toISOString()
         .split("T")[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
-
+      notify("Xuất file Excel thành công!", "success");
       message.success({ content: "Xuất file Excel thành công!", key: "export" });
     } catch (error: any) {
       console.error("Error exporting Excel:", error);
+       notify("Không thể xuất file Excel. Vui lòng thử lại.", "error");
       message.error({
         content: "Không thể xuất file Excel. Vui lòng thử lại.",
         key: "export",
       });
     }
   };
-
-
-  const filteredData = useMemo(() => {
-    if (statusFilter === "Tất cả trạng thái") {
-      return data;
-    }
-    const expectedStatus = statusMap[statusFilter];
-    if (!expectedStatus) {
-      return data;
-    }
-
-    // So sánh với statusData trong item
-    return data.filter((item) => {
-      return item.statusData === expectedStatus || item.status === expectedStatus;
-    });
-  }, [data, statusFilter]);
 
   // Định nghĩa columns bên trong component để có thể sử dụng các hàm xử lý
   const columns = [
@@ -436,7 +327,7 @@ const DecisionTable = () => {
                 ? "yellow"
                 : statusData === "REQUEST_EDIT"
                   ? "pink"
-                  : statusData === "DELETED"
+                  : statusData === "DRAFT"
                     ? "red"
                     : "gray";
         return <Tag color={color}>{statusMap[statusData] || statusData || "Chờ duyệt"}</Tag>;
@@ -456,14 +347,14 @@ const DecisionTable = () => {
             icon={<EyeOutlined />}
             onClick={() => handleViewDecision(record)}
           />
-          {record.statusData !== "DELETED" && (
+          {record.statusData !== "DRAFT" && (
             <Button
               size="small"
               icon={<EditOutlined />}
               onClick={() => handleEditDecision(record)}
             />
           )}
-          {record.statusData !== "DELETED" && (
+          {record.statusData !== "DRAFT" && (
             <Button
               size="small"
               danger
@@ -492,15 +383,18 @@ const DecisionTable = () => {
         <div className="decision-toolbar-actions">
           <Select
             value={statusFilter}
-            onChange={setStatusFilter}
+            onChange={(value) => {
+              setStatusFilter(value); // ✅ Khi đổi, useEffect sẽ gọi lại API
+              setPagination({ current: 1, pageSize: pagination.pageSize, total: pagination.total });
+            }}
             style={{ width: 180 }}
           >
-            <Option value="Tất cả trạng thái">Tất cả trạng thái</Option>
+            <Option value="">Tất cả trạng thái</Option>
             <Option value="APPROVED_SIGNED">Đã phê duyệt</Option>
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
             <Option value="REQUEST_EDIT">Yêu cầu chỉnh sửa</Option>
-            <Option value="DELETED">Đã đóng</Option>
+            <Option value="DRAFT">Đã xóa</Option>
           </Select>
           <Button icon={<FileExcelOutlined />} onClick={handleExportExcel}>
             Xuất Excel
@@ -529,31 +423,19 @@ const DecisionTable = () => {
         ) : (
           <Table
             columns={columns}
-            dataSource={filteredData}
+            dataSource={data}
+            rowKey="_id"
+            loading={loading}
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
-              total: statusFilter !== "Tất cả trạng thái"
-                ? filteredData.length  // Khi filter, dùng tổng số sau khi filter
-                : pagination.total,    // Khi không filter, dùng tổng từ server
+              total: pagination.total,
               showSizeChanger: true,
-              showTotal: (total) => {
-                const filterText = statusFilter !== "Tất cả trạng thái"
-                  ? ` (Lọc: ${statusFilter})`
-                  : "";
-                return `Tổng ${total} quyết định${filterText}`;
-              },
-              onChange: (page, pageSize) => {
-                handleTableChange(page, pageSize);
-              },
-              onShowSizeChange: (current, size) => {
-                handleTableChange(1, size);
-              },
+              showTotal: (total) => `Tổng ${total} nghị quyết`,
             }}
-            bordered={false}
-            className="decision-table"
-            rowKey="_id"
+            onChange={handleTableChange} // ✅ Table gửi object pagination đúng định dạng
           />
+
         )}
       </Spin>
       {/* 🧩 Modal tạo/chỉnh sửa nghị quyết */}
@@ -588,15 +470,18 @@ const DecisionTable = () => {
           try {
             setLoading(true);
             const re = await DecisionService.deleteDecision(selectedRecord._id);
-            await DecisionService.updateDecision(selectedRecord._id, { statusData: "DELETED" });
+            await DecisionService.updateDecision(selectedRecord._id, { statusData:"DRAFT", status: "CANCEL" });
             console.log("Delete Response:", re);
             if (re.status === 200 && re.success) {
+              notify(re.message, "success");
               message.success("Xóa nghị quyết thành công!");
             } else {
+              notify(re.message, "error");
               message.error("Không thể xóa nghị quyết. Vui lòng thử lại.");
             }
             await loadDecisions(pagination.current, pagination.pageSize);
           } catch (error) {
+            notify("Không thể xóa nghị quyết. Vui lòng thử lại.", "error");
             message.error("Không thể xóa nghị quyết. Vui lòng thử lại.");
           } finally {
             setOpenConfirm(false);
