@@ -54,76 +54,25 @@
 
 /* --- Toàn bộ khối nội dung --- */
 .voting-history-content {
-  margin-top: 24px;
+  margin-top: 16px;
   background-color: #ffff;
-  padding-bottom: 30px;
+  padding: 0;
   border-radius: 18px;
 }
 
-/* --- Thẻ tìm kiếm --- */
-.voting-search-card {
-  margin-bottom: 24px;
-  padding: 0px 20px;
-  border-radius: 0px;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-
-.voting-search-input {
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-top: 10px;
-}
-
-/* --- Toàn bộ timeline --- */
-.voting-timeline {
-  position: relative;
-  padding-left: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  margin-right: 40px;
-}
-
-.voting-timeline::before {
-  content: "";
-  position: absolute;
-  top: 20px;
-  left: 32px;
-  width: 3px;
-  height: calc(100% - 20px);
-  background-color: #8fd57f;
-  border-radius: 3px;
-}
-
-/* --- Card chính --- */
-.voting-timeline-card {
-  position: relative;
-  background: #f8f9fa;
+/* --- Card đơn cho một cuộc bầu cử --- */
+.voting-single-card {
   border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f0f0f0;
-  padding: 0px 28px;
-  margin-left: 16px;
-  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: none;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fff9 100%);
+  transition: all 0.3s ease;
 }
 
-.voting-timeline-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
-}
-
-.voting-timeline-card::before {
-  content: "";
-  position: absolute;
-  left: -22px;
-  top: 26px;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background-color: #8fd57f;
-  border: 3px solid #d6f2cb;
+.voting-single-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 /* --- Nội dung --- */
@@ -144,10 +93,19 @@
 .voting-info-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 14px;
-  color: #124d2d;
+  gap: 10px;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: none;
+  transition: all 0.25s ease;
+  height: 100%;
+}
+
+.voting-info-item:hover {
+  box-shadow: 0 2px 8px rgba(168, 230, 120, 0.15);
+  transform: translateY(-2px);
+  background: #f9fff9;
 }
 
 .voting-info-item .ant-typography {
@@ -155,17 +113,20 @@
 }
 
 .voting-info-item-icon {
-  height: 50px;
-  width: 50px;
+  height: 48px;
+  width: 48px;
+  min-width: 48px;
   background-color: #f1f8ed;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 10px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .voting-info-item strong {
-  margin-left: 4px;
+  color: #124d2d;
+  font-weight: 600;
 }
 
 /* --- Nút --- */
@@ -175,15 +136,103 @@
 
 .voting-buttons button {
   border-radius: 10px;
-  height: 38px;
-  border: 1px solid #d9d9d9;
-  background: #fff;
+  height: 44px;
+  border: none;
+  background: #f0f0f0;
   font-weight: 500;
   transition: all 0.25s ease;
+  font-size: 14px;
 }
 
 .voting-buttons button:hover {
-  background: #f6ffed;
-  border-color: #52c41a;
+  background: #e6f7d9;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.2);
+}
+
+/* --- Thông báo chưa bỏ phiếu --- */
+.no-voting-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fff9 100%);
+}
+
+.no-voting-container {
+  text-align: center;
+  padding: 0px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.no-voting-icon {
+  font-size: 80px;
+  color: #d4eac8;
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.no-voting-title {
+  color: #124d2d !important;
+  margin-bottom: 16px !important;
+  font-weight: 600 !important;
+}
+
+.no-voting-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #666;
+  display: block;
+  margin-bottom: 24px;
+}
+
+.no-voting-button {
+  background: #7cb342 !important;
+  border-color: #7cb342 !important;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 0 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.no-voting-button:hover {
+  background: #558b2f !important;
+  border-color: #558b2f !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 179, 66, 0.3);
+}
+
+/* Responsive cho no-voting */
+@media (max-width: 768px) {
+  .no-voting-container {
+    padding: 30px 16px;
+  }
+
+  .no-voting-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+  }
+
+  .no-voting-title {
+    font-size: 20px !important;
+  }
+
+  .no-voting-description {
+    font-size: 14px;
+  }
 }

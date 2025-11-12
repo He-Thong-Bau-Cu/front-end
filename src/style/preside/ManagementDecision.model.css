@@ -1,21 +1,20 @@
 .decision-stats-row {
-  margin: 24px 32px;
+  margin: 16px 0;
   display: flex;
   justify-content: space-between;
-  flex-wrap: nowrap;
-  gap: 0px;
+  flex-wrap: wrap;
 }
 
 .decision-stat-card {
-  border-radius: 16px;
-  text-align: center;
+  border-radius: 8px;
+  text-align: left;
   background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
   cursor: pointer;
-  height: 120px;
+  height: auto;
+  min-height: 70px;
   width: 100%;
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -23,33 +22,36 @@
 
 /* Hover mượt hơn, nổi rõ card */
 .decision-stat-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   background: #f9fff9;
 }
 
 .decision-stat-value {
-  font-size: 34px;
+  font-size: 20px;
   font-weight: 700;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .decision-stat-label {
-  color: #444;
-  font-size: 16px;
+  color: #666;
+  font-size: 13px;
   font-weight: 500;
 }
 
 /* Responsive xuống hàng khi màn hình nhỏ */
-@media (max-width: 1200px) {
-  .decision-stats-row {
-    flex-wrap: wrap;
-  }
-
+@media (max-width: 768px) {
   .decision-stat-card {
-    height: 130px;
-    flex: 1 1 calc(50% - 16px);
+    min-height: 65px;
+  }
+  
+  .decision-stat-value {
+    font-size: 18px;
+  }
+  
+  .decision-stat-label {
+    font-size: 12px;
   }
 }
 
@@ -101,4 +103,18 @@
 
 .decision-table .ant-table-tbody > tr:hover > td {
   background-color: #f6fff2 !important;
+}
+.ant-modal-confirm .ant-modal-confirm-title {
+  color: #124d2d;
+  font-weight: 700;
+}
+
+.ant-modal-confirm .ant-modal-confirm-btns .ant-btn-dangerous {
+  background: linear-gradient(135deg, #b7eb8f, #52c41a);
+  border: none;
+  font-weight: 600;
+}
+
+.ant-modal-confirm .ant-modal-confirm-btns .ant-btn-dangerous:hover {
+  background: linear-gradient(135deg, #a5e17f, #3ca860);
 }

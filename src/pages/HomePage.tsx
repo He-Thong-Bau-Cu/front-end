@@ -80,6 +80,7 @@ const HomePage: React.FC = () => {
       return;
     }
     localStorage.setItem("permissionsElections", JSON.stringify(election.permissionElections));
+    localStorage.setItem("currentElectionId", electionId);
     switch (election.roleCode) {
       case USER_ROLE.PRESIDE_SECRETARY:
         navigate(PATH.SECRETARY, { state: { electionId } });
@@ -111,11 +112,12 @@ const HomePage: React.FC = () => {
       const election = item.electionId;
 
       // map status từ API
-      if (election.status === "ACTIVE" && election.statusData === "ONGOING") {
+      if (election?.statusData === "ONGOING") {
         ongoing++;
+
       } else if (
-        election.status === "ACTIVE" &&
-        election.statusData === "COMPLETED"
+        // election?.status === "ACTIVE" &&
+        election?.statusData === "COMPLETED"
       ) {
         completed++;
       } else {

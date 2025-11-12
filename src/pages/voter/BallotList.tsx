@@ -1,204 +1,142 @@
-import React, { useState, useMemo } from "react";
-import {
-  Button,
-  Input,
-  Tabs,
-  Typography,
-  Space,
-  Row,
-  Col,
-  Select,
-  Empty,
-  message,
-} from "antd";
+import BallotCard from "@/components/voter/BallotCard";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import BallotService from "@/services/BallotService";
+import { Ballot } from "@/types/Ballot.interface";
 import {
   CheckCircleOutlined,
-  FileDoneOutlined,
-  BarChartOutlined,
+  ExclamationCircleOutlined,
   HistoryOutlined,
-  UserOutlined,
-  SearchOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
+import { Alert, Button, Col, Divider, Empty, message, Row, Space, Typography } from "antd";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BallotCard from "@/components/voter/BallotCard";
 import "../../style/voter/BallotList.model.css";
-import { Ballot } from "@/types/Ballot.interface"; // 👈 import interface
 
-const { Title, Text } = Typography;
-
-const removeVietnameseTones = (str = "") =>
-  str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D");
+const { Text, Title } = Typography;
 
 export default function BallotList() {
   const navigate = useNavigate();
+  const [ballots, setBallots] = useState<Ballot[]>([]);
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
 
-  // ---------------------- DỮ LIỆU ----------------------
-  const allBallots: Ballot[] = [
-    {
-      id: 1,
-      title: "Bầu cử Đại biểu Quốc hội Khóa XVI",
-      desc: "Bầu chọn đại diện cho khu vực bầu cử số 1, Quận 1, TP. Hồ Chí Minh. Tổng cộng 5 ứng cử viên tham gia.",
-      endTime: "15/12/2024 - 17:00",
-      status: "Đang diễn ra",
-      type: 2,
-    },
-    
-    {
-      id: 2,
-      title: "Biểu quyết Nghị quyết cổ đông 2025",
-      desc: "Thông qua kế hoạch hoạt động và tài chính năm 2025.",
-      endTime: "10/01/2025 - 17:00",
-      status: "Chưa bắt đầu",
-      type: 1,
-    },
-    {
-      id: 3,
-      title: "Bầu chọn Ban Kiểm soát nhiệm kỳ 2025-2030",
-      desc: "Cuộc bầu chọn thành viên Ban kiểm soát mới.",
-      endTime: "30/01/2025 - 17:00",
-      status: "Đã kết thúc",
-      type: 1,
-    },
-     {
-      id: 4,
-      title: "Bầu cử Đại biểu Quốc hội Khóa XVI",
-      desc: "Bầu chọn đại diện cho khu vực bầu cử số 1, Quận 1, TP. Hồ Chí Minh. Tổng cộng 5 ứng cử viên tham gia.",
-      endTime: "15/12/2024 - 17:00",
-      status: "Đang diễn ra",
-      type: 1,
-    },
-  ];
+  // 👉 ID cử tri tạm (test)
+  const voterId = "6910f2016e3b3c1fb79a1f9d";
 
-  // ---------------------- STATE ----------------------
-  const [searchText, setSearchText] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | Ballot["status"]>("all");
-  const [activeTab, setActiveTab] = useState("1");
+  useEffect(() => {
+    const fetchBallots = async () => {
+      try {
+        showLoading();
+        const data = await BallotService.getBallotByVoterId(voterId);
+        setBallots(data);
+      } catch {
+        notify("Không thể tải danh sách phiếu bầu", "error");
+      } finally {
+        hideLoading();
+      }
+    };
+    fetchBallots();
+  }, []);
 
-  // ---------------------- LỌC DỮ LIỆU ----------------------
-  const filteredBallots = useMemo(() => {
-    const search = removeVietnameseTones(searchText.toLowerCase());
-    return allBallots.filter((b) => {
-      const title = removeVietnameseTones(b.title.toLowerCase());
-      const desc = removeVietnameseTones(b.desc.toLowerCase());
-      const matchText = title.includes(search) || desc.includes(search);
-      const matchType =
-        activeTab === "1"
-          ? true
-          : activeTab === "3"
-          ? b.type === 1
-          : b.type === 2;
-      const matchStatus = filterStatus === "all" ? true : b.status === filterStatus;
-      return matchText && matchStatus && matchType;
-    });
-  }, [searchText, filterStatus, activeTab, allBallots]);
-
-  // ---------------------- TAB DANH MỤC ----------------------
-  const tabItems = [
-    { key: "1", label: "Tất cả phiếu bầu", icon: <CheckCircleOutlined /> },
-    { key: "2", label: "Bầu cử dồn phiếu", icon: <FileDoneOutlined /> },
-    { key: "3", label: "Biểu quyết nghị quyết", icon: <BarChartOutlined /> },
-  ];
-
-  // ---------------------- XỬ LÝ KHI CLICK ----------------------
   const handleCardClick = (ballot: Ballot) => {
-    if (ballot.status === "Đang diễn ra" && ballot.type === 1)
-      navigate("/voter/ballot_resolution_voting");
-    else if (ballot.status === "Đang diễn ra" && ballot.type === 2)
-      navigate("/voter/ballot_cumulative_voting");
-    else message.warning("Phiếu này chưa mở hoặc đã kết thúc.");
+    if (ballot.status === "CAST") {
+      message.info("Phiếu này đã được bỏ. Bạn có thể xem lại trong lịch sử bỏ phiếu.");
+    } else {
+      // tuỳ loại phiếu mà điều hướng khác nhau
+      navigate("/voter/ballot_cumulative_voting", { state: { ballotId: ballot._id } });
+    }
   };
 
-  // ---------------------- GIAO DIỆN ----------------------
   return (
     <div className="ballot-page">
-      {/* Header */}
-      <div className="header-container">
-        <div>
-          <Title level={3} style={{ margin: 0 }}>
-            Danh sách Phiếu Bầu
-          </Title>
-          <Text style={{ color: "#666" }}>
-            Tham gia bỏ phiếu và theo dõi các cuộc bầu cử đang diễn ra
-          </Text>
-        </div>
-
-        <Space>
-          <Button icon={<HistoryOutlined />}>Lịch sử bỏ phiếu</Button>
-          <Button
-            type="primary"
-            icon={<UserOutlined />}
-            style={{
-              background: "#7cb342",
-              borderColor: "#7cb342",
-              fontWeight: 500,
-            }}
-          >
-            Hồ sơ cá nhân
-          </Button>
-        </Space>
+      <div className="history-button-container">
+        <Button
+          type="primary"
+          icon={<HistoryOutlined />}
+          size="large"
+          style={{
+            background: "#7cb342",
+            borderColor: "#7cb342",
+            fontWeight: 500,
+          }}
+          onClick={() => navigate("/voter/voting-history")}
+        >
+          Lịch sử bỏ phiếu
+        </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="tabs-container">
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={tabItems.map((t) => ({
-            key: t.key,
-            label: (
-              <span>
-                {t.icon}
-                {t.label}
-              </span>
-            ),
-          }))}
-        />
-      </div>
-
-      {/* Bộ lọc & danh sách phiếu */}
       <div className="ballot-wrapper">
-        <div className="search-row">
-          <Input
-            placeholder="Tìm kiếm phiếu bầu..."
-            prefix={<SearchOutlined style={{ color: "#aaa" }} />}
-            style={{ borderRadius: 8, height: 40, flex: 1 }}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-          />
-          <Select
-            value={filterStatus}
-            onChange={setFilterStatus}
-            style={{ width: 200, marginLeft: 10 }}
-            size="large"
-            options={[
-              { value: "all", label: "Tất cả cấp độ" },
-              { value: "Đang diễn ra", label: "Đang diễn ra" },
-              { value: "Chưa bắt đầu", label: "Chưa bắt đầu" },
-              { value: "Đã kết thúc", label: "Đã kết thúc" },
-            ]}
-          />
-        </div>
+        {ballots.length > 0 ? (
+          <Row gutter={[32, 0]} className="ballot-row">
+            {/* Left: Phiếu bầu */}
+            <Col xs={24} md={12} className="ballot-left-col">
+              <Title level={5} className="ballot-title">
+                🗳️ Phiếu bầu của bạn
+              </Title>
 
-        {/* Danh sách phiếu */}
-        {filteredBallots.length > 0 ? (
-          <Row gutter={[24, 24]} className="ballot-grid">
-            {filteredBallots.map((b) => (
-              <Col key={b.id} xs={24} sm={24} md={12} lg={8} xl={8} xxl={6}>
-                <div className="ballot-card-wrapper">
-                  <BallotCard ballot={b} onClick={() => handleCardClick(b)} />
-                </div>
-              </Col>
-            ))}
+              <div className="single-ballot-container">
+                {ballots.map((b, index) => (
+                  <BallotCard
+                    key={b._id || index}
+                    ballot={{
+                      id: b._id,
+                      title: b.electionId.title,
+                      desc: b.electionId.decisionName,
+                      endTime: b.electionId.endDate || "Không xác định",
+                      status: b.status === "CAST" ? "Đã bỏ phiếu" : "Chưa bỏ",
+                      type: 2,
+                    }}
+                    onClick={() => handleCardClick(b)}
+                  />
+                ))}
+              </div>
+            </Col>
+
+            {/* Right: Thông tin bổ sung */}
+            <Col xs={24} md={12} className="info-section-col">
+              <Divider orientation="left" className="info-divider">
+                <InfoCircleOutlined style={{ color: "#7cb342", marginRight: 8 }} />
+                <Text strong>Thông tin bổ sung</Text>
+              </Divider>
+
+              <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                <Alert
+                  message="Hướng dẫn bỏ phiếu"
+                  description="Nhấp vào phiếu bầu bên trái để bắt đầu quá trình bỏ phiếu. Bạn có thể xem lại lựa chọn trước khi xác nhận."
+                  type="info"
+                  icon={<InfoCircleOutlined />}
+                  showIcon
+                  style={{ borderRadius: 8 }}
+                />
+
+                {ballots.some((b) => b.status === "CAST") ? (
+                  <Alert
+                    message="Bạn đã bỏ phiếu"
+                    description="Phiếu bầu của bạn đã được ghi nhận. Bạn có thể xem chi tiết trong phần lịch sử bỏ phiếu."
+                    type="success"
+                    icon={<CheckCircleOutlined />}
+                    showIcon
+                    style={{ borderRadius: 8 }}
+                  />
+                ) : (
+                  <Alert
+                    message="Phiếu chưa được bỏ"
+                    description="Hãy thực hiện bỏ phiếu của bạn trước khi thời gian kết thúc."
+                    type="warning"
+                    icon={<ExclamationCircleOutlined />}
+                    showIcon
+                    style={{ borderRadius: 8 }}
+                  />
+                )}
+              </Space>
+            </Col>
           </Row>
         ) : (
           <div className="no-result">
             <Empty
-              description={<Text type="secondary">Không tìm thấy phiếu bầu phù hợp.</Text>}
+              description={<Text type="secondary">Bạn chưa có phiếu bầu nào.</Text>}
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           </div>

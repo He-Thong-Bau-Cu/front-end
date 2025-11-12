@@ -1,62 +1,55 @@
-import React, { useState } from "react";
-import dayjs from "dayjs";
-import { Input, DatePicker, Select, Button, Row, Col } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import React, { useState, useEffect, useRef } from "react";
+import { Input, Select, Row, Col } from "antd";
+import { ReportArchiveFilter } from "@/types/ReportArchive.interface";
 
 interface Props {
-  onSearch: (values: any) => void;
+  onSearch: (values: Partial<ReportArchiveFilter>) => void;
+  availableTypes: string[];
 }
 
-export default function ArchiveSearchBar({ onSearch }: Props) {
+export default function ArchiveSearchBar({ onSearch, availableTypes }: Props) {
   const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState<any>(null);
-  const [endDate, setEndDate] = useState<any>(null);
   const [type, setType] = useState("Tất cả");
-  const [event, setEvent] = useState("Tất cả");
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSubmit = () => {
-    onSearch({
-      keyword,
-      startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-      endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
-      type,
-      event,
-    });
-  };
+  // Tự động tìm kiếm khi các filter thay đổi
+  useEffect(() => {
+    // Clear timer cũ nếu có
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Debounce 300ms để tránh gọi quá nhiều lần
+    debounceTimer.current = setTimeout(() => {
+      onSearch({
+        keyword,
+        type,
+      });
+    }, 300);
+
+    // Cleanup
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [keyword, type, onSearch]);
 
   return (
     <div className="ra-search-card">
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
+      <Row gutter={[16, 0]} align="middle">
+        <Col xs={24} sm={16} md={18} lg={20}>
           <Input
-            placeholder="Tìm kiếm theo Tên hoặc Mã Lưu trữ"
+            placeholder="Tìm kiếm theo tên báo cáo"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="ra-input"
+            allowClear
           />
+
         </Col>
 
-        <Col xs={24} md={6}>
-          <DatePicker
-            placeholder="Từ ngày"
-            value={startDate}
-            onChange={(val) => setStartDate(val)}
-            className="ra-date"
-            format="DD/MM/YYYY"
-          />
-        </Col>
-
-        <Col xs={24} md={6}>
-          <DatePicker
-            placeholder="Đến ngày"
-            value={endDate}
-            onChange={(val) => setEndDate(val)}
-            className="ra-date"
-            format="DD/MM/YYYY"
-          />
-        </Col>
-
-        <Col xs={24} md={6}>
+        <Col xs={24} sm={8} md={6} lg={4}>
           <Select
             value={type}
             onChange={(val) => setType(val)}
@@ -64,33 +57,12 @@ export default function ArchiveSearchBar({ onSearch }: Props) {
             style={{ width: "100%" }}
           >
             <Select.Option value="Tất cả">Tất cả</Select.Option>
-            <Select.Option value="Kết quả Bầu cử">Kết quả Bầu cử</Select.Option>
-            <Select.Option value="Báo cáo Kiểm soát">Báo cáo Kiểm soát</Select.Option>
-            <Select.Option value="Biên bản Họp">Biên bản Họp</Select.Option>
+            {availableTypes.map((typeOption) => (
+              <Select.Option key={typeOption} value={typeOption}>
+                {typeOption}
+              </Select.Option>
+            ))}
           </Select>
-        </Col>
-
-        <Col xs={24} md={6}>
-          <Select
-            value={event}
-            onChange={(val) => setEvent(val)}
-            className="ra-select"
-            style={{ width: "100%" }}
-          >
-            <Select.Option value="Tất cả">Tất cả</Select.Option>
-            <Select.Option value="Bầu cử HĐQT 2024">Bầu cử HĐQT 2024</Select.Option>
-            <Select.Option value="ĐH Cổ đông 2024">ĐH Cổ đông 2024</Select.Option>
-          </Select>
-        </Col>
-
-        <Col span={24}>
-          <Button
-            className="ra-btn-search"
-            icon={<SearchOutlined />}
-            onClick={handleSubmit}
-          >
-            Tìm kiếm
-          </Button>
         </Col>
       </Row>
     </div>

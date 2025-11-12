@@ -1,49 +1,60 @@
-import { Card, Typography, Button } from "antd";
-import {
-    CalendarOutlined,
-    ClockCircleOutlined,
-    CheckCircleOutlined,
-    ExclamationCircleOutlined,
-    RightOutlined,
-    TrophyOutlined,
-    PlayCircleOutlined,
-    StopOutlined,
-    FolderOutlined,
-    AppstoreOutlined,
-    SettingOutlined,
-    BankOutlined,
-} from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import "../../../style/voter/Dashboard.model.css";
-import { useEffect, useState } from "react";
 import ElectionService from "@/services/ElectionService";
 import { Election } from "@/types/Election.interface";
+import {
+    AppstoreOutlined,
+    BankOutlined,
+    CalendarOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    ExclamationCircleOutlined,
+    FolderOutlined,
+    PlayCircleOutlined,
+    SettingOutlined,
+    StopOutlined,
+    TrophyOutlined
+} from "@ant-design/icons";
+import { Card, Spin, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import "../../../style/voter/Dashboard.model.css";
+import { useLoading } from "@/contexts/LoadingContext";
+
+
 
 const { Text, Title } = Typography;
 
 const ElectionOverview = () => {
-    const navigate = useNavigate();
     const [election, setElection] = useState<Election | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const { showLoading, hideLoading } = useLoading();
+
+    const location = useLocation();
+    const electionId = location.state?.electionId || localStorage.getItem("currentElectionId");
 
     useEffect(() => {
         const fetchElection = async () => {
             try {
-                // ✅ Fix cứng ID 
-                const res = await ElectionService.getElectionId("690f9baf3bc11cae5498b0e5");
+                showLoading();
+                const res = await ElectionService.getElectionId(electionId);
                 setElection(res);
             } catch (error) {
                 console.error("Lỗi khi lấy chi tiết kỳ bầu cử:", error);
             } finally {
-                setLoading(false);
+                hideLoading();
             }
         };
         fetchElection();
     }, []);
 
-    if (loading || !election) {
-        return <p style={{ padding: 20 }}>Đang tải thông tin kỳ bầu cử...</p>;
+    if (!election) {
+        return (
+            <Card className="election-overview-card">
+                <div style={{ padding: "40px", textAlign: "center" }}>
+                    <Spin size="large" />
+                </div>
+            </Card>
+        );
     }
+
 
     // 🧩 Map trạng thái DB → tiếng Việt
     const mapStatus = (status: string) => {
@@ -65,9 +76,6 @@ const ElectionOverview = () => {
 
     const statusVi = mapStatus(election.status);
 
-    // Debug: Kiểm tra status từ API
-    console.log("Status từ API:", election.status);
-    console.log("Status sau khi map:", statusVi);
 
     // 🎨 Config UI theo trạng thái
     const getStatusConfig = () => {
@@ -101,8 +109,8 @@ const ElectionOverview = () => {
                     : 4;
 
 
-    const handleVoteNow = () => navigate("/voter/ballots");
-    const handleViewDetails = () => navigate("/voter/results");
+    // const handleVoteNow = () => navigate("/voter/ballots");
+    // const handleViewDetails = () => navigate("/voter/results");
 
     return (
         <Card className="election-overview-card" bordered={false}>
@@ -137,7 +145,7 @@ const ElectionOverview = () => {
                             </div>
                             <div className="election-info-content">
                                 <Text className="election-info-label">Loại bầu cử</Text>
-                                <Text className="election-info-value">{election.electionType}</Text>
+                                <Text className="election-info-value">{election.typeId?.typeName}</Text>
                             </div>
                         </div>
                         <div className="election-info-item">
@@ -146,7 +154,7 @@ const ElectionOverview = () => {
                             </div>
                             <div className="election-info-content">
                                 <Text className="election-info-label">Phương thức</Text>
-                                <Text className="election-info-value">{election.votingMethod}</Text>
+                                <Text className="election-info-value">{election.votingMethodId?.methodName}</Text>
                             </div>
                         </div>
                         <div className="election-info-item">
@@ -154,8 +162,8 @@ const ElectionOverview = () => {
                                 <BankOutlined className="election-info-icon" />
                             </div>
                             <div className="election-info-content">
-                                <Text className="election-info-label">Loại hình công ty</Text>
-                                <Text className="election-info-value">{election.companyType}</Text>
+                                <Text className="election-info-label">Thông qua</Text>
+                                <Text className="election-info-value">{election.thresholdId?.thresholdName}</Text>
                             </div>
                         </div>
                     </div>
@@ -168,16 +176,16 @@ const ElectionOverview = () => {
                             <CalendarOutlined />{" "}
                             <Text>
                                 Bắt đầu:{" "}
-                                {new Date(election.start_date).toLocaleString("vi-VN", {
+                                {new Date(election.startDate).toLocaleString("vi-VN", {
                                     hour12: false,
                                 })}
                             </Text>
                         </div>
                         <div className="election-time-item">
-                            <ClockCircleOutlined />{" "}
+                            <CalendarOutlined />{" "}
                             <Text>
                                 Kết thúc:{" "}
-                                {new Date(election.end_date).toLocaleString("vi-VN", {
+                                {new Date(election.endDate).toLocaleString("vi-VN", {
                                     hour12: false,
                                 })}
                             </Text>
@@ -241,7 +249,7 @@ const ElectionOverview = () => {
                 </div>
 
                 {/* Nút hành động */}
-                <div className="election-overview-actions">
+                {/* <div className="election-overview-actions">
                     {statusVi === "Đang diễn ra" ? (
                         <Button
                             type="primary"
@@ -268,7 +276,7 @@ const ElectionOverview = () => {
                             Xem kết quả bầu cử <RightOutlined />
                         </Button>
                     )}
-                </div>
+                </div> */}
             </div>
         </Card>
     );

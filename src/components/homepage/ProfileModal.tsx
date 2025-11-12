@@ -14,6 +14,7 @@ import {
   Col,
   Row,
   Progress,
+  DatePicker,
 } from "antd";
 import {
   UserOutlined,
@@ -22,6 +23,8 @@ import {
   PictureOutlined,
   EyeTwoTone,
   EyeInvisibleOutlined,
+  FileProtectOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import type { UploadChangeParam } from "antd/es/upload";
@@ -32,9 +35,10 @@ import { useNotification } from "@/contexts/NotificationContext";
 import UserService from "@/services/UserService";
 import FileService from "@/services/FileService";
 import { FILE_TYPE } from "@/enums/FILE_TYPE";
+import CaService from "@/services/CaService";
 
 const { Title, Text } = Typography;
-
+const { RangePicker } = DatePicker;
 interface ProfileModalProps {
   open: boolean;
   onClose: () => void;
@@ -44,15 +48,17 @@ interface ProfileModalProps {
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handleCloseProfile }) => {
   const [activeTab, setActiveTab] = useState<
-    "info" | "avatar" | "security" | "notification"
+    "info" | "avatar" | "security" | "notification" | "certificate"
   >("info");
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [infoForm] = Form.useForm();
   const [securityForm] = Form.useForm();
   const [notificationForm] = Form.useForm();
-  const {showLoading, hideLoading} = useLoading();
-  const {notify} = useNotification();
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [certificateForm] = Form.useForm();
+  const [u, setU] = useState<User | null>(null);
 
 
   // Tính độ mạnh của mật khẩu
@@ -64,6 +70,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
     if (/\d/.test(password)) score += 25;
     return score;
   };
+
+  
 
   // Lấy màu theo độ mạnh
   const getStrengthColor = () => {
@@ -88,6 +96,28 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
   const handleSubmit = async () => {
     try {
       showLoading();
+
+      if (activeTab === "certificate") {
+        const values = await certificateForm.validateFields();
+        let signerInfo = {
+          commonName:values.fullName,
+          organizationName: values.organizationName,
+          countryName:values.countryName,
+          stateOrProvinceName: values.stateOrProvinceName,
+          localityName: values.address,
+          emailAddress: values.email,
+          password: values.passwordCa
+        }
+        const password = values.passwordCa;
+        const body = {signerInfo, password};
+        const response = await CaService.CaIssue(body);
+        if (response.success) {
+          notify(response.message, "success");
+        } else {
+          notify(response.message, "error");
+        }
+      }
+
       if (activeTab === "info") {
         const values = await infoForm.validateFields();
         let body = {
@@ -95,18 +125,18 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
         }
         const userId = localStorage.getItem("userId") as string;
         const response = await UserService.update(userId, body);
-        if(response.success){
+        if (response.success) {
           notify(response.message, "success");
-        }else{
+        } else {
           notify(response.message, "error");
         }
       }
 
       if (activeTab === "avatar") {
         const response = await UserService.uploadAvatar(fileList[0].originFileObj as File);
-        if(response.success){
+        if (response.success) {
           notify(response.message, "success");
-        }else{
+        } else {
           notify(response.message, "error");
         }
       }
@@ -123,16 +153,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
           newPassword: values.newPassword
         }
         const response = await UserService.changePassword(body);
-        if(response.success){
+        if (response.success) {
           notify(response.message, "success");
-        }else{
+        } else {
           notify(response.message, "error");
         }
       }
     } catch (err) {
       console.error(err);
       message.error("Vui lòng kiểm tra lại thông tin!");
-    }finally{
+    } finally {
       hideLoading();
       handleCloseProfile();
     }
@@ -142,6 +172,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
     { key: "info", label: "Thông tin Cá nhân", icon: <UserOutlined /> },
     { key: "avatar", label: "Ảnh Đại diện", icon: <PictureOutlined /> },
     { key: "security", label: "Bảo mật", icon: <LockOutlined /> },
+    { key: "certificate", label: "Đăng ký Chứng thư số", icon: <FileProtectOutlined /> },
     // { key: "notification", label: "Cài đặt Thông báo", icon: <BellOutlined /> },
   ];
 
@@ -507,6 +538,90 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                     </Button>
                   </div>
                 </Form>
+              </motion.div>
+            )}
+
+            {activeTab === "certificate" && (
+              <motion.div key="certificate" {...fadeMotion}>
+                <Title level={4} style={{ color: "#124d2d" }}>
+                  Đăng ký Chứng thư số
+                </Title>
+                <Form layout="vertical" form={certificateForm} 
+                 initialValues={user || {}}
+                style={{ marginTop: 20 }}>
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Form.Item
+                        label="Họ và tên"
+                        name="fullName"
+                        rules={[{ required: true, message: "Nhập họ và tên" }]}
+                      >
+                        <Input value={u?.fullName}  />
+                      </Form.Item>
+                      <Form.Item label="Đai chỉ email" 
+                      rules={[{ required: true, message: "Nhập email" }]}
+                      name="email">
+                        <Input value={u?.email} />
+                      </Form.Item>
+
+                      <Form.Item label="Địa chỉ" 
+                      name="address"
+                       rules={[{ required: true, message: "Nhập địa chỉ" }]}
+                      >
+                        <Input value={u?.address} />
+                      </Form.Item>
+
+                      <Form.Item
+                        label="Quốc tịch"
+                        name="countryName"
+                        rules={[{ required: true, message: "Nhập tên quốc gia!" }]}
+                      >
+                        <Input placeholder="VD: Việt Nam" />
+                      </Form.Item>
+
+                    </Col>
+
+                    <Col span={12}>
+                      <Form.Item
+                        label="Tổ chức"
+                        name="organizationName"
+                        rules={[{ required: true, message: "Nhập tên tổ chức" }]}
+                      >
+                        <Input placeholder="VD:  " />
+                      </Form.Item>
+                      <Form.Item
+                        label="Dân tộc"
+                        name="stateOrProvinceName"
+                        rules={[{ required: true, message: "Nhập quốc tịch" }]}
+                      >
+                        <Input placeholder="VD: Kinh" />
+                      </Form.Item>
+
+                      
+                      <Form.Item
+                        label="Mật khẩu chứng thư số"
+                        name="passwordCa"
+                        rules={[{ required: true, message: "Nhập mật khẩu chứng thư!" }]}
+                      >
+                        <Input.Password placeholder="********" />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </Form>
+
+                <div style={{ textAlign: "right", marginTop: 16 }}>
+                  <Button
+                    type="primary"
+                    onClick={handleSubmit}
+                    style={{
+                      background: "#5C9D52",
+                      border: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Đăng ký chứng thư số
+                  </Button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

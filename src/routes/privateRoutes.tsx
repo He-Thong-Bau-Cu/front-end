@@ -42,8 +42,6 @@ import ManagementDocument from "@/pages/secretary/ManagementDocument";
 import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
 import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
 import FirstTimeChangePasswordScreen from "@/pages/user/ChangePasswordFirstTime";
-import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
-import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
 import Authorization from "@/pages/voter/Authorization";
 import BallotList from "@/pages/voter/BallotList";
 import CumulativeVoting from "@/pages/voter/CumulativeVoting";
@@ -89,8 +87,8 @@ export const privateRoutes = [
           { path: "statistics", element: <Statistics /> },
           { path: "authorization", element: <Authorization /> },
           { path: "voting-history", element: <VotingHistory /> },
-          { path: "results", element: <VotingResult /> },
-          { path: "results/detail", element: <VotingResultDetail /> },
+          // { path: "results", element: <VotingResult /> },
+          { path: "results", element: <VotingResultDetail /> },
           { path: "delegate-card", element: <DelegateCardPage /> },
           { path: "vote-success", element: <VoteSuccess /> },
         ],

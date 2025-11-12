@@ -1,14 +1,12 @@
-import { Election } from "@/types/Election.interface";
+
+import { Decision } from "@/types/Decision.interface";
 import BaseService from "./BaseService";
 import { ApiResponse } from "@/types/ApiResponse.interface";
+import { Election } from "@/types/Election.interface";
 
 class ElectionService extends BaseService {
   constructor() {
     super("elections");
-  }
-
-  async addElection(data: Partial<any>): Promise<any> {
-    return await this.api.post(`${this.endpoint}/elections`, data);
   }
 
 

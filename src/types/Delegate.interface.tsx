@@ -22,3 +22,38 @@ export interface Delegate {
   field: string; // Lĩnh vực phụ trách
   constituency: string; // Khu vực / số lượng cử tri đại diện
 }
+
+
+
+/**
+ * Cấu trúc thông tin người dùng trong ủy quyền
+ */
+export interface AuthorizationUser {
+  _id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  position: string;
+}
+
+/**
+ * Cấu trúc thông tin chi tiết ủy quyền
+ */
+export interface DelegationDetail {
+  documentId: string | null;
+  delegateReason: string | null;
+  signature: string | null;
+  _id: string;
+  delegationType: string;
+  electionId: string | null;
+  delegatorId: AuthorizationUser;
+  delegateId: AuthorizationUser;
+  startDate: string; // ISO date string
+  endDate: string; // ISO date string
+  status: string;
+  confirmedBy: AuthorizationUser | null;
+  confirmedAt: string | null; // ISO date string
+  updatedAt: string; // ISO date string
+  createdAt: string; // ISO date string
+  __v: number;
+}
