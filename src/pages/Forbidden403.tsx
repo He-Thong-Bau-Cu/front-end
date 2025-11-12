@@ -7,17 +7,17 @@ const { Title, Text } = Typography;
 export default function Forbidden403() {
   const handleGoHome = () => {
     console.log('Navigating to home...');
-    // window.location.href = '/';
+    window.location.href = '/';
   };
 
   const handleLogin = () => {
     console.log('Navigating to login...');
-    // window.location.href = '/login';
+    window.location.href = '/login';
   };
 
   const handleGoBack = () => {
     console.log('Going back...');
-    // window.history.back();
+    window.history.back();
   };
 
   // Reset body styles

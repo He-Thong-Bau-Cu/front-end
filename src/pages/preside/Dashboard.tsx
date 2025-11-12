@@ -14,10 +14,7 @@ const Dashboard = () => {
             <DashboardCharts />
 
             <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-                <Col xs={24} lg={16}>
-                    <DashboardActivity />
-                </Col>
-                <Col xs={24} lg={8}>
+                <Col xs={24} lg={24}>
                     <DecisionList />
                 </Col>
             </Row>

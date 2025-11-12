@@ -6,7 +6,7 @@ class DecisionService extends BaseService {
     super("elections"); // Sử dụng endpoint meetings vì decisions có thể là meetings
   }
 
-  async getAllDecisions(params?: { page?: number; limit?: number; textSearch?: string;  status?: string; decisionName?: string; decisionNumber?: string }): Promise<{
+  async getAllDecisions(params?: { page?: number; limit?: number; textSearch?: string;  statusData?: string; decisionName?: string; decisionNumber?: string }): Promise<{
     content: Decision[];
     page: number;
     limit: number;
@@ -17,7 +17,7 @@ class DecisionService extends BaseService {
       const searchParams = {
         page: params?.page || 1,
         limit: params?.limit || 10,
-        status: params?.status,
+        statusData: params?.statusData,
         textSearch: params?.textSearch,
         decisionName: params?.decisionName,
         decisionNumber: params?.decisionNumber,

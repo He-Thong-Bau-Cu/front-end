@@ -103,7 +103,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 
         <Divider />
 
-        <div className="upload-section">
+        {/* <div className="upload-section">
           <h3 className="upload-title">
             <FileAddOutlined /> Đính kèm tài liệu liên quan
           </h3>
@@ -111,7 +111,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
           <div className="upload-box">
             <input type="file" />
           </div>
-        </div>
+        </div> */}
 
         <div className="modal-footer">
           <Button onClick={onCancel}>Hủy</Button>

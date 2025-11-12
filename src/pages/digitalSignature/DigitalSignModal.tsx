@@ -11,7 +11,7 @@ import {
   message,
 } from "antd";
 import { UploadOutlined, CheckCircleOutlined, SafetyOutlined } from "@ant-design/icons";
-import "../../style/voter/DigitalSignModal.model.css";
+import "../../style/digitalSignature/DigitalSignModal.model.css";
 
 const { Title, Text } = Typography;
 
@@ -24,7 +24,7 @@ interface Props {
 const DigitalSignModal: React.FC<Props> = ({ open, onClose, onConfirm }) => {
   const [fileName, setFileName] = React.useState<string>("Chưa chọn tệp nào...");
 
-  const handleUpload = (file: any) => {
+  const handleUpload = (file: any) => {    
     setFileName(file.name);
     message.success("Tệp đã được chọn.");
     return false; // Ngăn upload thật
@@ -102,7 +102,7 @@ const DigitalSignModal: React.FC<Props> = ({ open, onClose, onConfirm }) => {
           <Button
             type="primary"
             icon={<CheckCircleOutlined />}
-            className="confirm-btn"
+            className="confirm-btn-s"
             onClick={onConfirm}
           >
             Xác nhận Ký & Gửi

@@ -1,18 +1,79 @@
-import { Card, Button, Typography, Avatar } from "antd";
+import { Card, Button, Typography, Avatar, message } from "antd";
 import { FileTextOutlined, BarChartOutlined, UserOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal"; // 📂 import component modal mới
-
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import DecisionService from "@/services/DecisionService";
+import { User } from "@/types/User.interface";
+import { getUserLogin } from "@/utils/auth";
 const { Text } = Typography;
 
 const HeaderStats = () => {
   const [open, setOpen] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
+  const [user, setUser] = useState<User | null>(null);
 
-  const handleCreate = (values: any) => {
-    console.log("Nghị quyết mới:", values);
-    setOpen(false);
-    // 👉 ở đây bạn có thể gọi API tạo nghị quyết
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getUserLogin();
+        setUser(userData as User);
+      } catch (error) {
+        message.error("Không thể tải thông tin người dùng!");
+      }
+    };
+    fetchUser();
+  }, []);
+  const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
+    try {
+      showLoading();
+      const apiData: any = {
+        decisionNumber: values.decisionNumber,
+        decisionName: values.decisionName,
+        title: values.decisionName,
+      };
+      const apiData2: any = {
+        decisionNumber: values.decisionNumber,
+        decisionName: values.decisionName,
+        title: values.decisionName,
+        statusData: "WAIT_ENTER_DATA",
+      };
+
+      let response;
+      if (isEdit && id) {
+        response = await DecisionService.updateDecision(id, apiData);
+        if (response.status === 200 && response.success) {
+          notify(response.message, "success");
+          message.success("Cập nhật nghị quyết thành công!");
+        } else {
+          notify(response.message, "error");
+          message.error("Không thể cập nhật nghị quyết. Vui lòng thử lại.");
+        }
+      } else {
+        response = await DecisionService.createDecision(apiData2);
+        if (response.status === 201 && response.success) {
+          notify(response.message, "success");
+          message.success("Tạo nghị quyết thành công!");
+        } else {
+          notify(response.message, "error");
+          message.error("Không thể tạo nghị quyết. Vui lòng thử lại.");
+        }
+      }
+
+      setOpen(false);
+    } catch (error: any) {
+      console.error(`Error ${isEdit ? "updating" : "creating"} decision:`, error);
+      message.error(
+        error.response?.data?.message ||
+        `Không thể ${isEdit ? "cập nhật" : "tạo"} nghị quyết. Vui lòng thử lại.`
+      );
+    } finally {
+      hideLoading();
+    }
   };
+
 
   return (
     <Card className="dashboard-header-card">
@@ -24,10 +85,9 @@ const HeaderStats = () => {
           </p>
 
           <div className="dashboard-header-user">
-            <Avatar size={64} icon={<UserOutlined />} className="dashboard-avatar" />
+            <Avatar size={64} src={user?.imageKey || undefined} icon={<UserOutlined />} className="dashboard-avatar" />
             <div className="dashboard-user-info">
-              <Text strong className="dashboard-user-name">PGS.TS Lưu Hồng Nhật</Text>
-              <p className="dashboard-user-role">Chủ tọa Hội đồng Bầu cử khóa 10</p>
+              <Text strong className="dashboard-user-name">{user?.fullName}</Text>
             </div>
           </div>
         </div>
@@ -41,21 +101,16 @@ const HeaderStats = () => {
           >
             Tạo quyết định
           </Button>
-
-          <Button
-            icon={<BarChartOutlined />}
-            className="btn-report-summary"
-          >
-            Báo cáo tổng hợp
-          </Button>
         </div>
       </div>
 
       {/* 🧩 Modal nhập thông tin nghị quyết */}
       <CreateDecisionModal
         open={open}
-        onCancel={() => setOpen(false)}
-        onSubmit={handleCreate}
+        onCancel={() => {
+          setOpen(false);
+        }}
+        onSubmit={handleCreateDecision}
       />
     </Card>
   );
