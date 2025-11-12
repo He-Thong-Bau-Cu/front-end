@@ -126,8 +126,7 @@ export default function ReportArchivePage() {
       const kw = removeVietnameseTones(keyword.trim().toLowerCase());
       result = result.filter((item) => {
         const name = removeVietnameseTones(item.name.toLowerCase());
-        const id = removeVietnameseTones(item.id.toLowerCase());
-        return name.includes(kw) || id.includes(kw);
+        return name.includes(kw);
       });
     }
 

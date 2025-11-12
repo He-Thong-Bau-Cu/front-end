@@ -127,9 +127,9 @@ const AuthorizationHistory = () => {
         <Card
             title={
                 <div className={styles.titleContainer}>
-                    <Text className={styles.cardTitle}>
+                    <Title level={5} className={styles.cardTitle}>
                         📜 Chi tiết ủy quyền
-                    </Text>
+                    </Title>
                     <Tag
                         color={getStatusColor(status)}
                         icon={status === "PENDING" ? <ClockCircleOutlined /> : <CheckOutlined />}

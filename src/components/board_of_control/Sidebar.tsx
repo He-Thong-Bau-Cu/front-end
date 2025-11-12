@@ -72,7 +72,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             {/* Menu */}
             <Menu
                 mode="inline"
-                defaultSelectedKeys={[location.pathname]}
+                selectedKeys={[location.pathname]}
                 style={{
                     background: "transparent",
                     border: "none",
@@ -80,6 +80,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
                 onClick={handleClick}
                 items={menuItems}
             />
+
         </Sider>
     );
 };

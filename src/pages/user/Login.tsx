@@ -22,7 +22,7 @@ export default function LoginScreen() {
   const { notify } = useNotification();
   const navigate = useNavigate();
 
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
 
   const onFinish = async (values: any) => {
     try {

@@ -1,8 +1,11 @@
 import { EyeOutlined, MonitorOutlined } from "@ant-design/icons";
 import { Tag } from "antd";
 import "../../../style/board-of-control/DashBoard.model.css";
+import { useNavigate } from "react-router-dom";
 
 export default function LiveMonitoring() {
+  const navigate = useNavigate();
+
   // ===== DATA TRỰC TIẾP TRONG COMPONENT =====
   const monitor = {
     title: "Đại hội cổ đông 2025",
@@ -51,7 +54,7 @@ export default function LiveMonitoring() {
         </div>
 
         {/* ===== BUTTON ===== */}
-        <button className="lm-btn">
+        <button className="lm-btn" onClick={() => navigate("/board-of-control/voting-process")}>
           <MonitorOutlined />
           <span>Vào phòng giám sát chi tiết</span>
         </button>
