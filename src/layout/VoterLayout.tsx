@@ -20,7 +20,11 @@ const VoterLayout = () => {
             '/voter/delegate-card': 'Thẻ đại biểu',
             '/voter/ballot_cumulative_voting': 'Bỏ phiếu',
             '/voter/ballot_resolution_voting': 'Bỏ phiếu',
-            '/voter/results/detail': 'Kết quả bỏ phiếu chi tiết'
+            '/voter/results/detail': 'Kết quả bỏ phiếu chi tiết',
+            '/voter/create-authorization': 'Tạo ủy quyền',
+            '/voter/request-authorization': 'Tạo ủy quyền'
+
+
         };
 
         setPageTitle(map[location.pathname] || 'Bảng điều khiển');

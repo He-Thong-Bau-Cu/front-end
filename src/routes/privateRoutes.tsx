@@ -1,4 +1,6 @@
 import PrivateRoute from "@/components/auth/PrivateRoute";
+import AuthorizationRequestForm from "@/components/voter/authorization/AuthorizationRequestForm";
+import UserSelection from "@/components/voter/authorization/UserSelection";
 import VotingResultDetail from "@/components/voter/voting-result/VotingResultDetail";
 import AdminLayout from "@/layout/AdminLayout";
 import BoardOfControlLayout from "@/layout/BoardOfControlLayout";
@@ -50,7 +52,6 @@ import DelegateCardPage from "@/pages/voter/DelegateCardPage";
 import ResolutionVoting from "@/pages/voter/ResolutionVoting";
 import VoteSuccess from "@/pages/voter/VoteSuccess";
 import VotingHistory from "@/pages/voter/VotingHistory";
-import VotingResult from "@/pages/voter/VotingResult";
 
 export const privateRoutes = [
   {
@@ -81,6 +82,8 @@ export const privateRoutes = [
         children: [
           { index: true, element: <DashboardVoter /> },
           { path: "authorization", element: <Authorization /> },
+          { path: "create-authorization", element: <UserSelection /> },
+          { path: "request-authorization", element: <AuthorizationRequestForm /> },
           { path: "ballots", element: <BallotList /> },
           { path: "ballot_cumulative_voting", element: <CumulativeVoting /> },
           { path: "ballot_resolution_voting", element: <ResolutionVoting /> },

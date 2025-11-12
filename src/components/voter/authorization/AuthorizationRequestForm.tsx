@@ -1,72 +1,62 @@
-import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import {
-    Button,
-    Card,
-    Checkbox,
-    Col,
-    DatePicker,
-    Form,
-    Input,
-    Row,
-    Upload,
-    Space,
-    Avatar,
-    Descriptions,
-    Typography,
-    message
-} from "antd";
-import DelegationService from "@/services/DelegationService";
 import { useLoading } from "@/contexts/LoadingContext";
-import { User } from "@/types/User.interface";
-import dayjs from "dayjs";
 import { useNotification } from "@/contexts/NotificationContext";
+import DelegationService from "@/services/DelegationService";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import {
+    Avatar, Button, Card, Checkbox, Col, DatePicker, Descriptions,
+    Form, Input, Row, Space, Typography
+} from "antd";
+import dayjs from "dayjs";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
 
-interface AuthorizationRequestFormProps {
-    selectedUser: User;
-    onBack: () => void;
-    electionId: string;
-    delegatorId: string;
+interface AuthorizationFormValues {
+    startDate: dayjs.Dayjs;
+    endDate: dayjs.Dayjs;
+    reason: string;
 }
 
-export default function AuthorizationRequestForm({
-    selectedUser,
-    onBack,
-    electionId,
-}: AuthorizationRequestFormProps) {
+export default function AuthorizationRequestForm() {
+    const { state } = useLocation();
+    const navigate = useNavigate();
+
+    // ✅ Lấy dữ liệu được truyền sang
+    const selectedUser = state?.selectedUser;
+    const electionId = state?.electionId;
+    const delegatorId = state?.delegatorId;
 
     const [form] = Form.useForm();
     const { showLoading, hideLoading } = useLoading();
-    const { notify } = useNotification();  // ✅ ADD
+    const { notify } = useNotification();
 
+    if (!selectedUser) {
+        navigate("/voter/create-authorization");
+        return null;
+    }
 
-    const handleSubmit = async (values: any) => {
+    const handleSubmit = async (values: AuthorizationFormValues) => {
         try {
             showLoading();
-
-            const myId = localStorage.getItem("userId");
 
             const payload = {
                 delegationType: "election",
                 electionId,
-                delegatorId: myId,
+                delegatorId,
                 delegateId: selectedUser._id,
                 startDate: values.startDate.toISOString(),
                 endDate: values.endDate.toISOString(),
-                documentId: null,
                 delegateReason: values.reason,
+                // documentId: null,
                 signature: null,
-                status: "PENDING"
+                status: "PENDING",
             };
 
             await DelegationService.add(payload);
-
             notify("Gửi yêu cầu ủy quyền thành công!", "success");
-            onBack();
-        } catch (error: any) {
-            console.error(error);
-            notify(error?.message || "Lỗi gửi yêu cầu ủy quyền", "error");
+            navigate(-2);
+        } catch {
+            notify("Lỗi gửi yêu cầu ủy quyền", "error");
         } finally {
             hideLoading();
         }
@@ -79,7 +69,7 @@ export default function AuthorizationRequestForm({
                 <Space>
                     <Button
                         icon={<ArrowLeftOutlined />}
-                        onClick={onBack}
+                        onClick={() => navigate(-1)}
                         style={{ border: "none", boxShadow: "none" }}
                     />
                     <Title level={4} style={{ margin: 0 }}>
@@ -100,7 +90,7 @@ export default function AuthorizationRequestForm({
                 <Space direction="vertical" style={{ width: "100%" }} size="middle">
                     <Space>
                         <Avatar size={64} style={{ backgroundColor: "#7ECB50" }}>
-                            {selectedUser.fullName.charAt(0)}
+                            {selectedUser.fullName?.charAt(0)}
                         </Avatar>
                         <div>
                             <Text strong style={{ fontSize: 16 }}>
@@ -111,31 +101,20 @@ export default function AuthorizationRequestForm({
                         </div>
                     </Space>
                     <Descriptions column={2} bordered size="small">
-                        <Descriptions.Item label="CCCD">
-                            {selectedUser.citizenId}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Điện thoại">
-                            {selectedUser.phone}
-                        </Descriptions.Item>
+                        <Descriptions.Item label="CCCD">{selectedUser.citizenId}</Descriptions.Item>
+                        <Descriptions.Item label="Điện thoại">{selectedUser.phone}</Descriptions.Item>
                         <Descriptions.Item label="Ngày sinh">
                             {new Date(selectedUser.dateOfBirth).toLocaleDateString("vi-VN")}
                         </Descriptions.Item>
-                        <Descriptions.Item label="Địa chỉ">
-                            {selectedUser.address}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Phòng ban">
-                            {selectedUser.department}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Chức vụ">
-                            {selectedUser.position}
-                        </Descriptions.Item>
+                        <Descriptions.Item label="Địa chỉ">{selectedUser.address}</Descriptions.Item>
+                        <Descriptions.Item label="Phòng ban">{selectedUser.department}</Descriptions.Item>
+                        <Descriptions.Item label="Chức vụ">{selectedUser.position}</Descriptions.Item>
                     </Descriptions>
                 </Space>
             </Card>
 
             {/* ===== Form ===== */}
             <Form layout="vertical" form={form} onFinish={handleSubmit}>
-                {/* Ngày bắt đầu / kết thúc */}
                 <Row gutter={16}>
                     <Col xs={24} md={12}>
                         <Form.Item
@@ -146,9 +125,7 @@ export default function AuthorizationRequestForm({
                             <DatePicker
                                 style={{ width: "100%" }}
                                 format="DD/MM/YYYY"
-                                disabledDate={(current) => {
-                                    return current && current < dayjs().startOf("day");
-                                }}
+                                disabledDate={(current) => current && current < dayjs().startOf("day")}
                             />
                         </Form.Item>
                     </Col>
@@ -164,12 +141,11 @@ export default function AuthorizationRequestForm({
                                     validator(_, value) {
                                         const start = getFieldValue("startDate");
                                         if (!start || !value) return Promise.resolve();
-                                        if (value.isBefore(start)) {
+                                        if (value.isBefore(start))
                                             return Promise.reject("Ngày kết thúc không thể trước ngày bắt đầu!");
-                                        }
                                         return Promise.resolve();
-                                    }
-                                })
+                                    },
+                                }),
                             ]}
                         >
                             <DatePicker
@@ -177,9 +153,7 @@ export default function AuthorizationRequestForm({
                                 format="DD/MM/YYYY"
                                 disabledDate={(current) => {
                                     const start = form.getFieldValue("startDate");
-                                    if (!start) {
-                                        return current && current < dayjs().startOf("day");
-                                    }
+                                    if (!start) return current && current < dayjs().startOf("day");
                                     return current && current < dayjs(start).startOf("day");
                                 }}
                             />
@@ -187,7 +161,6 @@ export default function AuthorizationRequestForm({
                     </Col>
                 </Row>
 
-                {/* Lý do */}
                 <Form.Item
                     label="Lý do ủy quyền *"
                     name="reason"
@@ -195,8 +168,7 @@ export default function AuthorizationRequestForm({
                 >
                     <Input.TextArea rows={3} />
                 </Form.Item>
-
-                {/* Upload chứng từ (optional) */}
+                {/* 
                 <Form.Item label="Tải lên giấy tờ chứng minh" name="upload">
                     <Upload.Dragger multiple>
                         <p className="ant-upload-drag-icon">
@@ -207,17 +179,16 @@ export default function AuthorizationRequestForm({
                             Chấp nhận PDF, PNG, JPG (tối đa 5MB)
                         </p>
                     </Upload.Dragger>
-                </Form.Item>
+                </Form.Item> */}
 
-                {/* Check điều khoản */}
                 <Form.Item
                     name="agreement"
                     valuePropName="checked"
                     rules={[
                         {
                             validator: (_, val) =>
-                                val ? Promise.resolve() : Promise.reject("Bạn cần đồng ý điều khoản!")
-                        }
+                                val ? Promise.resolve() : Promise.reject("Bạn cần đồng ý điều khoản!"),
+                        },
                     ]}
                 >
                     <Checkbox>
@@ -225,9 +196,8 @@ export default function AuthorizationRequestForm({
                     </Checkbox>
                 </Form.Item>
 
-                {/* Buttons */}
                 <div className="delegation-form-actions">
-                    <Button onClick={onBack}>Hủy</Button>
+                    <Button onClick={() => navigate(-1)}>Hủy</Button>
                     <Button type="primary" htmlType="submit" style={{ background: "#7ECB50", border: "none" }}>
                         Gửi yêu cầu
                     </Button>

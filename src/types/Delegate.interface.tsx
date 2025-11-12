@@ -57,3 +57,33 @@ export interface DelegationDetail {
   createdAt: string; // ISO date string
   __v: number;
 }
+
+
+
+export interface DelegationSearch {
+  _id: string;
+  electionId: {
+    _id: string;
+    title: string;
+  };
+  delegateId: {
+    _id: string;
+    fullName: string;
+    email: string;
+    department?: string;
+    position?: string;
+  };
+  delegationType: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  createdAt: string;
+}
+
+export type DelegationStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "ACTIVE"
+  | "EXPIRED"
+  | "REVOKED"
+  | "INVALID";

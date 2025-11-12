@@ -1,264 +1,247 @@
-import { Card, Typography, Tag, Descriptions, Space, Avatar, Divider, Row, Col, Spin, message } from "antd";
-import { CheckOutlined, ClockCircleOutlined, UserOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-import styles from "./../../../style/voter/AuthorizationHistory.module.css";
-import { DelegationDetail } from "@/types/Delegate.interface";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
 import DelegationService from "@/services/DelegationService";
-import { useLocation } from "react-router-dom";
+import styles from "@/style/voter/AuthorizationHistory.module.css";
+import { DelegationSearch, DelegationStatus } from "@/types/Delegate.interface";
+import {
+    CalendarOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    ExclamationCircleOutlined,
+    EyeOutlined,
+    InfoCircleOutlined,
+    PlusOutlined,
+    StopOutlined,
+    UserOutlined,
+} from "@ant-design/icons";
+import { Alert, Avatar, Button, Card, Space, Table, Tag, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
+const { Title, Text } = Typography;
 
-const { Text, Title } = Typography;
-
-
-
-// Format date to Vietnamese format
-const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+const statusConfig: Record<
+    DelegationStatus,
+    { label: string; color: string; icon: React.ReactNode }
+> = {
+    PENDING: { label: "Đang chờ phê duyệt", color: "orange", icon: <ClockCircleOutlined /> },
+    CONFIRMED: { label: "Đã phê duyệt", color: "green", icon: <CheckCircleOutlined /> },
+    ACTIVE: { label: "Đang hiệu lực", color: "blue", icon: <CheckCircleOutlined /> },
+    EXPIRED: { label: "Hết hiệu lực", color: "default", icon: <ExclamationCircleOutlined /> },
+    REVOKED: { label: "Đã thu hồi", color: "red", icon: <CloseCircleOutlined /> },
+    INVALID: { label: "Không hợp lệ", color: "magenta", icon: <StopOutlined /> },
 };
 
-// Format status to Vietnamese
-const getStatusLabel = (status: string) => {
-    switch (status) {
-        case "PENDING":
-            return "Đang chờ duyệt";
-        case "APPROVED":
-            return "Đã duyệt";
-        case "REJECTED":
-            return "Đã từ chối";
-        default:
-            return status;
-    }
-};
 
-// Format status color
-const getStatusColor = (status: string) => {
-    switch (status) {
-        case "PENDING":
-            return "orange";
-        case "APPROVED":
-            return "green";
-        case "REJECTED":
-            return "red";
-        default:
-            return "default";
-    }
-};
-
-// Format delegation type to Vietnamese
-const getDelegationTypeLabel = (type: string) => {
-    switch (type) {
-        case "long_term":
-            return "Ủy quyền dài hạn";
-        case "short_term":
-            return "Ủy quyền ngắn hạn";
-        default:
-            return type;
-    }
-};
-
-const AuthorizationHistory = () => {
-    const [delegationData, setDelegationData] = useState<DelegationDetail | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-
-    const location = useLocation();
-    const electionId = location.state?.electionId || localStorage.getItem("currentElectionId");
-
+export default function AuthorizationHistory() {
+    const navigate = useNavigate();
+    const [delegations, setDelegations] = useState<DelegationSearch[]>([]);
+    const [inlineAlert, setInlineAlert] = useState<{
+        type: "info" | "warning" | "error" | "success";
+        message: string;
+        description: string;
+        bgColor?: string;
+        icon?: React.ReactNode;
+    } | null>(null);
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
 
     useEffect(() => {
-        const fetchDelegation = async () => {
+        const fetchDelegations = async () => {
             try {
-                setLoading(true);
-
-                const delegatorId = localStorage.getItem("userId");
-
-                if (!delegatorId) {
-                    message.error("Không tìm thấy thông tin người dùng");
-                    return;
-                }
-
-                if (!electionId) {
-                    message.error("Không tìm thấy electionId");
-                    return;
-                }
-
-                const data = await DelegationService.getDelegation(delegatorId, electionId);
-                setDelegationData(data);
-            } catch (error) {
-                message.error("Không thể tải thông tin ủy quyền");
-                console.error(error);
+                showLoading();
+                const electionId = localStorage.getItem("currentElectionId") || "";
+                const delegatorId = localStorage.getItem("userId") || "";
+                const data = await DelegationService.searchAll({ electionId, delegatorId });
+                setDelegations(data);
+            } catch {
+                notify("Không thể tải danh sách ủy quyền");
             } finally {
-                setLoading(false);
+                hideLoading();
             }
         };
+        fetchDelegations();
+    }, []);
 
-        fetchDelegation();
-    }, [electionId]);
+    // ✅ Kiểm tra có ủy quyền nào bị chặn không (đang hoạt động hoặc chờ duyệt)
+    const blockingDelegation = delegations.find((item) =>
+        ["PENDING", "CONFIRMED", "ACTIVE"].includes(item.status)
+    );
 
-    if (loading) {
-        return (
-            <Card className={styles.delegationHistoryCard}>
-                <div style={{ textAlign: "center", padding: "40px 0" }}>
-                    <Spin size="large" />
-                </div>
-            </Card>
-        );
-    }
+    // 👉 Điều hướng sang màn chi tiết
+    const handleViewDetail = (delegationId: string) => {
+        navigate(`/voter/authorization-detail/${delegationId}`);
+    };
 
-    if (!delegationData) {
-        return (
-            <Card className={styles.delegationHistoryCard}>
-                <div style={{ textAlign: "center", padding: "40px 0" }}>
-                    <Text type="secondary">Không có thông tin ủy quyền</Text>
-                </div>
-            </Card>
-        );
-    }
+    // 👉 Xử lý tạo ủy quyền
+    const handleCreateDelegation = () => {
+        if (blockingDelegation) {
+            const mapStatus = {
+                PENDING: {
+                    type: "info",
+                    message: "Ủy quyền đang chờ phê duyệt",
+                    description: "Bạn đã có một ủy quyền đang chờ phê duyệt. Vui lòng chờ kết quả.",
+                    bgColor: "#fff7e6",
+                    icon: <ClockCircleOutlined style={{ color: "#fa8c16" }} />,
+                },
+                CONFIRMED: {
+                    type: "success",
+                    message: "Ủy quyền đã được phê duyệt",
+                    description: "Bạn đã có một ủy quyền đã được phê duyệt, không thể tạo thêm.",
+                    bgColor: "#f6ffed",
+                    icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+                },
+                ACTIVE: {
+                    type: "warning",
+                    message: "Ủy quyền đang có hiệu lực",
+                    description: "Bạn đã có một ủy quyền đang hoạt động, không thể tạo thêm.",
+                    bgColor: "#e6f7ff",
+                    icon: <InfoCircleOutlined style={{ color: "#1890ff" }} />,
+                },
+            } as const;
 
-    const { delegatorId, delegateId, status, startDate, endDate, delegationType, confirmedAt, confirmedBy, createdAt } = delegationData;
+            setInlineAlert(mapStatus[blockingDelegation.status as keyof typeof mapStatus]);
+            return;
+        }
+
+        setInlineAlert(null);
+        navigate("/voter/create-authorization");
+    };
+
+    const columns = [
+        {
+            title: "Cuộc bầu cử",
+            dataIndex: ["electionId", "title"],
+            key: "electionName",
+            render: (text: string) => <Text strong>{text}</Text>,
+        },
+        {
+            title: "Người được ủy quyền",
+            key: "delegate",
+            render: (_: unknown, record: DelegationSearch) => (
+                <Space size="middle" align="center">
+                    <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#7ECB50" }}>
+                        {record.delegateId.fullName.charAt(0)}
+                    </Avatar>
+                    <div>
+                        <Text strong>{record.delegateId.fullName}</Text>
+                        <br />
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            {record.delegateId.email}
+                        </Text>
+                    </div>
+                </Space>
+            ),
+        },
+
+        {
+            title: "Trạng thái",
+            dataIndex: "status",
+            key: "status",
+            render: (value: DelegationStatus) => {
+                const config = statusConfig[value];
+                return (
+                    <Tag color={config.color} icon={config.icon} style={{ borderRadius: 12, padding: "4px 12px" }}>
+                        {config.label}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: "Ngày tạo",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: (value: string) =>
+                <Space>
+                    <CalendarOutlined />
+                    <Text>{new Date(value).toLocaleDateString("vi-VN")}</Text>
+                </Space>,
+        },
+        {
+            title: "Hành động",
+            key: "action",
+            render: (_: unknown, record: DelegationSearch) => (
+                <Button
+                    type="link"
+                    icon={<EyeOutlined />}
+                    style={{ padding: 0 }}
+                    onClick={() => handleViewDetail(record._id)}
+                >
+                    Xem chi tiết
+                </Button>
+            ),
+        },
+    ];
 
     return (
         <Card
+            className={styles.delegationHistoryCard}
             title={
                 <div className={styles.titleContainer}>
                     <Title level={5} className={styles.cardTitle}>
-                        📜 Chi tiết ủy quyền
+                        📚 Lịch sử ủy quyền của bạn
                     </Title>
-                    <Tag
-                        color={getStatusColor(status)}
-                        icon={status === "PENDING" ? <ClockCircleOutlined /> : <CheckOutlined />}
-                        className={`${styles.statusTag} ${styles[`status${status}`]}`}
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        ghost
+                        onClick={handleCreateDelegation}
+                        style={{
+                            borderRadius: 8,
+                            fontWeight: 500,
+                            color: "#124d2d",
+                            border: "1.5px solid #3ca860",
+                            background: "#f6ffed",
+                            transition: "all 0.3s ease",
+                            height: 36,
+                            padding: "0 16px",
+                            marginRight: 30
+                        }}
+                        onMouseEnter={(e) => {
+                            const btn = e.currentTarget;
+                            btn.style.background = "#3ca860";
+                            btn.style.color = "white";
+                            btn.style.borderColor = "#3ca860";
+                            btn.style.boxShadow = "0 2px 6px rgba(60,168,96,0.25)";
+                        }}
+                        onMouseLeave={(e) => {
+                            const btn = e.currentTarget;
+                            btn.style.background = "#f6ffed";
+                            btn.style.color = "#124d2d";
+                            btn.style.borderColor = "#3ca860";
+                            btn.style.boxShadow = "none";
+                        }}
                     >
-                        {getStatusLabel(status)}
-                    </Tag>
+                        Tạo ủy quyền mới
+                    </Button>
+
                 </div>
             }
-            className={styles.delegationHistoryCard}
         >
-            <Space direction="vertical" style={{ width: "100%" }} size="large">
-                {/* Thông tin người ủy quyền và người được ủy quyền */}
-                <Row gutter={[16, 16]} className={styles.usersRow}>
-                    <Col xs={24} md={12}>
-                        <Card
-                            size="small"
-                            title={<Title level={5} className={styles.cardSectionTitle}>Người ủy quyền</Title>}
-                            className={styles.userCard}
-                        >
-                            <Space className={styles.userInfo}>
-                                <div className={styles.avatarWrapper}>
-                                    <Avatar
-                                        size={64}
-                                        className={styles.delegatorAvatar}
-                                        icon={<UserOutlined />}
-                                    >
-                                        {delegatorId.fullName.charAt(0)}
-                                    </Avatar>
-                                </div>
-                                <div className={styles.userDetails}>
-                                    <Text strong className={styles.userName}>
-                                        {delegatorId.fullName}
-                                    </Text>
-                                    <br />
-                                    <Text type="secondary" className={styles.userEmail}>
-                                        {delegatorId.email}
-                                    </Text>
-                                    <br />
-                                    <Text type="secondary" className={styles.userUsername}>
-                                        @{delegatorId.username}
-                                    </Text>
-                                </div>
-                            </Space>
-                            <Divider className={styles.divider} />
-                            <Descriptions column={1} size="small" className={styles.descriptions}>
-                                <Descriptions.Item label="Chức vụ">
-                                    {delegatorId.position}
-                                </Descriptions.Item>
-                            </Descriptions>
-                        </Card>
-                    </Col>
-
-                    <Col xs={24} md={12}>
-                        <Card
-                            size="small"
-                            title={<Title level={5} className={styles.cardSectionTitle}>Người được ủy quyền</Title>}
-                            className={styles.userCard}
-                        >
-                            <Space className={styles.userInfo}>
-                                <div className={styles.avatarWrapper}>
-                                    <Avatar
-                                        size={64}
-                                        className={styles.delegateAvatar}
-                                        icon={<UserOutlined />}
-                                    >
-                                        {delegateId.fullName.charAt(0)}
-                                    </Avatar>
-                                </div>
-                                <div className={styles.userDetails}>
-                                    <Text strong className={styles.userName}>
-                                        {delegateId.fullName}
-                                    </Text>
-                                    <br />
-                                    <Text type="secondary" className={styles.userEmail}>
-                                        {delegateId.email}
-                                    </Text>
-                                    <br />
-                                    <Text type="secondary" className={styles.userUsername}>
-                                        @{delegateId.username}
-                                    </Text>
-                                </div>
-                            </Space>
-                            <Divider className={styles.divider} />
-                            <Descriptions column={1} size="small" className={styles.descriptions}>
-                                <Descriptions.Item label="Chức vụ">
-                                    {delegateId.position}
-                                </Descriptions.Item>
-                            </Descriptions>
-                        </Card>
-                    </Col>
-                </Row>
-
-                {/* Thông tin ủy quyền */}
-                <Card
-                    size="small"
-                    title={<Title level={5} className={styles.cardSectionTitle}>Thông tin ủy quyền</Title>}
-                    className={styles.infoCard}
-                >
-                    <Descriptions column={1} bordered size="small" className={styles.delegationInfo}>
-                        <Descriptions.Item label="Loại ủy quyền">
-                            <span className={styles.delegationType}>
-                                {getDelegationTypeLabel(delegationType)}
-                            </span>
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Ngày bắt đầu">
-                            {formatDate(startDate)}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Ngày kết thúc">
-                            {formatDate(endDate)}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Ngày tạo">
-                            {formatDate(createdAt)}
-                        </Descriptions.Item>
-                        {confirmedAt && (
-                            <Descriptions.Item label="Ngày xác nhận">
-                                {formatDate(confirmedAt)}
-                            </Descriptions.Item>
-                        )}
-                        {confirmedBy && (
-                            <Descriptions.Item label="Người xác nhận">
-                                {confirmedBy.fullName} ({confirmedBy.email})
-                            </Descriptions.Item>
-                        )}
-                    </Descriptions>
-                </Card>
-            </Space>
+            {inlineAlert && (
+                <Alert
+                    message={inlineAlert.message}
+                    description={inlineAlert.description}
+                    type={inlineAlert.type}
+                    showIcon
+                    icon={inlineAlert.icon}
+                    style={{
+                        marginBottom: 16,
+                        borderRadius: 10,
+                        background: inlineAlert.bgColor,
+                    }}
+                />
+            )}
+            <Table<DelegationSearch>
+                columns={columns}
+                dataSource={delegations}
+                rowKey="_id"
+                pagination={{ pageSize: 5, showSizeChanger: false }}
+                bordered={false}
+                scroll={{ x: 1000 }}
+                style={{ background: "transparent" }}
+            />
         </Card>
     );
-};
-
-export default AuthorizationHistory;
+}
