@@ -83,19 +83,19 @@ const HomePage: React.FC = () => {
     localStorage.setItem("currentElectionId", electionId);
     switch (election.roleCode) {
       case USER_ROLE.PRESIDE_SECRETARY:
-        navigate(PATH.SECRETARY, { state: { electionId } });
+        navigate(PATH.SECRETARY, { state: { electionId: electionId, voter: election.voter } });
         break;
       case USER_ROLE.ORGANIZING_COMMITTEE_MEMBERS:
-        navigate(PATH.ORGANIZING_COMMITTEE, { state: { electionId } });
+        navigate(PATH.ORGANIZING_COMMITTEE, { state: { electionId: electionId, voter: election.voter } });
         break;
       case USER_ROLE.BOARD_OF_CONTROL:
-        navigate(PATH.BOARD_OF_CONTROL, { state: { electionId } });
+        navigate(PATH.BOARD_OF_CONTROL, { state: { electionId: electionId, voter: election.voter } });
         break;
       case USER_ROLE.VOTER:
-        navigate(PATH.VOTER, { state: { electionId } });
+        navigate(PATH.VOTER, { state: { electionId: electionId, voter: election.voter } });
         break;
       case USER_ROLE.HEAD_OF_THE_ORGANIZING_COMMITTEE:
-        navigate(PATH.HEAD_OF_THE_ORGANIZING_COMMITTEE, { state: { electionId } });
+        navigate(PATH.HEAD_OF_THE_ORGANIZING_COMMITTEE, { state: { electionId: electionId, voter: election.voter } });
         break;
       default:
         break;
