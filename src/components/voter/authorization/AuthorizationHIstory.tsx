@@ -1,39 +1,247 @@
-import { Card, Typography, Tag, Button } from "antd";
-import { CheckOutlined, ClockCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import DelegationService from "@/services/DelegationService";
+import styles from "@/style/voter/AuthorizationHistory.module.css";
+import { DelegationSearch, DelegationStatus } from "@/types/Delegate.interface";
+import {
+    CalendarOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    ExclamationCircleOutlined,
+    EyeOutlined,
+    InfoCircleOutlined,
+    PlusOutlined,
+    StopOutlined,
+    UserOutlined,
+} from "@ant-design/icons";
+import { Alert, Avatar, Button, Card, Space, Table, Tag, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
-const historyData = [
-    { name: "Trần Thị Lan", id: "032148567005", date: "15/05/2024", status: "Đang duyệt" },
-    { name: "Nguyễn Văn Minh", id: "021354789125", date: "01/05/2024", status: "Đã duyệt" },
-];
+const statusConfig: Record<
+    DelegationStatus,
+    { label: string; color: string; icon: React.ReactNode }
+> = {
+    PENDING: { label: "Đang chờ phê duyệt", color: "orange", icon: <ClockCircleOutlined /> },
+    CONFIRMED: { label: "Đã phê duyệt", color: "green", icon: <CheckCircleOutlined /> },
+    ACTIVE: { label: "Đang hiệu lực", color: "blue", icon: <CheckCircleOutlined /> },
+    EXPIRED: { label: "Hết hiệu lực", color: "default", icon: <ExclamationCircleOutlined /> },
+    REVOKED: { label: "Đã thu hồi", color: "red", icon: <CloseCircleOutlined /> },
+    INVALID: { label: "Không hợp lệ", color: "magenta", icon: <StopOutlined /> },
+};
 
-const AuthorizationHistory = () => (
-    <Card title={<Text style={{ paddingLeft: 20, fontWeight: 'bold', fontSize: 18 }}>📜 Lịch sử ủy quyền của bạn</Text>} className="delegation-history-card">
-        {historyData.map((item, i) => (
-            <div key={i} className="delegation-history-item">
-                <div>
-                    <Text strong>{item.name}</Text>
-                    <p style={{ color: "#777" }}>
-                        CCCD: {item.id} — Ngày tạo: {item.date}
-                    </p>
+
+export default function AuthorizationHistory() {
+    const navigate = useNavigate();
+    const [delegations, setDelegations] = useState<DelegationSearch[]>([]);
+    const [inlineAlert, setInlineAlert] = useState<{
+        type: "info" | "warning" | "error" | "success";
+        message: string;
+        description: string;
+        bgColor?: string;
+        icon?: React.ReactNode;
+    } | null>(null);
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
+
+    useEffect(() => {
+        const fetchDelegations = async () => {
+            try {
+                showLoading();
+                const electionId = localStorage.getItem("currentElectionId") || "";
+                const delegatorId = localStorage.getItem("userId") || "";
+                const data = await DelegationService.searchAll({ electionId, delegatorId });
+                setDelegations(data);
+            } catch {
+                notify("Không thể tải danh sách ủy quyền");
+            } finally {
+                hideLoading();
+            }
+        };
+        fetchDelegations();
+    }, []);
+
+    // ✅ Kiểm tra có ủy quyền nào bị chặn không (đang hoạt động hoặc chờ duyệt)
+    const blockingDelegation = delegations.find((item) =>
+        ["PENDING", "CONFIRMED", "ACTIVE"].includes(item.status)
+    );
+
+    // 👉 Điều hướng sang màn chi tiết
+    const handleViewDetail = (delegationId: string) => {
+        navigate(`/voter/authorization-detail/${delegationId}`);
+    };
+
+    // 👉 Xử lý tạo ủy quyền
+    const handleCreateDelegation = () => {
+        if (blockingDelegation) {
+            const mapStatus = {
+                PENDING: {
+                    type: "info",
+                    message: "Ủy quyền đang chờ phê duyệt",
+                    description: "Bạn đã có một ủy quyền đang chờ phê duyệt. Vui lòng chờ kết quả.",
+                    bgColor: "#fff7e6",
+                    icon: <ClockCircleOutlined style={{ color: "#fa8c16" }} />,
+                },
+                CONFIRMED: {
+                    type: "success",
+                    message: "Ủy quyền đã được phê duyệt",
+                    description: "Bạn đã có một ủy quyền đã được phê duyệt, không thể tạo thêm.",
+                    bgColor: "#f6ffed",
+                    icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+                },
+                ACTIVE: {
+                    type: "warning",
+                    message: "Ủy quyền đang có hiệu lực",
+                    description: "Bạn đã có một ủy quyền đang hoạt động, không thể tạo thêm.",
+                    bgColor: "#e6f7ff",
+                    icon: <InfoCircleOutlined style={{ color: "#1890ff" }} />,
+                },
+            } as const;
+
+            setInlineAlert(mapStatus[blockingDelegation.status as keyof typeof mapStatus]);
+            return;
+        }
+
+        setInlineAlert(null);
+        navigate("/voter/create-authorization");
+    };
+
+    const columns = [
+        {
+            title: "Cuộc bầu cử",
+            dataIndex: ["electionId", "title"],
+            key: "electionName",
+            render: (text: string) => <Text strong>{text}</Text>,
+        },
+        {
+            title: "Người được ủy quyền",
+            key: "delegate",
+            render: (_: unknown, record: DelegationSearch) => (
+                <Space size="middle" align="center">
+                    <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#7ECB50" }}>
+                        {record.delegateId.fullName.charAt(0)}
+                    </Avatar>
+                    <div>
+                        <Text strong>{record.delegateId.fullName}</Text>
+                        <br />
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            {record.delegateId.email}
+                        </Text>
+                    </div>
+                </Space>
+            ),
+        },
+
+        {
+            title: "Trạng thái",
+            dataIndex: "status",
+            key: "status",
+            render: (value: DelegationStatus) => {
+                const config = statusConfig[value];
+                return (
+                    <Tag color={config.color} icon={config.icon} style={{ borderRadius: 12, padding: "4px 12px" }}>
+                        {config.label}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: "Ngày tạo",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: (value: string) =>
+                <Space>
+                    <CalendarOutlined />
+                    <Text>{new Date(value).toLocaleDateString("vi-VN")}</Text>
+                </Space>,
+        },
+        {
+            title: "Hành động",
+            key: "action",
+            render: (_: unknown, record: DelegationSearch) => (
+                <Button
+                    type="link"
+                    icon={<EyeOutlined />}
+                    style={{ padding: 0 }}
+                    onClick={() => handleViewDetail(record._id)}
+                >
+                    Xem chi tiết
+                </Button>
+            ),
+        },
+    ];
+
+    return (
+        <Card
+            className={styles.delegationHistoryCard}
+            title={
+                <div className={styles.titleContainer}>
+                    <Title level={5} className={styles.cardTitle}>
+                        📚 Lịch sử ủy quyền của bạn
+                    </Title>
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        ghost
+                        onClick={handleCreateDelegation}
+                        style={{
+                            borderRadius: 8,
+                            fontWeight: 500,
+                            color: "#124d2d",
+                            border: "1.5px solid #3ca860",
+                            background: "#f6ffed",
+                            transition: "all 0.3s ease",
+                            height: 36,
+                            padding: "0 16px",
+                            marginRight: 30
+                        }}
+                        onMouseEnter={(e) => {
+                            const btn = e.currentTarget;
+                            btn.style.background = "#3ca860";
+                            btn.style.color = "white";
+                            btn.style.borderColor = "#3ca860";
+                            btn.style.boxShadow = "0 2px 6px rgba(60,168,96,0.25)";
+                        }}
+                        onMouseLeave={(e) => {
+                            const btn = e.currentTarget;
+                            btn.style.background = "#f6ffed";
+                            btn.style.color = "#124d2d";
+                            btn.style.borderColor = "#3ca860";
+                            btn.style.boxShadow = "none";
+                        }}
+                    >
+                        Tạo ủy quyền mới
+                    </Button>
+
                 </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {item.status === "Đang duyệt" ? (
-                        <Tag color="orange">
-                            <ClockCircleOutlined /> {item.status}
-                        </Tag>
-                    ) : (
-                        <Tag color="green">
-                            <CheckOutlined /> {item.status}
-                        </Tag>
-                    )}
-                    <Button icon={<DeleteOutlined />} danger shape="circle" />
-                </div>
-            </div>
-        ))}
-    </Card>
-);
-
-export default AuthorizationHistory;
+            }
+        >
+            {inlineAlert && (
+                <Alert
+                    message={inlineAlert.message}
+                    description={inlineAlert.description}
+                    type={inlineAlert.type}
+                    showIcon
+                    icon={inlineAlert.icon}
+                    style={{
+                        marginBottom: 16,
+                        borderRadius: 10,
+                        background: inlineAlert.bgColor,
+                    }}
+                />
+            )}
+            <Table<DelegationSearch>
+                columns={columns}
+                dataSource={delegations}
+                rowKey="_id"
+                pagination={{ pageSize: 5, showSizeChanger: false }}
+                bordered={false}
+                scroll={{ x: 1000 }}
+                style={{ background: "transparent" }}
+            />
+        </Card>
+    );
+}

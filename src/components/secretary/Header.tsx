@@ -1,37 +1,116 @@
-import React from 'react';
-import { Avatar, Badge, Layout } from 'antd';
-import { BellFilled } from '@ant-design/icons';
+import logo from "@/assets/logo.png";
+import React, { useEffect, useState } from 'react';
+import { Avatar, Badge, Dropdown, Layout, message, Space, Typography } from 'antd';
+import { BellFilled, IdcardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import '../../style/Header.model.css';
+import { getUserLogin } from '@/utils/auth';
+import { User } from '@/types/User.interface';
+import { MenuProps } from 'antd/lib';
+import ProfileModal from '../homepage/ProfileModal';
 
 const { Header } = Layout;
+const { Title, Text } = Typography;
 
-interface SecretaryHeaderProps {
+interface VoterHeaderProps {
     title: string;
 }
 
-const SecretaryHeader: React.FC<SecretaryHeaderProps> = ({ title }) => {
-    return (
-        <Header className="secretary-header">
-            <div className="header-container">
-                {/* Tiêu đề */}
-                <div className="header-title">{title}</div>
+const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [isProfileOpen, setProfileOpen] = useState(false);
 
-                {/* Thông báo + Avatar */}
-                <div className="header-actions">
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const userData = await getUserLogin();
+                setUser(userData as User);
+            } catch (error) {
+                message.error("Không thể tải thông tin người dùng!");
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.clear();
+        window.location.href = "/login";
+    };
+
+    const handleOpenProfile = () => setProfileOpen(true);
+    const handleCloseProfile = () => setProfileOpen(false);
+
+    const menuItems: MenuProps["items"] = [
+        {
+            key: "profile",
+            label: "Hồ sơ cá nhân",
+            icon: <IdcardOutlined />,
+            onClick: handleOpenProfile,
+        },
+        {
+            type: "divider",
+        },
+        {
+            key: "logout",
+            label: "Đăng xuất",
+            icon: <LogoutOutlined />,
+            onClick: handleLogout,
+        },
+    ];
+    return (
+        <>
+            <Header
+                className="home-header"
+                style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1000,
+                    width: "100%",
+                }}
+            >
+                <Space size={16} align="center">
+
+                    <Title level={4} className="header-title">
+                        {title}
+                    </Title>
+                </Space>
+
+
+                <Space size={10} align="center">
                     <Badge count={3} size="small">
                         <BellFilled className="header-icon" />
                     </Badge>
-
-                    <div className="header-user">
-                        <Avatar className="header-avatar" size="large">
-                            A
-                        </Avatar>
-                        <span className="header-username">Thư ký chủ tịch</span>
-                    </div>
-                </div>
-            </div>
-        </Header>
+                    <Dropdown
+                        menu={{ items: menuItems }}
+                        placement="bottomRight"
+                        arrow
+                        overlayClassName="profile-dropdown"
+                        trigger={["click"]}
+                    >
+                        <Space className="profile-trigger">
+                            <Avatar
+                                size={40}
+                                src={user?.imageKey || undefined}
+                                icon={!user?.imageKey ? <UserOutlined /> : undefined}
+                                className="header-avatar"
+                            />
+                            <Text className="header-username">
+                                {user ? user.fullName : "Đang tải..."}
+                            </Text>
+                        </Space>
+                    </Dropdown>
+                </Space>
+            </Header>
+            <ProfileModal
+                open={isProfileOpen}
+                onClose={handleCloseProfile}
+                user={user}
+                handleCloseProfile={handleCloseProfile}
+            />
+        </>
     );
 };
 
-export default SecretaryHeader;
+export default VoterHeader;
+
+
+

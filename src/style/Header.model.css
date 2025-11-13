@@ -1,11 +1,11 @@
 .secretary-header {
   height: 100px;
   background: #ecf4e9;
-  position: fixed; /* ✅ đổi sticky → fixed */
+  position: fixed !important; /* ✅ Cố định header */
   top: 0;
   left: 250px; /* chiều rộng sidebar */
   right: 0;
-  z-index: 100;
+  z-index: 1000;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;

@@ -5,6 +5,7 @@ import {
     PlayCircleOutlined,
     UserAddOutlined,
     HistoryOutlined,
+    BellFilled,
 } from "@ant-design/icons";
 import { JSX } from "react";
 
@@ -58,7 +59,7 @@ const RecentActivities: React.FC = () => {
     return (
         <Card className="activity-card">
             <h3 className="activity-title">
-                <HistoryOutlined className="activity-title-icon" /> Hoạt động gần đây
+                <BellFilled className="activity-title-icon" /> Thông báo
             </h3>
 
             <div className="activity-list">

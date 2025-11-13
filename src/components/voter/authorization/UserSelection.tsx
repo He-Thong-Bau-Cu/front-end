@@ -1,93 +1,87 @@
-import { Card, Input, Table, Typography, Button, Avatar, Tag, Space, Spin, Alert, message } from "antd";
-import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
-import { User } from "@/types/User.interface";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
 import UserService from "@/services/UserService";
+import { User } from "@/types/User.interface";
+import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
+import {
+    Alert,
+    Avatar,
+    Button,
+    Card,
+    Input,
+    Space,
+    Table,
+    Tag,
+    Typography
+} from "antd";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
 const { Search } = Input;
 
-interface UserSelectionProps {
-    onSelectUser: (user: User) => void;
-    onCreateNew: () => void;
-}
-
-// Function to remove Vietnamese diacritics (dấu)
-const removeVietnameseTones = (str: string): string => {
-    if (!str) return "";
-    return str
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/đ/g, "d")
-        .replace(/Đ/g, "D");
-};
-
-// Function to normalize search text (lowercase + remove tones)
-const normalizeSearchText = (text: string): string => {
-    return removeVietnameseTones(text.toLowerCase().trim());
-};
-
-const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
+// ❗ Không cần props nữa
+const UserSelection = () => {
     const [searchText, setSearchText] = useState("");
-    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
+
+    const navigate = useNavigate();
+
+
+    const location = useLocation();
+    const electionId = location.state?.electionId || localStorage.getItem("currentElectionId");
+
+    const removeVietnameseTones = (str: string): string => {
+        if (!str) return "";
+        return str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D");
+    };
+
+    const normalizeSearchText = (text: string): string =>
+        removeVietnameseTones(text.toLowerCase().trim());
+
+    // 🔹 Lấy danh sách người dùng
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                setLoading(true);
-                setError(null);
-                const response = await UserService.getAll();
-                // Handle different response structures
-                const usersData = Array.isArray(response)
-                    ? response
-                    : (response as { data?: User[] })?.data || (response as { users?: User[] })?.users || [];
+                showLoading();
+                const usersData = await UserService.getAllUser();
                 setUsers(usersData);
-            } catch (err: unknown) {
-                const errorMessage = err instanceof Error ? err.message : "Không thể tải danh sách người dùng";
-                setError(errorMessage);
-                message.error(errorMessage);
-                console.error("Error fetching users:", err);
+                setError(null);
+            } catch {
+                notify("Không thể tải danh sách người dùng");
             } finally {
-                setLoading(false);
+                hideLoading();
             }
         };
 
         fetchUsers();
     }, []);
 
+    // 🔹 Lọc theo từ khóa
     const filteredUsers = users.filter((user) => {
-        if (!searchText) return true;
+        const normalized = normalizeSearchText(searchText);
+        if (!normalized) return true;
 
-        const normalizedSearch = normalizeSearchText(searchText);
-
-        // Tìm theo tên (không dấu, không phân biệt hoa thường)
-        const normalizedFullName = normalizeSearchText(user.fullName || "");
-        const matchFullName = normalizedFullName.includes(normalizedSearch);
-
-        // Tìm theo email (không phân biệt hoa thường)
-        const normalizedEmail = normalizeSearchText(user.email || "");
-        const matchEmail = normalizedEmail.includes(normalizedSearch);
-
-        // Tìm theo phòng ban (không dấu, không phân biệt hoa thường)
-        const normalizedDepartment = normalizeSearchText(user.department || "");
-        const matchDepartment = normalizedDepartment.includes(normalizedSearch);
-
-        // Tìm theo chức vụ (không dấu, không phân biệt hoa thường)
-        const normalizedPosition = normalizeSearchText(user.position || "");
-        const matchPosition = normalizedPosition.includes(normalizedSearch);
-
-        // Tìm theo trạng thái (tìm cả giá trị và text hiển thị, không dấu)
-        const statusText = user.status === "ACTIVE" ? "hoạt động" : user.status?.toLowerCase() || "";
-        const normalizedStatusText = normalizeSearchText(statusText);
-        const normalizedStatus = normalizeSearchText(user.status || "");
-        const matchStatus = normalizedStatusText.includes(normalizedSearch) || normalizedStatus.includes(normalizedSearch);
-
-        return matchFullName || matchEmail || matchDepartment || matchPosition || matchStatus;
+        return (
+            normalizeSearchText(user.fullName || "").includes(normalized) ||
+            normalizeSearchText(user.email || "").includes(normalized) ||
+            normalizeSearchText(user.department || "").includes(normalized) ||
+            normalizeSearchText(user.position || "").includes(normalized) ||
+            normalizeSearchText(
+                user.status === "ACTIVE" ? "hoạt động" : user.status || ""
+            ).includes(normalized)
+        );
     });
 
+    // 🔹 Cấu hình cột bảng
     const columns = [
         {
             title: "Người dùng",
@@ -122,7 +116,7 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
             key: "status",
             render: (record: User) => (
                 <Tag color={record.status === "ACTIVE" ? "green" : "default"}>
-                    {record.status === "ACTIVE" ? "Hoạt động" : record.status || "N/A"}
+                    {record.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
                 </Tag>
             ),
         },
@@ -133,15 +127,21 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
                 <Button
                     type="primary"
                     style={{
-                        background: selectedUserId === record._id ? "#5ba93b" : "#7ECB50",
+                        background: "#7ECB50",
                         border: "none",
                     }}
                     onClick={() => {
-                        setSelectedUserId(record._id);
-                        onSelectUser(record);
+                        navigate("/voter/request-authorization", {
+                            state: {
+                                selectedUser: record,
+                                electionId: electionId,
+                                delegatorId: localStorage.getItem("userId"),
+                            },
+                        });
                     }}
+
                 >
-                    {selectedUserId === record._id ? "Đã chọn" : "Chọn"}
+                    Chọn
                 </Button>
             ),
         },
@@ -151,70 +151,82 @@ const UserSelection = ({ onSelectUser, onCreateNew }: UserSelectionProps) => {
         <Card
             className="delegation-form-card"
             title={
-                <Title level={4} style={{ margin: 0, paddingLeft: 20 }}>
-                    👥 Chọn người được ủy quyền
-                </Title>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <Title level={5} style={{ margin: 0, paddingLeft: 10 }}>
+                        👥 Chọn người được ủy quyền
+                    </Title>
+                    <Button
+                        type="default"
+                        size="middle"
+                        style={{
+                            borderColor: "#7ECB50",
+                            color: "#7ECB50",
+                            fontWeight: 500,
+                            marginRight: 20,
+                        }}
+                        onClick={() => navigate(-1)}
+                    >
+                        Quay lại
+                    </Button>
+                </div>
             }
         >
             <Space direction="vertical" style={{ width: "100%" }} size="large">
-                {/* Tìm kiếm và nút tạo mới */}
+                {/* Thanh tìm kiếm & tạo mới */}
                 <Space style={{ width: "100%", justifyContent: "space-between" }}>
                     <Search
-                        placeholder="Tìm kiếm người được ủy quyền"
+                        placeholder="Tìm kiếm người dùng"
                         allowClear
                         enterButton={<SearchOutlined />}
                         size="large"
                         style={{ width: 500 }}
                         onChange={(e) => setSearchText(e.target.value)}
-                        onSearch={(value) => setSearchText(value)}
                     />
                     <Button
-                        type="default"
                         icon={<UserAddOutlined />}
                         size="large"
-                        onClick={onCreateNew}
+                        onClick={() => navigate("/voter/create-authorization/new-user")}
                         style={{ borderColor: "#7ECB50", color: "#7ECB50" }}
                     >
                         Tạo người dùng mới
                     </Button>
                 </Space>
 
-                {/* Error message */}
+                {/* Thông báo lỗi */}
                 {error && (
                     <Alert
-                        message="Lỗi"
+                        message="Lỗi tải dữ liệu"
                         description={error}
                         type="error"
                         showIcon
                         closable
                         onClose={() => setError(null)}
-                        style={{ marginBottom: 16 }}
                     />
                 )}
 
-                {/* Bảng danh sách users */}
-                <Spin spinning={loading}>
-                    <Table
-                        dataSource={filteredUsers}
-                        columns={columns}
-                        rowKey="_id"
-                        pagination={{
-                            pageSize: 5,
-                            showSizeChanger: true,
-                            showTotal: (total) => `Tổng ${total} người dùng`,
-                        }}
-                        rowClassName={(record) =>
-                            selectedUserId === record._id ? "selected-row" : ""
-                        }
-                        locale={{
-                            emptyText: loading ? "Đang tải..." : "Không có dữ liệu",
-                        }}
-                    />
-                </Spin>
+                {/* Bảng người dùng */}
+                <Table
+                    dataSource={filteredUsers}
+                    columns={columns}
+                    rowKey="_id"
+                    pagination={{
+                        pageSize: 5,
+                        showSizeChanger: true,
+                        showTotal: (total) => `Tổng ${total} người dùng`,
+                    }}
+                    locale={{
+                        emptyText: "Không có dữ liệu",
+                    }}
+                />
             </Space>
         </Card>
     );
 };
 
 export default UserSelection;
-

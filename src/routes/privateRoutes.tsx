@@ -1,4 +1,7 @@
 import PrivateRoute from "@/components/auth/PrivateRoute";
+import AuthorizationRequestForm from "@/components/voter/authorization/AuthorizationRequestForm";
+import UserSelection from "@/components/voter/authorization/UserSelection";
+import Drafting from "@/components/secretary/drafting-documents/Drafting";
 import VotingResultDetail from "@/components/voter/voting-result/VotingResultDetail";
 import AdminLayout from "@/layout/AdminLayout";
 import BoardOfControlLayout from "@/layout/BoardOfControlLayout";
@@ -42,8 +45,6 @@ import ManagementDocument from "@/pages/secretary/ManagementDocument";
 import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
 import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
 import FirstTimeChangePasswordScreen from "@/pages/user/ChangePasswordFirstTime";
-import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
-import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
 import Authorization from "@/pages/voter/Authorization";
 import BallotList from "@/pages/voter/BallotList";
 import CumulativeVoting from "@/pages/voter/CumulativeVoting";
@@ -52,7 +53,6 @@ import DelegateCardPage from "@/pages/voter/DelegateCardPage";
 import ResolutionVoting from "@/pages/voter/ResolutionVoting";
 import VoteSuccess from "@/pages/voter/VoteSuccess";
 import VotingHistory from "@/pages/voter/VotingHistory";
-import VotingResult from "@/pages/voter/VotingResult";
 
 export const privateRoutes = [
   {
@@ -83,14 +83,16 @@ export const privateRoutes = [
         children: [
           { index: true, element: <DashboardVoter /> },
           { path: "authorization", element: <Authorization /> },
+          { path: "create-authorization", element: <UserSelection /> },
+          { path: "request-authorization", element: <AuthorizationRequestForm /> },
           { path: "ballots", element: <BallotList /> },
           { path: "ballot_cumulative_voting", element: <CumulativeVoting /> },
           { path: "ballot_resolution_voting", element: <ResolutionVoting /> },
           { path: "statistics", element: <Statistics /> },
           { path: "authorization", element: <Authorization /> },
           { path: "voting-history", element: <VotingHistory /> },
-          { path: "results", element: <VotingResult /> },
-          { path: "results/detail", element: <VotingResultDetail /> },
+          // { path: "results", element: <VotingResult /> },
+          { path: "results", element: <VotingResultDetail /> },
           { path: "delegate-card", element: <DelegateCardPage /> },
           { path: "vote-success", element: <VoteSuccess /> },
         ],
@@ -122,6 +124,7 @@ export const privateRoutes = [
         children: [
           { index: true, element: <DashboardSecretary /> },
           { path: "drafting-documents", element: <DraftingDocuments /> },
+          { path: "drafting-documents/drafting", element: <Drafting /> },
           { path: "documents", element: <ManagementDocument /> },
           { path: "notifications", element: <NotificationCenterPage /> },
           { path: "reports", element: <ReportCenterPage /> },

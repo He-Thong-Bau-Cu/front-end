@@ -90,13 +90,6 @@ const DocumentContent: React.FC<DocumentContentProps> = ({
         <div className="document-main">
             {/* ========== HEADER ========== */}
             <div className="document-header fancy-card">
-                <Breadcrumb
-                    items={[
-                        { title: "Tất cả file" },
-                        { title: activeFolder },
-                    ]}
-                />
-
                 <Space>
                     <Input
                         prefix={<SearchOutlined />}
@@ -105,12 +98,11 @@ const DocumentContent: React.FC<DocumentContentProps> = ({
                         onChange={(e) => setSearch(e.target.value)}
                         className="search-input"
                     />
-                    <Button icon={<AppstoreOutlined />} />
-                    <Button icon={<UnorderedListOutlined />} />
-                    <Button type="primary" icon={<UploadOutlined />} className="upload-btn">
-                        Tải lên
-                    </Button>
+
                 </Space>
+                <Button type="primary" icon={<UploadOutlined />} className="upload-btn">
+                    Tải lên
+                </Button>
             </div>
 
             {/* ========== DANH SÁCH FILE ========== */}

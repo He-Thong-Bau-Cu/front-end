@@ -1,59 +1,121 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import dayjs from "dayjs";
-import ArchiveHeader from "../../components/board_of_control/reports-achive/ArchiveHeader";
+import { useLocation } from "react-router-dom";
+import { message } from "antd";
 import ArchiveSearchBar from "../../components/board_of_control/reports-achive/ArchiveSearchBar";
 import ArchiveTable from "../../components/board_of_control/reports-achive/ArchiveTable";
-import { ReportArchiveItem } from "../../types/ReportArchive.interface";
+import { ReportArchiveItem, ReportArchiveFilter } from "../../types/ReportArchive.interface";
 import "../../style/board-of-control/ReportArchive.model.css";
 import removeVietnameseTones from "@/utils/removeVietnameseTones";
+import ReportService from "@/services/ReportService.interface";
+import { Report } from "@/types/Report.interface";
+import { useLoading } from "@/contexts/LoadingContext";
+
+// Type mapping
+const TYPE_MAP: Record<string, string> = {
+  NORMAL: "Báo cáo Thường",
+  ABNORMAL: "Báo cáo Bất thường",
+  FINAL: "Kết quả Bầu cử",
+};
+
+// Map Report từ API sang ReportArchiveItem
+const mapReportToArchiveItem = (report: Report): ReportArchiveItem => {
+  const date = report.createdAt
+    ? dayjs(report.createdAt).format("DD/MM/YYYY")
+    : report.reviewedAt
+      ? dayjs(report.reviewedAt).format("DD/MM/YYYY")
+      : dayjs().format("DD/MM/YYYY");
+
+  const signer = report.signedBy?.fullName || report.signedBy?.username || "-";
+  const event = report.electionId?.title || "-";
+  const originalType = report.type || "-";
+  const type = originalType ? TYPE_MAP[originalType] || originalType : "-";
+  const name = report.description || `Báo cáo ${type}`;
+
+  return {
+    id: report._id || "",
+    name,
+    type,
+    originalType,
+    event,
+    date,
+    signer,
+    // Thêm các field chi tiết
+    description: report.description,
+    summary: report.summary,
+    fileUrl: report.fileUrl,
+    status: report.status,
+    severity: report.severity,
+    createdAt: report.createdAt,
+    updatedAt: report.updatedAt,
+    reviewedAt: report.reviewedAt,
+    createdBy: report.createdBy,
+    electionId: report.electionId ? {
+      _id: report.electionId._id,
+      title: report.electionId.title,
+      decisionNumber: report.electionId.decisionNumber,
+      decisionName: report.electionId.decisionName,
+      status: report.electionId.status,
+      statusData: report.electionId.statusData,
+    } : undefined,
+  };
+};
 
 export default function ReportArchivePage() {
-  // --- DỮ LIỆU GIẢ LẬP ---
-  const allData: ReportArchiveItem[] = [
-    {
-      id: "AR-2024-001",
-      name: "Kết quả cuối cùng: Bầu cử HĐQT 2024",
-      type: "Kết quả Bầu cử",
-      event: "Bầu cử HĐQT 2024",
-      date: "25/12/2024",
-      signer: "Nguyễn Văn A, ...",
-    },
-    {
-      id: "AR-2024-002",
-      name: "Báo cáo kiểm toán hệ thống Q4/2024",
-      type: "Báo cáo Kiểm soát",
-      event: "-",
-      date: "15/12/2024",
-      signer: "Trần Thị B",
-    },
-    {
-      id: "AR-2024-003",
-      name: "Biên bản họp Đại hội Cổ đông 2024",
-      type: "Biên bản Họp",
-      event: "ĐH Cổ đông 2024",
-      date: "01/11/2024",
-      signer: "Lê Văn C",
-    },
-    {
-      id: "AR-2024-004",
-      name: "Kết quả bầu cử Ban Kiểm soát 2023",
-      type: "Kết quả Bầu cử",
-      event: "Bầu cử BKS 2023",
-      date: "25/12/2023",
-      signer: "Nguyễn Văn D",
-    },
-  ];
+  const location = useLocation();
+  const electionId = location.state?.electionId || localStorage.getItem("currentElectionId");
+
+  const [allData, setAllData] = useState<ReportArchiveItem[]>([]);
+  const { showLoading, hideLoading } = useLoading();
 
   // --- STATE FILTER ---
   const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
   const [type, setType] = useState("Tất cả");
-  const [event, setEvent] = useState("Tất cả");
 
   // --- PHÂN TRANG ---
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+
+  // --- FETCH DATA FROM API ---
+  useEffect(() => {
+    const fetchReports = async () => {
+      if (!electionId) {
+        message.error("Không tìm thấy electionId");
+        hideLoading();
+        return;
+      }
+
+      try {
+        showLoading();
+        const reports = await ReportService.getAllReportByElectionId(electionId);
+        const mappedData = reports.map(mapReportToArchiveItem);
+        setAllData(mappedData);
+      } catch (error: unknown) {
+        console.error("Lỗi khi lấy danh sách báo cáo:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Không thể tải danh sách báo cáo";
+        message.error(errorMessage);
+        setAllData([]);
+      } finally {
+        hideLoading();
+      }
+    };
+
+    fetchReports();
+  }, [electionId]);
+
+  // --- LẤY DANH SÁCH LOẠI BÁO CÁO TỪ DATA (lấy từ originalType gốc) ---
+  const availableTypes = useMemo(() => {
+    const types = new Set<string>();
+    allData.forEach((item) => {
+      if (item.originalType && item.originalType !== "-") {
+        // Lấy loại đã map sang tiếng Việt để hiển thị
+        const displayType = TYPE_MAP[item.originalType] || item.originalType;
+        types.add(displayType);
+      }
+    });
+    return Array.from(types).sort();
+  }, [allData]);
 
   // --- LỌC DỮ LIỆU ---
   const filteredData = useMemo(() => {
@@ -64,34 +126,17 @@ export default function ReportArchivePage() {
       const kw = removeVietnameseTones(keyword.trim().toLowerCase());
       result = result.filter((item) => {
         const name = removeVietnameseTones(item.name.toLowerCase());
-        const id = removeVietnameseTones(item.id.toLowerCase());
-        return name.includes(kw) || id.includes(kw);
+        return name.includes(kw);
       });
     }
 
-    // 2️⃣ LỌC THEO KHOẢNG NGÀY
-    if (startDate && endDate) {
-      result = result.filter((item) => {
-        const itemDate = dayjs(item.date, "DD/MM/YYYY");
-        return (
-          itemDate.isAfter(dayjs(startDate)) &&
-          itemDate.isBefore(dayjs(endDate).add(1, "day"))
-        );
-      });
-    }
-
-    // 3️⃣ LỌC THEO LOẠI BÁO CÁO
+    // 2️⃣ LỌC THEO LOẠI BÁO CÁO (so sánh với type đã map)
     if (type !== "Tất cả") {
       result = result.filter((item) => item.type === type);
     }
 
-    // 4️⃣ LỌC THEO SỰ KIỆN
-    if (event !== "Tất cả") {
-      result = result.filter((item) => item.event === event);
-    }
-
     return result;
-  }, [keyword, startDate, endDate, type, event]);
+  }, [allData, keyword, type]);
 
   // --- PHÂN TRANG ---
   const paginatedData = useMemo(() => {
@@ -100,19 +145,17 @@ export default function ReportArchivePage() {
   }, [filteredData, currentPage]);
 
   // --- HANDLERS ---
-  const handleSearch = (values: any) => {
+  const handleSearch = (values: Partial<ReportArchiveFilter>) => {
     setKeyword(values.keyword || "");
-    setStartDate(values.startDate || null);
-    setEndDate(values.endDate || null);
     setType(values.type || "Tất cả");
-    setEvent(values.event || "Tất cả");
     setCurrentPage(1);
   };
 
+
+
   return (
     <div className="ra-page">
-      <ArchiveHeader />
-      <ArchiveSearchBar onSearch={handleSearch} />
+      <ArchiveSearchBar onSearch={handleSearch} availableTypes={availableTypes} />
       <ArchiveTable
         data={paginatedData}
         total={filteredData.length}

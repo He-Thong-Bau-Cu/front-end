@@ -1,0 +1,171 @@
+/* ===== MODAL BACKGROUND ===== */
+.decision-modal-wrapper .ant-modal-content {
+  background: linear-gradient(135deg, rgba(232, 245, 233, 0.95) 0%, rgba(241, 248, 244, 0.95) 100%);
+  padding: 50px;
+  margin: 80px 0;
+}
+
+/* ===== BODY CONTAINER ===== */
+.decision-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== PAPER A4 ===== */
+.decision-paper-a4 {
+  width: 794px; /* chuẩn khổ A4 theo px */
+  min-height: 1123px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 60px 70px;
+  font-family: "Times New Roman", serif;
+  color: #000;
+  line-height: 1.8;
+  text-align: justify;
+  border-radius: 2px;
+}
+
+/* ===== HEADER ===== */
+.paper-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+}
+
+.company-name {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.doc-number {
+  font-style: italic;
+}
+
+.nation {
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  color: #050505;
+}
+
+.motto {
+  text-align: center;
+  font-style: italic;
+  color: #000000;
+  margin-top: -4px;
+}
+
+.location-date {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* ===== TITLE ===== */
+.paper-title-section {
+  text-align: center;
+  margin: 20px 0 25px 0;
+}
+
+.paper-title {
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #000000;
+  display: block;
+}
+
+.paper-subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-top: 6px;
+}
+
+.paper-author {
+  display: block;
+  margin-top: 8px;
+  font-weight: bold;
+  color: #000000;
+}
+
+/* ===== BODY ===== */
+.paper-body {
+  font-size: 15px;
+  margin-top: 10px;
+}
+
+.decision-line {
+  text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #000000;
+  margin: 20px 0 15px 0;
+}
+
+/* ===== FOOTER ===== */
+.paper-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+  font-size: 15px;
+}
+
+.footer-left {
+  flex: 1;
+}
+
+.footer-heading {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.footer-left ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.footer-right {
+  text-align: center;
+  flex: 1;
+}
+
+.footer-company {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.footer-role {
+  font-weight: 600;
+  margin-bottom: 40px;
+}
+
+.footer-sign {
+  height: 60px;
+  font-style: italic;
+}
+
+.footer-name {
+  font-weight: 700;
+}
+
+/* ===== OUTSIDE BUTTONS ===== */
+.decision-action-buttons {
+  width: 794px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}

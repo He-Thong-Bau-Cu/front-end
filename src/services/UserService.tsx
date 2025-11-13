@@ -1,5 +1,6 @@
 import BaseService from "./BaseService";
 import { User } from "../types/User.interface";
+import { ApiResponse } from "@/types/ApiResponse.interface";
 
 class UserService extends BaseService {
   constructor() {
@@ -14,11 +15,11 @@ class UserService extends BaseService {
     return await this.api.post(`auth/change-password`, data);
   }
 
-   /**
-   * Upload avatar cho user
-   * @param file - File object từ input
-   * @returns Trả về { key, url } để hiển thị ngay
-   */
+  /**
+  * Upload avatar cho user
+  * @param file - File object từ input
+  * @returns Trả về { key, url } để hiển thị ngay
+  */
   async uploadAvatar(file: File): Promise<any> {
     const formData = new FormData();
     formData.append("file", file);
@@ -26,6 +27,13 @@ class UserService extends BaseService {
       headers: { "Content-Type": "multipart/form-data" },
     });
   }
+
+  async getAllUser(): Promise<User[]> {
+    const response = await this.api.get(`${this.endpoint}/`) as ApiResponse<User[]>;
+    return response.data;
+  }
+
+
 }
 
 export default new UserService();

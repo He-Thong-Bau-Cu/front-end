@@ -34,15 +34,16 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Ủy quyền",
         },
         {
+            key: "/voter/ballots",
+            icon: <FileTextOutlined />,
+            label: "Bỏ phiếu",
+        },
+        {
             key: "/voter/voting-history",
             icon: <HistoryOutlined />,
             label: "Lịch sử bỏ phiếu",
         },
-        {
-            key: "/voter/ballots",
-            icon: <FileTextOutlined />,
-            label: "Danh sách phiếu bầu",
-        },
+
         {
             key: "/voter/results",
             icon: <CheckCircleOutlined />,
@@ -65,7 +66,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
         <Sider className="custom-sider" width={290}>
             {/* Header Logo */}
             <div className="sidebar-header">
-                <div className="sidebar-logo-row">
+                <div className="sidebar-logo-row" onClick={() => navigate("/home")} >
                     <div className="sidebar-logo-circle">
                         <img src={logo} alt="Logo trang web" width="110" height="160" />
                     </div>
@@ -82,7 +83,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             {/* Menu */}
             <Menu
                 mode="inline"
-                defaultSelectedKeys={[location.pathname]}
+                selectedKeys={[location.pathname]}
                 style={{
                     background: "transparent",
                     border: "none",
@@ -90,7 +91,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
                 onClick={handleClick}
                 items={menuItems}
             />
-        </Sider>
+        </Sider >
     );
 };
 

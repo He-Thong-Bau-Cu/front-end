@@ -16,12 +16,10 @@ const Dashboard = () => {
             <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
                 <Col xs={24} lg={16}>
                     <DelegationRequests />
-                    <ElectionOverview />
                 </Col>
 
                 <Col xs={24} lg={8}>
                     <RecentActivities />
-                    <QuickActions />
 
                 </Col>
             </Row>

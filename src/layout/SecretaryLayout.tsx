@@ -13,10 +13,11 @@ const SecretaryLayout = () => {
     useEffect(() => {
         const map: Record<string, string> = {
             "/secretary": "Tổng quan",
-            "/secretary/drafting-documents": "Soạn thảo tài liệu bầu cử",
+            "/secretary/drafting-documents": "Quản lý soạn thảo",
             "/secretary/documents": "Quản lý tài liệu",
             "/secretary/notifications": "Trung tâm thông báo",
             "/secretary/reports": "Trung tâm báo cáo",
+            "/secretary/drafting-documents/drafting": "Soạn thảo tài liệu bầu cử",
         };
         setPageTitle(map[location.pathname] || "Trang quản lý");
     }, [location.pathname]);

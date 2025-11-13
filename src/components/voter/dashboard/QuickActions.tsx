@@ -6,30 +6,46 @@ import {
     SettingOutlined,
 } from "@ant-design/icons";
 import "../../../style/voter/Dashboard.model.css";
+import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 
 const actions = [
-    { icon: <TeamOutlined />, label: "Danh sách ứng viên" },
-    { icon: <BarChartOutlined />, label: "Kết quả bầu cử" },
-    { icon: <FileTextOutlined />, label: "Lịch sử bỏ phiếu" },
-    { icon: <SettingOutlined />, label: "Cài đặt" },
+    { icon: <TeamOutlined />, label: "Chi tiết bầu cử", path: "/voter/candidates" },
+    { icon: <BarChartOutlined />, label: "Kết quả bầu cử", path: "/voter/results" },
+    { icon: <FileTextOutlined />, label: "Lịch sử bỏ phiếu", path: "/voter/voting-history" },
+    { icon: <SettingOutlined />, label: "Cài đặt", path: "/voter/settings" },
 ];
 
-const QuickActions = () => (
-    <Card title={<Text style={{ paddingLeft: 25, fontSize: 17 }} strong>⚡Thao tác nhanh</Text>} className="">
+const QuickActions = () => {
+    const navigate = useNavigate();
 
-        <div className="quick-actionquick-actions-cards-grid">
-            {actions.map((a, i) => (
-                <div key={i} className="quick-action-item">
-                    <div className="quick-action-icon">{a.icon}</div>
-                    <Text strong className="quick-action-label">
-                        {a.label}
-                    </Text>
-                </div>
-            ))}
-        </div>
-    </Card>
-);
+    return (
+        <Card
+            title={
+                <Text style={{ paddingLeft: 25, fontSize: 17 }} strong>
+                    ⚡ Thao tác nhanh
+                </Text>
+            }
+            className="quick-actions-card"
+        >
+            <div className="quick-actions-grid">
+                {actions.map((a, i) => (
+                    <div
+                        key={i}
+                        className="quick-action-item"
+                        onClick={() => navigate(a.path)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <div className="quick-action-icon">{a.icon}</div>
+                        <Text strong className="quick-action-label">
+                            {a.label}
+                        </Text>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
 
 export default QuickActions;

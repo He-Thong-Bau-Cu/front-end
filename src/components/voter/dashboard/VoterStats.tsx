@@ -1,70 +1,87 @@
-import { useEffect, useState } from "react";
-import { Card, Col, Row, Typography, Spin, message } from "antd";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import VoterService from "@/services/VoterService";
 import {
-    FileDoneOutlined,
-    CheckCircleOutlined,
     BarChartOutlined,
-    BellOutlined,
+    CheckCircleOutlined,
+    FileDoneOutlined,
+    UserOutlined
 } from "@ant-design/icons";
-import ElectionParticipantService from "@/services/ElectionParticipantService";
+import { Card, Col, Row, Typography } from "antd";
+import { useEffect, useState } from "react";
 import "../../../style/voter/Dashboard.model.css";
+
 
 const { Text } = Typography;
 
 const VoterStats = () => {
-    const [participantCount, setParticipantCount] = useState<number>(0);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [statsData, setStatsData] = useState({
+        totalVoters: 0,
+        totalParticipants: 0,
+        participationPercentage: 0,
+        voterNotActive: 0,
+    });
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
+
+
+
 
     useEffect(() => {
-
-        async function fetchParticipants() {
+        async function fetchStats() {
             try {
-                const electionId = "651f0a7c1f2b4d1a12345678"; // tạm fix cứng
-                const data = await ElectionParticipantService.getElectionParticipantByElectionId(electionId);
-                setParticipantCount(data?.length || 0);
+                showLoading();
+                const electionId = localStorage.getItem("currentElectionId");
+                if (!electionId) {
+                    notify("Không tìm thấy electionId", "error");
+                    return;
+                }
+                const data = await VoterService.getDashboardVoterByElectionId(electionId);
+                setStatsData(data);
+
             } catch (error) {
                 console.error(error);
-                message.error("Không lấy được danh sách cử tri");
+                notify("Không thể lấy thống kê cho voter", "error");
             } finally {
-                setLoading(false);
+                hideLoading();
             }
         }
 
-        fetchParticipants();
+        fetchStats();
     }, []);
 
     const stats = [
         {
-            icon: <FileDoneOutlined />,
-            title: "Tổng người tham gia",
-            value: participantCount,
-            color: "#4A90E2",
-            bg: "#E8F1FB",
-        },
-        {
             icon: <CheckCircleOutlined />,
             title: "Tổng số cử tri",
-            value: "1,250",
+            value: statsData.totalVoters,
             color: "#27AE60",
             bg: "#E8F8F2",
         },
         {
+            icon: <FileDoneOutlined />,
+            title: "Tổng người tham gia",
+            value: statsData.totalParticipants,
+            color: "#4A90E2",
+            bg: "#E8F1FB",
+        },
+        {
             icon: <BarChartOutlined />,
             title: "Tỷ lệ tham gia",
-            value: "45.2%",
+            value: `${statsData.participationPercentage}%`,
             color: "#F39C12",
             bg: "#FFF6E5",
         },
         {
-            icon: <BellOutlined />,
-            title: "Thông báo mới",
-            value: 3,
-            color: "#E74C3C",
-            bg: "#FDECEC",
-        },
+            icon: <UserOutlined />,
+            title: "Chưa tham gia",
+            value: `${statsData.voterNotActive}%`,
+            color: "#8E44AD",
+            bg: "#F4E6FA",
+        }
+
     ];
 
-    if (loading) return <Spin tip="Đang tải thống kê..." style={{ display: "flex", justifyContent: "center", marginTop: 50 }} />;
 
     return (
         <Row gutter={[16, 16]} className="voter-stats-container">
@@ -88,7 +105,6 @@ const VoterStats = () => {
                                     {item.value}
                                 </Text>
                                 <Text className="voter-stat-title">{item.title}</Text>
-                                {/* <p className="voter-stat-desc">{item.desc}</p> */}
                             </div>
                         </div>
                     </Card>
