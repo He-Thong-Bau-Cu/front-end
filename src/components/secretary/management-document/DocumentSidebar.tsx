@@ -14,13 +14,6 @@ interface DocumentSidebarProps {
     onSelectTypes: (types: string[]) => void;
 }
 
-const folders = [
-    "Cuộc họp HĐQT",
-    "Báo cáo Tài chính",
-    "Kế hoạch Kinh doanh",
-    "Nhân sự",
-];
-
 const fileTypes = [
     { label: "PDF", icon: <FileTextOutlined /> },
     { label: "Word", icon: <FileTextOutlined /> },
@@ -41,20 +34,6 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
 
     return (
         <div className="document-sidebar">
-            <Card className="sidebar-card fancy-card" style={{ paddingLeft: 20 }} title="📁 Thư mục">
-                <ul className="folder-list">
-                    {folders.map((f, i) => (
-                        <li
-                            key={i}
-                            className={f === activeFolder ? "active-folder" : ""}
-                            onClick={() => onSelectFolder(f)}
-                        >
-                            {f === activeFolder ? <FolderOpenOutlined /> : <FolderOutlined />}{" "}
-                            {f}
-                        </li>
-                    ))}
-                </ul>
-            </Card>
 
             <Card className="sidebar-card fancy-card" style={{ paddingLeft: 20 }} title="📂 Loại file">
                 <Checkbox.Group
