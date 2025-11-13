@@ -21,7 +21,7 @@ export default class BaseService<T = any> {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-        if(clientIp) {
+        if (clientIp) {
           config.headers["X-Client-IP"] = clientIp;
         }
         return config;

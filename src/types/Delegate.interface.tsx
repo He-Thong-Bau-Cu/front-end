@@ -36,9 +36,7 @@ export interface AuthorizationUser {
   position: string;
 }
 
-/**
- * Cấu trúc thông tin chi tiết ủy quyền
- */
+
 export interface DelegationDetail {
   documentId: string | null;
   delegateReason: string | null;
@@ -48,13 +46,13 @@ export interface DelegationDetail {
   electionId: string | null;
   delegatorId: AuthorizationUser;
   delegateId: AuthorizationUser;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
+  startDate: string;
+  endDate: string;
   status: string;
   confirmedBy: AuthorizationUser | null;
-  confirmedAt: string | null; // ISO date string
-  updatedAt: string; // ISO date string
-  createdAt: string; // ISO date string
+  confirmedAt: string | null;
+  updatedAt: string;
+  createdAt: string;
   __v: number;
 }
 

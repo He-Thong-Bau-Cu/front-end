@@ -50,6 +50,15 @@
   flex-shrink: 0;
 }
 
+.statusTagCompact {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 14px;
+  box-shadow: none;
+  line-height: 1.7;
+  margin-left: 0;
+  margin-top: 5px;
+}
 .statusTag::before {
   content: "";
   position: absolute;
@@ -124,25 +133,16 @@
 }
 
 .userCard::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  /* background: linear-gradient(180deg, #1890ff 0%, #722ed1 100%); */
-  transform: scaleY(0);
-  transition: transform 0.4s ease;
+  content: none;
 }
 
 .userCard:hover::before {
-  transform: scaleY(1);
 }
 
 .userCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-color: rgba(24, 144, 255, 0.2);
+  transform: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .usersRow .userCard:first-child {
@@ -186,26 +186,10 @@
 }
 
 .avatarWrapper::before {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    rgba(24, 144, 255, 0.2),
-    rgba(114, 46, 209, 0.2)
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: -1;
+  content: none;
 }
 
 .userCard:hover .avatarWrapper::before {
-  opacity: 1;
-  animation: pulseRing 2s infinite;
 }
 
 @keyframes pulseRing {
@@ -232,8 +216,8 @@
 }
 
 .delegatorAvatar:hover {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.5);
+  transform: none;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
 }
 
 .delegateAvatar {
@@ -245,13 +229,13 @@
 }
 
 .delegateAvatar:hover {
-  transform: scale(1.1) rotate(-5deg);
-  box-shadow: 0 6px 20px rgba(82, 196, 26, 0.5);
+  transform: none;
+  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.3);
 }
 
 .userDetails {
   flex: 1;
-  padding-left: 16px;
+  padding-left: 24px;
 }
 
 .userName {
@@ -263,7 +247,7 @@
 }
 
 .userCard:hover .userName {
-  color: #1890ff;
+  color: #262626;
 }
 
 .userEmail {
@@ -275,7 +259,7 @@
 }
 
 .userCard:hover .userEmail {
-  color: #595959;
+  color: #8c8c8c;
 }
 
 .userUsername {
@@ -287,7 +271,7 @@
 }
 
 .userCard:hover .userUsername {
-  color: #8c8c8c;
+  color: #bfbfbf;
 }
 
 .divider {
@@ -297,7 +281,7 @@
 }
 
 .userCard:hover .divider {
-  border-color: rgba(24, 144, 255, 0.2);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .descriptions {
@@ -316,43 +300,19 @@
 /* Info Card */
 .infoCard {
   border-radius: 16px;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f5ff 100%);
-  border: 1px solid rgba(24, 144, 255, 0.1);
-  box-shadow: 0 2px 12px rgba(24, 144, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   animation: fadeInUp 0.6s ease-out 0.4s both;
   overflow: hidden;
   position: relative;
 }
 
-.infoCard::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(24, 144, 255, 0.05) 0%,
-    transparent 70%
-  );
-  animation: rotate 20s linear infinite;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .infoCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.15);
-  border-color: rgba(24, 144, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.12);
 }
 
 .delegationInfo {
@@ -362,15 +322,12 @@
 
 .delegationInfo :global(.ant-descriptions-item-label) {
   font-weight: 600;
-  color: #1890ff;
-  background: linear-gradient(135deg, #f0f5ff 0%, #ffffff 100%);
+  color: #595959;
+  background: #ffffff;
   transition: all 0.3s ease;
 }
 
-.infoCard:hover .delegationInfo :global(.ant-descriptions-item-label) {
-  color: #722ed1;
-  background: linear-gradient(135deg, #f9f0ff 0%, #ffffff 100%);
-}
+/* remove colored hover shift for labels */
 
 .delegationInfo :global(.ant-descriptions-item-content) {
   color: #262626;
@@ -502,4 +459,72 @@
 
 .delegationHistoryCard :global(.ant-card-body)::-webkit-scrollbar-thumb:hover {
   background: rgba(24, 144, 255, 0.5);
+}
+
+/* Back bar above card */
+.backBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+  padding-right: 2px;
+  padding-top: 12px;
+}
+
+/* Back button styles */
+.backButton {
+  border-radius: 8px !important;
+  font-weight: 500;
+  color: #124d2d;
+  border: 1.5px solid #3ca860;
+  background: #f6ffed;
+  transition: all 0.3s ease;
+  height: 36px;
+  padding: 0 16px;
+  margin-right: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.backButton:hover,
+.backButton:focus {
+  background: #3ca860;
+  color: #ffffff;
+  border-color: #3ca860;
+  box-shadow: 0 2px 6px rgba(60, 168, 96, 0.25);
+}
+
+.backButton:active {
+  filter: brightness(0.96);
+}
+
+/* View detail button in AuthorizationHistory table */
+.viewDetailButton {
+  border-radius: 8px !important;
+  font-weight: 500;
+  color: #124d2d;
+  border: 1.5px solid #3ca860;
+  background: #f6ffed;
+  transition: all 0.3s ease;
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.viewDetailButton:hover,
+.viewDetailButton:focus {
+  background: #3ca860;
+  color: #ffffff;
+  border-color: #3ca860;
+  box-shadow: 0 2px 6px rgba(60, 168, 96, 0.25);
+}
+
+.viewDetailButton:active {
+  filter: brightness(0.96);
+}
+
+.viewDetailButton :global(.anticon) {
+  color: inherit;
 }
