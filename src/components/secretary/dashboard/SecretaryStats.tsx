@@ -1,27 +1,52 @@
-import { Card, Col, Row, Typography } from "antd";
+import { Card, Row, Col, Typography, message } from "antd";
+import {
+    PieChartOutlined,
+    TeamOutlined,
+    FileTextOutlined,
+    BarChartOutlined,
+    AlertOutlined,
+    ThunderboltOutlined,
+} from "@ant-design/icons";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import { useEffect, useState } from "react";
+import SystemService from "@/services/StatisticsService";
+const { Text } = Typography;
+const SecretaryStats = () => {
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
+    const [statistic, setStatistic] = useState<any[]>([]);
 
-const { Title, Text } = Typography;
-
-const stats = [
-    { label: "Bầu cử đang hoạt động", value: 3 },
-    { label: "Tổng số cử tri", value: 1250 },
-    { label: "Yêu cầu chờ duyệt", value: 2 },
-    { label: "Tổng số ứng viên", value: 18 },
-];
-
-const SecretaryStats = () => (
-    <Row style={{ padding: '10px 32px' }} gutter={[16, 16]}>
-        {stats.map((s, i) => (
-            <Col xs={12} md={6} key={i}>
-                <Card bordered={false} className="stat-card">
-                    <Title level={3} className="stat-value">
-                        {s.value}
-                    </Title>
-                    <Text className="stat-label">{s.label}</Text>
-                </Card>
-            </Col>
-        ))}
-    </Row>
-);
-
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const data = await SystemService.getDashboardStats();
+                let dataMap = [] as any[];
+                dataMap.push({ title: "Bầu cử đang tham gia", icon: <PieChartOutlined />, value: data.totalElections !== null ? data.totalElections : 0 })
+                dataMap.push({ title: "Tổng số cử tri", icon: <TeamOutlined />, value: data.totalVoters !== null ? data.totalVoters : 0 })
+                dataMap.push({ title: "Yêu cầu chờ duyệt", icon: <FileTextOutlined />, value: data.pendingApprovals !== null ? data.pendingApprovals : 0 })
+                dataMap.push({ title: "Thông báo", icon: <BarChartOutlined />, value: data.participationRate !== null ? data.participationRate : 0 })
+                setStatistic(dataMap);
+            } catch (error) {
+                message.error("Không thể tải thông tin người dùng!");
+            }
+        };
+        fetchUser();
+    }, []);
+    return (
+        <Row gutter={[16, 16]} className="dashboard-stats-row">
+            {statistic.map((s, i) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={i}>
+                    <Card bordered={false} hoverable className="dashboard-stat-card">
+                        <div className="dashboard-stat-icon">{s.icon}</div>
+                        <Text strong className="dashboard-stat-value">
+                            {Math.round(s.value)}{s.icon === "how_to_vote" ? "%" : ""}
+                        </Text>
+                        <p className="dashboard-stat-label">{s.title}</p>
+                    </Card>
+                </Col>
+            ))}
+        </Row>
+    );
+}
 export default SecretaryStats;
