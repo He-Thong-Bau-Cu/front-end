@@ -154,7 +154,7 @@ export const privateRoutes = [
       {
         element: <HeadOfTheOrganizingCommitteeLayout />,
         children: [
-          { path: "dashboard", element: <OrganizerDashboardPage /> },
+          { index: true, element: <OrganizerDashboardPage /> },
           { path: "list_meeting", element: <MeetingListPage /> },
           { path: "meetings", element: <ManagementMeeting /> },
           { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
