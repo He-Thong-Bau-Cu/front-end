@@ -53,17 +53,10 @@ const PrivateRoute: React.FC = () => {
   // const isDashboard =
   //   (userRole === "admin" && currentPath === "/admin/dashboard") ||
   //   (userRole !== "admin" && currentPath === "/employee/dashboard");
+  const allPermissions = [...permissions, ...permissionsElections];
 
-  if (!permissions.includes(currentPath)) {
+  if (!allPermissions.includes(currentPath)) {
     return <Navigate to="/403" replace state={{ unauthorized: true }} />;
-  }
-
-  if (userRole === USER_ROLE.USER) {
-    if (permissionsElections.length > 0) {
-      if (!permissionsElections.includes(currentPath)) {
-        return <Navigate to="/403" replace state={{ unauthorized: true }} />;
-      }
-    }
   }
 
   return <Outlet />;
