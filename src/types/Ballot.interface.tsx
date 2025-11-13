@@ -75,3 +75,15 @@ export interface BallotCast {
   }[];
 
 }
+
+export interface BallotStatusCount {
+  _id: string;
+  totalBallots: number;
+}
+
+export interface BallotStatistics {
+  total: number;
+  ballotStatus: BallotStatusCount[];
+}
+
+
