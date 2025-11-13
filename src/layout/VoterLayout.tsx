@@ -34,12 +34,12 @@ const VoterLayout = () => {
         <Layout style={{ minHeight: '100vh', width: '100vw', overflow: 'hidden' }}>
             <Sideber onMenuSelect={setPageTitle} />
 
-            <Layout style={{
+            <div style={{
                 marginLeft: 250,
                 background: "#EFF8EF",
                 display: "flex",
                 flexDirection: "column",
-                width: 'calc(100vw - 290px)',
+                width: 'calc(100vw - 250px)',
                 minHeight: '100vh',
                 overflow: 'hidden',
             }}>
@@ -47,17 +47,18 @@ const VoterLayout = () => {
                 <Content
                     style={{
                         flex: 1,
-                        padding: '10px 24px 24px',
+                        padding: '10px 24px 10px 24px',
                         background: '#EFF8EF',
                         overflowY: 'auto',
                         overflowX: 'hidden',
                         boxSizing: 'border-box',
+                        marginTop: 100
                     }}
                 >
                     <Outlet />
 
                 </Content>
-            </Layout>
+            </div>
         </Layout >
     );
 };

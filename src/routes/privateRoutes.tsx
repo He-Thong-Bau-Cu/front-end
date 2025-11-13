@@ -53,6 +53,7 @@ import DelegateCardPage from "@/pages/voter/DelegateCardPage";
 import ResolutionVoting from "@/pages/voter/ResolutionVoting";
 import VoteSuccess from "@/pages/voter/VoteSuccess";
 import VotingHistory from "@/pages/voter/VotingHistory";
+import AuthorizationDetail from "@/components/voter/authorization/AuthorizationDetail";
 
 export const privateRoutes = [
   {
@@ -85,6 +86,7 @@ export const privateRoutes = [
           { path: "authorization", element: <Authorization /> },
           { path: "create-authorization", element: <UserSelection /> },
           { path: "request-authorization", element: <AuthorizationRequestForm /> },
+          { path: "authorization-detail", element: <AuthorizationDetail /> },
           { path: "ballots", element: <BallotList /> },
           { path: "ballot_cumulative_voting", element: <CumulativeVoting /> },
           { path: "ballot_resolution_voting", element: <ResolutionVoting /> },

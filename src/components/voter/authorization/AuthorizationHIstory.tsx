@@ -69,10 +69,7 @@ export default function AuthorizationHistory() {
         ["PENDING", "CONFIRMED", "ACTIVE"].includes(item.status)
     );
 
-    // 👉 Điều hướng sang màn chi tiết
-    const handleViewDetail = (delegationId: string) => {
-        navigate(`/voter/authorization-detail/${delegationId}`);
-    };
+
 
     // 👉 Xử lý tạo ủy quyền
     const handleCreateDelegation = () => {
@@ -163,10 +160,9 @@ export default function AuthorizationHistory() {
             key: "action",
             render: (_: unknown, record: DelegationSearch) => (
                 <Button
-                    type="link"
+                    className={styles.viewDetailButton}
                     icon={<EyeOutlined />}
-                    style={{ padding: 0 }}
-                    onClick={() => handleViewDetail(record._id)}
+                    onClick={() => navigate("/voter/authorization-detail", { state: { id: record._id } })}
                 >
                     Xem chi tiết
                 </Button>
@@ -212,6 +208,7 @@ export default function AuthorizationHistory() {
                             btn.style.borderColor = "#3ca860";
                             btn.style.boxShadow = "none";
                         }}
+
                     >
                         Tạo ủy quyền mới
                     </Button>
