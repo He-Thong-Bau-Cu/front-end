@@ -33,6 +33,8 @@ const VotingHistoryContent = () => {
 
     // 👉 Fix cứng voterId để test
     const voterId = "6910f2016e3b3c1fb79a1f9d";
+    // const voterId = localStorage.getItem("voterId") || "";
+
 
     useEffect(() => {
         const fetchBallot = async () => {

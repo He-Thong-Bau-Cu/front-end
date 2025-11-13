@@ -1,3 +1,58 @@
+/* Back button styles */
+.backButton {
+  border-radius: 8px !important;
+  font-weight: 500;
+  color: #124d2d;
+  border: 1.5px solid #3ca860;
+  background: #f6ffed;
+  transition: all 0.3s ease;
+  height: 36px;
+  padding: 0 16px;
+  margin-right: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.backButton:hover,
+.backButton:focus {
+  background: #3ca860;
+  color: #ffffff;
+  border-color: #3ca860;
+  box-shadow: 0 2px 6px rgba(60, 168, 96, 0.25);
+}
+
+.backButton:active {
+  filter: brightness(0.96);
+}
+
+.createUserButton {
+  border-radius: 8px !important;
+  font-weight: 500;
+  color: #124d2d;
+  border: 1.5px solid #3ca860;
+  background: #f6ffed;
+  transition: all 0.3s ease;
+  height: 36px;
+  padding: 0 16px;
+  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.createUserButton:hover,
+.createUserButton:focus {
+  background: #3ca860;
+  color: #ffffff;
+  border-color: #3ca860;
+  box-shadow: 0 2px 6px rgba(60, 168, 96, 0.25);
+}
+
+.createUserButton:active {
+  filter: brightness(0.96);
+}
+
 .delegation-input {
   height: 42px;
 }

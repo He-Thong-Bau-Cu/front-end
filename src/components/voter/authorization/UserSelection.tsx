@@ -2,7 +2,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import UserService from "@/services/UserService";
 import { User } from "@/types/User.interface";
-import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
+import { LeftOutlined, SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
     Alert,
     Avatar,
@@ -19,6 +19,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
 const { Search } = Input;
+
 
 // ❗ Không cần props nữa
 const UserSelection = () => {
@@ -162,14 +163,10 @@ const UserSelection = () => {
                         👥 Chọn người được ủy quyền
                     </Title>
                     <Button
+                        className="backButton"
                         type="default"
                         size="middle"
-                        style={{
-                            borderColor: "#7ECB50",
-                            color: "#7ECB50",
-                            fontWeight: 500,
-                            marginRight: 20,
-                        }}
+                        icon={<LeftOutlined />}
                         onClick={() => navigate(-1)}
                     >
                         Quay lại
@@ -192,7 +189,7 @@ const UserSelection = () => {
                         icon={<UserAddOutlined />}
                         size="large"
                         onClick={() => navigate("/voter/create-authorization/new-user")}
-                        style={{ borderColor: "#7ECB50", color: "#7ECB50" }}
+                        className="createUserButton"
                     >
                         Tạo người dùng mới
                     </Button>

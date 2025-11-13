@@ -1,6 +1,6 @@
 import { ApiResponse } from "@/types/ApiResponse.interface";
 import BaseService from "./BaseService";
-import { Ballot, BallotCast } from "@/types/Ballot.interface";
+import { Ballot, BallotCast, BallotStatistics } from "@/types/Ballot.interface";
 
 class BallotService extends BaseService {
     constructor() {
@@ -19,6 +19,11 @@ class BallotService extends BaseService {
 
     async getAllBallotsByElectionId(id: string | number): Promise<Ballot[]> {
         const response = await this.api.get(`${this.endpoint}/elections/${id}`) as ApiResponse<Ballot[]>;
+        return response.data;
+    }
+
+    async getBallotStatisticsByElectionId(id: string | number): Promise<BallotStatistics> {
+        const response = await this.api.get(`${this.endpoint}/statistics/elections/${id}`) as ApiResponse<BallotStatistics>;
         return response.data;
     }
 
