@@ -111,7 +111,12 @@ export default function AuthorizationHistory() {
             title: "Cuộc bầu cử",
             dataIndex: ["electionId", "title"],
             key: "electionName",
-            render: (text: string) => <Text strong>{text}</Text>,
+            width: 250,
+            render: (text: string) => (
+                <Text strong className={styles.electionNameCell}>
+                    {text}
+                </Text>
+            ),
         },
         {
             title: "Người được ủy quyền",
