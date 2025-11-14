@@ -1,5 +1,13 @@
-import React, { useState } from "react";
-import { Avatar, Badge, Dropdown, Layout, Space, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  Avatar,
+  Badge,
+  Dropdown,
+  Layout,
+  Popover,
+  Space,
+  Typography,
+} from "antd";
 import {
   BellFilled,
   IdcardOutlined,
@@ -10,6 +18,12 @@ import "../../style/Header.model.css";
 import { User } from "@/types/User.interface";
 import { MenuProps } from "antd/lib";
 import ProfileModal from "../homepage/ProfileModal";
+import NotificationDropdown, {
+  INotification,
+} from "../notification/NotificationDropdown";
+import NotificationService from "@/services/NotificationService";
+import { useLoading } from "@/contexts/LoadingContext";
+import NotificationListener from "../notification/NotificationListener";
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -21,13 +35,43 @@ interface AdminHeaderProps {
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ title, user }) => {
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
+  const [userId, setUserId] = useState<string | null>(null);
 
   const handleOpenProfile = () => setProfileOpen(true);
   const handleCloseProfile = () => setProfileOpen(false);
 
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) setUserId(storedUserId);
+    loadNotification();
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
+  };
+
+  const loadNotification = async () => {
+    try {
+      showLoading();
+      const userId = localStorage.getItem("userId") as string;
+      const response = await NotificationService.getUserNotifications(userId);
+      if (response.success) {
+        const data = response.data;
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleSocketNotification = (data: any) => {
+    setNotifications((prev) => [data, ...prev]);
   };
 
   const menuItems: MenuProps["items"] = [
@@ -51,6 +95,13 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title, user }) => {
   return (
     <>
       <Header className="secretary-header">
+        {userId && (
+          <NotificationListener
+            userId={userId}
+            onNewNotification={handleSocketNotification}
+          />
+        )}
+
         <div className="header-container">
           {/* Tiêu đề */}
           <div className="header-title">{title}</div>
@@ -58,9 +109,25 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title, user }) => {
           {/* Thông báo + Avatar */}
           <div className="header-actions">
             <Space size={10} align="center">
-              <Badge count={3} size="small">
-                <BellFilled className="header-icon" />
-              </Badge>
+              <Popover
+                placement="bottomRight"
+                content={
+                  <NotificationDropdown
+                    userId={localStorage.getItem("userId") as string}
+                    notifications={notifications}
+                    setNotifications={setNotifications}
+                  />
+                }
+                trigger="click"
+                overlayClassName="notification-popover"
+              >
+                <Badge count={notifications.length} size="small">
+                  <BellFilled
+                    className="header-icon"
+                    style={{ cursor: "pointer" }}
+                  />
+                </Badge>
+              </Popover>
             </Space>
 
             <Space size={10} align="center">
