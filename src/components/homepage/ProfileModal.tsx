@@ -106,8 +106,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
           stateOrProvinceName: values.stateOrProvinceName,
           localityName: values.address,
           emailAddress: values.email,
-          password: values.passwordCa
         }
+        console.log(values.passwordCa)
         const password = values.passwordCa;
         const body = {signerInfo, password};
         const response = await CaService.CaIssue(body);

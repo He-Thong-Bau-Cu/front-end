@@ -81,6 +81,17 @@ export class FileService extends BaseService {
     );
     return response.data;
   }
+
+  async getSignedFile(body: any): Promise<any> {
+    try {
+      const response = await this.api.get(`${this.endpoint}/key`, body)
+      return response;
+    } catch (error) {
+      console.error("Error fetching decisions:", error);
+      throw error;
+    }
+
+  }
 }
 
 export default new FileService();

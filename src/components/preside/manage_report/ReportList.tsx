@@ -1,76 +1,157 @@
+import { useEffect, useState, useMemo } from "react";
 import ReportCard from "./ReportCard";
 import {
   BarChartOutlined,
   PieChartOutlined,
   TeamOutlined,
-  UserDeleteOutlined,
-  EnvironmentOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
+import { Pagination, Spin, Empty } from "antd";
 import "../../../style/preside/Reports.model.css";
+import ReportService from "@/services/ReportService";
+import removeVietnameseTones from "@/utils/removeVietnameseTones";
+import ReportDetailModal from "./ReportDetailModal";
+import FileService from "@/services/FileService";
 
-const ReportList = ({ filter }) => {
-  const allReports = [
-    {
-      key: 1,
-      title: "Kết quả Bầu cử Chi tiết",
-      desc: "Báo cáo toàn diện bao gồm số phiếu cho mỗi ứng viên, tỷ lệ phiếu hợp lệ và không hợp lệ.",
-      icon: <BarChartOutlined />,
-      type: "Kết quả",
-    },
-    {
-      key: 2,
-      title: "Báo cáo Tổng hợp Kết quả",
-      desc: "Cung cấp một bản tóm tắt trực quan về biểu đồ kết quả cuối cùng của cuộc bầu cử.",
-      icon: <PieChartOutlined />,
-      type: "Kết quả",
-    },
-    {
-      key: 3,
-      title: "Danh sách Cử tri Tham gia",
-      desc: "Xuất danh sách tất cả cử tri đã hoàn thành việc bỏ phiếu, kèm theo thông tin phòng ban và thời gian.",
-      icon: <TeamOutlined />,
-      type: "Cử tri",
-    },
-    {
-      key: 4,
-      title: "Danh sách Cử tri Vắng mặt",
-      desc: "Liệt kê tất cả các cử tri đủ điều kiện nhưng đã không tham gia bỏ phiếu trong cuộc bầu cử.",
-      icon: <UserDeleteOutlined />,
-      type: "Cử tri",
-    },
-    {
-      key: 5,
-      title: "Thống kê Tham gia theo Đơn vị",
-      desc: "Phân tích tỉ lệ cử tri tham gia giữa các phòng ban, chi nhánh hoặc khu vực khác nhau.",
-      icon: <EnvironmentOutlined />,
-      type: "Cử tri",
-    },
-    {
-      key: 6,
-      title: "Nhật ký Hoạt động Hệ thống",
-      desc: "Báo cáo kiểm toán chi tiết, ghi lại các hành động quan trọng diễn ra trong hệ thống theo thời gian.",
-      icon: <ReloadOutlined />,
-      type: "Hệ thống",
-    },
-  ];
+interface ReportListProps {
+  filter: string;
+  searchValue: string;
+}
 
-  const filtered =
-    filter === "Tất cả"
-      ? allReports
-      : allReports.filter((r) => r.type === filter);
+const iconMap: Record<string, React.ReactNode> = {
+  Normal: <TeamOutlined />,
+  Abnormal: <ReloadOutlined />,
+  Final: <PieChartOutlined />,
+};
+
+const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(6);
+
+  // Modal detail state
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailData, setDetailData] = useState<any>(null);
+
+  // 👉 NEW: fetch detail by ID
+  const openDetail = async (item: any) => {
+    try {
+      setLoading(true);
+      const res = await ReportService.getReportById(item._id);
+      setDetailData(res?.data || item);
+      setDetailOpen(true);
+    } catch (err) {
+      console.error("Không thể tải chi tiết báo cáo:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const exportReport = async (item: any) => {
+  try {
+    const fileName = item.fileUrl.split("/").pop();
+    const url = await FileService.getPresignedUrl(
+      "report",
+      item.createdBy?._id,
+      fileName,
+      300
+    );
+    window.open(url, "_blank");
+  } catch (err) {
+    console.error("Không thể tải file báo cáo:", err);
+  }
+};
+
+  const closeDetail = () => {
+    setDetailOpen(false);
+    setDetailData(null);
+  };
+
+  // Load report list
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await ReportService.getAllReport();
+        setReports(res?.data || []);
+      } catch (err) {
+        console.error("Không thể tải báo cáo:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  // Filter + Search
+  const filtered = useMemo(() => {
+    return reports.filter((r) => {
+      const desc = (r.description || "").toLowerCase();
+      const title = (r.summary || r.title || "").toLowerCase();
+
+      const searchNormalized = removeVietnameseTones(searchValue.toLowerCase());
+      const descNormalized = removeVietnameseTones(desc);
+      const titleNormalized = removeVietnameseTones(title);
+
+      const matchType =
+        filter === "" || r.type?.toLowerCase() === filter.toLowerCase();
+
+      const matchSearch =
+        searchValue === "" ||
+        descNormalized.includes(searchNormalized) ||
+        titleNormalized.includes(searchNormalized);
+
+      return matchType && matchSearch;
+    });
+  }, [reports, filter, searchValue]);
+
+  // Paging
+  const pagedReports = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage, pageSize]);
+
+  if (loading) return <Spin style={{ marginTop: 40 }} />;
+  if (filtered.length === 0) return <Empty description="Không có báo cáo nào" />;
 
   return (
-    <div className="report-grid">
-      {filtered.map((r) => (
-        <ReportCard
-          key={r.key}
-          icon={r.icon}
-          title={r.title}
-          description={r.desc}
+    <>
+      <div className="report-grid">
+        {pagedReports.map((r) => (
+          <ReportCard
+            key={r._id || r.title}
+            icon={iconMap[r.type] || <BarChartOutlined />}
+            title={r.summary || r.title}
+            description={`Bầu cử: ${r.electionId?.decisionName || "Không rõ"}`}
+            onViewDetail={() => openDetail(r)}
+            onExport={() => exportReport(r)}
+          />
+        ))}
+      </div>
+
+      {/* Pagination */}
+      <div style={{ textAlign: "center", marginTop: 24 }}>
+        <Pagination
+          current={currentPage}
+          total={filtered.length}
+          pageSize={pageSize}
+          showSizeChanger
+          onChange={(p, s) => {
+            setCurrentPage(p);
+            setPageSize(s);
+          }}
         />
-      ))}
-    </div>
+      </div>
+
+      {/* Modal detail */}
+      <ReportDetailModal
+        open={detailOpen}
+        onClose={closeDetail}
+        data={detailData}
+      />
+    </>
   );
 };
 

@@ -13,7 +13,7 @@ const SecretaryLayout = () => {
     useEffect(() => {
         const map: Record<string, string> = {
             "/secretary": "Tổng quan",
-            "/secretary/drafting-documents": "Quản lý soạn thảo",
+            "/secretary/drafting-documents": "Soạn thảo tài liệu bầu cử",
             "/secretary/documents": "Quản lý tài liệu",
             "/secretary/notifications": "Trung tâm thông báo",
             "/secretary/reports": "Trung tâm báo cáo",

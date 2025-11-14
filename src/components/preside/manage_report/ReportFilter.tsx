@@ -1,32 +1,51 @@
 import { Input, Button } from "antd";
 import "../../../style/preside/Reports.model.css";
-
-const ReportFilter = ({ searchValue, onSearch, activeTab, onTabChange }) => {
-  const tabs = ["Tất cả", "Kết quả", "Cử tri"];
+interface ReportFilterProps {
+  searchValue: string;
+  onSearch: (v: string) => void;
+  activeTab: string;
+  onTabChange: (v: string) => void;
+}
+const ReportFilter: React.FC<ReportFilterProps> = ({
+  searchValue,
+  onSearch,
+  activeTab,
+  onTabChange,
+}) => {
+  const tabs = [
+    { label: "Tất cả", value: "" },
+    { label: "Báo cáo bình thường", value: "Normal" },
+    { label: "Báo cáo bất bình thường", value: "Abnormal" },
+    { label: "Báo cáo tổng kết", value: "Final" },
+  ];
 
   return (
     <>
       <Input.Search
-        placeholder="Tìm kiếm tên báo cáo..."
+        placeholder="Tìm kiếm báo cáo theo tiêu đề hoặc mô tả..."
         className="reports-search"
         value={searchValue}
         onChange={(e) => onSearch(e.target.value)}
         allowClear
       />
+
       <div className="report-filter">
-        {tabs.map((tab) => (
+        {tabs.map((t) => (
           <Button
-            key={tab}
-            type={tab === activeTab ? "primary" : "default"}
+            key={t.value}
+            type={activeTab === t.value ? "primary" : "default"}
             style={{
-              background: tab === activeTab ? "#b7eb8f" : "#fff",
+              background: activeTab === t.value ? "#b7eb8f" : "#fff",
               borderColor: "#b7eb8f",
-              color: tab === activeTab ? "#000" : "#666",
+              color: activeTab === t.value ? "#000" : "#666",
               fontWeight: 500,
+              borderRadius: 6,
+              padding: "0 20px",
+              height: 36,
             }}
-            onClick={() => onTabChange(tab)}
+            onClick={() => onTabChange(t.value)}
           >
-            {tab}
+            {t.label}
           </Button>
         ))}
       </div>

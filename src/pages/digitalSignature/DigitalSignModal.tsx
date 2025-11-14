@@ -10,35 +10,91 @@ import {
   Col,
   message,
 } from "antd";
-import { UploadOutlined, CheckCircleOutlined, SafetyOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  CheckCircleOutlined,
+  SafetyOutlined,
+} from "@ant-design/icons";
 import "../../style/digitalSignature/DigitalSignModal.model.css";
+import DelegationService from "@/services/DelegationService";
+import { useNotification } from "@/contexts/NotificationContext";
+import { useLoading } from "@/contexts/LoadingContext";
 
 const { Title, Text } = Typography;
 
+
 interface Props {
   open: boolean;
+  electionId: string ;
+  delegate: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onSuccess: () => void; // callback khi ký thành công
 }
 
-const DigitalSignModal: React.FC<Props> = ({ open, onClose, onConfirm }) => {
-  const [fileName, setFileName] = React.useState<string>("Chưa chọn tệp nào...");
-
-  const handleUpload = (file: any) => {    
+const DigitalSignModal: React.FC<Props> = ({
+  open,
+  electionId,
+  onClose,
+  onSuccess,
+  delegate
+}) => {
+  const [fileObj, setFileObj] = React.useState<File | null>(null);
+  const [fileName, setFileName] = React.useState("Chưa chọn tệp nào...");
+  const [password, setPassword] = React.useState("");
+  const { showLoading, hideLoading } = useLoading();
+const { notify } = useNotification();
+  // Khi user chọn file p12
+  const handleUpload = (file: any) => {
+    setFileObj(file);
     setFileName(file.name);
-    message.success("Tệp đã được chọn.");
-    return false; // Ngăn upload thật
+    return false; // không upload tự động
+  };
+
+  // Hàm ký số
+  const handleSign = async () => {
+    
+    if (!fileObj) {
+      message.warning("Vui lòng chọn file .p12");
+      return;
+    }
+    if (!password.trim()) {
+      message.warning("Vui lòng nhập mật khẩu ký số");
+      return;
+    }
+
+    try {
+      showLoading();
+      const formData = new FormData();
+      formData.append("file", fileObj);
+      formData.append("electionId", electionId);
+      formData.append("password", password);
+      
+      let approve;
+      if(delegate){
+       approve = await DelegationService.delegationApprove(formData);
+       console.log(password)
+      }
+      if(approve.success){
+         notify(approve.message, "success");
+      } else{
+         notify(approve.message, "error");
+      }
+    } catch (err: any) {
+      console.error("Lỗi ký số:", err);
+      message.error("Ký số thất bại!");
+    } finally {
+      hideLoading()
+    }
   };
 
   return (
     <Modal
       open={open}
-      onCancel={onClose}
+      onCancel={onClose} 
       footer={null}
       centered
       width={500}
       className="digital-sign-modal"
-      closable
     >
       <div className="digital-sign-header">
         <SafetyOutlined className="digital-sign-icon" />
@@ -62,31 +118,22 @@ const DigitalSignModal: React.FC<Props> = ({ open, onClose, onConfirm }) => {
             </Col>
           </Row>
           <Text type="secondary" className="hint">
-            Vui lòng chọn tệp chứng thư số của bạn (định dạng .p12).
+            Vui lòng chọn tệp chứng thư số của bạn (.p12)
           </Text>
         </div>
 
         {/* Mật khẩu */}
         <div className="field-group">
           <Text strong>Mật khẩu Chứng thư số</Text>
-          <Input.Password placeholder="Nhập mật khẩu..." />
+          <Input.Password
+            placeholder="Nhập mật khẩu..."
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
 
-        {/* Mã OTP */}
-        <div className="field-group">
-          <Text strong>Mã xác nhận (OTP)</Text>
-          <Input placeholder="– – – – – –" maxLength={6} />
-          <Text type="secondary" className="hint">
-            Mở ứng dụng xác thực hoặc kiểm tra SMS để lấy mã.
-          </Text>
-        </div>
-
-        {/* Tài liệu */}
+        {/* Thông tin */}
         <div className="doc-info-box">
-          <Text>
-            <strong>Tài liệu:</strong> Báo cáo Kiểm soát – Tháng 09/2025
-          </Text>
-          <br />
           <Text>
             <strong>Hành động:</strong> Ký số & Phê duyệt
           </Text>
@@ -99,11 +146,12 @@ const DigitalSignModal: React.FC<Props> = ({ open, onClose, onConfirm }) => {
           <Button className="cancel-btn" onClick={onClose}>
             Hủy
           </Button>
+
           <Button
             type="primary"
-            icon={<CheckCircleOutlined />}
+            icon={<CheckCircleOutlined />}   
             className="confirm-btn-s"
-            onClick={onConfirm}
+            onClick={handleSign}
           >
             Xác nhận Ký & Gửi
           </Button>
