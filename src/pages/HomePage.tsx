@@ -81,6 +81,8 @@ const HomePage: React.FC = () => {
     }
     localStorage.setItem("permissionsElections", JSON.stringify(election.permissionElections));
     localStorage.setItem("currentElectionId", electionId);
+    localStorage.setItem("voterId", election.voter || "");
+
     switch (election.roleCode) {
       case USER_ROLE.PRESIDE_SECRETARY:
         navigate(PATH.SECRETARY, { state: { electionId: electionId, voter: election.voter } });
