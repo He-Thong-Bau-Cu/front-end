@@ -9,17 +9,17 @@ import {
     ClockCircleOutlined,
     CopyOutlined,
     FileTextOutlined,
-    PrinterOutlined,
-    UserOutlined,
     InboxOutlined,
-    RightOutlined
+    PrinterOutlined,
+    RightOutlined,
+    UserOutlined
 } from "@ant-design/icons";
 import { Button, Card, Col, Descriptions, Divider, Row, Tag, Typography } from "antd";
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import "../../../style/voter/VotingHistory.model.css";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../../../style/voter/VotingHistory.model.css";
 dayjs.locale("vi");
 
 
@@ -30,14 +30,8 @@ const VotingHistoryContent = () => {
     const { showLoading, hideLoading } = useLoading();
     const { notify } = useNotification();
     const navigate = useNavigate();
-    const location = useLocation();
 
-
-    const voter = location.state?.voter;
-    const voterId = voter?._id || "";
-
-    console.log("STATE TRUYỀN SANG:", location.state);
-
+    const voterId = localStorage.getItem("voterId") || "";
 
     useEffect(() => {
         const fetchBallot = async () => {
