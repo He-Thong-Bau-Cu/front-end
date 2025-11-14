@@ -1,7 +1,7 @@
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DelegationService from "@/services/DelegationService";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { LeftOutlined } from "@ant-design/icons";
 import {
     Avatar, Button, Card, Checkbox, Col, DatePicker, Descriptions,
     Form, Input, Row, Space, Typography
@@ -21,7 +21,6 @@ export default function AuthorizationRequestForm() {
     const { state } = useLocation();
     const navigate = useNavigate();
 
-    // ✅ Lấy dữ liệu được truyền sang
     const selectedUser = state?.selectedUser;
     const electionId = state?.electionId;
     const delegatorId = state?.delegatorId;
@@ -47,7 +46,6 @@ export default function AuthorizationRequestForm() {
                 startDate: values.startDate.toISOString(),
                 endDate: values.endDate.toISOString(),
                 delegateReason: values.reason,
-                // documentId: null,
                 signature: null,
                 status: "PENDING",
             };
@@ -66,16 +64,26 @@ export default function AuthorizationRequestForm() {
         <Card
             className="delegation-form-card"
             title={
-                <Space>
-                    <Button
-                        icon={<ArrowLeftOutlined />}
-                        onClick={() => navigate(-1)}
-                        style={{ border: "none", boxShadow: "none" }}
-                    />
-                    <Title level={4} style={{ margin: 0 }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                    }}
+                >
+                    <Title level={5} style={{ margin: 0, paddingLeft: 20 }}>
                         📝 Tạo yêu cầu ủy quyền
                     </Title>
-                </Space>
+                    <Button
+                        className="backButton"
+                        type="default"
+                        size="middle"
+                        icon={<LeftOutlined />}
+                        onClick={() => navigate(-1)}
+                    >
+                        Quay lại
+                    </Button>
+                </div>
             }
         >
             {/* ===== Thông tin người được ủy quyền ===== */}
@@ -85,7 +93,7 @@ export default function AuthorizationRequestForm() {
                     backgroundColor: "#f8f9fa",
                     border: "1px solid #e9ecef",
                 }}
-                title={<Text strong>Thông tin người được ủy quyền</Text>}
+                title={<Text style={{ paddingLeft: 10 }} strong>Thông tin người được ủy quyền</Text>}
             >
                 <Space direction="vertical" style={{ width: "100%" }} size="middle">
                     <Space>
@@ -187,19 +195,19 @@ export default function AuthorizationRequestForm() {
                     rules={[
                         {
                             validator: (_, val) =>
-                                val ? Promise.resolve() : Promise.reject("Bạn cần đồng ý điều khoản!"),
+                                val ? Promise.resolve() : Promise.reject("Bạn cần đồng ý điều Kiện!"),
                         },
                     ]}
                 >
                     <Checkbox>
-                        Tôi xác nhận đã đọc và đồng ý với <a href="#">điều khoản ủy quyền</a>.
+                        Bạn có chắc chắn muốn ủy quyền hay không
                     </Checkbox>
                 </Form.Item>
 
                 <div className="delegation-form-actions">
                     <Button onClick={() => navigate(-1)}>Hủy</Button>
                     <Button type="primary" htmlType="submit" style={{ background: "#7ECB50", border: "none" }}>
-                        Gửi yêu cầu
+                        Gửi yêu cầu ủy quyền
                     </Button>
                 </div>
             </Form>

@@ -159,7 +159,7 @@ const UserSelection = () => {
                         alignItems: "center",
                     }}
                 >
-                    <Title level={5} style={{ margin: 0, paddingLeft: 10 }}>
+                    <Title level={5} style={{ margin: 0, paddingLeft: 20 }}>
                         👥 Chọn người được ủy quyền
                     </Title>
                     <Button
@@ -188,7 +188,7 @@ const UserSelection = () => {
                     <Button
                         icon={<UserAddOutlined />}
                         size="large"
-                        onClick={() => navigate("/voter/create-authorization/new-user")}
+                        onClick={() => navigate("/voter/authorization-form")}
                         className="createUserButton"
                     >
                         Tạo người dùng mới
