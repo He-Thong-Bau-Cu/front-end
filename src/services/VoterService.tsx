@@ -3,6 +3,7 @@ import BaseService from "./BaseService";
 import { DashboardVoterStats } from "@/types/Voter.interface";
 
 class VoterService extends BaseService {
+
     constructor() {
         super("voters");
     }

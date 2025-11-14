@@ -528,3 +528,12 @@
 .viewDetailButton :global(.anticon) {
   color: inherit;
 }
+
+/* Election name column - allow text wrapping */
+.electionNameCell {
+  max-width: 250px;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.5;
+}

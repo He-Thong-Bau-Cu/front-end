@@ -133,7 +133,9 @@ export default function AuthorizationRequestForm() {
                             <DatePicker
                                 style={{ width: "100%" }}
                                 format="DD/MM/YYYY"
-                                disabledDate={(current) => current && current < dayjs().startOf("day")}
+                                disabledDate={(current) =>
+                                    current && current <= dayjs().startOf("day")
+                                }
                             />
                         </Form.Item>
                     </Col>
@@ -144,26 +146,38 @@ export default function AuthorizationRequestForm() {
                             name="endDate"
                             dependencies={["startDate"]}
                             rules={[
-                                { required: true, message: "Vui lòng chọn ngày kết thúc!" },
+                                { required: true, message: "Vui lòng chọn ngày kết thúc ủy quyền!" },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
                                         const start = getFieldValue("startDate");
+
                                         if (!start || !value) return Promise.resolve();
-                                        if (value.isBefore(start))
-                                            return Promise.reject("Ngày kết thúc không thể trước ngày bắt đầu!");
+
+                                        if (value.isSame(start) || value.isBefore(start)) {
+                                            return Promise.reject(
+                                                "Ngày kết thúc phải lớn hơn ngày bắt đầu!"
+                                            );
+                                        }
+
                                         return Promise.resolve();
                                     },
                                 }),
                             ]}
+
                         >
                             <DatePicker
                                 style={{ width: "100%" }}
                                 format="DD/MM/YYYY"
                                 disabledDate={(current) => {
                                     const start = form.getFieldValue("startDate");
-                                    if (!start) return current && current < dayjs().startOf("day");
-                                    return current && current < dayjs(start).startOf("day");
+
+                                    // Nếu chưa chọn ngày bắt đầu → chỉ block quá khứ
+                                    if (!start) return current && current <= dayjs().startOf("day");
+
+                                    // Khi đã có ngày bắt đầu → chỉ cho phép chọn ngày > startDate
+                                    return current && current <= dayjs(start).startOf("day");
                                 }}
+
                             />
                         </Form.Item>
                     </Col>
