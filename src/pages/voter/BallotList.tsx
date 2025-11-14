@@ -53,14 +53,9 @@ export default function BallotList() {
     <div className="ballot-page">
       <div className="history-button-container">
         <Button
-          type="primary"
           icon={<HistoryOutlined />}
           size="large"
-          style={{
-            background: "#7cb342",
-            borderColor: "#7cb342",
-            fontWeight: 500,
-          }}
+          className="history-ballot-button"
           onClick={() => navigate("/voter/voting-history")}
         >
           Lịch sử bỏ phiếu

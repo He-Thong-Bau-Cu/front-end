@@ -16,10 +16,10 @@ import {
 } from "@ant-design/icons";
 import { Button, Card, Col, Descriptions, Divider, Row, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../../../style/voter/VotingHistory.model.css";
 import dayjs from "dayjs";
-import "dayjs/locale/vi"; // ✅ hiển thị tiếng Việt
+import "dayjs/locale/vi";
 dayjs.locale("vi");
 
 
@@ -30,10 +30,13 @@ const VotingHistoryContent = () => {
     const { showLoading, hideLoading } = useLoading();
     const { notify } = useNotification();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    // 👉 Fix cứng voterId để test
-    const voterId = "6910f2016e3b3c1fb79a1f9d";
-    // const voterId = localStorage.getItem("voterId") || "";
+
+    const voter = location.state?.voter;
+    const voterId = voter?._id || "";
+
+    console.log("STATE TRUYỀN SANG:", location.state);
 
 
     useEffect(() => {
@@ -49,7 +52,6 @@ const VotingHistoryContent = () => {
             }
         };
         fetchBallot();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleCopy = async (text: string, label: string) => {

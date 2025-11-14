@@ -1,4 +1,4 @@
-import { DelegationDetail, DelegationSearch } from "@/types/Delegate.interface";
+import { CreateDelegationPayload, DelegationDetail, DelegationSearch } from "@/types/Delegate.interface";
 import BaseService from "./BaseService";
 import { ApiResponse } from "@/types/ApiResponse.interface";
 
@@ -28,7 +28,6 @@ class DelegationService extends BaseService {
 
 
 
-
     async searchAll(payload: { electionId: string; delegatorId: string }): Promise<DelegationSearch[]> {
         const response = await this.api.post(`${this.endpoint}/search`, payload) as ApiResponse<{ content: DelegationSearch[] }>;
         return response.data?.content || [];
@@ -39,10 +38,13 @@ class DelegationService extends BaseService {
         const response = await this.api.post(`${this.endpoint}`, payload) as ApiResponse<any>;
         return response.data;
     }
+    async create(payload: CreateDelegationPayload) {
+        const response = await this.api.post(`${this.endpoint}`, payload) as ApiResponse<CreateDelegationPayload>;
+        return response.data;
+    }
 
 
 }
-
 
 
 export default new DelegationService();

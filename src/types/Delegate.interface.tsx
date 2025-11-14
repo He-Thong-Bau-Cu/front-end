@@ -85,3 +85,22 @@ export type DelegationStatus =
   | "EXPIRED"
   | "REVOKED"
   | "INVALID";
+
+
+export interface DelegateInfoPayload {
+  fullName: string;
+  citizenId: string;
+  email?: string;
+  phone: string;
+  address?: string;
+}
+
+export interface CreateDelegationPayload {
+  delegationType: "election";
+  electionId: string;
+  delegatorId: string;
+  startDate: string;
+  endDate: string;
+  delegateReason: string;
+  delegateInfo: DelegateInfoPayload;
+}

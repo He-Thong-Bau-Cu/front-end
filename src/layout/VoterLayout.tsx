@@ -22,8 +22,9 @@ const VoterLayout = () => {
             '/voter/ballot_resolution_voting': 'Bỏ phiếu',
             '/voter/results/detail': 'Kết quả bỏ phiếu chi tiết',
             '/voter/create-authorization': 'Tạo ủy quyền',
-            '/voter/request-authorization': 'Tạo ủy quyền'
-
+            '/voter/request-authorization': 'Tạo ủy quyền',
+            '/voter/authorization-form': 'Tạo ủy quyền',
+            '/voter/authorization-detail': 'Chi tiết ủy quyền'
 
         };
 
