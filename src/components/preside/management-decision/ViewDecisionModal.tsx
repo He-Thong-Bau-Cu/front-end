@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Typography, Spin, Button, Space, message } from "antd";
 import "../../../style/preside/ViewDecision.model.css";
 import { Decision } from "@/types/Decision.interface";
@@ -26,6 +26,8 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   const [modalOpen, setModalOpen] = useState(false);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
+  const [electionId, setElectionId] = useState("");
+
 
   const handleViewDecision = async (record: Decision) => {
     try {
@@ -200,8 +202,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       {/* ===== DIGITAL SIGN MODAL ===== */}
       <DigitalSignModal
         open={modalOpen}
+        electionId={electionId}
         onClose={() => setModalOpen(false)}
-        onConfirm={() => setModalOpen(true)}
+        onSuccess={() => setModalOpen(true)}
+        delegate={false}
       />
     </>
   );

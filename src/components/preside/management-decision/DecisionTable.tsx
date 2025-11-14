@@ -27,6 +27,7 @@ import DecisionService from "@/services/DecisionService";
 import * as XLSX from "xlsx";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { useNotification } from "@/contexts/NotificationContext";
+import ElectionParticipantsService from "@/services/ElectionParticipantsService";
 const { Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
@@ -102,7 +103,7 @@ const DecisionTable = () => {
         page,
         limit,
         textSearch: searchText.trim() || undefined,
-        statusData: statusFilter || undefined, 
+        statusData: statusFilter || undefined,
       });
 
       setData(response?.content || []);
@@ -135,7 +136,9 @@ const DecisionTable = () => {
         statusData: "WAIT_ENTER_DATA",
       };
 
+
       let response;
+      let secretary;
       if (isEdit && id) {
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
@@ -147,6 +150,17 @@ const DecisionTable = () => {
         }
       } else {
         response = await DecisionService.createDecision(apiData2);
+
+        const apiData3: any = {
+          electionId: response.data?._id,
+          userId: values.secretaryId,
+          roleId: "6904d5f7105b6a336b819be5",
+          position: "Thư ký chủ tọa",
+          status: "ACTIVE"
+
+        };
+        secretary = await ElectionParticipantsService.createParticipant(apiData3);
+
         if (response.status === 201 && response.success) {
           notify(response.message, "success");
           message.success("Tạo nghị quyết thành công!");
@@ -161,7 +175,6 @@ const DecisionTable = () => {
       setEditingDecision(null);
       await loadDecisions(pagination.current, pagination.pageSize);
     } catch (error: any) {
-      console.error(`Error ${isEdit ? "updating" : "creating"} decision:`, error);
       message.error(
         error.response?.data?.message ||
         `Không thể ${isEdit ? "cập nhật" : "tạo"} nghị quyết. Vui lòng thử lại.`
@@ -180,10 +193,8 @@ const DecisionTable = () => {
       // Gọi API để lấy chi tiết decision
       const decisionDetail = await DecisionService.getElectionById(record._id);
 
-      console.log("Decision detail from API:", decisionDetail);
       setViewDecisionData(decisionDetail);
     } catch (error: any) {
-      console.error("Error loading decision details:", error);
       const errorMessage = error.response?.data?.message || error.message || "Không thể tải chi tiết quyết định. Vui lòng thử lại.";
       message.error(errorMessage);
       setViewModalOpen(false);
@@ -214,7 +225,6 @@ const DecisionTable = () => {
     const { current, pageSize } = pagination;
     setPagination((prev) => ({ ...prev, current, pageSize }));
     loadDecisions(current, pageSize); // ✅ luôn gọi API với statusFilter hiện tại
-    console.log(statusFilter)
   };
   // Hàm xuất Excel
 
@@ -291,8 +301,7 @@ const DecisionTable = () => {
       notify("Xuất file Excel thành công!", "success");
       message.success({ content: "Xuất file Excel thành công!", key: "export" });
     } catch (error: any) {
-      console.error("Error exporting Excel:", error);
-       notify("Không thể xuất file Excel. Vui lòng thử lại.", "error");
+      notify("Không thể xuất file Excel. Vui lòng thử lại.", "error");
       message.error({
         content: "Không thể xuất file Excel. Vui lòng thử lại.",
         key: "export",
@@ -470,8 +479,7 @@ const DecisionTable = () => {
           try {
             setLoading(true);
             const re = await DecisionService.deleteDecision(selectedRecord._id);
-            await DecisionService.updateDecision(selectedRecord._id, { statusData:"DRAFT", status: "CANCEL" });
-            console.log("Delete Response:", re);
+            await DecisionService.updateDecision(selectedRecord._id, { statusData: "DRAFT", status: "CANCEL" });
             if (re.status === 200 && re.success) {
               notify(re.message, "success");
               message.success("Xóa nghị quyết thành công!");

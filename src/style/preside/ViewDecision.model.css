@@ -38,17 +38,19 @@
 .header-right {
   display: flex;
   flex-direction: column;
-  font-size: 15px;
 }
 
 .company-name {
   font-weight: bold;
   text-transform: uppercase;
   color: #000000;
+  font-size: 12px;
 }
 
 .doc-number {
   font-style: italic;
+  text-align: center;
+  font-size: 12px;
 }
 
 .nation {
@@ -56,6 +58,7 @@
   text-transform: uppercase;
   text-align: center;
   color: #050505;
+  font-size: 12px;
 }
 
 .motto {
@@ -63,12 +66,14 @@
   font-style: italic;
   color: #000000;
   margin-top: -4px;
+  font-size: 12px;
 }
 
 .location-date {
   text-align: center;
   font-size: 14px;
   margin-top: 4px;
+  font-size: 12px;
 }
 
 /* ===== TITLE ===== */
@@ -112,6 +117,8 @@
   text-transform: uppercase;
   color: #000000;
   margin: 20px 0 15px 0;
+  font-size: 14px;
+
 }
 
 /* ===== FOOTER ===== */
@@ -119,7 +126,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 60px;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .footer-left {
@@ -154,7 +161,7 @@
 }
 
 .footer-sign {
-  height: 60px;
+  height: 100px;
   font-style: italic;
 }
 
@@ -168,4 +175,16 @@
   margin-top: 24px;
   display: flex;
   justify-content: flex-end;
+}
+.a4-input {
+  display: inline-block;
+  width: 250px;          /* chỉnh theo độ dài bạn muốn */
+  border-bottom: 1px dotted #444;  /* giống văn bản có dòng */
+  font-family: "Times New Roman", serif;
+  margin-left: 6px;
+  padding: 0;
+}
+
+.a4-input input {
+  padding: 0;
 }

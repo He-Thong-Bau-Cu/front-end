@@ -18,6 +18,6 @@ export interface Decision {
     decisionNumber: string;
     decisionName: string;
     createdByUserId: User;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
 }

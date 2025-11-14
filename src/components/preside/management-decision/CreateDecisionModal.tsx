@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Form,
@@ -7,9 +7,13 @@ import {
   Row,
   Col,
   Divider,
+  Select,
 } from "antd";
-import { FileTextOutlined, FileAddOutlined } from "@ant-design/icons";
+import { FileTextOutlined } from "@ant-design/icons";
 import "../../../style/preside/CreateDecisionModal.model.css";
+import UserService from "@/services/UserService"; // <-- thêm service lấy user
+
+const { Option } = Select;
 
 interface CreateDecisionModalProps {
   open: boolean;
@@ -28,13 +32,29 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 }) => {
   const [form] = Form.useForm();
 
+  const [userList, setUserList] = useState<any[]>([]);
+
+  // 🔥 Load danh sách user
+  const loadUsers = async () => {
+    try {
+      const res = await UserService.getNonVoter();
+      setUserList(res || []);
+    } catch (err) {
+      console.error("Không thể load user:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (open) loadUsers();
+  }, [open]);
+
   useEffect(() => {
     if (open) {
       if (editMode && initialData) {
-        // Nạp dữ liệu khi chỉnh sửa
         form.setFieldsValue({
           decisionNumber: initialData.decisionNumber || "",
           decisionName: initialData.decisionName || "",
+          secretaryId: initialData.signerId || undefined, // ⬅ SET DEFAULT USER
         });
       } else {
         form.resetFields();
@@ -99,20 +119,29 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
               <Input placeholder="VD: Nghị quyết phê duyệt dự án..." />
             </Form.Item>
           </Col>
+
+          {/* 🔥 SELECT USER */}
+          <Col span={12}>
+            <Form.Item
+              name="secretaryId"
+              label="Thư ký chủ tọa"
+              rules={[{ required: true, message: "Vui lòng người đảm nhiệm" }]}
+            >
+              <Select placeholder="Chọn người ký" allowClear showSearch>
+                {userList.map((user: any) => (
+                  <Option key={user._id} value={user._id}>
+                    {user.fullName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          
         </Row>
 
         <Divider />
 
-        {/* <div className="upload-section">
-          <h3 className="upload-title">
-            <FileAddOutlined /> Đính kèm tài liệu liên quan
-          </h3>
-          <p className="upload-sub">Chấp nhận định dạng: PDF, DOCX, XLSX</p>
-          <div className="upload-box">
-            <input type="file" />
-          </div>
-        </div> */}
-
+        {/* FOOTER */}
         <div className="modal-footer">
           <Button onClick={onCancel}>Hủy</Button>
           <Button type="primary" htmlType="submit" className="btn-create">

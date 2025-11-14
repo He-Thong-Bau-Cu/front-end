@@ -28,13 +28,8 @@ class DecisionService extends BaseService {
         searchParams 
       );
       
-      // BaseService interceptor đã trả về response.data, nên response chính là body của API
-      // Response format: { status, success, message, data: { content: [], page, limit, totalItems, totalPages } }
-      console.log("API Response:", response);
-      
       if (response && response.data) {
         const result = response.data;
-        console.log("Parsed data:", result);
         return {
           content: result.content || [],
           page: result.page || 1,
@@ -44,8 +39,6 @@ class DecisionService extends BaseService {
         };
       }
       
-      // Fallback nếu response format khác
-      console.warn("Unexpected API response format:", response);
       return {
         content: [],
         page: 1,
@@ -65,11 +58,6 @@ class DecisionService extends BaseService {
         `${this.endpoint}/get/${id}`
       );
       
-      // BaseService interceptor đã trả về response.data, nên response chính là body của API
-      // Response format: { status, success, message, data: Decision }
-      console.log("API Response for decision detail:", response);
-      
-      // Xử lý response format
       if (response && response.data) {
         // Nếu response có format { status, message, data: Decision }
         return response.data as Decision;
@@ -93,11 +81,7 @@ class DecisionService extends BaseService {
         `${this.endpoint}`,
         data
       );
-      
-      // BaseService interceptor đã trả về response.data, nên response chính là body của API
-      // Response format: { status, success, message, data: Decision }
-      console.log("API Response for create decision:", response);
-      
+            
       if (response && response.data) {
         return response as Decision;
       }
@@ -120,11 +104,7 @@ class DecisionService extends BaseService {
         `${this.endpoint}/update/${id}`,
         data
       );
-      
-      // BaseService interceptor đã trả về response.data, nên response chính là body của API
-      // Response format: { status, success, message, data: Decision }
-      console.log("API Response for update decision:", response);
-      
+            
       if (response && response.data) {
         return response as Decision;
       }

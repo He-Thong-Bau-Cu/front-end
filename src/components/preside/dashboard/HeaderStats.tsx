@@ -7,6 +7,7 @@ import { useNotification } from "@/contexts/NotificationContext";
 import DecisionService from "@/services/DecisionService";
 import { User } from "@/types/User.interface";
 import { getUserLogin } from "@/utils/auth";
+import ElectionParticipantsService from "@/services/ElectionParticipantsService";
 const { Text } = Typography;
 
 const HeaderStats = () => {
@@ -26,6 +27,9 @@ const HeaderStats = () => {
     };
     fetchUser();
   }, []);
+
+  
+  
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
     try {
       showLoading();
@@ -42,6 +46,7 @@ const HeaderStats = () => {
       };
 
       let response;
+      let secretary;
       if (isEdit && id) {
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
@@ -53,6 +58,16 @@ const HeaderStats = () => {
         }
       } else {
         response = await DecisionService.createDecision(apiData2);
+         const apiData3: any = {
+            electionId: response.data?._id,
+            userId: values.secretaryId,
+            roleId: "6904d5f7105b6a336b819be5",
+            position: "Thư ký chủ tọa",
+            status: "ACTIVE"
+  
+          };
+          secretary = await ElectionParticipantsService.createParticipant(apiData3);
+  
         if (response.status === 201 && response.success) {
           notify(response.message, "success");
           message.success("Tạo nghị quyết thành công!");

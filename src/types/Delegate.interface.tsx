@@ -1,5 +1,7 @@
 // src/interfaces/Delegate.ts
 
+import { User, User1 } from "./User.interface";
+
 /**
  * Cấu trúc thông tin của một đại biểu (delegate)
  */
@@ -76,6 +78,17 @@ export interface DelegationSearch {
   endDate: string;
   status: string;
   createdAt: string;
+}
+
+export interface DelegationSummary {
+
+  id: string;
+  delegateReason: string;
+  timeDelegation: number;
+  delegator: User1;
+  delegate: User1;
+  createdAt: string;
+  endDate: string;
 }
 
 export type DelegationStatus =

@@ -33,6 +33,11 @@ class UserService extends BaseService {
     return response.data;
   }
 
+   async getNonVoter(): Promise<User[]> {
+    const response = await this.api.get(`${this.endpoint}/non-voters`) as ApiResponse<User[]>;
+    return response.data;
+  }
+
 
 }
 

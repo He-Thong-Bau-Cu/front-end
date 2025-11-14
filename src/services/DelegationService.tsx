@@ -43,6 +43,40 @@ class DelegationService extends BaseService {
         return response.data;
     }
 
+    async getAllSummaryDelegation(body: any): Promise<any> {
+
+        try {
+            const response = await this.api.post(`${this.endpoint}/summary/preside/all`, body) as ApiResponse<any>;
+            return response;
+
+        } catch (error) {
+            console.error("Error fetching delegations:", error);
+            throw error;
+        }
+    }
+
+    async getSummaryDelegationPdf(body: any): Promise<any> {
+
+        try {
+            const response = await this.api.post(`${this.endpoint}/summary/pdf`, body, { responseType: "blob", })
+            return response;
+
+        } catch (error) {
+            console.error("Error fetching delegations:", error);
+            throw error;
+        }
+    }
+
+     async delegationApprove(body: any): Promise<any> {
+        try {
+            const response = await this.api.post<any>(`${this.endpoint}/approve`, body)
+            return response;
+
+        } catch (error) {
+            console.error("Error fetching delegations:", error);
+            throw error;
+        }
+    }
 
 }
 

@@ -26,6 +26,14 @@ export interface User {
     image: string;
     imageKey: string;
     isTempPassword: boolean;
+    issueCA: boolean;
 
 }
 
+export interface User1 {
+    fullName: string;
+    email: string;
+    position: string;
+    address: string;
+    citizenId: string;
+}
