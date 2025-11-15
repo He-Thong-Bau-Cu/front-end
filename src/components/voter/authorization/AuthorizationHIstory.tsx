@@ -53,7 +53,7 @@ export default function AuthorizationHistory() {
                 showLoading();
                 const electionId = localStorage.getItem("currentElectionId") || "";
                 const delegatorId = localStorage.getItem("userId") || "";
-                const data = await DelegationService.searchAll({ electionId, delegatorId });
+                const data = await DelegationService.getDelegationByVoterId(electionId, delegatorId);
                 setDelegations(data);
             } catch {
                 notify("Không thể tải danh sách ủy quyền");
@@ -121,21 +121,26 @@ export default function AuthorizationHistory() {
         {
             title: "Người được ủy quyền",
             key: "delegate",
-            render: (_: unknown, record: DelegationSearch) => (
-                <Space size="middle" align="center">
-                    <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#7ECB50" }}>
-                        {record.delegateId.fullName.charAt(0)}
-                    </Avatar>
-                    <div>
-                        <Text strong>{record.delegateId.fullName}</Text>
-                        <br />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                            {record.delegateId.email}
-                        </Text>
-                    </div>
-                </Space>
-            ),
+            render: (_: unknown, record: DelegationSearch) => {
+                const delegate = record.delegateId ?? record.delegateInfo;
+
+                return (
+                    <Space size="middle" align="center">
+                        <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#7ECB50" }}>
+                            {delegate?.fullName?.charAt(0) ?? "?"}
+                        </Avatar>
+                        <div>
+                            <Text strong>{delegate?.fullName ?? "Không có dữ liệu"}</Text>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                {delegate?.email ?? "---"}
+                            </Text>
+                        </div>
+                    </Space>
+                );
+            },
         },
+
 
         {
             title: "Trạng thái",

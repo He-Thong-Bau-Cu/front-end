@@ -28,9 +28,9 @@ class DelegationService extends BaseService {
 
 
 
-    async searchAll(payload: { electionId: string; delegatorId: string }): Promise<DelegationSearch[]> {
-        const response = await this.api.post(`${this.endpoint}/search`, payload) as ApiResponse<{ content: DelegationSearch[] }>;
-        return response.data?.content || [];
+    async getDelegationByVoterId(electionId: string, delegatorId: string): Promise<DelegationSearch[]> {
+        const response = await this.api.get(`${this.endpoint}/delegator/${delegatorId}/elections/${electionId}`) as ApiResponse<DelegationSearch[]>;
+        return response.data;
     }
 
 
@@ -67,7 +67,7 @@ class DelegationService extends BaseService {
         }
     }
 
-     async delegationApprove(body: any): Promise<any> {
+    async delegationApprove(body: any): Promise<any> {
         try {
             const response = await this.api.post<any>(`${this.endpoint}/approve`, body)
             return response;

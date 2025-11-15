@@ -1,13 +1,11 @@
-import React, { useState } from "react";
 import {
-  DownloadOutlined,
-  EyeOutlined,
-  HistoryOutlined,
-  FileTextOutlined,
   CloseCircleFilled,
+  EyeOutlined,
+  FileTextOutlined
 } from "@ant-design/icons";
-import { Pagination, Table, Tooltip, Modal, Descriptions, Typography, Button, Divider, Tag } from "antd";
+import { Button, Descriptions, Divider, Modal, Pagination, Table, Tag, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
+import { useState } from "react";
 import { ReportArchiveItem } from "../../../types/ReportArchive.interface";
 
 const { Title, Text } = Typography;
@@ -60,18 +58,18 @@ export default function ArchiveTable({
       render: (_: unknown, record: ReportArchiveItem) => (
         <div className="ra-actions">
           <Tooltip title="Xem chi tiết">
-            <EyeOutlined 
-              className="ra-icon" 
+            <EyeOutlined
+              className="ra-icon"
               onClick={() => handleViewDetail(record)}
               style={{ cursor: "pointer" }}
             />
           </Tooltip>
-          <Tooltip title="Tải xuống">
+          {/* <Tooltip title="Tải xuống">
             <DownloadOutlined className="ra-icon" />
           </Tooltip>
           <Tooltip title="Lịch sử">
             <HistoryOutlined className="ra-icon" />
-          </Tooltip>
+          </Tooltip> */}
         </div>
       ),
     },
@@ -161,9 +159,9 @@ export default function ArchiveTable({
               <Descriptions.Item label="Trạng thái">
                 <Tag color={
                   selectedItem.status?.includes("Pending") ? "orange" :
-                  selectedItem.status?.includes("Reviewed") ? "blue" :
-                  selectedItem.status?.includes("Resolved") ? "green" :
-                  selectedItem.status?.includes("Rejected") ? "red" : "default"
+                    selectedItem.status?.includes("Reviewed") ? "blue" :
+                      selectedItem.status?.includes("Resolved") ? "green" :
+                        selectedItem.status?.includes("Rejected") ? "red" : "default"
                 }>
                   {selectedItem.status || "-"}
                 </Tag>
@@ -171,8 +169,8 @@ export default function ArchiveTable({
               <Descriptions.Item label="Mức độ nghiêm trọng">
                 <Tag color={
                   selectedItem.severity === "high" ? "red" :
-                  selectedItem.severity === "medium" ? "orange" :
-                  selectedItem.severity === "low" ? "green" : "default"
+                    selectedItem.severity === "medium" ? "orange" :
+                      selectedItem.severity === "low" ? "green" : "default"
                 }>
                   {selectedItem.severity || "-"}
                 </Tag>
@@ -228,8 +226,8 @@ export default function ArchiveTable({
             </Descriptions>
 
             <div style={{ textAlign: "right", marginTop: 24 }}>
-              <Button 
-                onClick={handleCloseModal} 
+              <Button
+                onClick={handleCloseModal}
                 style={{
                   background: "#52c41a",
                   borderColor: "#52c41a",

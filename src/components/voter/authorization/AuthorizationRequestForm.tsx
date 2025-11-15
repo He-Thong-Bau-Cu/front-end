@@ -39,7 +39,7 @@ export default function AuthorizationRequestForm() {
             showLoading();
 
             const payload = {
-                delegationType: "election",
+                delegationType: "ELECTION",
                 electionId,
                 delegatorId,
                 delegateId: selectedUser._id,

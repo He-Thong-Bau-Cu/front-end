@@ -119,7 +119,7 @@ const AuthorizationForm = () => {
             showLoading();
 
             const payload = {
-                delegationType: "election",
+                delegationType: "ELECTION",
                 electionId,
                 delegatorId,
                 delegateId: null,
