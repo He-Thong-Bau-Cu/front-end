@@ -12,14 +12,22 @@ import { EventProgressData } from "@/types/Organizer.interface";
 import { TaskItem } from "@/types/Organizer.interface";
 import { ActivityItem } from "@/types/Organizer.interface";
 import { UpcomingEvent } from "@/types/Organizer.interface";
+import { useNavigate } from "react-router-dom";
 // =============================
 // 🧭 COMPONENT PAGE
 // =============================
 
 export default function OrganizerDashboardPage() {
+  const navigate = useNavigate();
+  
   const user: OrganizerUser = {
     name: "Nhân viên Lưu Hồng Nhật",
     role: "Trưởng ban tổ chức Hội đồng Bầu cử khóa 10",
+  };
+
+  const handleCreateMeeting = () => {
+    // Navigate sang trang danh sách cuộc họp với query param để mở modal
+    navigate("/head_of_the_Organizing_committee/list_meeting?openModal=true");
   };
 
   const stats: StatCardData[] = [
@@ -74,7 +82,7 @@ export default function OrganizerDashboardPage() {
       <HeaderOverview
         userName={user.name}
         userNote={user.role}
-        onCreateMeeting={() => console.log("Tạo cuộc họp mới")}
+        onCreateMeeting={handleCreateMeeting}
       />
 
       {/* Stats */}

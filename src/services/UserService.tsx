@@ -38,7 +38,6 @@ class UserService extends BaseService {
     return response.data;
   }
 
-
 }
 
 export default new UserService();

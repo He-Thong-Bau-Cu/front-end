@@ -31,7 +31,8 @@ const ImportExportData = () => {
   return (
     <Card
       className="import-export-card"
-      title={<span className="import-export-title">📊 Chèn/Xuất dữ liệu</span>}
+      style={{ padding: "20px 24px", borderRadius: 12 }}
+      title={<span className="import-export-title" style={{fontSize: 22.5}}>📊 Chèn/Xuất dữ liệu</span>}
     >
       <div className="import-export-row">
         {actions.map((item, index) => (
@@ -39,12 +40,12 @@ const ImportExportData = () => {
             <div className="icon-box">
               <span
                 className="icon"
-                style={{ color: item.color, fontSize: 28 }}
+                style={{ color: item.color, fontSize: 73 }}
               >
                 {item.icon}
               </span>
             </div>
-            <div className="text">
+            <div className="text" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", lineHeight: 1.4 }}>
               <strong>{item.title}</strong>
               <small>{item.desc}</small>
             </div>

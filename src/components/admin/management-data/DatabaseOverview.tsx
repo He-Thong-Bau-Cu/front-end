@@ -28,7 +28,7 @@ const DatabaseOverview = () => {
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span role="img" aria-label="folder">📁</span>
-          <strong>Tổng quan cơ sở dữ liệu</strong>
+          <strong style={{ fontSize: 22.5 }}>Tổng quan cơ sở dữ liệu</strong>
         </div>
       }
       extra={
@@ -45,14 +45,36 @@ const DatabaseOverview = () => {
           <Col xs={24} sm={12} md={12} lg={6} key={i}>
             <Card bordered={false} hoverable className="db-item">
               <div className="db-left">
-                <div className="db-icon">{item.icon}</div>
+                <div className="db-icon" style={{fontSize: 33} }>{item.icon}</div>
+
                 <div className="db-info">
-                  <Text strong className="db-name">{item.name}</Text>
-                  <p className="db-records">{item.records} records</p>
-                  <p className="db-updated">Last updated: {item.time} ago</p>
+                  {/* Hàng 1: tiêu đề */}
+                  <Text strong className="db-name" style={{fontSize: 16}}>{item.name}</Text>
+
+                  {/* Hàng 2: số liệu + last updated + size */}
+                  <div className="db-row">
+                    <div className="db-col">
+                      <span className="db-number" style={{fontSize: 14}}>{item.records}</span>
+                    </div>
+                    <div className="db-col dot" style={{fontSize: 14}}>•</div>
+                    <div className="db-col">
+                      <span className="db-updated-label" >Last updated:</span>
+                    </div>
+                    <div className="db-col size">{item.size}</div>
+                  </div>
+
+                  {/* Hàng 3: đơn vị + thời gian */}
+                  <div className="db-row">
+                    <div className="db-col" style={{fontSize: 14}}>
+                      <span className="db-unit">records</span>
+                    </div>
+                    <div className="db-col"></div>
+                    <div className="db-col">
+                      <span className="db-updated-time" style={{fontSize: 14}}>{item.time} ago</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="db-size">{item.size}</div>
             </Card>
           </Col>
         ))}
@@ -65,13 +87,35 @@ const DatabaseOverview = () => {
             <Card bordered={false} hoverable className="db-item">
               <div className="db-left">
                 <div className="db-icon">{item.icon}</div>
+
                 <div className="db-info">
+                  {/* Hàng 1: tiêu đề */}
                   <Text strong className="db-name">{item.name}</Text>
-                  <p className="db-records">{item.records} records</p>
-                  <p className="db-updated">Last updated: {item.time} ago</p>
+
+                  {/* Hàng 2: số liệu + last updated + size */}
+                  <div className="db-row">
+                    <div className="db-col">
+                      <span className="db-number">{item.records}</span>
+                    </div>
+                    <div className="db-col dot">•</div>
+                    <div className="db-col">
+                      <span className="db-updated-label">Last updated:</span>
+                    </div>
+                    <div className="db-col size">{item.size}</div>
+                  </div>
+
+                  {/* Hàng 3: đơn vị + thời gian */}
+                  <div className="db-row">
+                    <div className="db-col">
+                      <span className="db-unit">records</span>
+                    </div>
+                    <div className="db-col"></div>
+                    <div className="db-col">
+                      <span className="db-updated-time">{item.time} ago</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="db-size">{item.size}</div>
             </Card>
           </Col>
         ))}

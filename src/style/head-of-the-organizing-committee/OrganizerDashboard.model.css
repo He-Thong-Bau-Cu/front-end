@@ -16,17 +16,22 @@
 }
 
 .header-title {
-  margin: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   /* color: #fff !important; */
   font-weight: 800;
   letter-spacing: 0.2px;
   font-size: 26px;
+  line-height: 1.2;
 }
 
 .header-sub {
   opacity: 0.9;
   margin-top: 2px;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
   display: block;
+  line-height: 1.2;
 }
 
 .person {
@@ -69,7 +74,7 @@
 .elevated {
   background: #fff;
   border: 1px solid #eef5ee;
-  border-radius: 14px;
+  border-radius: 14px !important;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
@@ -99,7 +104,7 @@
 
 /* Card */
 .task-card {
-  border-radius: 12px;
+  border-radius: 14px !important;
 }
 
 /* Header với đường kẻ mảnh */
@@ -172,7 +177,7 @@
   padding: 20px 24px;
   border: none !important;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 14px !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
@@ -309,7 +314,8 @@
 
 /* ===== RecentActivity (Right column card) ===== */
 .activity-card {
-  border-radius: 12px;
+  border-radius: 14px !important;
+  padding-right: 0 !important;
 }
 
 .activity-header {
@@ -365,7 +371,7 @@
 /* ===== Upcoming (Sự kiện sắp diễn ra) ===== */
 .upcoming-card {
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: 14px !important;
 }
 
 /* header có đường kẻ ngay dưới */
@@ -430,11 +436,6 @@
   text-decoration: underline;
 }
 
-/* bo góc & đổ bóng tổng thể giống ảnh (nếu thiếu) */
-.elevated {
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
-  border-radius: 12px;
-}
 
 /* ======= RESPONSIVE ======= */
 @media (max-width: 992px) {

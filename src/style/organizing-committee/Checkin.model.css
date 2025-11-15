@@ -20,10 +20,179 @@
 .qr-card {
   background: #fff;
   border-radius: 12px !important;
-  padding: 30px;
+  padding: 0 !important;
   text-align: center;
   width: 420px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
+
+.qr-card .ant-card-body {
+  padding: 0 !important;
+}
+
+.qr-card-content {
+  padding: 30px;
+  padding-bottom: 30px;
+}
+
+/* Vùng đen chứa camera */
+.qr-dark-frame {
+  width: 100%;
+  max-width: 1050px; /* bằng đúng khung đen trong ảnh */
+  height: 620px; /* đúng chiều cao khung đỏ bạn khoanh */
+  background: #1e1e1e;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Camera tràn full */
+.qr-camera-full {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Ép video full preview */
+.qr-camera-full video,
+.qr-camera-full canvas,
+#qr-reader-element video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Nút quay lại */
+.qr-back-btn {
+  position: absolute !important;
+  top: 20px;
+  left: 20px;
+  z-index: 15;
+  background: rgba(255,255,255,0.9) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+}
+
+/* Text hướng dẫn */
+.qr-text-inline {
+  position: absolute;
+  bottom: 24px;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+}
+
+.qr-text-inline h4 {
+  margin-bottom: 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.qr-text-inline p {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.qr-back-button:hover {
+  transform: translateX(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Container loading */
+.qr-loading-container {
+  text-align: center;
+  padding: 60px 40px;
+  background: #1e1e1e;
+  width: calc(100% + 60px) !important;
+  margin-left: -30px !important;
+  margin-right: -30px !important;
+  border-radius: 0;
+  height: 450px;
+  min-height: 450px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Khung quét QR tràn bằng viền card */
+.qr-scanner-frame {
+  position: relative;
+  width: calc(100% + 60px) !important;
+  margin-left: -30px !important;
+  margin-right: -30px !important;
+  height: 450px !important;
+  min-height: 450px !important;
+  background: #1e1e1e !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Đảm bảo video camera tràn đầy khung */
+.qr-scanner-frame video,
+.qr-scanner-frame canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block;
+}
+
+/* Style cho khung quét QR của html5-qrcode */
+#qr-reader-element {
+  background: #1e1e1e !important;
+  border-radius: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+}
+
+#qr-reader-element__dashboard {
+  background: transparent !important;
+  border: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#qr-reader-element__dashboard_section_csr {
+  background: transparent !important;
+  border: none !important;
+  width: 100% !important;
+}
+
+/* Ẩn các phần tử không cần thiết của html5-qrcode */
+#qr-reader-element__dashboard_section_swaplink,
+#qr-reader-element__dashboard_section_csr select {
+  display: none !important;
+}
+
+/* Style cho khung quét QR bên trong */
+#qr-reader-element__scan_region {
+  border: none !important;
+  background: transparent !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+#qr-reader-element__scan_region video {
+  border-radius: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+#qr-reader-element__camera_selection {
+  display: none !important;
+}
+
 
 .qr-box {
   border: 2px dashed #ddd;
@@ -40,14 +209,33 @@
   color: #c7c7c7;
 }
 
+.qr-text {
+  text-align: center;
+  margin-top: 20px;
+  padding: 0 10px;
+}
+
 .qr-text h4 {
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.qr-icon-text {
+  color: #3ca860;
+  font-size: 18px;
 }
 
 .qr-text p {
   color: #777;
-  font-size: 13px;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* Sidebar */
