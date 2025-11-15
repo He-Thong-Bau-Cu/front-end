@@ -40,76 +40,109 @@ const AuthorizationForm = () => {
 
     const electionId = localStorage.getItem("currentElectionId") || "";
     const delegatorId = localStorage.getItem("userId") || "";
-    const handleSubmit = async (values: AuthorizationFormValues) => {
+    // const handleSubmit = async (values: AuthorizationFormValues) => {
 
+    //     try {
+    //         showLoading();
+
+    //         // Tạo user mới (delegate)
+    //         const newUserPayload = {
+    //             fullName: values.name,
+    //             citizenId: values.cccd,
+    //             phone: values.phone,
+    //             email: values.email,
+    //             address: values.address,
+    //         };
+
+    //         let createdUser;
+
+    //         try {
+    //             createdUser = await UserService.create(newUserPayload);
+    //             console.log("Created user >>> ", createdUser);
+
+    //         } catch (error: any) {
+    //             const message =
+    //                 error?.response?.data?.message ||
+    //                 error?.message ||
+    //                 "Không thể tạo người dùng mới";
+
+    //             notify(
+    //                 Array.isArray(message) ? message.join(", ") : message,
+    //                 "error"
+    //             );
+    //             hideLoading();
+    //             return;
+    //         }
+
+    //         const delegateId = createdUser.data._id;
+
+    //         // 2. Payload ủy quyền
+    //         const payload = {
+    //             delegationType: "election",
+    //             electionId,
+    //             delegatorId,
+    //             delegateId,
+    //             startDate: values.startDate.toISOString(),
+    //             endDate: values.endDate.toISOString(),
+    //             delegateReason: values.reason,
+    //             signature: null,
+    //             status: "PENDING",
+    //         };
+
+    //         try {
+    //             await DelegationService.add(payload);
+    //         } catch (error: any) {
+    //             const message =
+    //                 error?.response?.data?.message ||
+    //                 error?.message ||
+    //                 "Không thể gửi yêu cầu ủy quyền";
+
+    //             notify(
+    //                 Array.isArray(message) ? message.join(", ") : message,
+    //                 "error"
+    //             );
+    //             hideLoading();
+    //             return;
+    //         }
+
+    //         notify("Gửi yêu cầu ủy quyền thành công!", "success");
+    //         navigate(-2);
+
+    //     } catch (error) {
+    //         notify("Có lỗi xảy ra, vui lòng thử lại!", "error");
+    //     } finally {
+    //         hideLoading();
+    //     }
+    // };
+    const handleSubmit = async (values: AuthorizationFormValues) => {
         try {
             showLoading();
 
-            // Tạo user mới (delegate)
-            const newUserPayload = {
-                fullName: values.name,
-                citizenId: values.cccd,
-                phone: values.phone,
-                email: values.email,
-                address: values.address,
-            };
-
-            let createdUser;
-
-            try {
-                createdUser = await UserService.create(newUserPayload);
-                console.log("Created user >>> ", createdUser);
-
-            } catch (error: any) {
-                const message =
-                    error?.response?.data?.message ||
-                    error?.message ||
-                    "Không thể tạo người dùng mới";
-
-                notify(
-                    Array.isArray(message) ? message.join(", ") : message,
-                    "error"
-                );
-                hideLoading();
-                return;
-            }
-
-            const delegateId = createdUser.data._id;
-
-            // 2. Payload ủy quyền
             const payload = {
                 delegationType: "election",
                 electionId,
                 delegatorId,
-                delegateId,
+                delegateId: null,
                 startDate: values.startDate.toISOString(),
                 endDate: values.endDate.toISOString(),
                 delegateReason: values.reason,
-                signature: null,
+                delegateInfo: {
+                    fullName: values.name,
+                    citizenId: values.cccd,
+                    phone: values.phone,
+                    email: values.email,
+                    address: values.address,
+                },
                 status: "PENDING",
             };
 
-            try {
-                await DelegationService.add(payload);
-            } catch (error: any) {
-                const message =
-                    error?.response?.data?.message ||
-                    error?.message ||
-                    "Không thể gửi yêu cầu ủy quyền";
 
-                notify(
-                    Array.isArray(message) ? message.join(", ") : message,
-                    "error"
-                );
-                hideLoading();
-                return;
-            }
+            await DelegationService.add(payload);
 
             notify("Gửi yêu cầu ủy quyền thành công!", "success");
             navigate(-2);
-
-        } catch (error) {
-            notify("Có lỗi xảy ra, vui lòng thử lại!", "error");
+        } catch {
+            notify("Không thể gửi yêu cầu ủy quyền", "error");
         } finally {
             hideLoading();
         }

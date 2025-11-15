@@ -1,8 +1,7 @@
 
-import { Decision } from "@/types/Decision.interface";
-import BaseService from "./BaseService";
 import { ApiResponse } from "@/types/ApiResponse.interface";
 import { Election } from "@/types/Election.interface";
+import BaseService from "./BaseService";
 
 class ElectionService extends BaseService {
   constructor() {

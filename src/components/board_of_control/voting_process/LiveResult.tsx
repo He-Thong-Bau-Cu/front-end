@@ -2,7 +2,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import BallotService from "@/services/BallotService";
 import { Ballot } from "@/types/Ballot.interface";
-import { Card, Input, Select, Space, Table, Tag } from "antd";
+import { Card, Input, Select, Space, Table, Tag, Typography } from "antd";
 import type { TableColumnsType } from "antd";
 import "@/style/board-of-control/VotingProcess.model.css";
 import dayjs from "dayjs";
@@ -10,6 +10,9 @@ import "dayjs/locale/vi";
 import { useEffect, useState } from "react";
 
 dayjs.locale("vi");
+
+const { Title } = Typography;
+
 
 export default function VotingProcess() {
   const { showLoading, hideLoading } = useLoading();
@@ -166,7 +169,15 @@ export default function VotingProcess() {
 
   return (
     <Card
-      title="📋 Trạng thái lá phiếu của các cử tri"
+      title={
+        <div
+        >
+          <Title level={5} style={{ margin: 0, paddingLeft: 20 }}>
+            📋 Trạng thái lá phiếu của các cử tri
+          </Title>
+
+        </div>
+      }
       style={{
         borderRadius: 16,
         boxShadow: "0 4px 16px rgba(0,0,0,0.05)",

@@ -18,6 +18,7 @@ const VoterStats = () => {
         totalVoters: 0,
         totalParticipants: 0,
         participationPercentage: 0,
+        voterNotActive: 0
     });
     const { showLoading, hideLoading } = useLoading();
 
@@ -65,19 +66,19 @@ const VoterStats = () => {
             bg: "#E8F1FB",
         },
         {
+            icon: <UserOutlined />,
+            title: "Chưa tham gia",
+            value: statsData.voterNotActive,
+            color: "#8E44AD",
+            bg: "#F4E6FA",
+        },
+        {
             icon: <BarChartOutlined />,
             title: "Tỷ lệ tham gia",
             value: `${statsData.participationPercentage}%`,
             color: "#F39C12",
             bg: "#FFF6E5",
         },
-        {
-            icon: <UserOutlined />,
-            title: "Chưa tham gia",
-            value: statsData.totalVoters - statsData.totalParticipants,
-            color: "#8E44AD",
-            bg: "#F4E6FA",
-        }
 
     ];
 
