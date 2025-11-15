@@ -127,7 +127,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
               label="Thư ký chủ tọa"
               rules={[{ required: true, message: "Vui lòng người đảm nhiệm" }]}
             >
-              <Select placeholder="Chọn người ký" allowClear showSearch>
+              <Select placeholder="Chọn thư ký" allowClear showSearch>
                 {userList.map((user: any) => (
                   <Option key={user._id} value={user._id}>
                     {user.fullName}

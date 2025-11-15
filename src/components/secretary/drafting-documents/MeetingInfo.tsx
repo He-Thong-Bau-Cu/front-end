@@ -188,7 +188,7 @@ const MeetingInfo: React.FC<MeetingInfo> = ({
                 <b>8. Thời gian ủy quyền:</b>
                 <Input
                   placeholder="................"
-                  value={deadline}
+                  value={deadline} 
                   onChange={(e) => setDeadline(e.target.value)}
                   bordered={false}
                   className="a4-input"

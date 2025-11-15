@@ -25,7 +25,7 @@ const { Title, Text } = Typography;
 
 interface Props {
   open: boolean;
-  electionId: string ;
+  electionId?: string;
   delegate: boolean;
   onClose: () => void;
   onSuccess: () => void; // callback khi ký thành công
@@ -42,17 +42,17 @@ const DigitalSignModal: React.FC<Props> = ({
   const [fileName, setFileName] = React.useState("Chưa chọn tệp nào...");
   const [password, setPassword] = React.useState("");
   const { showLoading, hideLoading } = useLoading();
-const { notify } = useNotification();
+  const { notify } = useNotification();
   // Khi user chọn file p12
-  const handleUpload = (file: any) => {
-    setFileObj(file);
-    setFileName(file.name);
-    return false; // không upload tự động
+  const handleUpload = (file: File) => {
+    setFileObj(file);       // <--- file thật
+    setFileName(file.name); // tên file
+    return false;           // không cho upload tự động
   };
 
   // Hàm ký số
   const handleSign = async () => {
-    
+
     if (!fileObj) {
       message.warning("Vui lòng chọn file .p12");
       return;
@@ -65,19 +65,17 @@ const { notify } = useNotification();
     try {
       showLoading();
       const formData = new FormData();
-      formData.append("file", fileObj);
-      formData.append("electionId", electionId);
+      formData.append("file", fileObj);            // file gốc
+      formData.append("electionId", electionId ? electionId : "");
       formData.append("password", password);
-      
       let approve;
-      if(delegate){
-       approve = await DelegationService.delegationApprove(formData);
-       console.log(password)
+      if (delegate) {
+        approve = await DelegationService.delegationApprove(formData);
       }
-      if(approve.success){
-         notify(approve.message, "success");
-      } else{
-         notify(approve.message, "error");
+      if (approve.success) {
+        notify(approve.message, "success");
+      } else {
+        notify(approve.message, "error");
       }
     } catch (err: any) {
       console.error("Lỗi ký số:", err);
@@ -90,7 +88,7 @@ const { notify } = useNotification();
   return (
     <Modal
       open={open}
-      onCancel={onClose} 
+      onCancel={onClose}
       footer={null}
       centered
       width={500}
@@ -149,7 +147,7 @@ const { notify } = useNotification();
 
           <Button
             type="primary"
-            icon={<CheckCircleOutlined />}   
+            icon={<CheckCircleOutlined />}
             className="confirm-btn-s"
             onClick={handleSign}
           >
