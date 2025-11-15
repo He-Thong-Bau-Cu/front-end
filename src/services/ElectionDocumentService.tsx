@@ -15,7 +15,7 @@ class ElectionDocumentService extends BaseService {
             return response;
 
         } catch (error) {
-            console.error("Error fetching decisions:", error);
+            console.error("Error fetching documents:", error);
             throw error;
         }
 
@@ -23,12 +23,11 @@ class ElectionDocumentService extends BaseService {
 
     async CreateDocument(body:any): Promise<any> {
         try {
-            const response = await this.api.post<any>(
-                `${this.endpoint}`);
+            const response = await this.api.post<any>(`${this.endpoint}`,body);
             return response;
 
         } catch (error) {
-            console.error("Error fetching decisions:", error);
+            console.error("Error fetching documents:", error);
             throw error;
         }
 
@@ -57,6 +56,9 @@ class ElectionDocumentService extends BaseService {
         }
 
     }
+
+    
+
 
     
 

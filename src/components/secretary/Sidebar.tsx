@@ -26,7 +26,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
         { key: "/secretary/drafting-documents", icon: <FileAddOutlined />, label: "Soạn thảo tài liệu" },
         { key: "/secretary/documents", icon: <FolderOpenOutlined />, label: "Quản lý tài liệu" },
         { key: "/secretary/notifications", icon: <BellOutlined />, label: "Trung tâm thông báo" },
-        { key: "/secretary/reports", icon: <TrophyOutlined />, label: "Trung tâm báo cáo" },
+        // { key: "/secretary/reports", icon: <TrophyOutlined />, label: "Trung tâm báo cáo" },
     ].filter((item) => permissions.includes(item.key) || permissionsElections.includes(item.key));
 
     const handleClick = (e: { key: string }) => {
@@ -49,10 +49,8 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
                         <div className="sidebar-title-sub">bầu cử</div>
                     </div>
                 </div>
-
                 <div className="sidebar-subtext">Sự lựa chọn của doanh nghiệp</div>
             </div>
-
             {/* Menu */}
             <Menu
                 mode="inline"

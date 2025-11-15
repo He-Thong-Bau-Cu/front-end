@@ -66,13 +66,12 @@ const DraftingDocuments: React.FC = () => {
             open={open}
             onClose={handleCloseMeeting}
             onSign={handleSignMeeting}
-            data={data}
-            loading={loading}
+              loading={loading}
           />
         </div>
 
         <div className="meeting-right">
-          <Attendees />
+          {/* <Attendees /> */}
           <Organization />
           <AttachedDocuments />
         </div>

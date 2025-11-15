@@ -230,7 +230,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
 
                                     {/* Nút phê duyệt */}
                                     <Button
-                                        onClick={() => handleViewDecision(data._id)}
+                                        onClick={() => handleViewDecision(data.election._id)}
                                         type="primary"
                                         style={{ background: "#52c41a", borderColor: "#52c41a" }}
                                     >
@@ -249,7 +249,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             <DigitalSignModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
-                electionId={electionId}
+                electionId={data?.election._id}
                 delegate={true}
                 onSuccess={() => {
                     message.success("Ký số thành công!");
