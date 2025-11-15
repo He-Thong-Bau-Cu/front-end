@@ -119,7 +119,9 @@ const AuthorizationDetail = () => {
         );
     }
 
-    const { delegatorId, delegateId, status, startDate, endDate, createdAt, delegateReason } = delegationData;
+    const { delegatorId, delegateId, delegateInfo, status, startDate, endDate, createdAt, delegateReason } = delegationData;
+
+    const delegate = delegateId ?? delegateInfo;
 
     return (
         <>
@@ -167,10 +169,7 @@ const AuthorizationDetail = () => {
                                         <Text type="secondary" className={styles.userEmail}>
                                             {delegatorId.email}
                                         </Text>
-                                        <br />
-                                        <Text type="secondary" className={styles.userUsername}>
-                                            @{delegatorId.username}
-                                        </Text>
+
                                     </div>
                                 </Space>
                                 <Divider className={styles.divider} />
@@ -195,31 +194,33 @@ const AuthorizationDetail = () => {
                                             className={styles.delegateAvatar}
                                             icon={<UserOutlined />}
                                         >
-                                            {delegateId.fullName.charAt(0)}
+                                            {delegate?.fullName?.charAt(0) ?? "?"}
                                         </Avatar>
                                     </div>
+
                                     <div className={styles.userDetails}>
                                         <Text strong className={styles.userName}>
-                                            {delegateId.fullName}
+                                            {delegate?.fullName ?? "Không có dữ liệu"}
                                         </Text>
                                         <br />
                                         <Text type="secondary" className={styles.userEmail}>
-                                            {delegateId.email}
+                                            {delegate?.email ?? "---"}
                                         </Text>
-                                        <br />
-                                        <Text type="secondary" className={styles.userUsername}>
-                                            @{delegateId.username}
-                                        </Text>
+
+
                                     </div>
                                 </Space>
+
                                 <Divider className={styles.divider} />
+
                                 <Descriptions column={1} size="small" className={styles.descriptions}>
                                     <Descriptions.Item label="Chức vụ">
-                                        {delegateId.position}
+                                        {delegateId?.position ?? "-"}
                                     </Descriptions.Item>
                                 </Descriptions>
                             </Card>
                         </Col>
+
                     </Row>
 
                     {/* Thông tin ủy quyền */}

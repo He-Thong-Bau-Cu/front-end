@@ -1,9 +1,8 @@
 // src/interfaces/Delegate.ts
 
-import { User, User1 } from "./User.interface";
+import { User1 } from "./User.interface";
 
 /**
- * Cấu trúc thông tin của một đại biểu (delegate)
  */
 export interface Delegate {
   session: string; // Khóa họp (ví dụ: XVI)
@@ -27,9 +26,7 @@ export interface Delegate {
 
 
 
-/**
- * Cấu trúc thông tin người dùng trong ủy quyền
- */
+
 export interface AuthorizationUser {
   _id: string;
   username: string;
@@ -47,7 +44,14 @@ export interface DelegationDetail {
   delegationType: string;
   electionId: string | null;
   delegatorId: AuthorizationUser;
-  delegateId: AuthorizationUser;
+  delegateId: AuthorizationUser | null;
+  delegateInfo?: {
+    fullName: string;
+    citizenId: string;
+    phone: string;
+    email: string;
+    address: string;
+  };
   startDate: string;
   endDate: string;
   status: string;
@@ -72,7 +76,16 @@ export interface DelegationSearch {
     email: string;
     department?: string;
     position?: string;
+  } | null;
+
+  delegateInfo?: {
+    fullName: string;
+    citizenId: string;
+    phone: string;
+    email: string;
+    address: string;
   };
+
   delegationType: string;
   startDate: string;
   endDate: string;
