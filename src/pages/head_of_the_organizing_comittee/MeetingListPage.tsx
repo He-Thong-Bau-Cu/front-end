@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button, Input, Space, Card, Pagination } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import MeetingFilterBar from "../../components/head_of_the_organizing_committee/meeting_list/MeetingFilterBar";
 import MeetingTable from "../../components/head_of_the_organizing_committee/meeting_list/MeetingTable";
+import CreateMeetingModal from "../../components/head_of_the_organizing_committee/meeting_list/CreateMeetingModal";
 import "../../style/head-of-the-organizing-committee/MeetingList.model.css";
 import { Meeting } from "@/types/Meeting.interface";
 
@@ -17,11 +19,25 @@ const removeVietnameseTones = (str: string) => {
 };
 
 export default function MeetingListPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "upcoming" | "active" | "ended">("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const pageSize = 5;
+
+  // Kiểm tra query param để tự động mở modal
+  useEffect(() => {
+    const openModal = searchParams.get("openModal");
+    if (openModal === "true") {
+      setIsCreateModalOpen(true);
+      // Xóa query param sau khi mở modal
+      searchParams.delete("openModal");
+      navigate(`/head_of_the_Organizing_committee/list_meeting?${searchParams.toString()}`, { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   const meetings: Meeting[] = [
     {
@@ -97,6 +113,7 @@ export default function MeetingListPage() {
             type="primary"
             icon={<PlusOutlined />}
             className="meeting-add-btn"
+            onClick={() => setIsCreateModalOpen(true)}
           >
             Tạo Cuộc họp mới
           </Button>
@@ -123,6 +140,17 @@ export default function MeetingListPage() {
           />
         </div>
       </Card>
+
+      {/* Modal tạo cuộc họp mới */}
+      <CreateMeetingModal
+        open={isCreateModalOpen}
+        onCancel={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          setIsCreateModalOpen(false);
+          // Có thể reload lại danh sách cuộc họp ở đây nếu cần
+          // window.location.reload();
+        }}
+      />
     </div>
   );
 }

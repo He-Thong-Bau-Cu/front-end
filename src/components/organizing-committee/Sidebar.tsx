@@ -34,14 +34,9 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
       label: "Checkin",
     },
     {
-      key: "/organizing-committee/verify-delegates",
-      icon: <UserSwitchOutlined />,
-      label: "Xác thực đại biểu",
-    },
-    {
       key: "/organizing-committee/manage-delegates",
       icon: <FileTextOutlined />,
-      label: "Quản lý sách đại biểu và cổ đông",
+      label: "Quản lý danh sách đại biểu và cổ đông",
     },
   ].filter((item) => permissions.includes(item.key) || permissionsElections.includes(item.key));
 
@@ -65,14 +60,12 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             <div className="sidebar-title-sub">bầu cử</div>
           </div>
         </div>
-
-        <div className="sidebar-subtext">Sự lựa chọn của doanh nghiệp</div>
       </div>
 
       {/* Menu */}
       <Menu
         mode="inline"
-        defaultSelectedKeys={[location.pathname]}
+        selectedKeys={[location.pathname]}
         style={{
           background: "transparent",
           border: "none",

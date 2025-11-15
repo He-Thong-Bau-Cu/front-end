@@ -1,6 +1,9 @@
-import { Button, Form, Input, Modal } from "antd";
+import { Button, Form, Input, Modal, message } from "antd";
 import React, { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
+import VoterService from "@/services/VoterService";
+import UserService from "@/services/UserService";
+import { BaseResponse } from "@/types/BaseResponse.interface";
 
 interface Delegate {
     id: string;
@@ -12,26 +15,112 @@ interface Delegate {
 }
 
 interface Props {
-    onAdd: (delegate: Delegate) => void;
+    electionId: string;
+    onAdd?: () => void;
 }
 
-const DelegateManualAdd: React.FC<Props> = ({ onAdd }) => {
+const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
     const [form] = Form.useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const openModal = () => setIsModalOpen(true);
+    const openModal = () => {
+        if (!electionId) {
+            message.warning("Vui lòng chọn cuộc bầu cử trước");
+            return;
+        }
+        setIsModalOpen(true);
+    };
+    
     const closeModal = () => {
         form.resetFields();
         setIsModalOpen(false);
     };
 
-    const handleSubmit = (values: Delegate) => {
-        onAdd({
-            id: values.code,
-            ...values,
-        });
-        form.resetFields();
-        setIsModalOpen(false);
+    const handleSubmit = async (values: any) => {
+        if (!electionId) {
+            message.error("Vui lòng chọn cuộc bầu cử");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            let userId: string | undefined;
+
+            // Tìm user theo email
+            if (values.email) {
+                const userSearchResponse: BaseResponse<any> = await UserService.search({ 
+                    email: values.email 
+                });
+                if (userSearchResponse.success && userSearchResponse.data?.content?.length > 0) {
+                    const foundUser = userSearchResponse.data.content.find(
+                        (u: any) => u.email === values.email
+                    );
+                    if (foundUser) {
+                        userId = foundUser._id;
+                    }
+                }
+            }
+
+            // Nếu không tìm thấy user, tạo user mới
+            if (!userId) {
+                if (!values.email) {
+                    message.error("Email là bắt buộc để tạo người dùng mới");
+                    setLoading(false);
+                    return;
+                }
+
+                // Tạo user mới (các field đã được validate bởi form)
+                const createUserData = {
+                    fullName: values.name,
+                    email: values.email,
+                    phone: values.phone,
+                    citizenId: values.citizenId,
+                    address: values.address,
+                    position: values.role || "",
+                    department: values.unit || "",
+                };
+
+                const createUserResponse: BaseResponse<any> = await UserService.create(createUserData);
+                if (!createUserResponse.success) {
+                    message.error(createUserResponse.message || "Không thể tạo người dùng");
+                    setLoading(false);
+                    return;
+                }
+                userId = createUserResponse.data._id;
+            }
+
+            // Kiểm tra userId trước khi tạo voter
+            if (!userId) {
+                message.error("Không thể xác định người dùng");
+                setLoading(false);
+                return;
+            }
+
+            // Tạo voter
+            const createVoterResponse: any = await VoterService.create({
+                electionId: electionId,
+                userId: userId,
+                eligible: true,
+                status: "PENDING",
+            });
+
+            if (createVoterResponse.success) {
+                message.success("✅ Tạo cử tri thành công");
+                form.resetFields();
+                setIsModalOpen(false);
+                if (onAdd) {
+                    onAdd();
+                }
+            } else {
+                message.error(createVoterResponse.message || "Không thể tạo cử tri");
+            }
+        } catch (error: any) {
+            console.error("Lỗi khi tạo cử tri:", error);
+            message.error(error?.response?.data?.message || error?.message || "Đã xảy ra lỗi khi tạo cử tri");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -79,13 +168,38 @@ const DelegateManualAdd: React.FC<Props> = ({ onAdd }) => {
                     <Form.Item
                         name="code"
                         label="Mã định danh"
-                        rules={[{ required: true, message: "Vui lòng nhập mã định danh" }]}
+                        rules={[{ message: "Vui lòng nhập mã định danh" }]}
                     >
                         <Input placeholder="VD: NV0015" />
                     </Form.Item>
 
-                    <Form.Item name="email" label="Email">
+                    <Form.Item 
+                        name="email" 
+                        label="Email"
+                        rules={[{ type: "email", message: "Email không hợp lệ" }]}
+                    >
                         <Input placeholder="example@email.com" />
+                    </Form.Item>
+
+                    <Form.Item 
+                        name="phone" 
+                        label="Số điện thoại"
+                    >
+                        <Input placeholder="VD: 0123456789" />
+                    </Form.Item>
+
+                    <Form.Item 
+                        name="citizenId" 
+                        label="Số căn cước công dân"
+                    >
+                        <Input placeholder="VD: 001234567890" />
+                    </Form.Item>
+
+                    <Form.Item 
+                        name="address" 
+                        label="Địa chỉ"
+                    >
+                        <Input placeholder="VD: 123 Đường ABC, Quận 1, TP.HCM" />
                     </Form.Item>
 
                     <Form.Item name="unit" label="Đơn vị / Nhóm">
@@ -103,6 +217,7 @@ const DelegateManualAdd: React.FC<Props> = ({ onAdd }) => {
                         <Button
                             type="primary"
                             htmlType="submit"
+                            loading={loading}
                             style={{
                                 background: "#4CAF50",
                                 borderColor: "#4CAF50",

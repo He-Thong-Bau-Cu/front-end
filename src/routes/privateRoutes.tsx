@@ -33,7 +33,6 @@ import HomePage from "@/pages/HomePage";
 import Checkin from "@/pages/organizing-committee/Checkin";
 import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
 import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
-import VerifyDelegates from "@/pages/organizing-committee/VerifyDelegates";
 import AuthorizationPreside from "@/pages/preside/Authorization";
 import DashboardPreside from "@/pages/preside/Dashboard";
 import ReportsPage from "@/pages/preside/manage_report/ReportsPage";
@@ -144,7 +143,6 @@ export const privateRoutes = [
         children: [
           { index: true, element: <DashboardOrganizingCommittee /> },
           { path: "checkin", element: <Checkin /> },
-          { path: "verify-delegates", element: <VerifyDelegates /> },
           { path: "manage-delegates", element: <ManagementDelegates /> },
         ],
       },

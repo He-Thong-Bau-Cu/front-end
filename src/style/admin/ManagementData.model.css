@@ -12,51 +12,54 @@
   align-items: center;
   gap: 8px;                 /* khoảng cách giữa icon và chữ */
   font-weight: 700;         /* đậm hơn */
-  font-size: 18px;          /* to hơn */
+  font-size: 22.5px;          /* to hơn */
   color: #111;              /* đậm hơn một chút */
-  padding-bottom: 6px;
+  padding-top: 10px;
   margin-bottom: 16px;
 }
 
 /* ---- Hàng chứa 3 item ---- */
 .import-export-row {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: center; /* 👈 căn giữa toàn bộ 3 card */
+  align-items: center;
+  gap: 20px; /* 👈 khoảng cách giữa các card */
   flex-wrap: wrap;
+  width: 100%;
 }
 
 /* ---- Card từng item ---- */
 .import-export-item {
-  flex: 1;
-  min-width: 250px;
-  background: #f9fafb;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 18px 20px;
+  width: 406px;
+  height: 125px;
+  background: linear-gradient(135deg, #ffffff 0%, #f2f4f6 100%);
+  border-radius: 12px;
+  padding: 18px 22px;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
+  align-items: center; /* 👈 Căn giữa icon + text theo chiều dọc */
+  justify-content: flex-start; /* 👈 Giữ icon bên trái, text bên phải */
+  gap: 20px;
   transition: all 0.25s ease;
-  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 }
 
 .import-export-item:hover {
-  background: #f3fef7;
+  background: #f3f4f6;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 /* ---- Icon nổi trong khung trắng ---- */
 .icon-box {
-  background: #fff;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  padding: 10px 12px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .icon {
@@ -64,21 +67,27 @@
 }
 
 /* ---- Text ---- */
-.import-export-item .text {
+.text {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: center; /* 👈 Giữ cho text nằm giữa theo chiều dọc */
+  align-items: flex-start;
+  line-height: 1.4;
+  flex: 1;
+  margin-left: 4px; /* 👈 đẩy chữ sang phải nhẹ cho cân đối hơn */
 }
 
-.import-export-item .text strong {
-  font-size: 14px;
+.text .title {
+  font-size: 15px;
   font-weight: 600;
-  color: #111;
+  color: #1f2937;
+  margin-bottom: 2px; /* 👈 tạo khoảng cách nhỏ giữa 2 dòng */
 }
 
-.import-export-item .text small {
-  font-size: 12px;
-  color: #777;
+.text .desc {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 3px;
 }
 
 /* -------- Page Layout -------- */
@@ -88,7 +97,125 @@
   min-height: 100vh;
 }
 
-/* -------- Metric Cards -------- */
+/* -------- Stats Cards -------- */
+.stats-container-wrapper {
+  width: 100%;
+}
+
+.stats-container {
+  width: 100%;
+  display: flex;
+  border: 1px dashed #b8d4ff;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.stats-col {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.stats-col:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 4px;
+  bottom: 0;
+  width: 1px;
+  background: #e8e8e8;
+  z-index: 1;
+}
+
+.stat-card {
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  background: #fff;
+  position: relative;
+  width: 372px;
+  min-height: 134px;
+  overflow: hidden;
+  height: 100%;
+  gap: 10px;
+}
+
+.stat-card .ant-card-body {
+  padding: 0 !important;
+}
+
+.stat-card-header {
+  height: 4px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.stat-card-body {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.stat-icon-box {
+  width: 56px;
+  height: 56px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.stat-title {
+  font-size: 273px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.stat-desc {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.stat-status {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.stat-status-icon {
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.stat-status-text {
+  display: inline-block;
+}
+
+/* -------- Metric Cards (Legacy) -------- */
 .metric-card {
   border-radius: 16px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
@@ -131,7 +258,7 @@
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
   margin-top: 20px;
   background: #fff;
-  padding: 16px;
+  padding: 0 24px;
 }
 
 .import-export-item {
@@ -162,6 +289,7 @@
 }
 
 /* -------- Database Overview -------- */
+/* -------- Database Overview -------- */
 .database-card {
   border-radius: 16px;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
@@ -181,10 +309,10 @@
 .db-title-text {
   display: flex;
   align-items: center;
-  gap: 8px;              /* khoảng cách giữa icon và chữ */
-  font-weight: 700;      /* đậm hơn */
-  color: #111;           /* màu đậm hơn chút */
-  font-size: 18px;       /* chữ to bằng phần Chèn/Xuất dữ liệu */
+  gap: 8px;
+  font-weight: 700;
+  color: #111;
+  font-size: 18px;
 }
 .refresh-btn {
   border: 1.4px solid #1677ff;
@@ -201,69 +329,101 @@
 }
 
 /* Card từng mục */
-.db-overview-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 8px 2px;
-}
-
 .db-item {
-  flex: 1;
-  min-width: 190px;
-  background: #f9fafb;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
-  padding: 12px 14px;
+  width: 344px;
+  height: 97px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-left: 2px solid transparent;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-left: 3px solid #22c55e;
   transition: all 0.25s ease;
-  height: 84px;
+  min-height: 90px;
 }
 
 .db-item:hover {
   transform: translateY(-2px);
-  background: #f3fef7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Viền màu */
-.db-item:nth-child(1) { border-left: 2px solid #22c55e; }
-.db-item:nth-child(2) { border-left: 2px solid #10b981; }
-.db-item:nth-child(3) { border-left: 2px solid #16a34a; }
-.db-item:nth-child(4) { border-left: 2px solid #0d9488; }
-.db-item:nth-child(5) { border-left: 2px solid #15803d; }
-
-/* Icon + text */
+/* Bên trái: icon + thông tin */
 .db-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  flex: 1;
 }
 
 .db-icon {
-  font-size: 20px;
-  color: #111;
+  font-size: 26px;
+  color: #4b8dd8;
+  margin-top: 4px; 
 }
 
-.db-info p {
-  margin: 0;
-  font-size: 11.5px;
-  color: #666;
-  line-height: 1.3;
+.db-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
 }
 
+/* Hàng */
+.db-row {
+  display: grid;
+  grid-template-columns: 1fr 20px 1.5fr auto; /* 👈 chia 4 cột */
+  align-items: center;
+  margin-top: 2px;
+}
+
+/* Tiêu đề */
 .db-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  color: #111827;
 }
 
-.db-size {
-  font-weight: 600;
-  color: #1e40af;
-  font-size: 12.5px;
+/* Số + đơn vị */
+.db-number {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
 }
+
+.db-unit {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Dấu chấm giữa */
+.dot {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Cập nhật */
+.db-updated-label,
+.db-updated-time {
+  font-size: 12.5px;
+  color: #6b7280;
+  display: inline-block;
+  width: 100%;
+  text-align: left;  /* 👈 canh đầu dòng */
+}
+
+/* Dung lượng */
+.size {
+  text-align: right;
+  font-weight: 600;
+  color: #1677ff;
+  font-size: 13.5px;
+  align-self: center;
+  white-space: nowrap;
+  margin-left: 20px;
+}
+
 
 /* Responsive */
 @media (max-width: 992px) {
@@ -275,5 +435,27 @@
   }
   .db-item {
     min-width: 100%;
+  }
+  
+  .stats-container {
+    flex-direction: column;
+  }
+  
+  .stats-col {
+    width: 100%;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  
+  .stats-col:not(:last-child)::after {
+    display: none;
+  }
+  
+  .stats-col:last-child {
+    border-bottom: none;
+  }
+  
+  .stat-card {
+    border-radius: 8px;
+    margin-bottom: 0;
   }
 }

@@ -4,6 +4,9 @@ import {
   ThunderboltOutlined,
   ClockCircleOutlined,
   SafetyCertificateOutlined,
+  ExclamationCircleOutlined,
+  SafetyOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import "@/style/admin/ManagementData.model.css";
 
@@ -12,44 +15,48 @@ const { Text } = Typography;
 const DataStats = () => {
   const stats = [
     {
-      icon: <DatabaseOutlined style={{ fontSize: 28, color: "#2ecc71" }} />,
+      icon: <DatabaseOutlined style={{ fontSize: 73, color: "#2ecc71" }} />,
       title: "2.4 GB",
       desc: "Dung lượng sử dụng",
       sub: "Hoạt động tốt (65% capacity)",
-      color: "#16a34a",
+      subcolor: "#22c55e",
+      subIcon: <CheckCircleOutlined style={{ color: "#16a34a" }} />,
     },
     {
-      icon: <ThunderboltOutlined style={{ fontSize: 28, color: "#ffcc00" }} />,
+      icon: <ThunderboltOutlined style={{ fontSize: 73, color: "#ffcc00" }} />,
       title: "127ms",
       desc: "Thời gian phản hồi TB",
       sub: "Hiệu năng tốt",
-      color: "#ca8a04",
+      subcolor: "#22c55e",
+      subIcon: <CheckCircleOutlined style={{ color: "#16a34a" }} />,
     },
     {
-      icon: <ClockCircleOutlined style={{ fontSize: 28, color: "#ff8c00" }} />,
+      icon: <ClockCircleOutlined style={{ fontSize: 73, color: "#ff8c00" }} />,
       title: "8h",
       desc: "Sao lưu lần cuối cùng",
       sub: "Cần sao lưu",
-      color: "#f97316",
+      subcolor: "#f59e0b",
+      subIcon: <ExclamationCircleOutlined style={{ color: "#f59e0b" }} />,
     },
     {
-      icon: <SafetyCertificateOutlined style={{ fontSize: 28, color: "#16a34a" }} />,
+      icon: <SafetyCertificateOutlined style={{ fontSize: 73, color: "#16a34a" }} />,
       title: "99.9%",
       desc: "Tỷ lệ bảo mật",
       sub: "An toàn",
-      color: "#15803d",
+      subcolor: "#22c55e",
+      subIcon: <CheckCircleOutlined style={{ color: "#16a34a" }} />,
     },
   ];
 
   return (
-    <Row gutter={[16, 16]}>
+    <Row gutter={[16, 16]} style={{ paddingTop: "30px" }}>
       {stats.map((item, index) => (
         <Col xs={24} sm={12} md={6} key={index}>
           <Card
             bordered={false}
             className="stat-card"
             style={{
-              borderTop: `4px solid ${item.color}`,
+              borderTop: `4px solid ${item.subcolor}`,
               borderRadius: 10,
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               padding: "16px",
@@ -57,10 +64,10 @@ const DataStats = () => {
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {item.icon}
-              <div>
-                <Text strong style={{ fontSize: 18 }}>{item.title}</Text>
-                <div style={{ fontSize: 13, color: "#333" }}>{item.desc}</div>
-                <div style={{ fontSize: 12, color: "#65a30d" }}>{item.sub}</div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", lineHeight: 1.4 }}>
+                <Text strong style={{ fontSize: 32, lineHeight: 1.2, color: "#000", marginBottom: 4 }}>{item.title}</Text>
+                <div style={{ fontSize: 14.5, color: "#333", lineHeight: 1.4, marginBottom:2 }}>{item.desc}</div>
+                <div style={{ fontSize: 13, color: item.subcolor, lineHeight: 1.4 }}>{item.subIcon} {item.sub}</div>
               </div>
             </div>
           </Card>
