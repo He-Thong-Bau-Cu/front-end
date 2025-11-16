@@ -1,5 +1,6 @@
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import DelegationService from "@/services/DelegationService";
 import { LeftOutlined } from "@ant-design/icons";
 import {
@@ -7,6 +8,7 @@ import {
     Form, Input, Row, Space, Typography
 } from "antd";
 import dayjs from "dayjs";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
@@ -26,6 +28,9 @@ export default function AuthorizationRequestForm() {
     const delegatorId = state?.delegatorId;
 
     const [form] = Form.useForm();
+    const [modalOpen, setModalOpen] = useState(false);
+    const [tempPayload, setTempPayload] = useState<any>(null);
+
     const { showLoading, hideLoading } = useLoading();
     const { notify } = useNotification();
 
@@ -33,32 +38,83 @@ export default function AuthorizationRequestForm() {
         navigate("/voter/create-authorization");
         return null;
     }
-
     const handleSubmit = async (values: AuthorizationFormValues) => {
+        const payload = {
+            delegationType: "ELECTION",
+            electionId,
+            delegatorId,
+            delegateId: selectedUser._id,
+            startDate: values.startDate.toISOString(),
+            endDate: values.endDate.toISOString(),
+            delegateReason: values.reason,
+            signature: null,
+            status: "DRAFT",
+        };
+
         try {
             showLoading();
 
-            const payload = {
-                delegationType: "ELECTION",
-                electionId,
-                delegatorId,
-                delegateId: selectedUser._id,
-                startDate: values.startDate.toISOString(),
-                endDate: values.endDate.toISOString(),
-                delegateReason: values.reason,
-                signature: null,
-                status: "PENDING",
-            };
+            // 1. Tạo bản nháp
+            const draft = await DelegationService.add(payload);
 
-            await DelegationService.add(payload);
-            notify("Gửi yêu cầu ủy quyền thành công!", "success");
-            navigate(-2);
-        } catch {
-            notify("Lỗi gửi yêu cầu ủy quyền", "error");
+            if (!draft || !draft._id) {
+                notify("Không thể tạo bản nháp!", "error");
+                hideLoading();
+                return;
+            }
+            // 2. Lưu lại draftId để sau ký cập nhật
+            setTempPayload({ draftId: draft._id });
+
+            // 3. Mở modal ký số
+            setModalOpen(true);
+
+        } catch (err) {
+            console.error(err);
+            notify("Lỗi khi tạo ủy quyền bản nháp!", "error");
         } finally {
             hideLoading();
         }
     };
+
+
+
+    const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
+        try {
+            showLoading();
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("password", password);
+            formData.append("electionId", electionId);
+
+            // 1. Gọi API ký số
+            const signRes = await DelegationService.delegationApprove(formData);
+
+            if (!signRes.success) {
+                notify(signRes.message || "Ký số thất bại!", "error");
+                return;
+            }
+
+            const signature = signRes.data?.signatureFileUrl || null;
+
+            // 2. Cập nhật lại bản nháp thành PENDING
+            await DelegationService.update(tempPayload.draftId, {
+                status: "PENDING",
+                signature,
+            });
+
+            notify("Ký số & gửi yêu cầu ủy quyền thành công!", "success");
+            navigate(-2);
+
+        } catch (err) {
+            console.error(err);
+            notify("Lỗi trong quá trình ký số!", "error");
+        } finally {
+            hideLoading();
+            setModalOpen(false);
+        }
+    };
+
 
     return (
         <Card
@@ -225,6 +281,13 @@ export default function AuthorizationRequestForm() {
                     </Button>
                 </div>
             </Form>
+            <DigitalSignModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSubmit={handleDigitalSign}
+            />
+
+
         </Card>
     );
 }

@@ -3,6 +3,13 @@ export interface Ballot {
   electionId: {
     _id: string;
     title: string;
+    typeId: {
+      _id: string;
+      typeName: string;
+      typeCode: string;
+      description: string;
+      status: string;
+    };
     startDate: string | null;
     endDate: string | null;
     delegationStart: string | null;

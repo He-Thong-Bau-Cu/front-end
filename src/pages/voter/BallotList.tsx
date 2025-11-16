@@ -22,8 +22,7 @@ export default function BallotList() {
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
 
-  // 👉 ID cử tri tạm (test)
-  const voterId = "6910f2016e3b3c1fb79a1f9d";
+  const voterId = localStorage.getItem("voterId") || "";
 
   useEffect(() => {
     const fetchBallots = async () => {
@@ -43,11 +42,35 @@ export default function BallotList() {
   const handleCardClick = (ballot: Ballot) => {
     if (ballot.status === "CAST") {
       message.info("Phiếu này đã được bỏ. Bạn có thể xem lại trong lịch sử bỏ phiếu.");
-    } else {
-      // tuỳ loại phiếu mà điều hướng khác nhau
-      navigate("/voter/ballot_cumulative_voting", { state: { ballotId: ballot._id } });
+      return;
+    }
+
+    const typeId = ballot.electionId?.typeId?._id;
+
+    if (!typeId) {
+      message.error("Không xác định được loại phiếu bầu!");
+      return;
+    }
+
+    if (typeId === "69121fa944ad44bcd09e5ba6") {
+      // Bầu dồn phiếu / cumulative
+      navigate("/voter/ballot_resolution_voting", {
+        state: { ballotId: ballot._id },
+      });
+    }
+    else if (typeId === "69121fb344ad44bcd09e5bac") {
+      // Bầu nghị quyết / resolution
+      navigate("/voter/ballot_cumulative_voting", {
+        state: { ballotId: ballot._id },
+      });
+    }
+
+
+    else {
+      message.warning("Loại phiếu bầu chưa được hỗ trợ!");
     }
   };
+
 
   return (
     <div className="ballot-page">
