@@ -15,8 +15,8 @@ class DelegateCardService extends BaseService {
     // Lấy thông tin thẻ đại biểu bằng token
     async getByToken(token: string): Promise<BaseResponse<any>> {
         // BaseService interceptor đã trả về response.data, nên response chính là BaseResponse
+        // Token đã được JWT service xử lý, không cần encode
         try {
-            // Encode token để tránh lỗi với các ký tự đặc biệt trong URL
             const response = await this.api.get(`${this.endpoint}/token/${token}`) as BaseResponse<any>;
             return response;
         } catch (error: any) {

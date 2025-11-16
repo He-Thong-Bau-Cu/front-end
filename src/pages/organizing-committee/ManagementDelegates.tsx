@@ -11,48 +11,38 @@ import { BaseResponse } from "@/types/BaseResponse.interface";
 
 const ManagementDelegates: React.FC = () => {
     const { electionId: electionIdFromParams } = useParams<{ electionId?: string }>();
-    const [selectedElectionId, setSelectedElectionId] = useState<string>(
-        electionIdFromParams || localStorage.getItem("selectedElectionId") || ""
-    );
+    // Lấy cuộc bầu cử từ localStorage (đã được chọn ở trang home)
+    const currentElectionId = electionIdFromParams || localStorage.getItem("currentElectionId") || "";
+    const [selectedElectionId, setSelectedElectionId] = useState<string>(currentElectionId);
+    const [selectedElection, setSelectedElection] = useState<Election | null>(null);
+    const [loadingElection, setLoadingElection] = useState<boolean>(!!currentElectionId);
     const [search, setSearch] = useState("");
-    const [elections, setElections] = useState<Election[]>([]);
-    const [loadingElections, setLoadingElections] = useState<boolean>(true);
     const [refreshKey, setRefreshKey] = useState<number>(0);
     const [searchResults, setSearchResults] = useState<any[] | null>(null);
 
-    // Load danh sách cuộc bầu cử từ API
+    // Load thông tin cuộc bầu cử đã chọn
     useEffect(() => {
-        const fetchElections = async () => {
+        const fetchElection = async () => {
+            if (!currentElectionId) {
+                message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
+                return;
+            }
+
             try {
-                setLoadingElections(true);
-                const response: BaseResponse<any> = await ElectionService.searchElections({
-                    limit: 100,
-                });
-                
-                if (response.success && response.data) {
-                    // API trả về dạng pagination với structure: { content, page, limit, totalItems, totalPages }
-                    const electionsData = response.data.content || response.data;
-                    setElections(Array.isArray(electionsData) ? electionsData : []);
-                } else {
-                    message.error(response.message || "Không thể tải danh sách cuộc bầu cử");
-                }
+                setLoadingElection(true);
+                const election = await ElectionService.getElectionId(currentElectionId);
+                setSelectedElection(election);
+                setSelectedElectionId(currentElectionId);
             } catch (error: any) {
-                console.error("Lỗi khi tải danh sách cuộc bầu cử:", error);
-                message.error(error?.response?.data?.message || "Đã xảy ra lỗi khi tải danh sách cuộc bầu cử");
+                console.error("Lỗi khi tải thông tin cuộc bầu cử:", error);
+                message.error(error?.response?.data?.message || "Không thể tải thông tin cuộc bầu cử");
             } finally {
-                setLoadingElections(false);
+                setLoadingElection(false);
             }
         };
 
-        fetchElections();
-    }, []);
-
-    // Lưu electionId vào localStorage khi thay đổi
-    useEffect(() => {
-        if (selectedElectionId) {
-            localStorage.setItem("selectedElectionId", selectedElectionId);
-        }
-    }, [selectedElectionId]);
+        fetchElection();
+    }, [currentElectionId]);
 
     return (
         <Layout style={{ background: "#F3F8F3", minHeight: "100vh", padding: "20px" }}>
@@ -60,28 +50,24 @@ const ManagementDelegates: React.FC = () => {
                 <h2>Quản lý Danh sách Đại biểu & Cổ đông</h2>
                 <p>Thêm mới, nhập và quản lý danh sách người tham dự cho sự kiện của bạn.</p>
 
-                {/* Select cuộc bầu cử */}
+                {/* Hiển thị cuộc bầu cử đã chọn (không cho chọn lại) */}
                 <div style={{ marginBottom: 20, marginTop: 20 }}>
                     <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>
-                        Chọn cuộc bầu cử:
+                        Cuộc bầu cử:
                     </label>
                     <Select
                         style={{ width: "100%", maxWidth: 400 }}
-                        placeholder={loadingElections ? "Đang tải..." : "Chọn cuộc bầu cử"}
+                        placeholder={loadingElection ? "Đang tải..." : "Chọn cuộc bầu cử"}
                         value={selectedElectionId || undefined}
-                        onChange={(value) => {
-                            setSelectedElectionId(value);
-                            setSearchResults(null); // Reset kết quả tìm kiếm khi đổi election
-                            message.info("Đang tải danh sách cử tri...");
-                        }}
-                        loading={loadingElections}
-                        notFoundContent={loadingElections ? <Spin size="small" /> : "Không tìm thấy cuộc bầu cử"}
+                        disabled={true} // Disable dropdown - không cho chọn lại
+                        loading={loadingElection}
+                        suffixIcon={null} // Ẩn icon mũi tên xuống
                     >
-                        {elections.map((election) => (
-                            <Select.Option key={election._id} value={election._id}>
-                                {election.title || `Cuộc bầu cử ${election._id}`}
+                        {selectedElection && (
+                            <Select.Option key={selectedElection._id} value={selectedElection._id}>
+                                {selectedElection.title || `Cuộc bầu cử ${selectedElection._id}`}
                             </Select.Option>
-                        ))}
+                        )}
                     </Select>
                 </div>
 

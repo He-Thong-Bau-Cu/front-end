@@ -41,34 +41,49 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
 }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const [elections, setElections] = useState<Election[]>([]);
-    const [loadingElections, setLoadingElections] = useState(false);
+    const [selectedElection, setSelectedElection] = useState<Election | null>(null);
+    const [loadingElection, setLoadingElection] = useState(false);
 
-    // Load danh sách cuộc bầu cử
+    // Lấy cuộc bầu cử từ localStorage (đã được chọn ở trang home)
+    const currentElectionId = localStorage.getItem("currentElectionId") || "";
+
+    // Load thông tin cuộc bầu cử đã chọn
     useEffect(() => {
-        if (open) {
-            fetchElections();
-        }
-    }, [open]);
-
-    const fetchElections = async () => {
-        try {
-            setLoadingElections(true);
-            const response: BaseResponse<any> = await ElectionService.searchElections({
-                limit: 100,
+        if (open && currentElectionId) {
+            // Set giá trị mặc định cho form trước
+            form.setFieldsValue({
+                electionId: currentElectionId,
+                status: "UPCOMING",
+                meetingDate: dayjs(),
             });
+            // Sau đó load thông tin cuộc bầu cử
+            fetchElection();
+        } else if (open && !currentElectionId) {
+            message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
+            onCancel();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, currentElectionId]);
 
-            if (response.success && response.data) {
-                const electionsData = response.data.content || response.data;
-                setElections(Array.isArray(electionsData) ? electionsData : []);
-            } else {
-                message.error(response.message || "Không thể tải danh sách cuộc bầu cử");
-            }
+    const fetchElection = async () => {
+        if (!currentElectionId) {
+            message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
+            return;
+        }
+
+        try {
+            setLoadingElection(true);
+            const election = await ElectionService.getElectionId(currentElectionId);
+            setSelectedElection(election);
+            // Đảm bảo form value được set sau khi load xong
+            form.setFieldsValue({
+                electionId: currentElectionId,
+            });
         } catch (error: any) {
-            console.error("Lỗi khi tải danh sách cuộc bầu cử:", error);
-            message.error(error?.response?.data?.message || "Đã xảy ra lỗi khi tải danh sách cuộc bầu cử");
+            console.error("Lỗi khi tải thông tin cuộc bầu cử:", error);
+            message.error(error?.response?.data?.message || "Không thể tải thông tin cuộc bầu cử");
         } finally {
-            setLoadingElections(false);
+            setLoadingElection(false);
         }
     };
 
@@ -142,6 +157,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
                 form={form}
                 layout="vertical"
                 initialValues={{
+                    electionId: currentElectionId || undefined,
                     status: "UPCOMING",
                     meetingDate: dayjs(),
                 }}
@@ -152,18 +168,23 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
                     rules={[{ required: true, message: "Vui lòng chọn cuộc bầu cử" }]}
                 >
                     <Select
-                        placeholder="Chọn cuộc bầu cử"
-                        loading={loadingElections}
-                        showSearch
-                        filterOption={(input, option) =>
-                            (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
-                        }
+                        placeholder={loadingElection ? "Đang tải..." : "Chọn cuộc bầu cử"}
+                        loading={loadingElection}
+                        disabled={true} // Disable dropdown - không cho chọn lại
+                        suffixIcon={null} // Ẩn icon mũi tên xuống
+                        value={currentElectionId || undefined} // Đảm bảo value được set
+                        notFoundContent={loadingElection ? "Đang tải..." : "Không tìm thấy cuộc bầu cử"}
                     >
-                        {elections.map((election) => (
-                            <Option key={election._id} value={election._id}>
-                                {election.title || election.decisionName || election._id}
+                        {selectedElection ? (
+                            <Option key={selectedElection._id} value={selectedElection._id}>
+                                {selectedElection.title || selectedElection.decisionName || selectedElection._id}
                             </Option>
-                        ))}
+                        ) : currentElectionId ? (
+                            // Hiển thị ID tạm thời nếu chưa load xong
+                            <Option key={currentElectionId} value={currentElectionId}>
+                                {loadingElection ? "Đang tải..." : currentElectionId}
+                            </Option>
+                        ) : null}
                     </Select>
                 </Form.Item>
 
