@@ -1,0 +1,43 @@
+
+.meeting-card {
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  background: #fff;
+}
+
+.meeting-title {
+  margin-bottom: 24px !important;
+  font-weight: 700 !important;
+  color: #1a1a1a;
+}
+
+
+.form-select-group {
+  margin-bottom: 20px;
+}
+
+.input-other {
+  margin-top: 10px;
+  border-radius: 6px;
+}
+
+.row-two-input {
+  display: flex;
+  gap: 18px;
+}
+
+.item-half {
+  width: 100%;
+}
+
+.input-other {
+  margin-top: 10px;
+}
+
+.meeting-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+}
