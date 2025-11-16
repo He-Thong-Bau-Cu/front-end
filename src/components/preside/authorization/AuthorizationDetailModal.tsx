@@ -13,7 +13,6 @@ import {
 } from "antd";
 import {
     DownloadOutlined,
-    FileDoneOutlined,
 } from "@ant-design/icons";
 
 import DelegationService from "@/services/DelegationService";
@@ -121,6 +120,37 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
         }
     };
 
+    const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
+        try {
+            showLoading();
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("password", password);
+            formData.append("electionId", data?.election?._id || "");
+
+            const res = await DelegationService.delegationApprove(formData);
+
+            if (res.success) {
+                message.success("Ký số thành công!");
+                // đóng modal ký số
+                setModalOpen(false);
+                // đóng modal A4
+                onClose();
+                // reload table cha nếu cần
+                showLoading();
+            } else {
+                message.error(res.message || "Ký số thất bại!");
+            }
+        } catch (err) {
+            console.error(err);
+            message.error("Ký số thất bại!");
+        } finally {
+            hideLoading();
+        }
+    };
+
+
 
     // ========================
     //  TABLE MAPPING
@@ -179,7 +209,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         <div className="report-info">
                             <p><strong>Kính gửi:</strong> Chủ tọa</p>
                             <p><strong>Người gửi:</strong> Thư ký 123</p>
-                            <p><strong>Ngày lập báo cáo:</strong> {formatDate(data?.delegations[0]?.endDate)}</p>
+                            <p><strong>Ngày lập báo cáo:</strong> {formatDate(data?.election.delegationEnd)}</p>
                         </div>
                         <Divider />
                         {/* ELECTION TITLE */}
@@ -207,7 +237,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
 
                         {/* NÚT HÀNH ĐỘNG */}
                         {/* NÚT HÀNH ĐỘNG */}
-                        {data?.status === "PENDING" ?
+                        {data?.status === "CONFIRMED" ?
                             (<Row style={{ marginTop: 20, marginBottom: 20 }}>
                                 <Col span={24} style={{ textAlign: "right", paddingRight: 40 }}>
 
@@ -234,8 +264,9 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                         type="primary"
                                         style={{ background: "#52c41a", borderColor: "#52c41a" }}
                                     >
-                                        Phê duyệt
+                                        Ký
                                     </Button>
+
 
                                 </Col>
 
@@ -249,13 +280,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             <DigitalSignModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
-                electionId={data?.election._id}
-                delegate={true}
-                onSuccess={() => {
-                    message.success("Ký số thành công!");
-                    setModalOpen(false);
-                    onClose(); // đóng modal A4
-                }}
+                onSubmit={handleDigitalSign}
             />
 
         </>

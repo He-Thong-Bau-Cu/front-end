@@ -89,15 +89,7 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
     ];
     return (
         <>
-            <Header
-                className="home-header"
-                style={{
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 1000,
-                    width: "100%",
-                }}
-            >
+            <Header className="secretary-header">
                 {userId && (
                     <NotificationListener
                         userId={userId}
