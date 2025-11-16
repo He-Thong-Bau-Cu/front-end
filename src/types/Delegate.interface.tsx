@@ -105,6 +105,7 @@ export interface DelegationSummary {
 }
 
 export type DelegationStatus =
+  | "DRAFT"
   | "PENDING"
   | "CONFIRMED"
   | "ACTIVE"

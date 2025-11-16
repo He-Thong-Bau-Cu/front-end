@@ -71,7 +71,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
     return score;
   };
 
-  
+
 
   // Lấy màu theo độ mạnh
   const getStrengthColor = () => {
@@ -100,16 +100,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
       if (activeTab === "certificate") {
         const values = await certificateForm.validateFields();
         let signerInfo = {
-          commonName:values.fullName,
+          commonName: values.fullName,
           organizationName: values.organizationName,
-          countryName:values.countryName,
+          countryName: values.countryName,
           stateOrProvinceName: values.stateOrProvinceName,
           localityName: values.address,
           emailAddress: values.email,
         }
         console.log(values.passwordCa)
         const password = values.passwordCa;
-        const body = {signerInfo, password};
+        const body = { signerInfo, password };
         const response = await CaService.CaIssue(body);
         if (response.success) {
           notify(response.message, "success");
@@ -312,7 +312,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
               >
                 <Avatar
                   size={250}
-                  src={user?.imageKey}
+                  src={user?.image}
                   icon={user?.imageKey ? <UserOutlined /> : undefined}
                   style={{
                     backgroundColor: "#eaf5ea",
@@ -546,9 +546,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                 <Title level={4} style={{ color: "#124d2d" }}>
                   Đăng ký Chứng thư số
                 </Title>
-                <Form layout="vertical" form={certificateForm} 
-                 initialValues={user || {}}
-                style={{ marginTop: 20 }}>
+                <Form layout="vertical" form={certificateForm}
+                  initialValues={user || {}}
+                  style={{ marginTop: 20 }}>
                   <Row gutter={16}>
                     <Col span={12}>
                       <Form.Item
@@ -556,17 +556,17 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                         name="fullName"
                         rules={[{ required: true, message: "Nhập họ và tên" }]}
                       >
-                        <Input value={u?.fullName}  />
+                        <Input value={u?.fullName} />
                       </Form.Item>
-                      <Form.Item label="Đai chỉ email" 
-                      rules={[{ required: true, message: "Nhập email" }]}
-                      name="email">
+                      <Form.Item label="Đai chỉ email"
+                        rules={[{ required: true, message: "Nhập email" }]}
+                        name="email">
                         <Input value={u?.email} />
                       </Form.Item>
 
-                      <Form.Item label="Địa chỉ" 
-                      name="address"
-                       rules={[{ required: true, message: "Nhập địa chỉ" }]}
+                      <Form.Item label="Địa chỉ"
+                        name="address"
+                        rules={[{ required: true, message: "Nhập địa chỉ" }]}
                       >
                         <Input value={u?.address} />
                       </Form.Item>
@@ -597,7 +597,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                         <Input placeholder="VD: Kinh" />
                       </Form.Item>
 
-                      
+
                       <Form.Item
                         label="Mật khẩu chứng thư số"
                         name="passwordCa"

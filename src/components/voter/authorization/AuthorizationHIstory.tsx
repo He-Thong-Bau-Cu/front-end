@@ -8,6 +8,7 @@ import {
     CheckCircleOutlined,
     ClockCircleOutlined,
     CloseCircleOutlined,
+    EditOutlined,
     ExclamationCircleOutlined,
     EyeOutlined,
     InfoCircleOutlined,
@@ -25,6 +26,7 @@ const statusConfig: Record<
     DelegationStatus,
     { label: string; color: string; icon: React.ReactNode }
 > = {
+    DRAFT: { label: "Bản nháp", color: "purple", icon: <EditOutlined /> },
     PENDING: { label: "Đang chờ phê duyệt", color: "orange", icon: <ClockCircleOutlined /> },
     CONFIRMED: { label: "Đã phê duyệt", color: "green", icon: <CheckCircleOutlined /> },
     ACTIVE: { label: "Đang hiệu lực", color: "blue", icon: <CheckCircleOutlined /> },
