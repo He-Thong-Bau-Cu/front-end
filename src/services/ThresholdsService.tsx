@@ -7,8 +7,17 @@ class ThresholdsService extends BaseService {
     constructor() {
         super("thresholds");
     }
+    async getThresholdByCode(code: string): Promise<any> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/${code}`);
+            return response;
+        } catch (error) {
+            console.error("Error get thresholds by code:", error);
+            throw error;
+        }
+    }
 
-    
+
 
 }
 
