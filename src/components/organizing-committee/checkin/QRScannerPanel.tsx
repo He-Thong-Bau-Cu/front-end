@@ -170,15 +170,21 @@ const QRScannerPanel: React.FC = () => {
                   if (participant && participant._id) {
                     try {
                       // Thử cập nhật trạng thái tham gia cuộc họp (nếu MeetingAttendee record đã tồn tại)
-                      await MeetingAttendeeService.updateStatusAttendance(
+                      const updateResult = await MeetingAttendeeService.updateStatusAttendance(
                         meetingId,
                         participant._id,
                         true
                       );
+                      // Kiểm tra xem response có data không - nếu null thì record chưa tồn tại, cần tạo mới
+                      if (!updateResult?.data || updateResult?.data === null) {
+                        throw new Error("Record not found");
+                      }
                       console.log("✅ Đã cập nhật trạng thái tham gia cuộc họp thành công");
                     } catch (updateError: any) {
                       // Nếu MeetingAttendee record chưa tồn tại, tạo mới record ghi nhận tham gia cuộc họp
-                      if (updateError?.response?.status === 404 || updateError?.response?.status === 500) {
+                      const errorStatus = updateError?.response?.status;
+                      const errorMessage = updateError?.message || "";
+                      if (errorStatus === 404 || errorStatus === 500 || errorMessage === "Record not found") {
                         console.log("📝 Tạo mới MeetingAttendee record (ghi nhận tham gia cuộc họp)...");
                         await MeetingAttendeeService.create({
                           meetingId: meetingId,
@@ -427,15 +433,21 @@ const QRScannerPanel: React.FC = () => {
                 if (participant && participant._id) {
                   try {
                     // Thử cập nhật trạng thái tham gia cuộc họp (nếu MeetingAttendee record đã tồn tại)
-                    await MeetingAttendeeService.updateStatusAttendance(
+                    const updateResult = await MeetingAttendeeService.updateStatusAttendance(
                       meetingId,
                       participant._id,
                       true
                     );
+                    // Kiểm tra xem response có data không - nếu null thì record chưa tồn tại, cần tạo mới
+                    if (!updateResult?.data || updateResult?.data === null) {
+                      throw new Error("Record not found");
+                    }
                     console.log("✅ Đã cập nhật trạng thái tham gia cuộc họp thành công (retry)");
                   } catch (updateError: any) {
                     // Nếu MeetingAttendee record chưa tồn tại, tạo mới record ghi nhận tham gia cuộc họp
-                    if (updateError?.response?.status === 404 || updateError?.response?.status === 500) {
+                    const errorStatus = updateError?.response?.status;
+                    const errorMessage = updateError?.message || "";
+                    if (errorStatus === 404 || errorStatus === 500 || errorMessage === "Record not found") {
                       console.log("📝 Tạo mới MeetingAttendee record (ghi nhận tham gia cuộc họp)... (retry)");
                       await MeetingAttendeeService.create({
                         meetingId: meetingId,
