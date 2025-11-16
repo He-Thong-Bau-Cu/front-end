@@ -28,6 +28,7 @@ import AuthorizationDetailModal from "./AuthorizationDetailModal";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
 import { DelegationSummary } from "@/types/Delegate.interface";
+import FileService from "@/services/FileService";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -61,6 +62,8 @@ const AuthorizationTable: React.FC<AuthorizationTable> = ({
     const [modalOpen, setModalOpen] = useState(false);
     const { showLoading, hideLoading } = useLoading();
     const [electionId, setElectionId] = useState<any>(null);
+    const [signRecord, setSignRecord] = useState<any>(null);
+    const reload = () => loadDelegation();
 
 
     // ================= LOAD API =================
@@ -79,43 +82,77 @@ const AuthorizationTable: React.FC<AuthorizationTable> = ({
         }
     };
     const handleViewDecision = async (record: SummaryDelegate) => {
+        showLoading();
+        setSignRecord(record);   // <--- LƯU RECORD TẠI ĐÂY
+        setModalOpen(true);
+        hideLoading();
+    };
+
+    const downloadUrlFile = async (data: SummaryDelegate) => {
+        try {
+            const response = await DelegationService.getSummaryDelegationPdf({
+                secretaryId: "651f0a7c1f2b4d1a12345678",
+                electionId: data?.election?._id,
+                recipient: "Chủ tịch"
+            });
+            const blob = new Blob([response], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Danh_sach_uy_quyen.pdf";
+            a.click();
+
+            URL.revokeObjectURL(url); // cleanup
+        } catch (err) {
+            console.error(err);
+            message.error("Không thể tải file!");
+        }
+    };
+
+    const downloadUrlFileSign = async (data: SummaryDelegate) => {
+        try {
+            const response = await FileService.getSignedFile(data.documents)
+            const blob = new Blob([response], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Danh_sach_uy_quyen_da_co_chung_tu_so.pdf";
+            a.click();
+
+            URL.revokeObjectURL(url); // cleanup
+        } catch (err) {
+            console.error(err);
+            message.error("Không thể tải file!");
+        }
+    };
+    const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
         try {
             showLoading();
-            setModalOpen(true);
-        } catch (error: any) {
-            console.error("Error loading decision details:", error);
-            const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                "Không thể tải chi tiết quyết định. Vui lòng thử lại.";
-            message.error(errorMessage);
-            setModalOpen(false);
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("password", password);
+            formData.append("electionId", signRecord?.election?._id || "");
+            const res = await DelegationService.delegationApprove(formData);
+            if (res.success) {
+                message.success("Ký số thành công!");
+
+                // đóng modal ký số
+                setModalOpen(false);
+                // reload table cha nếu cần
+                reload();
+            } else {
+                message.error(res.message || "Ký số thất bại!");
+            }
+        } catch (err) {
+            console.error(err);
+            message.error("Ký số thất bại!");
         } finally {
             hideLoading();
         }
     };
 
-        const downloadUrlFile = async (data: SummaryDelegate) => {
-            try {
-                const response = await DelegationService.getSummaryDelegationPdf({
-                    secretaryId: "651f0a7c1f2b4d1a12345678",
-                    electionId: data?.election?._id,
-                    recipient: "Chủ tịch"
-                });
-                const blob = new Blob([response], { type: "application/pdf" });
-                const url = URL.createObjectURL(blob);
-    
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "Danh_sach_uy_quyen.pdf";
-                a.click();
-    
-                URL.revokeObjectURL(url); // cleanup
-            } catch (err) {
-                console.error(err);
-                message.error("Không thể tải file!");
-            }
-        };
 
 
     useEffect(() => {
@@ -127,7 +164,7 @@ const AuthorizationTable: React.FC<AuthorizationTable> = ({
         return () => clearTimeout(timer);
     }, [search]);
 
-    const reload = () => loadDelegation();
+
 
     // Open modal
     const openDetail = (record: any) => {
@@ -172,9 +209,9 @@ const AuthorizationTable: React.FC<AuthorizationTable> = ({
                             <Button
                                 icon={<DownloadOutlined />}
                                 style={{ marginRight: 12 }}
-                                // onClick={downloadUrlFile}
+                                onClick={()=>downloadUrlFileSign}
                             >
-                                Tải file
+                                Tải tài liệu
                             </Button>
                         </>
                     ) : (
@@ -184,12 +221,12 @@ const AuthorizationTable: React.FC<AuthorizationTable> = ({
                                 style={{ marginRight: 12 }}
                                 onClick={() => downloadUrlFile(record)}
                             >
-                                Tải file
+                                Tải tài liệu
                             </Button>
                         </>
                     )}
 
-                    {record.status === "PENDING" && (
+                    {record.status === "CONFIRMED" && (
                         <>
                             <Button
                                 onClick={() => handleViewDecision(record)}
@@ -202,7 +239,7 @@ const AuthorizationTable: React.FC<AuthorizationTable> = ({
                                     padding: 15
                                 }}
                             >
-                                Phê duyệt
+                                Ký số
                             </Button>
 
                             <Button
@@ -290,18 +327,11 @@ const AuthorizationTable: React.FC<AuthorizationTable> = ({
                 open={detailOpen}
                 onClose={() => setDetailOpen(false)}
                 recordId={detailRecordId}
-
             />
             <DigitalSignModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
-                electionId={electionId}
-                delegate={true}
-                onSuccess={() => {
-                    message.success("Ký số thành công!");
-                    setModalOpen(false);
-                    onClose(); // đóng modal A4
-                }}
+                onSubmit={handleDigitalSign}
             />
         </Card>
     );

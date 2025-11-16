@@ -1,92 +1,115 @@
-/* ===== Modal tổng thể ===== */
+/* ===== Modal wrapper ===== */
 .digital-sign-modal .ant-modal-content {
-  border-radius: 12px;
-  padding: 0;
+  border-radius: 14px;
   overflow: hidden;
+  padding: 0;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
 
-/* Header */
+/* ===== HEADER ===== */
 .digital-sign-header {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 14px;
+  padding: 22px 28px 16px 28px;
   border-bottom: 1px solid #f0f0f0;
-  padding: 20px 24px 12px 24px;
+  background: #f9fbff;
 }
+
 .digital-sign-icon {
+  font-size: 30px;
   color: #1677ff;
-  font-size: 20px;
 }
+
 .digital-sign-title {
   margin: 0;
-  font-weight: 600;
   color: #1a1a1a;
+  font-weight: 700 !important;
 }
 
-/* Body */
-.digital-sign-body {
-  padding: 16px 24px 8px 24px;
-}
-.field-group {
-  margin-bottom: 16px;
-}
-.hint {
+.digital-subtitle {
   font-size: 13px;
-  color: #888 !important;
-  display: block;
-  margin-top: 4px;
+  margin-top: -2px;
+  color: #666;
 }
 
-/* Upload */
-.upload-row .ant-input {
-  background: #fafafa;
-  border-radius: 8px;
+/* ===== BODY ===== */
+.digital-sign-body {
+  padding: 24px 28px;
 }
-.upload-row button {
+
+.field-group {
+  margin-bottom: 20px;
+}
+
+.hint {
+  font-size: 12px;
+  margin-top: 4px;
+  color: #8c8c8c !important;
+}
+
+/* File Input */
+.file-input-display {
+  height: 38px !important;
+  border-radius: 8px !important;
+  background: #fafafa !important;
+  border: 1px solid #e1e1e1 !important;
+  font-size: 14px;
+}
+
+.file-btn {
+  height: 38px;
   border-radius: 8px;
   font-weight: 500;
 }
 
-/* Tài liệu box */
+/* Password Field */
+.password-input {
+  height: 40px;
+  border-radius: 8px !important;
+}
+
+/* Info Box */
 .doc-info-box {
   background: #f6fbff;
   border: 1px solid #d9e8f5;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
   font-size: 14px;
   color: #333;
 }
 
-/* Footer */
+/* ===== FOOTER ===== */
 .digital-sign-footer {
+  padding: 14px 28px 20px 28px;
   border-top: 1px solid #f0f0f0;
-  padding: 12px 24px 16px 24px;
+  background: #fafafa;
   display: flex;
   justify-content: flex-end;
-  background: #fafafa;
 }
 
-/* Nút hành động */
+/* Buttons */
 .cancel-btn {
-  background: #f0f0f0 !important;
-  border: none !important;
-  color: #555 !important;
-  font-weight: 500;
   border-radius: 8px !important;
-  height: 38px !important;
+  background: #efefef !important;
+  border: none !important;
+  padding: 0 18px;
+  font-weight: 500;
 }
+
 .cancel-btn:hover {
-  background: #e6e6e6 !important;
+  background: #e2e2e2 !important;
 }
 
 .confirm-btn-s {
-  background: #1677ff !important;
-  border: none !important;
   border-radius: 8px !important;
-  font-weight: 600;
-  height: 38px !important;
-  box-shadow: 0 3px 6px rgba(22, 119, 255, 0.25);
+  background: #1677ff !important;
+  color: white !important;
+  padding: 0 20px;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 10px rgba(22, 119, 255, 0.25);
 }
-.confirm-btn:hover {
+
+.confirm-btn-s:hover {
   background: #1468e9 !important;
 }

@@ -10,7 +10,7 @@ import ProfileModal from '../homepage/ProfileModal';
 import NotificationDropdown, { INotification } from "../notification/NotificationDropdown";
 import NotificationListener from "../notification/NotificationListener";
 import NotificationService from "@/services/NotificationService";
-import { useLoading } from "@/contexts/LoadingContext";   
+import { useLoading } from "@/contexts/LoadingContext";
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -89,15 +89,7 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
     ];
     return (
         <>
-            <Header
-                className="home-header"
-                style={{
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 1000,
-                    width: "100%",
-                }}
-            >
+            <Header className="secretary-header">
                 {userId && (
                     <NotificationListener
                         userId={userId}
@@ -107,7 +99,7 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
                 <Space size={16} align="center">
 
                     <Title level={4} className="header-title">
-                        {title}
+                        {title} 
                     </Title>
                 </Space>
 
