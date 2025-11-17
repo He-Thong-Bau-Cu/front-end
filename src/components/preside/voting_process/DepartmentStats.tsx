@@ -4,7 +4,7 @@ import "../../../style/preside/ElectionResults.model.css";
 
 const { Text } = Typography;
 
-const DepartmentStats = ({ data }) => (
+const DepartmentStats = ({ data }: any) => (
   <Card className="chart-card">
     <Text className="chart-title">Thống kê theo phòng ban</Text>
     <ResponsiveContainer width="100%" height={240}>

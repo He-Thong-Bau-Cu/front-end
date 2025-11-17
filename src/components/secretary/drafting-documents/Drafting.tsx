@@ -81,7 +81,7 @@ const Drafting: React.FC = () => {
 
       {/* ====== CONTENT ====== */}
       <div className="meeting-content">
-        <div className="meeting-left">
+        {/* <div className="meeting-left">
           <MeetingInfo
             open={open}
             onClose={handleCloseMeeting}
@@ -89,14 +89,14 @@ const Drafting: React.FC = () => {
             data={data}
             loading={loading}
           />
-        </div>
+        </div> */}
 
         <div className="meeting-right">
           <Attendees />
           <Organization />
           <AttachedDocuments />
         </div>
-      </div> 
+      </div>
      </div>
   );
 };

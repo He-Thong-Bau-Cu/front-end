@@ -12,4 +12,5 @@ export interface DelegateCard {
     expiresAt: string;
     decisionNumber: string;
     image: string;
+    token: string;
 }

@@ -6,7 +6,7 @@ const { Text } = Typography;
 
 const COLORS = ["#95de64", "#d9d9d9"];
 
-const VoterStatusChart = ({ data, percent }) => (
+const VoterStatusChart = ({ data, percent }: any) => (
   <Card className="chart-card voter-status-card">
     <Text className="chart-title">Trạng thái cử tri</Text>
 
@@ -22,7 +22,7 @@ const VoterStatusChart = ({ data, percent }) => (
             paddingAngle={2}
             dataKey="value"
           >
-            {data.map((entry, index) => (
+            {data.map((entry: any, index: number) => (
               <Cell key={index} fill={COLORS[index]} />
             ))}
           </Pie>

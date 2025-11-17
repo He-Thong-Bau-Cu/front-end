@@ -3,11 +3,11 @@ import "../../../style/preside/ElectionResults.model.css";
 
 const { Text } = Typography;
 
-const CandidateResults = ({ candidates }) => {
+const CandidateResults = ({ candidates }: any) => {
   return (
     <Card className="candidate-card">
       <Text strong>Kết quả theo ứng viên</Text>
-      {candidates.map((c) => (
+      {candidates.map((c: any) => (
         <div key={c.name} style={{ marginTop: 12 }}>
           <div className="candidate-name">{c.name}</div>
           <Progress

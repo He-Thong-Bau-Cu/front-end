@@ -1,4 +1,4 @@
-import AuthorizationHistory from "@/components/voter/authorization/AuthorizationHistory";
+import AuthorizationHistory from "@/components/voter/authorization/AuthorizationHIstory";
 import "../../style/voter/Authorization.model.css";
 
 const Authorization = () => {

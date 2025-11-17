@@ -4,11 +4,11 @@ import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Text, Paragraph } = Typography;
 
-const CandidateCard = ({ candidate, onVoteChange }) => {
+const CandidateCard = ({ candidate, onVoteChange }: any) => {
   const { name, age, department, position, experience, description, maxVotes, tags } = candidate;
   const [votes, setVotes] = useState(0);
 
-  const handleChange = (value) => {
+  const handleChange = (value: any) => {
     setVotes(value);
     onVoteChange(candidate, value);
   };
@@ -41,7 +41,7 @@ const CandidateCard = ({ candidate, onVoteChange }) => {
           >
             {name
               .split(" ")
-              .map((w) => w[0])
+              .map((w: any) => w[0])
               .join("")
               .toUpperCase()}
           </div>
@@ -52,7 +52,7 @@ const CandidateCard = ({ candidate, onVoteChange }) => {
             <Text strong style={{ fontSize: 16 }}>{name}</Text>
             <Text type="secondary">{age} tuổi • {department} • {experience} kinh nghiệm</Text>
             <Space>
-              {tags?.map((tag, i) => (
+              {tags?.map((tag: any, i: number) => (
                 <Tag key={i} color={tag.color}>{tag.label}</Tag>
               ))}
               <Tag color="blue">{position}</Tag>

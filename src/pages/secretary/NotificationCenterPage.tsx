@@ -35,27 +35,7 @@ export default function NotificationCenterPage() {
           isUnread: false,
         },
       ],
-    },
-    {
-      title: "HÔM QUA",
-      items: [
-        {
-          id: "4",
-          iconType: "system",
-          title:
-            "Hệ thống sẽ được bảo trì theo lịch vào lúc 2:00 AM ngày 15/10/2025.",
-          time: "14/10/2025",
-          isUnread: true,
-        },
-        {
-          id: "5",
-          iconType: "error",
-          title: "Chủ tọa đã từ chối yêu cầu ủy quyền UQ-004/2025 của bạn.",
-          time: "14/10/2025",
-          isUnread: false,
-        },
-      ],
-    },
+    }
   ]);
 
   // ==== FILTER LOGIC ====
@@ -69,14 +49,14 @@ export default function NotificationCenterPage() {
         }))
         .filter((sec) => sec.items.length > 0);
     }
-    if (filter === "system") {
-      return data
-        .map((sec) => ({
-          ...sec,
-          items: sec.items.filter((i) => i.iconType === "system"),
-        }))
-        .filter((sec) => sec.items.length > 0);
-    }
+    // if (filter === "system") {
+    //   return data
+    //     .map((sec) => ({
+    //       ...sec,
+    //       items: sec.items.filter((i) => i.iconType === "system"),
+    //     }))
+    //     .filter((sec) => sec.items.length > 0);
+    // }
     return data;
   }, [filter, data]);
 

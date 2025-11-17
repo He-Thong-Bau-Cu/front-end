@@ -5,7 +5,7 @@ import { FileTextOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
 const { Title, Text, Paragraph } = Typography;
 
-export default function BallotCard({ ballot = {}, onClick }) {
+export default function BallotCard({ ballot = {}, onClick }: any) {
   const {
     title = "Không có tiêu đề",
     desc = "Chưa có mô tả",
@@ -14,7 +14,18 @@ export default function BallotCard({ ballot = {}, onClick }) {
   } = ballot;
 
   // 🎨 Quy tắc màu trạng thái
-  const statusColorMap = {
+  type StatusType = "Đang diễn ra" | "Chưa bắt đầu" | "Đã kết thúc";
+
+  const statusColorMap: Record<
+    StatusType | "default",
+    {
+      tagColor: string;
+      bg: string;
+      textColor: string;
+      borderTop: string;
+      iconColor: string;
+    }
+  > = {
     "Đang diễn ra": {
       tagColor: "green",
       bg: "#e8f5e9",
@@ -46,7 +57,9 @@ export default function BallotCard({ ballot = {}, onClick }) {
   };
 
   // ✅ Lấy màu theo trạng thái
-  const colorRule = statusColorMap[status] || statusColorMap.default;
+  const colorRule =
+    statusColorMap[(status as StatusType) ?? "default"] ||
+    statusColorMap.default;
 
   return (
     <Card
@@ -76,7 +89,9 @@ export default function BallotCard({ ballot = {}, onClick }) {
               justifyContent: "center",
             }}
           >
-            <FileTextOutlined style={{ fontSize: 22, color: colorRule.iconColor }} />
+            <FileTextOutlined
+              style={{ fontSize: 22, color: colorRule.iconColor }}
+            />
           </div>
         </Col>
         <Col>
