@@ -13,12 +13,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
 
-interface AuthorizationFormValues {
-    startDate: dayjs.Dayjs;
-    endDate: dayjs.Dayjs;
-    reason: string;
-}
-
 export default function AuthorizationRequestForm() {
     const { state } = useLocation();
     const navigate = useNavigate();
@@ -31,6 +25,8 @@ export default function AuthorizationRequestForm() {
     const [modalOpen, setModalOpen] = useState(false);
     const [tempPayload, setTempPayload] = useState<any>(null);
 
+    const [delegationType, setDelegationType] = useState<"ELECTION" | "LONG_TERM">("ELECTION");
+
     const { showLoading, hideLoading } = useLoading();
     const { notify } = useNotification();
 
@@ -38,23 +34,28 @@ export default function AuthorizationRequestForm() {
         navigate("/voter/create-authorization");
         return null;
     }
-    const handleSubmit = async (values: AuthorizationFormValues) => {
-        const payload = {
-            delegationType: "ELECTION",
+
+    // --------------------- HANDLE SUBMIT ----------------------
+    const handleSubmit = async (values: any) => {
+
+        const payload: any = {
+            delegationType: values.delegationType,
             electionId,
             delegatorId,
             delegateId: selectedUser._id,
-            startDate: values.startDate.toISOString(),
-            endDate: values.endDate.toISOString(),
             delegateReason: values.reason,
             signature: null,
             status: "DRAFT",
         };
 
+        if (values.delegationType === "LONG_TERM") {
+            payload.startDate = values.startDate.toISOString();
+            payload.endDate = values.endDate.toISOString();
+        }
+
         try {
             showLoading();
 
-            // 1. Tạo bản nháp
             const draft = await DelegationService.add(payload);
 
             if (!draft || !draft._id) {
@@ -62,10 +63,8 @@ export default function AuthorizationRequestForm() {
                 hideLoading();
                 return;
             }
-            // 2. Lưu lại draftId để sau ký cập nhật
-            setTempPayload({ draftId: draft._id });
 
-            // 3. Mở modal ký số
+            setTempPayload({ draftId: draft._id });
             setModalOpen(true);
 
         } catch (err) {
@@ -76,57 +75,76 @@ export default function AuthorizationRequestForm() {
         }
     };
 
+    // -------------------- NORMALIZE PAYLOAD -----------------
+    function normalizeDelegationPayload(data: any) {
+        return {
+            ...data,
+            electionId: typeof data.electionId === "string" ? data.electionId : data.electionId?._id,
+            delegatorId: typeof data.delegatorId === "string" ? data.delegatorId : data.delegatorId?._id,
+            delegateId: typeof data.delegateId === "string" ? data.delegateId : data.delegateId?._id,
+        };
+    }
 
-
+    // ------------------- HANDLE DIGITAL SIGN ----------------
     const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
         try {
             showLoading();
+
+            if (!tempPayload?.draftId) {
+                notify("Không tìm thấy bản nháp để ký!", "error");
+                return;
+            }
+
+            const oldData = await DelegationService.getDelegationById(tempPayload.draftId);
+            if (!oldData) {
+                notify("Không tìm thấy dữ liệu ủy quyền!", "error");
+                return;
+            }
+
+            const baseData = normalizeDelegationPayload(oldData);
 
             const formData = new FormData();
             formData.append("file", file);
             formData.append("password", password);
             formData.append("electionId", electionId);
+            formData.append("delegationId", tempPayload.draftId);
 
-            // 1. Gọi API ký số
-            const signRes = await DelegationService.delegationApprove(formData);
+            const signRes = await DelegationService.delegationApproveVoter(formData);
 
-            if (!signRes.success) {
-                notify(signRes.message || "Ký số thất bại!", "error");
+            if (!signRes?.success) {
+                notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư.", "error");
                 return;
             }
 
-            const signature = signRes.data?.signatureFileUrl || null;
+            const signatureFileUrl = signRes.data?.signatureFileUrl || null;
 
-            // 2. Cập nhật lại bản nháp thành PENDING
-            await DelegationService.update(tempPayload.draftId, {
+            const updatePayload = {
+                ...baseData,
                 status: "PENDING",
-                signature,
-            });
+                signature: signatureFileUrl,
+            };
 
-            notify("Ký số & gửi yêu cầu ủy quyền thành công!", "success");
+            await DelegationService.update(tempPayload.draftId, updatePayload);
+
+            notify("Ký số và gửi yêu cầu ủy quyền thành công!", "success");
+
+            setModalOpen(false);
             navigate(-2);
 
         } catch (err) {
             console.error(err);
-            notify("Lỗi trong quá trình ký số!", "error");
+            notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư số", "error");
         } finally {
             hideLoading();
-            setModalOpen(false);
         }
     };
 
-
+    // --------------------- RENDER ---------------------------
     return (
         <Card
             className="delegation-form-card"
             title={
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Title level={5} style={{ margin: 0, paddingLeft: 20 }}>
                         📝 Tạo yêu cầu ủy quyền
                     </Title>
@@ -142,14 +160,11 @@ export default function AuthorizationRequestForm() {
                 </div>
             }
         >
+
             {/* ===== Thông tin người được ủy quyền ===== */}
             <Card
-                style={{
-                    marginBottom: 24,
-                    backgroundColor: "#f8f9fa",
-                    border: "1px solid #e9ecef",
-                }}
-                title={<Text style={{ paddingLeft: 10 }} strong>Thông tin người được ủy quyền</Text>}
+                style={{ marginBottom: 24, backgroundColor: "#f8f9fa", border: "1px solid #e9ecef" }}
+                title={<Text strong style={{ paddingLeft: 10 }}>Thông tin người được ủy quyền</Text>}
             >
                 <Space direction="vertical" style={{ width: "100%" }} size="middle">
                     <Space>
@@ -157,19 +172,15 @@ export default function AuthorizationRequestForm() {
                             {selectedUser.fullName?.charAt(0)}
                         </Avatar>
                         <div>
-                            <Text strong style={{ fontSize: 16 }}>
-                                {selectedUser.fullName}
-                            </Text>
-                            <br />
+                            <Text strong style={{ fontSize: 16 }}>{selectedUser.fullName}</Text><br />
                             <Text type="secondary">{selectedUser.email}</Text>
                         </div>
                     </Space>
+
                     <Descriptions column={2} bordered size="small">
                         <Descriptions.Item label="CCCD">{selectedUser.citizenId}</Descriptions.Item>
                         <Descriptions.Item label="Điện thoại">{selectedUser.phone}</Descriptions.Item>
-                        <Descriptions.Item label="Ngày sinh">
-                            {new Date(selectedUser.dateOfBirth).toLocaleDateString("vi-VN")}
-                        </Descriptions.Item>
+                        <Descriptions.Item label="Ngày sinh">{new Date(selectedUser.dateOfBirth).toLocaleDateString("vi-VN")}</Descriptions.Item>
                         <Descriptions.Item label="Địa chỉ">{selectedUser.address}</Descriptions.Item>
                         <Descriptions.Item label="Phòng ban">{selectedUser.department}</Descriptions.Item>
                         <Descriptions.Item label="Chức vụ">{selectedUser.position}</Descriptions.Item>
@@ -177,68 +188,82 @@ export default function AuthorizationRequestForm() {
                 </Space>
             </Card>
 
-            {/* ===== Form ===== */}
+            {/* ============== FORM CHÍNH ============== */}
             <Form layout="vertical" form={form} onFinish={handleSubmit}>
-                <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                        <Form.Item
-                            label="Ngày bắt đầu ủy quyền *"
-                            name="startDate"
-                            rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
-                        >
-                            <DatePicker
-                                style={{ width: "100%" }}
-                                format="DD/MM/YYYY"
-                                disabledDate={(current) =>
-                                    current && current <= dayjs().startOf("day")
-                                }
-                            />
-                        </Form.Item>
-                    </Col>
 
-                    <Col xs={24} md={12}>
-                        <Form.Item
-                            label="Ngày kết thúc ủy quyền *"
-                            name="endDate"
-                            dependencies={["startDate"]}
-                            rules={[
-                                { required: true, message: "Vui lòng chọn ngày kết thúc ủy quyền!" },
-                                ({ getFieldValue }) => ({
-                                    validator(_, value) {
-                                        const start = getFieldValue("startDate");
+                {/* --- Delegation Type --- */}
+                <Form.Item
+                    label="Loại ủy quyền *"
+                    name="delegationType"
+                    initialValue="ELECTION"
+                    rules={[{ required: true, message: "Vui lòng chọn loại ủy quyền!" }]}
+                >
+                    <select
+                        className="ant-input"
+                        value={delegationType}
+                        onChange={(e) => {
+                            setDelegationType(e.target.value as any);
+                            form.setFieldValue("delegationType", e.target.value);
+                        }}
+                    >
+                        <option value="ELECTION">Ủy quyền theo CUỘC BẦU CỬ</option>
+                        <option value="LONG_TERM">Ủy quyền DÀI HẠN</option>
+                    </select>
+                </Form.Item>
 
-                                        if (!start || !value) return Promise.resolve();
+                {/* ---- Date fields only for LONGTERM ---- */}
+                {delegationType === "LONG_TERM" && (
+                    <>
+                        <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item
+                                    label="Ngày bắt đầu ủy quyền *"
+                                    name="startDate"
+                                    rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
+                                >
+                                    <DatePicker
+                                        style={{ width: "100%" }}
+                                        format="DD/MM/YYYY"
+                                        disabledDate={(cur) => cur && cur <= dayjs().startOf("day")}
+                                    />
+                                </Form.Item>
+                            </Col>
 
-                                        if (value.isSame(start) || value.isBefore(start)) {
-                                            return Promise.reject(
-                                                "Ngày kết thúc phải lớn hơn ngày bắt đầu!"
-                                            );
-                                        }
+                            <Col xs={24} md={12}>
+                                <Form.Item
+                                    label="Ngày kết thúc ủy quyền *"
+                                    name="endDate"
+                                    dependencies={["startDate"]}
+                                    rules={[
+                                        { required: true, message: "Vui lòng chọn ngày kết thúc!" },
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+                                                const start = getFieldValue("startDate");
+                                                if (!start || !value) return Promise.resolve();
+                                                if (value.isSame(start) || value.isBefore(start)) {
+                                                    return Promise.reject("Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+                                                }
+                                                return Promise.resolve();
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <DatePicker
+                                        style={{ width: "100%" }}
+                                        format="DD/MM/YYYY"
+                                        disabledDate={(cur) => {
+                                            const start = form.getFieldValue("startDate");
+                                            if (!start) return cur && cur <= dayjs().startOf("day");
+                                            return cur && cur <= dayjs(start).startOf("day");
+                                        }}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </>
+                )}
 
-                                        return Promise.resolve();
-                                    },
-                                }),
-                            ]}
-
-                        >
-                            <DatePicker
-                                style={{ width: "100%" }}
-                                format="DD/MM/YYYY"
-                                disabledDate={(current) => {
-                                    const start = form.getFieldValue("startDate");
-
-                                    // Nếu chưa chọn ngày bắt đầu → chỉ block quá khứ
-                                    if (!start) return current && current <= dayjs().startOf("day");
-
-                                    // Khi đã có ngày bắt đầu → chỉ cho phép chọn ngày > startDate
-                                    return current && current <= dayjs(start).startOf("day");
-                                }}
-
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
+                {/* Lý do */}
                 <Form.Item
                     label="Lý do ủy quyền *"
                     name="reason"
@@ -246,34 +271,19 @@ export default function AuthorizationRequestForm() {
                 >
                     <Input.TextArea rows={3} />
                 </Form.Item>
-                {/* 
-                <Form.Item label="Tải lên giấy tờ chứng minh" name="upload">
-                    <Upload.Dragger multiple>
-                        <p className="ant-upload-drag-icon">
-                            <UploadOutlined style={{ color: "#27ae60", fontSize: 24 }} />
-                        </p>
-                        <p className="ant-upload-text">Nhấn để tải lên hoặc kéo thả file</p>
-                        <p className="ant-upload-hint" style={{ color: "#999" }}>
-                            Chấp nhận PDF, PNG, JPG (tối đa 5MB)
-                        </p>
-                    </Upload.Dragger>
-                </Form.Item> */}
 
+                {/* Agreement */}
                 <Form.Item
                     name="agreement"
                     valuePropName="checked"
                     rules={[
-                        {
-                            validator: (_, val) =>
-                                val ? Promise.resolve() : Promise.reject("Bạn cần đồng ý điều Kiện!"),
-                        },
+                        { validator: (_, v) => v ? Promise.resolve() : Promise.reject("Bạn cần đồng ý điều kiện!") }
                     ]}
                 >
-                    <Checkbox>
-                        Bạn có chắc chắn muốn ủy quyền hay không
-                    </Checkbox>
+                    <Checkbox>Bạn có chắc chắn muốn ủy quyền hay không?</Checkbox>
                 </Form.Item>
 
+                {/* Buttons */}
                 <div className="delegation-form-actions">
                     <Button onClick={() => navigate(-1)}>Hủy</Button>
                     <Button type="primary" htmlType="submit" style={{ background: "#7ECB50", border: "none" }}>
@@ -281,12 +291,12 @@ export default function AuthorizationRequestForm() {
                     </Button>
                 </div>
             </Form>
+
             <DigitalSignModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onSubmit={handleDigitalSign}
             />
-
 
         </Card>
     );
