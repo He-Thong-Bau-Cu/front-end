@@ -45,31 +45,29 @@ export default function BallotList() {
       return;
     }
 
-    const typeId = ballot.electionId?.typeId?._id;
+    const methodCode = ballot.electionId?.votingMethodId?.methodCode;
 
-    if (!typeId) {
-      message.error("Không xác định được loại phiếu bầu!");
+    if (!methodCode) {
+      message.error("Không xác định được phương thức bỏ phiếu!");
       return;
     }
 
-    if (typeId === "69121fa944ad44bcd09e5ba6") {
-      // Bầu dồn phiếu / cumulative
-      navigate("/voter/ballot_resolution_voting", {
-        state: { ballotId: ballot._id },
-      });
-    }
-    else if (typeId === "69121fb344ad44bcd09e5bac") {
-      // Bầu nghị quyết / resolution
+    // === Điều hướng theo methodCode ===
+    if (methodCode === "CUMULATIVE") {
       navigate("/voter/ballot_cumulative_voting", {
         state: { ballotId: ballot._id },
       });
     }
-
-
+    else if (methodCode === "YES_NO_ABSTAIN") {
+      navigate("/voter/ballot_resolution_voting", {
+        state: { ballotId: ballot._id },
+      });
+    }
     else {
-      message.warning("Loại phiếu bầu chưa được hỗ trợ!");
+      message.warning("Phương thức bỏ phiếu chưa được hỗ trợ!");
     }
   };
+
 
 
   return (

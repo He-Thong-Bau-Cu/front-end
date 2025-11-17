@@ -10,6 +10,15 @@ export interface Ballot {
       description: string;
       status: string;
     };
+
+    votingMethodId: {
+      _id: string;
+      methodName: string;
+      methodCode: string;
+      description: string;
+      status: string;
+    } | null;
+
     startDate: string | null;
     endDate: string | null;
     delegationStart: string | null;

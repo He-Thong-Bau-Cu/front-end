@@ -1,16 +1,23 @@
 import React, { useState } from "react";
 import { Card, Button, Slider, Typography, Tag, Row, Col, Space } from "antd";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import { ElectionEntities } from "@/types/ElectionEntities.interface";
 
 const { Text, Paragraph } = Typography;
 
-const CandidateCard = ({ candidate, onVoteChange }: any) => {
-  const { name, age, department, position, experience, description, maxVotes, tags } = candidate;
-  const [votes, setVotes] = useState(0);
+interface Props {
+  entity: ElectionEntities;
+  onVoteChange: (entity: ElectionEntities, value: number) => void;
+}
 
-  const handleChange = (value: any) => {
+const CandidateCard: React.FC<Props> = ({ entity, onVoteChange }) => {
+  const [votes, setVotes] = useState(0);
+  const maxVotes = 5;
+
+
+  const handleChange = (value: number) => {
     setVotes(value);
-    onVoteChange(candidate, value);
+    onVoteChange(entity, value);
   };
 
   return (
@@ -24,45 +31,17 @@ const CandidateCard = ({ candidate, onVoteChange }: any) => {
       bodyStyle={{ padding: 24 }}
     >
       <Row gutter={[16, 8]} align="middle">
-        <Col flex="60px">
-          <div
-            style={{
-              width: 60,
-              height: 60,
-              borderRadius: "50%",
-              backgroundColor: "#d9f7be",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 600,
-              fontSize: 22,
-              color: "#333",
-            }}
-          >
-            {name
-              .split(" ")
-              .map((w: any) => w[0])
-              .join("")
-              .toUpperCase()}
-          </div>
-        </Col>
+
 
         <Col flex="auto">
           <Space direction="vertical" size={4}>
-            <Text strong style={{ fontSize: 16 }}>{name}</Text>
-            <Text type="secondary">{age} tuổi • {department} • {experience} kinh nghiệm</Text>
-            <Space>
-              {tags?.map((tag: any, i: number) => (
-                <Tag key={i} color={tag.color}>{tag.label}</Tag>
-              ))}
-              <Tag color="blue">{position}</Tag>
-            </Space>
+            <Text strong style={{ fontSize: 16 }}>{entity.title}</Text>
           </Space>
         </Col>
       </Row>
 
       <Paragraph style={{ marginTop: 12, fontSize: 14, color: "#555" }}>
-        {description}
+        {entity.description}
       </Paragraph>
 
       <div style={{ background: "#fafafa", borderRadius: 12, padding: 16, marginTop: 8 }}>
@@ -70,14 +49,20 @@ const CandidateCard = ({ candidate, onVoteChange }: any) => {
 
         <Row align="middle" justify="space-between" style={{ marginTop: 8 }}>
           <Space>
-            <Button shape="circle" icon={<MinusOutlined />} onClick={() => handleChange(Math.max(0, votes - 1))} />
+            <Button
+              shape="circle"
+              icon={<MinusOutlined />}
+              onClick={() => handleChange(Math.max(0, votes - 1))}
+            />
             <Text style={{ fontSize: 18, fontWeight: 600 }}>{votes}</Text>
-            <Button shape="circle" icon={<PlusOutlined />} onClick={() => handleChange(Math.min(maxVotes, votes + 1))} />
+            <Button
+              shape="circle"
+              icon={<PlusOutlined />}
+              onClick={() => handleChange(Math.min(maxVotes, votes + 1))}
+            />
           </Space>
 
-          <Text type="success" strong>
-            {votes} phiếu bầu
-          </Text>
+          <Text type="success" strong>{votes} phiếu bầu</Text>
         </Row>
 
         <Slider
