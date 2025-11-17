@@ -143,7 +143,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                     này;
                   </li>
                   <li>
-                    <b>5. Thành phần và thời điểm chốt danh sách cổ đông:</b> ..... 
+                    <b>5. Thành phần và thời điểm chốt danh sách cổ đông:</b> .....
                     theo danh sách do Trung tâm Lưu ký chứng khoán Việt Nam
                     cung cấp.
                   </li>
@@ -200,13 +200,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       </Modal>
 
       {/* ===== DIGITAL SIGN MODAL ===== */}
-      <DigitalSignModal
+      {/* <DigitalSignModal
         open={modalOpen}
         electionId={electionId}
         onClose={() => setModalOpen(false)}
         onSuccess={() => setModalOpen(true)}
         delegate={false}
-      />
+      /> */}
     </>
   );
 };

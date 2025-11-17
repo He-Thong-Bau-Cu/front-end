@@ -9,7 +9,7 @@ import "../../../style/preside/ElectionResults.model.css";
 
 const { Text } = Typography;
 
-const ResultStats = ({ stats }) => {
+const ResultStats = ({ stats }: any) => {
   const items = [
     {
       icon: <UserOutlined />,

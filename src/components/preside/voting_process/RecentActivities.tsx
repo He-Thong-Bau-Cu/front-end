@@ -4,10 +4,10 @@ import "../../../style/preside/ElectionResults.model.css";
 
 const { Text } = Typography;
 
-const RecentActivities = ({ activities }) => (
+const RecentActivities = ({ activities }: any) => (
   <Card className="chart-card">
     <Text className="chart-title">Hoạt động gần đây</Text>
-    {activities.map((a, i) => (
+    {activities.map((a: any, i: any) => (
       <div key={i} className="activity-item">
         <div>
           <Tag color="green" />

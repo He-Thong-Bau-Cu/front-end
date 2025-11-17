@@ -74,6 +74,7 @@ const DelegateCardPage = () => {
           decisionNumber: raw.electionId?.decisionNumber || "",
           voterId: raw.voterId?._id || "",
           title: raw.electionId?.title || "",
+          token: ""
         };
 
         setCard(mapped);

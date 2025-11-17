@@ -8,40 +8,15 @@ import "../../../style/voter/Dashboard.model.css";
 const { Text, Title } = Typography;
 
 // Mock data - sẽ được thay thế bằng API call
-const ballots: Ballot[] = [
-    {
-        id: 1,
-        title: "Bầu cử Đại biểu Quốc hội Khóa XVI",
-        desc: "Bầu chọn đại diện cho khu vực bầu cử số 1, Quận 1, TP. Hồ Chí Minh.",
-        endTime: "15/12/2024 - 17:00",
-        status: "Đang diễn ra",
-        type: 2,
-    },
-    {
-        id: 2,
-        title: "Biểu quyết Nghị quyết cổ đông 2025",
-        desc: "Thông qua kế hoạch hoạt động và tài chính năm 2025.",
-        endTime: "10/01/2025 - 17:00",
-        status: "Chưa bắt đầu",
-        type: 1,
-    },
-    {
-        id: 3,
-        title: "Bầu chọn Ban Kiểm soát nhiệm kỳ 2025-2030",
-        desc: "Cuộc bầu chọn thành viên Ban kiểm soát mới.",
-        endTime: "30/01/2025 - 17:00",
-        status: "Đã kết thúc",
-        type: 1,
-    },
-];
+const ballots: Ballot[] = [];
 
 const BallotListSummary = () => {
     const navigate = useNavigate();
 
     const handleCardClick = (ballot: Ballot) => {
-        if (ballot.status === "Đang diễn ra" && ballot.type === 1)
+        if (ballot.status === "Đang diễn ra")
             navigate("/voter/ballot_resolution_voting");
-        else if (ballot.status === "Đang diễn ra" && ballot.type === 2)
+        else if (ballot.status === "Đang diễn ra")
             navigate("/voter/ballot_cumulative_voting");
     };
 
@@ -77,7 +52,7 @@ const BallotListSummary = () => {
             {ballots.length > 0 ? (
                 <div className="ballot-list-summary-content">
                     {ballots.slice(0, 3).map((ballot) => (
-                        <div key={ballot.id} className="ballot-list-summary-item">
+                        <div key={ballot._id} className="ballot-list-summary-item">
                             <BallotCard
                                 ballot={ballot}
                                 onClick={() => handleCardClick(ballot)}

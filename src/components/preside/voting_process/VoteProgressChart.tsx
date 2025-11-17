@@ -4,7 +4,7 @@ import "../../../style/preside/ElectionResults.model.css";
 
 const { Text } = Typography;
 
-const VoteProgressChart = ({ data }) => {
+const VoteProgressChart = ({ data }: any) => {
   return (
     <Card className="chart-card">
       <Text className="chart-title">Tiến độ bỏ phiếu theo thời gian</Text>

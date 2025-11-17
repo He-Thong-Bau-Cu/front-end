@@ -19,8 +19,8 @@ export default function NotificationItem({ item }: { item: NotificationItemData 
       case "warning":
       case "mention":
         return <WarningFilled style={{ color: "#faad14" }} />;
-      case "system":
-        return <CalendarFilled style={{ color: "#597ef7" }} />;
+      // case "system":
+      //   return <CalendarFilled style={{ color: "#597ef7" }} />;
       case "error":
         return <CloseCircleFilled style={{ color: "#ff4d4f" }} />;
       default:
