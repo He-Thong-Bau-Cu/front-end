@@ -46,8 +46,8 @@ const Organization: React.FC = () => {
 
     const getUser = async () => {
         try {
-            const userData = await UserService.getNonVoter();
-            setUser(userData);
+            // const userData = await UserService.getNonVoter();
+            // setUser(userData);
         } catch (error) {
             message.error("Không thể tải thông tin người dùng!");
         }
@@ -145,6 +145,7 @@ const Organization: React.FC = () => {
                         <Select placeholder="Vui lòng chọn chức vụ" allowClear showSearch>
                             <Option value="6906eb6a3bb016c908c61b92">Trưởng ban tổ chức</Option>
                             <Option value="6906eb903bb016c908c61b99">Thành viên ban tổ chức</Option>
+                            <Option value="6907a5b5399e3682d80a1ddf">Ban kiểm soát</Option>
                         </Select>
                     </Form.Item>
 

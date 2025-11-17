@@ -1,7 +1,6 @@
 import PrivateRoute from "@/components/auth/PrivateRoute";
 import AuthorizationRequestForm from "@/components/voter/authorization/AuthorizationRequestForm";
 import UserSelection from "@/components/voter/authorization/UserSelection";
-import Drafting from "@/components/secretary/drafting-documents/Drafting";
 import VotingResultDetail from "@/components/voter/voting-result/VotingResultDetail";
 import AdminLayout from "@/layout/AdminLayout";
 import BoardOfControlLayout from "@/layout/BoardOfControlLayout";
@@ -126,7 +125,6 @@ export const privateRoutes = [
         children: [
           { index: true, element: <DashboardSecretary /> },
           { path: "drafting-documents", element: <DraftingDocuments /> },
-          { path: "drafting-documents/drafting", element: <Drafting /> },
           { path: "documents", element: <ManagementDocument /> },
           { path: "notifications", element: <NotificationCenterPage /> },
           { path: "reports", element: <ReportCenterPage /> },
