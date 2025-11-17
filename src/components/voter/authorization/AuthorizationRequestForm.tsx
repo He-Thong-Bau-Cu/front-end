@@ -195,18 +195,20 @@ export default function AuthorizationRequestForm() {
                 <Form.Item
                     label="Loại ủy quyền *"
                     name="delegationType"
-                    initialValue="ELECTION"
                     rules={[{ required: true, message: "Vui lòng chọn loại ủy quyền!" }]}
                 >
                     <select
                         className="ant-input"
                         value={delegationType}
+                        style={{ height: 30, borderRadius: 5, borderColor: "#d9d9d9" }}
                         onChange={(e) => {
-                            setDelegationType(e.target.value as any);
-                            form.setFieldValue("delegationType", e.target.value);
+                            const value = e.target.value as "ELECTION" | "LONG_TERM";
+                            setDelegationType(value);
+                            form.setFieldValue("delegationType", value);
                         }}
                     >
-                        <option value="ELECTION">Ủy quyền theo CUỘC BẦU CỬ</option>
+                        <option style={{ color: "#d9d9d9" }} value="">-- Chọn loại ủy quyền --</option>
+                        <option value="ELECTION">Ủy quyền trong CUỘC BẦU CỬ</option>
                         <option value="LONG_TERM">Ủy quyền DÀI HẠN</option>
                     </select>
                 </Form.Item>

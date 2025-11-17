@@ -195,6 +195,7 @@ export default function AuthorizationHistory() {
             title: "Ngày tạo",
             dataIndex: "createdAt",
             key: "createdAt",
+            width: 135,
             render: (value: string) =>
                 <Space>
                     <CalendarOutlined />

@@ -92,6 +92,24 @@
   margin-top: 20px;
 }
 
+.delegation-type-select {
+  height: 42px;
+  border: 1.5px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 4px 11px;
+  transition: all 0.3s;
+}
+
+.delegation-type-select:hover {
+  border-color: #7ecb50;
+}
+
+.delegation-type-select:focus {
+  border-color: #7ecb50;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(126, 203, 80, 0.2);
+}
+
 /* Lịch sử ủy quyền */
 .delegation-history-card {
   border-radius: 16px;
