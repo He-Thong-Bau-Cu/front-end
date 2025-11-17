@@ -78,6 +78,18 @@ class DelegationService extends BaseService {
         }
     }
 
+
+    async delegationApproveVoter(body: any): Promise<any> {
+        const response = await this.api.post(`${this.endpoint}/voter/approve`, body);
+        return response;
+
+    }
+
+    async update(id: string, payload: any): Promise<any> {
+        const response = await this.api.put(`${this.endpoint}/${id}`, payload);
+        return response.data;
+    }
+
 }
 
 

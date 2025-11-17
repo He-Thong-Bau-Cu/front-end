@@ -35,6 +35,20 @@ const statusConfig: Record<
     INVALID: { label: "Không hợp lệ", color: "magenta", icon: <StopOutlined /> },
 };
 
+const typeConfig: Record<string, { label: string; color: string }> = {
+    ELECTION: {
+        label: "Trong cuộc bầu cử",
+        color: "blue",
+        // icon: <InfoCircleOutlined />,
+    },
+    LONG_TERM: {
+        label: "Ủy quyền dài hạn",
+        color: "geekblue",
+        // icon: <CalendarOutlined />,
+    },
+};
+
+
 
 export default function AuthorizationHistory() {
     const navigate = useNavigate();
@@ -113,7 +127,7 @@ export default function AuthorizationHistory() {
             title: "Cuộc bầu cử",
             dataIndex: ["electionId", "title"],
             key: "electionName",
-            width: 250,
+            width: 240,
             render: (text: string) => (
                 <Text strong className={styles.electionNameCell}>
                     {text}
@@ -142,6 +156,26 @@ export default function AuthorizationHistory() {
                 );
             },
         },
+
+        {
+            title: "Loại ủy quyền",
+            dataIndex: "delegationType",
+            key: "delegationType",
+            width: 180,
+            render: (value: string) => {
+                const cfg = typeConfig[value] ?? typeConfig["ELECTION"];
+                return (
+                    <Tag
+                        color={cfg.color}
+                        style={{ borderRadius: 12, padding: "4px 12px" }}
+                    // icon={cfg.icon}
+                    >
+                        {cfg.label}
+                    </Tag>
+                );
+            },
+        },
+
 
 
         {
