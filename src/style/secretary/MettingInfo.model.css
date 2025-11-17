@@ -41,3 +41,13 @@
   gap: 12px;
   margin-top: 30px;
 }
+.type-other-box {
+  padding: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.type-other-box .ant-form-item {
+  margin-bottom: 10px;
+}

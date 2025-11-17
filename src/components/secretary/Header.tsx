@@ -1,4 +1,3 @@
-import logo from "@/assets/logo.png";
 import React, { useEffect, useState } from 'react';
 import { Avatar, Badge, Dropdown, Layout, message, Popover, Space, Typography } from 'antd';
 import { BellFilled, IdcardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
@@ -11,14 +10,12 @@ import NotificationDropdown, { INotification } from "../notification/Notificatio
 import NotificationListener from "../notification/NotificationListener";
 import { useLoading } from "@/contexts/LoadingContext";
 import NotificationService from "@/services/NotificationService";
-
 const { Header } = Layout;
 const { Title, Text } = Typography;
 
 interface VoterHeaderProps {
     title: string;
 }
-
 const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isProfileOpen, setProfileOpen] = useState(false);
@@ -98,13 +95,11 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
                 )}
                 <Space size={16} align="center">
 
+
                     <Title level={4} className="header-title">
                         {title}
                     </Title>
                 </Space>
-
-
-
                 <Space size={10} align="center">
                     <Popover
                         placement="bottomRight"
@@ -125,6 +120,7 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
                             />
                         </Badge>
                     </Popover>
+
                     <Dropdown
                         menu={{ items: menuItems }}
                         placement="bottomRight"
@@ -155,7 +151,6 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
         </>
     );
 };
-
 export default VoterHeader;
 
 

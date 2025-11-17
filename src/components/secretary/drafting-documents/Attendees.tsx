@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Card, Tag, Typography, Modal, Form, Input, Select, Button } from "antd";
+import {
+    Card,
+    Tag,
+    Typography,
+    Modal,
+    Form,
+    Input,
+    Select,
+    Button,
+} from "antd";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -9,62 +18,66 @@ interface Participant {
     email: string;
     role: string;
     status: string;
+    phone?: string;
+    department?: string;
+    percentage?: number; // % cổ phần
 }
 
-const initialParticipants: Participant[] = [
+const masterVoters: Participant[] = [
     {
         name: "Nguyễn Văn A",
-        email: "nguyenvana@company.com",
+        email: "a@company.com",
         role: "Chủ tịch HĐQT",
         status: "Đã xác nhận",
+        phone: "0909123456",
+        department: "Ban Điều Hành",
     },
     {
         name: "Trần Thị B",
-        email: "tranthib@company.com",
+        email: "b@company.com",
         role: "Phó Chủ tịch",
         status: "Đã xác nhận",
-    },
-    {
-        name: "Lê Văn C",
-        email: "levanc@company.com",
-        role: "Thành viên HĐQT",
-        status: "Đang chờ",
-    },
-    {
-        name: "Phạm Thị D",
-        email: "phamthid@company.com",
-        role: "Thành viên HĐQT",
-        status: "Đã từ chối",
-    },
+        phone: "0909000999",
+        department: "Ban Điều Hành",
+    }
 ];
 
-const statusColor = (status: string) => {
-    switch (status) {
-        case "Đã xác nhận":
-            return "green";
-        case "Đang chờ":
-            return "orange";
-        case "Đã từ chối":
-            return "red";
-        default:
-            return "default";
-    }
-};
-
 const Attendees: React.FC = () => {
-    const [participants, setParticipants] = useState<Participant[]>(initialParticipants);
+    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [voterList] = useState<Participant[]>(masterVoters);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
 
+    const handleSelectVoter = (email: string) => {
+        const selected = voterList.find(v => v.email === email);
+        if (selected) {
+            form.setFieldsValue({
+                name: selected.name,
+                email: selected.email,
+                role: selected.role,
+                status: selected.status,
+                phone: selected.phone,
+                department: selected.department
+            });
+        }
+    };
+
     const handleAdd = () => {
-        form
-            .validateFields()
-            .then((values) => {
-                setParticipants([...participants, values]);
-                form.resetFields();
-                setIsModalOpen(false);
-            })
-            .catch(() => { });
+        form.validateFields().then(values => {
+            setParticipants([...participants, values]);
+            form.resetFields();
+            setIsModalOpen(false);
+        });
+    };
+
+    const statusColor = (status: string) => {
+        switch (status) {
+            case "Đã xác nhận": return "green";
+            case "Đang chờ": return "orange";
+            case "Đã từ chối": return "red";
+            default: return "default";
+        }
     };
 
     return (
@@ -74,7 +87,7 @@ const Attendees: React.FC = () => {
                 title={
                     <div className="card-header">
                         <Text style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>
-                            👥 Người tham dự ({participants.length})
+                            👥 Danh sách cử tri ({participants.length})
                         </Text>
                         <a className="add-link" onClick={() => setIsModalOpen(true)}>
                             + Thêm
@@ -87,75 +100,92 @@ const Attendees: React.FC = () => {
                         <div>
                             <strong>{p.name}</strong>
                             <p>{p.role}</p>
-                            {/* <span className="email-text">{p.email}</span> */}
+                            <p>{p.phone}</p>
+                            <p><b>% Cổ phần:</b> {p.percentage}%</p>
                         </div>
                         <Tag color={statusColor(p.status)}>{p.status}</Tag>
                     </div>
                 ))}
             </Card>
 
-            {/* Modal thêm người */}
+            {/* MODAL */}
             <Modal
-                title="➕ Thêm người tham dự"
+                title="➕ Chọn cử tri"
                 open={isModalOpen}
                 onCancel={() => setIsModalOpen(false)}
                 footer={null}
                 centered
+                width={600}
+                bodyStyle={{ maxHeight: "60vh", overflowY: "auto" }}
             >
-                <Form
-                    layout="vertical"
-                    form={form}
-                    onFinish={handleAdd}
-                    style={{ marginTop: 10 }}
-                >
-                    <Form.Item
-                        label="Họ và tên"
-                        name="name"
-                        rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-                    >
-                        <Input placeholder="Nhập họ và tên" />
-                    </Form.Item>
+                <Form form={form} layout="vertical" onFinish={handleAdd}>
 
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[
-                            { required: true, message: "Vui lòng nhập email" },
-                            { type: "email", message: "Email không hợp lệ" },
-                        ]}
-                    >
-                        <Input placeholder="example@company.com" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Chức vụ"
-                        name="role"
-                        rules={[{ required: true, message: "Vui lòng nhập chức vụ" }]}
-                    >
-                        <Input placeholder="Nhập chức vụ" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Trạng thái"
-                        name="status"
-                        initialValue="Đang chờ"
-                        rules={[{ required: true, message: "Chọn trạng thái" }]}
-                    >
-                        <Select>
-                            <Option value="Đã xác nhận">Đã xác nhận</Option>
-                            <Option value="Đang chờ">Đang chờ</Option>
-                            <Option value="Đã từ chối">Đã từ chối</Option>
+                    {/* CHỌN CỬ TRI CÓ SẴN */}
+                    <Form.Item label="Chọn cử tri" name="selectedVoter"
+                        rules={[{ required: true, message: "Vui lòng chọn cử tri" }]}>
+                        <Select
+                            showSearch
+                            placeholder="Tìm theo tên hoặc email"
+                            onChange={handleSelectVoter}
+                            filterOption={(input, option: any) =>
+                                option.children.toLowerCase().includes(input.toLowerCase())
+                            }
+                        >
+                            {voterList.map((v, i) => (
+                                <Option key={i} value={v.email}>
+                                    {v.name} — {v.email}
+                                </Option>
+                            ))}
                         </Select>
                     </Form.Item>
+                    <Form.Item
+                        name="percentage"
+                        label="% Cổ phần"
+                        rules={[
+                            { required: true, message: "Vui lòng nhập tỷ lệ cổ phần" },
+                            { pattern: /^[0-9]+$/, message: "Chỉ nhập số" }
+                        ]}
+                    >
+                        <Input placeholder="Nhập % cổ phần (VD: 10)" />
+                    </Form.Item>
 
-                    <Form.Item style={{ textAlign: "right", marginBottom: 0 }}>
+                    <Form.Item style={{ textAlign: "right" }}>
                         <Button onClick={() => setIsModalOpen(false)} style={{ marginRight: 8 }}>
                             Hủy
                         </Button>
-                        <Button type="primary" onClick={handleAdd}>
+                        <Button type="primary" htmlType="submit">
                             Lưu
                         </Button>
                     </Form.Item>
+
+                    {/* THÔNG TIN TỰ FILL */}
+                    <Form.Item name="name" label="Họ và tên">
+                        <Input disabled />
+                    </Form.Item>
+
+                    <Form.Item name="email" label="Email">
+                        <Input disabled />
+                    </Form.Item>
+
+                    <Form.Item name="role" label="Chức vụ">
+                        <Input disabled />
+                    </Form.Item>
+
+                    <Form.Item name="phone" label="Số điện thoại">
+                        <Input disabled />
+                    </Form.Item>
+
+                    <Form.Item name="department" label="Phòng ban">
+                        <Input disabled />
+                    </Form.Item>
+
+                    <Form.Item name="status" label="Trạng thái">
+                        <Input disabled />
+                    </Form.Item>
+
+                    {/* NHẬP % CỔ PHẦN */}
+
+
                 </Form>
             </Modal>
         </>

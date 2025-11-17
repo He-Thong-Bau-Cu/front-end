@@ -128,15 +128,17 @@ const DecisionTable = () => {
         decisionNumber: values.decisionNumber,
         decisionName: values.decisionName,
         title: values.decisionName,
+        startDate: values.startTime,
+        endDate: values.endTime
       };
       const apiData2: any = {
         decisionNumber: values.decisionNumber,
         decisionName: values.decisionName,
         title: values.decisionName,
         statusData: "WAIT_ENTER_DATA",
+        startDate: values.startTime,
+        endDate: values.endTime
       };
-
-
       let response;
       let secretary;
       if (isEdit && id) {
