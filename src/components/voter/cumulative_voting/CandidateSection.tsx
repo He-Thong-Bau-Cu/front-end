@@ -1,72 +1,92 @@
-import React, { useState } from "react";
-import { Typography, Row, Col, Card, Tag, Space } from "antd";
+import React, { useEffect, useState } from "react";
+import { Typography, Row, Col, Card, Tag, Space, Spin } from "antd";
 import {
   DollarOutlined,
   InfoCircleOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
+
 import CandidateCard from "./CandidateCard";
-import { Candidate } from "@/types/Candidate.interface"; // 👈 import interface
+import ElectionEntitiesService from "@/services/ElectionEntitiesService";
+import VotingRightsService from "@/services/VotingRightsService";
+
+import { ElectionEntities } from "@/types/ElectionEntities.interface";
+import { VotingRight } from "@/types/VotingRights.interface";
+import { useLoading } from "@/contexts/LoadingContext";
 
 const { Title, Text } = Typography;
 
 const CandidateSection = () => {
-  const [totalVotes, setTotalVotes] = useState(10);
-  const [remainingVotes, setRemainingVotes] = useState(10);
+  const [totalVotes, setTotalVotes] = useState(0);
+  const [remainingVotes, setRemainingVotes] = useState(0);
+  const [electionTitle, setElectionTitle] = useState("");
 
-  // Dữ liệu ứng cử viên có kiểu Candidate[]
-  const candidates: Candidate[] = [
-    {
-      name: "Nguyễn Văn A",
-      age: 50,
-      department: "Phòng Kinh doanh",
-      position: "Trưởng phòng",
-      experience: "15 năm",
-      description:
-        "Có kinh nghiệm quản lý và điều hành hoạt động công đoàn, nhiệt tình trong công tác xã hội, được đồng nghiệp tin tưởng và ủng hộ.",
-      maxVotes: 5,
-      tags: [{ label: "Đoàn viên", color: "green" }],
-    },
-    {
-      name: "Trần Thị B",
-      age: 45,
-      department: "Phòng Nhân sự",
-      position: "Phó phòng",
-      experience: "12 năm",
-      description:
-        "Tâm huyết với công tác vận động quần chúng, có khả năng tổ chức các hoạt động văn hóa, thể thao cho CBCNV, luôn lắng nghe và giải quyết tâm tư nguyện vọng.",
-      maxVotes: 5,
-      tags: [{ label: "Đảng viên", color: "green" }],
-    },
-  ];
+
+  const [candidates, setCandidates] = useState<ElectionEntities[]>([]);
+  const { showLoading, hideLoading } = useLoading();
 
   const [voteDistribution, setVoteDistribution] = useState<Record<string, number>>({});
 
-  const handleVoteChange = (candidate: Candidate, value: number) => {
-    const newDistribution = { ...voteDistribution, [candidate.name]: value };
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        showLoading();
+        const voterId = localStorage.getItem("voterId");
+        const electionId = localStorage.getItem("currentElectionId");
+
+        // 🔥 1. API lấy quyền bầu cử (votes)
+        const votingRights: VotingRight[] =
+          await VotingRightsService.getVotingRightsByVoterId(voterId!);
+
+        // tìm quyền bầu đúng electionId
+        const right = votingRights.find(
+          (item) => item.electionId._id === electionId
+        );
+
+        const votes = right?.votes ?? 0;
+
+        // set số phiếu
+        setTotalVotes(votes);
+        setRemainingVotes(votes);
+        setElectionTitle(right?.electionId?.title ?? "");
+
+
+        // 🔥 2. API lấy danh sách ứng viên
+        const list = await ElectionEntitiesService.getElectionEntitiesByElectionId(
+          electionId!
+        );
+
+        setCandidates(list);
+      } catch (err) {
+        console.error("Load error:", err);
+      } finally {
+        hideLoading();
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Xử lý phân bổ phiếu
+  const handleVoteChange = (entity: ElectionEntities, value: number) => {
+    const newDistribution = { ...voteDistribution, [entity._id]: value };
+
     setVoteDistribution(newDistribution);
 
     const totalUsed = Object.values(newDistribution).reduce((sum, v) => sum + v, 0);
+
     setRemainingVotes(Math.max(totalVotes - totalUsed, 0));
   };
 
+
   return (
     <div style={{ padding: 24 }}>
-      {/* Header Section */}
-      <Card
-        style={{
-          background: "#fff",
-          marginBottom: 24,
-          borderRadius: 12,
-        }}
-        bodyStyle={{ padding: 20 }}
-      >
+      {/* HEADER */}
+      <Card style={{ background: "#fff", marginBottom: 24, borderRadius: 12 }} bodyStyle={{ padding: 20 }}>
         <Row justify="space-between" align="middle">
           <Col>
-            <Title level={4}>Bầu cử hội đồng quản trị</Title>
-            <Text>
-              Phân bổ {totalVotes} phiếu bầu của bạn cho các ứng cử viên
-            </Text>
+            <Title level={4}>{electionTitle}</Title>
+            <Text>Phân bổ {totalVotes} phiếu bầu của bạn cho các ứng cử viên</Text>
           </Col>
 
           <Col>
@@ -82,52 +102,40 @@ const CandidateSection = () => {
                 color: "#389e0d",
               }}
             >
-              <DollarOutlined /> {remainingVotes} Phiếu bầu còn lại
+              <DollarOutlined /> {remainingVotes} phiếu còn lại
             </div>
           </Col>
         </Row>
 
         <Card
-          style={{
-            marginTop: 16,
-            background: "#fff",
-            borderRadius: 10,
-            border: "1px solid #e6f4ff",
-          }}
+          style={{ marginTop: 16, background: "#fff", borderRadius: 10, border: "1px solid #e6f4ff" }}
           bodyStyle={{ padding: 16 }}
         >
           <Space>
             <InfoCircleOutlined style={{ color: "#52c41a" }} />
             <Text>
-              Bạn có <b>{totalVotes} phiếu bầu</b> cho danh sách ứng cử viên. Bạn có
-              thể tập trung tất cả cho một người, hoặc chia đều cho nhiều người.
+              Bạn có <b>{totalVotes} phiếu bầu</b>. Có thể dồn phiếu hoặc chia đều tuỳ ý.
             </Text>
           </Space>
         </Card>
       </Card>
 
-      {/* Candidate List */}
+      {/* LIST */}
       <Card
-        style={{
-          border: "1px solid #e6f4ff",
-          background: "#fff",
-          borderRadius: 12,
-        }}
+        style={{ border: "1px solid #e6f4ff", background: "#fff", borderRadius: 12 }}
         bodyStyle={{ padding: 20 }}
       >
         <Space align="center" style={{ marginBottom: 16 }}>
           <UsergroupAddOutlined style={{ color: "#52c41a", fontSize: 18 }} />
-          <Title level={5} style={{ margin: 0 }}>
-            Danh sách Ứng cử viên
-          </Title>
-          <Tag color="blue">Tất cả ({candidates.length})</Tag>
-          <Tag color="default">
-            Đã phân bổ ({Object.keys(voteDistribution).length})
-          </Tag>
+          <Title level={5} style={{ margin: 0 }}>Danh sách bầu cử</Title>
         </Space>
 
-        {candidates.map((c, i) => (
-          <CandidateCard key={i} candidate={c} onVoteChange={handleVoteChange} />
+        {candidates.map((entity) => (
+          <CandidateCard
+            key={entity._id}
+            entity={entity}
+            onVoteChange={handleVoteChange}
+          />
         ))}
       </Card>
     </div>
