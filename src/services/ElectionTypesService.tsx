@@ -1,4 +1,3 @@
-import { User } from "@/types/User.interface";
 import BaseService from "./BaseService";
 import { ElectionTypes } from "@/types/ElectionTypes.interface";
 
@@ -9,27 +8,47 @@ class ElectionTypesService extends BaseService {
         super("election-types");
     }
 
-    async getElectionTypeByCode(typeBody: any): Promise<any> {
+    async getElectionTypeByCode(code: string): Promise<ElectionTypes> {
         try {
-            const response = await this.api.post<any>(`${this.endpoint}/`, typeBody);
-            return response;
+            const response = await this.api.get(`${this.endpoint}/typeCode/${code}`);
+            return response.data;
         } catch (error) {
             console.error("Error get election type by code:", error);
             throw error;
         }
     }
 
-    async searchElectionType(body: any): Promise<any> {
+     async getElectionTypeById(id: string): Promise<ElectionTypes> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error get election type by id:", error);
+            throw error;
+        }
+    }
+
+      async updateElectionTypeById(id: string, body: any): Promise<any> {
+        try {
+            const response = await this.api.put(`${this.endpoint}/${id}`, body);
+            return response;
+        } catch (error) {
+            console.error("Error get election type by id:", error);
+            throw error;
+        }
+    }
+
+    async searchElectionType(body: any): Promise<ElectionTypes[]> {
         try {
             const response = await this.api.post<any>(`${this.endpoint}/search`, body);
-            return response;
+            return response.data.content;
         } catch (error) {
             console.error("Error search election type :", error);
             throw error;
         }
     }
 
-    async createElectionType(body: ElectionTypes): Promise<any> {
+    async createElectionType(body: any): Promise<any> {
         try {
             const response = await this.api.post<any>(`${this.endpoint}`, body);
             return response;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     Card,
     Button,
@@ -8,105 +8,91 @@ import {
     Form,
     Upload,
     Input,
-    message
+    message,
+    List,
 } from "antd";
 import {
     FilePdfOutlined,
-    DownloadOutlined,
     UploadOutlined,
     DeleteOutlined,
     FileExcelOutlined,
     FilePptOutlined,
-    PaperClipOutlined
+    PaperClipOutlined,
 } from "@ant-design/icons";
-
+import FileService from "@/services/FileService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 import { useNotification } from "@/contexts/NotificationContext";
+
 const { TextArea } = Input;
 
-const AttachedDocuments = () => {
+interface Props {
+    onChange: (data: any[]) => void;
+}
+
+const AttachedDocuments: React.FC<Props> = ({ onChange }) => {
     const [documents, setDocuments] = useState<any[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const { notify } = useNotification();
     const [fileObj, setFileObj] = useState<File | null>(null);
     const [fileName, setFileName] = useState("");
-
     const [form] = Form.useForm();
+    const { notify } = useNotification();
 
-    const electionId = localStorage.getItem("currentElectionId");
-    const preparedBy = localStorage.getItem("userId");
-
-    // --- Load tài liệu ---
-    const loadDocuments = async () => {
-        // const res = await ElectionDocumentService.GetDocuments(electionId);
-        // setDocuments(res.data || []);
-    };
-    const iconByType = (type: string) => {
-        if (type.includes("xls")) return <FileExcelOutlined style={{ color: "#217346", fontSize: 18 }} />;
-        if (type.includes("ppt")) return <FilePptOutlined style={{ color: "#d24726", fontSize: 18 }} />;
-        return <PaperClipOutlined style={{ color: "#333", fontSize: 18 }} />;
-    };
-
-    useEffect(() => {
-        loadDocuments();
-    }, []);
-
-    // --- Chọn file ---
+    /* ===========================================================
+       CHỈ CHỌN FILE — KHÔNG UPLOAD
+    ============================================================ */
     const handleUpload = (file: File) => {
         setFileObj(file);
         setFileName(file.name);
-        return false;
+        return false; // không upload thật
     };
-    const handelDelete = async () => {
-        try {
 
+    /* ===========================================================
+        ICON FILE
+    ============================================================ */
+    const iconByType = (name: string) => {
+        if (!name) return <PaperClipOutlined />;
+        if (name.endsWith(".pdf")) return <FilePdfOutlined style={{ color: "red" }} />;
+        if (name.endsWith(".xlsx") || name.endsWith(".xls"))
+            return <FileExcelOutlined style={{ color: "#217346" }} />;
+        if (name.endsWith(".ppt") || name.endsWith(".pptx"))
+            return <FilePptOutlined style={{ color: "#d24726" }} />;
+        return <PaperClipOutlined />;
+    };
 
-
-        } catch (error) {
-            console.error(error);
-            message.error("Lỗi xóa tài liệu!");
-
-        }
-    }
-
-    // --- Lưu document ---
-    const handleSave = async (values: any) => {
+    /* ===========================================================
+        LƯU NHƯNG CHỈ VÀO STATE (LOCAL) — KHÔNG GỌI API
+    ============================================================ */
+    const handleSaveLocal = (values: any) => {
         if (!fileObj) {
-            message.warning("Vui lòng tải tài liệu lên!");
+            message.warning("Vui lòng chọn file trước!");
             return;
         }
 
-        try {
-            setLoading(true);
-            let body = {
-                electionId: electionId,
-                preparedBy: preparedBy,
-                title: values.title,
-                content: values.content,
-                fileUrl: fileObj,
-                status: "INACTIVE",
-                remarks: values.remarks
-            }
-            const res = await ElectionDocumentService.CreateDocument(body);
-            if (res.success) {
-                notify(res.message, "success");
-                message.success("Tạo tài liệu thành công!");
-                setModalOpen(false);
-                form.resetFields();
-                setFileObj(null);
-                setFileName("");
-                loadDocuments();
-            } else {
-                notify(res.message, "error");
-            }
+        const newDoc = {
+            id: Date.now(),
+            title: values.title,
+            content: values.content,
+            remarks: values.remarks,
+            fileName: fileName,
+            fileObj: fileObj, // file thật để cha xử lý khi gửi duyệt
+        };
 
-        } catch (err) {
-            console.error(err);
-            message.error("Lỗi tạo tài liệu!");
-        } finally {
-            setLoading(false);
-        }
+        const updated = [...documents, newDoc];
+        setDocuments(updated);
+        onChange(updated); // 👉 trả dữ liệu về DraftingDocuments
+        setModalOpen(false);
+        form.resetFields();
+        setFileObj(null);
+        setFileName("");
+    };
+
+    /* ===========================================================
+        XÓA LOCAL — KHÔNG GỌI API
+    ============================================================ */
+    const handleDeleteLocal = (id: number) => {
+        const filtered = documents.filter((doc) => doc.id !== id);
+        setDocuments(filtered);
+        onChange(filtered);
     };
 
     return (
@@ -115,19 +101,14 @@ const AttachedDocuments = () => {
                 className="meeting-side-card"
                 title={
                     <div className="card-header">
-                        <span style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>📎 Tài liệu đính kèm</span>
-
-                        {/* Nút tải lên thực tế */}
-                        {/* <Upload beforeUpload={handleUpload} showUploadList={false}>
-                            <Button type="link" className="add-link" icon={<UploadOutlined />}>
-                                Tải lên
-                            </Button>
-                        </Upload> */}
+                        <span style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>
+                            📎 Tài liệu đính kèm
+                        </span>
                         <Col>
                             <Button
-                                icon={<DownloadOutlined />}
+                                icon={<UploadOutlined />}
                                 type="link"
-                                onClick={() => setModalOpen(true)} // mở modal
+                                onClick={() => setModalOpen(true)}
                             >
                                 Tải tài liệu lên
                             </Button>
@@ -135,30 +116,35 @@ const AttachedDocuments = () => {
                     </div>
                 }
             >
-                {documents.map((f, i) => (
-                    <div key={i} className="file-item">
-                        <div className="file-left">
-                            {iconByType(f.type)}
-                            <div>
-                                <p className="file-name">{f.name}</p>
-                                <span className="file-size">{f.size}</span>
+                {/* Danh sách tài liệu LOCAL */}
+                <List
+                    dataSource={documents}
+                    renderItem={(item) => (
+                        <List.Item
+                            actions={[
+                                <DeleteOutlined
+                                    onClick={() => handleDeleteLocal(item.id)}
+                                    style={{ color: "red" }}
+                                />,
+                            ]}
+                        >
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                {iconByType(item.fileName)}
+                                <div>
+                                    <p className="file-name">{item.fileName}</p>
+                                    {item.title && (
+                                        <span className="file-size" style={{ color: "#888" }}>
+                                            {item.title}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                        <DeleteOutlined
-                            onClick={() => handelDelete()}
-                            style={{
-                                color: "#888",
-                                cursor: "pointer",
-                                marginLeft: "auto",
-                                fontSize: 16,
-                            }}
-                        />
-
-                    </div>
-                ))}
+                        </List.Item>
+                    )}
+                />
             </Card>
 
-            {/* Modal tạo document */}
+            {/* Modal thêm tài liệu */}
             <Modal
                 title="Tạo tài liệu mới"
                 open={modalOpen}
@@ -167,20 +153,12 @@ const AttachedDocuments = () => {
                 centered
                 width={600}
             >
-                <Form layout="vertical" form={form} onFinish={handleSave}>
-                    <Form.Item
-                        name="title"
-                        label="Tên tài liệu"
-                        rules={[{ required: true, message: "Nhập tên tài liệu" }]}
-                    >
+                <Form layout="vertical" form={form} onFinish={handleSaveLocal}>
+                    <Form.Item name="title" label="Tên tài liệu" rules={[{ required: true }]}>
                         <Input placeholder="Nhập tên tài liệu..." />
                     </Form.Item>
 
-                    <Form.Item
-                        name="content"
-                        label="Mô tả tài liệu"
-                        rules={[{ required: true, message: "Nhập mô tả" }]}
-                    >
+                    <Form.Item name="content" label="Mô tả tài liệu">
                         <TextArea rows={3} placeholder="Nhập mô tả..." />
                     </Form.Item>
 
@@ -188,7 +166,12 @@ const AttachedDocuments = () => {
                         <Upload beforeUpload={handleUpload} showUploadList={false}>
                             <Button icon={<UploadOutlined />}>Chọn file</Button>
                         </Upload>
-                        {fileName && <p style={{ marginTop: 6 }}><b>Đã chọn:</b> {fileName}</p>}
+
+                        {fileName && (
+                            <p style={{ marginTop: 6 }}>
+                                <b>Đã chọn:</b> {fileName}
+                            </p>
+                        )}
                     </Form.Item>
 
                     <Form.Item name="remarks" label="Ghi chú">
@@ -199,7 +182,7 @@ const AttachedDocuments = () => {
                         <Button onClick={() => setModalOpen(false)} style={{ marginRight: 8 }}>
                             Hủy
                         </Button>
-                        <Button type="primary" htmlType="submit" loading={loading}>
+                        <Button type="primary" htmlType="submit">
                             Lưu tài liệu
                         </Button>
                     </div>

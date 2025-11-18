@@ -1,8 +1,5 @@
-import { User } from "@/types/User.interface";
+import { VotingMethods } from "@/types/VotingMethods.interface";
 import BaseService from "./BaseService";
-
-
-
 class VotingMethodsService extends BaseService {
     constructor() {
         super("voting-methods");
@@ -17,15 +14,16 @@ class VotingMethodsService extends BaseService {
             throw error;
         }
     }
-    async searchVotingMethod(body: any): Promise<any> {
+    async searchVotingMethod(params: any): Promise<VotingMethods[]> {
         try {
-            const response = await this.api.post<any>(`${this.endpoint}/search`, body);
-            return response;
+            const response = await this.api.post<any>(`${this.endpoint}/search`, params);
+            return response.data.content;
         } catch (error) {
             console.error("Error search voting method:", error);
             throw error;
         }
     }
+    
 
     async getVotingMethodById(code: string): Promise<any> {
         try {
