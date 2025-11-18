@@ -93,6 +93,20 @@ export class FileService extends BaseService {
 
   }
 
+  async upfile(body:any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/upload`, body)
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching decisions:", error);
+      throw error;
+    }
+
+  }
+
+  
+  
+
 }
 
 export default new FileService();

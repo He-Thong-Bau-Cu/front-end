@@ -8,11 +8,11 @@ class ElectionDocumentService extends BaseService {
     constructor() {
         super("election-documents");
     }
-     async getDocumentByElectionId(id: string ): Promise<any> {
+    async getDocumentByElectionId(id: string): Promise<any> {
         try {
             const response = await this.api.get<any>(
                 `${this.endpoint}/elections/${id}`);
-            return response;
+            return response.data;
 
         } catch (error) {
             console.error("Error fetching documents:", error);
@@ -21,9 +21,9 @@ class ElectionDocumentService extends BaseService {
 
     }
 
-    async CreateDocument(body:any): Promise<any> {
+    async CreateDocument(body: any): Promise<any> {
         try {
-            const response = await this.api.post<any>(`${this.endpoint}`,body);
+            const response = await this.api.post<any>(`${this.endpoint}`, body);
             return response;
 
         } catch (error) {
@@ -44,10 +44,10 @@ class ElectionDocumentService extends BaseService {
         }
 
     }
-     async UpdateDocumentById(id: string, body:any): Promise<any> {
+    async UpdateDocumentById(id: string, body: any): Promise<any> {
         try {
             const response = await this.api.put<any>(
-                `${this.endpoint}/${id}`);
+                `${this.endpoint}/${id}`, body);
             return response;
 
         } catch (error) {
@@ -57,10 +57,10 @@ class ElectionDocumentService extends BaseService {
 
     }
 
-    
 
 
-    
+
+
 
 }
 

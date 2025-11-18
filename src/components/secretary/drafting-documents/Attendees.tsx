@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Card,
     Tag,
@@ -8,80 +8,126 @@ import {
     Input,
     Select,
     Button,
+    message,
 } from "antd";
 
+import {
+    DeleteOutlined,
+} from "@ant-design/icons";
+import ElectionService from "@/services/ElectionService";
+import DecisionService from "@/services/DecisionService";
+import { User } from "@/types/User.interface";
+import { P } from "framer-motion/dist/types.d-BJcRxCew";
 const { Text } = Typography;
 const { Option } = Select;
-
 interface Participant {
-    name: string;
+    id?: number;
+    userId: string
+    fullName: string;
     email: string;
-    role: string;
+    position?: string;
     status: string;
     phone?: string;
+    citizenId?: string;
+    address: string;
     department?: string;
-    percentage?: number; // % cổ phần
+    percentage?: number;
 }
 
-const masterVoters: Participant[] = [
-    {
-        name: "Nguyễn Văn A",
-        email: "a@company.com",
-        role: "Chủ tịch HĐQT",
-        status: "Đã xác nhận",
-        phone: "0909123456",
-        department: "Ban Điều Hành",
-    },
-    {
-        name: "Trần Thị B",
-        email: "b@company.com",
-        role: "Phó Chủ tịch",
-        status: "Đã xác nhận",
-        phone: "0909000999",
-        department: "Ban Điều Hành",
-    }
-];
+interface Props {
+    onChange: (data: Participant[]) => void;
+}
 
-const Attendees: React.FC = () => {
-    const [participants, setParticipants] = useState<Participant[]>([]);
-    const [voterList] = useState<Participant[]>(masterVoters);
 
+const Attendees: React.FC<Props> = ({ onChange }) => {
+    const [participants, setParticipants] = useState<any[]>([]);
+    const [selectedVoter, setSelectedVoter] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
+    const [users, setUsers] = useState<User[]>([]);
 
+    /* ===========================================================
+        CHỌN CỬ TRI
+    ============================================================ */
     const handleSelectVoter = (email: string) => {
-        const selected = voterList.find(v => v.email === email);
-        if (selected) {
-            form.setFieldsValue({
-                name: selected.name,
-                email: selected.email,
-                role: selected.role,
-                status: selected.status,
-                phone: selected.phone,
-                department: selected.department
-            });
+        const voter = users.find((v) => v.email === email);
+        setSelectedVoter(voter);
+    };
+    const getUsers = async () => {
+        try {
+            const electionId = localStorage.getItem("currentElectionId") || "";
+            const election = await DecisionService.getElectionById(electionId);
+            const res = await ElectionService.getElectionUser({ startData: election.startDate, endDate: election.startDate });
+            setUsers(res);
+        } catch (err) {
+            message.error("Không thể tải danh sách người dùng!");
         }
     };
 
-    const handleAdd = () => {
-        form.validateFields().then(values => {
-            setParticipants([...participants, values]);
-            form.resetFields();
-            setIsModalOpen(false);
-        });
-    };
+    useEffect(() => {
+        getUsers();
+    }, []);
 
+    const totalPercentage = participants.reduce(
+        (sum, p) => sum + (Number(p.percentage) || 0),
+        0
+    );
+
+
+    const handleAdd = (values: any) => {
+        const userInfo = users.find((u) => u._id === values.userId);
+
+        if (!userInfo) {
+            return message.error("Không tìm thấy thông tin người dùng!");
+        }
+
+        const newMember: Participant = {
+            id: Date.now(),
+            userId: values.userId,
+            fullName: userInfo.fullName,
+            email: userInfo.email,
+            position: userInfo.position,
+            status: userInfo.status,
+            phone: userInfo.phone,
+            citizenId: userInfo.citizenId,
+            address: userInfo.address,
+            department: userInfo.department,
+            percentage: values.percentage
+
+        };
+
+        const updated = [...participants, newMember];
+        setParticipants(updated);
+        onChange(updated); // gửi dữ liệu về DraftingDocuments
+
+        form.resetFields();
+        setSelectedVoter(null);
+        setIsModalOpen(false);
+    };
+    const handleDelete = (id: number) => {
+        const updated = participants.filter((m) => m.id !== id);
+        setParticipants(updated);
+        onChange(updated);
+    };
+    /* ===========================================================
+        TAG MÀU TRẠNG THÁI
+    ============================================================ */
     const statusColor = (status: string) => {
         switch (status) {
-            case "Đã xác nhận": return "green";
-            case "Đang chờ": return "orange";
-            case "Đã từ chối": return "red";
-            default: return "default";
+            case "Đã xác nhận":
+                return "green";
+            case "Đang chờ":
+                return "orange";
+            case "Đã từ chối":
+                return "red";
+            default:
+                return "default";
         }
     };
 
     return (
         <>
+            {/* ==================== DANH SÁCH CỬ TRI ==================== */}
             <Card
                 className="meeting-side-card"
                 title={
@@ -89,7 +135,15 @@ const Attendees: React.FC = () => {
                         <Text style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>
                             👥 Danh sách cử tri ({participants.length})
                         </Text>
-                        <a className="add-link" onClick={() => setIsModalOpen(true)}>
+                        <Tag color="blue" style={{ marginLeft: 10 }}>
+                            Tổng cổ phần: {totalPercentage}%
+                        </Tag>
+
+                        <a
+                            className="add-link"
+                            onClick={() => setIsModalOpen(true)}
+                            style={{ cursor: "pointer" }}
+                        >
                             + Thêm
                         </a>
                     </div>
@@ -98,94 +152,130 @@ const Attendees: React.FC = () => {
                 {participants.map((p, i) => (
                     <div key={i} className="participant-item">
                         <div>
-                            <strong>{p.name}</strong>
-                            <p>{p.role}</p>
-                            <p>{p.phone}</p>
-                            <p><b>% Cổ phần:</b> {p.percentage}%</p>
+                            <strong>{p.fullName}</strong>
+                            <p>{p.position}</p>
+                            <p>
+                                <b>% Cổ phần:</b> {p.percentage}%
+                            </p>
                         </div>
-                        <Tag color={statusColor(p.status)}>{p.status}</Tag>
+                        <Tag color={statusColor(p.status || "PENDING")}>
+                            {p.status === "ACTIVE"
+                                ? "Đã xác nhận"
+                                : p.status === "INACTIVE"
+                                    ? "Đã hủy"
+                                    : "Chờ duyệt"}
+                        </Tag>
+
+                        <DeleteOutlined
+                            onClick={() => handleDelete(p.id)}
+                            style={{ color: "red", marginLeft: 10 }}
+
+                        />,
                     </div>
                 ))}
             </Card>
 
-            {/* MODAL */}
+            {/* ==================== MODAL CHỌN CỬ TRI ==================== */}
             <Modal
                 title="➕ Chọn cử tri"
                 open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
+                onCancel={() => {
+                    setIsModalOpen(false);
+                    setSelectedVoter(null);
+                }}
                 footer={null}
                 centered
-                width={600}
-                bodyStyle={{ maxHeight: "60vh", overflowY: "auto" }}
+                width={650}
+                styles={{
+                    body: {
+                        maxHeight: "65vh",
+                        overflowY: "auto",
+                        padding: "20px 24px",
+                    },
+                }}
             >
                 <Form form={form} layout="vertical" onFinish={handleAdd}>
-
-                    {/* CHỌN CỬ TRI CÓ SẴN */}
-                    <Form.Item label="Chọn cử tri" name="selectedVoter"
-                        rules={[{ required: true, message: "Vui lòng chọn cử tri" }]}>
+                    {/* CHỌN CỬ TRI */}
+                    <Form.Item
+                        label="Chọn cử tri"
+                        name="userId"
+                        rules={[{ required: true, message: "Vui lòng chọn cử tri" }]}
+                    >
                         <Select
                             showSearch
                             placeholder="Tìm theo tên hoặc email"
                             onChange={handleSelectVoter}
-                            filterOption={(input, option: any) =>
-                                option.children.toLowerCase().includes(input.toLowerCase())
-                            }
                         >
-                            {voterList.map((v, i) => (
-                                <Option key={i} value={v.email}>
-                                    {v.name} — {v.email}
-                                </Option>
-                            ))}
+                            {users
+                                .filter((u) => !participants.some((p) => p.userId === u._id))
+                                .map((v, i) => (
+                                    <Option key={i} value={v._id}>
+                                        {v.fullName} — {v.email}
+                                    </Option>
+                                ))}
+
                         </Select>
                     </Form.Item>
+
+                    {/* % CỔ PHẦN */}
                     <Form.Item
                         name="percentage"
                         label="% Cổ phần"
                         rules={[
                             { required: true, message: "Vui lòng nhập tỷ lệ cổ phần" },
-                            { pattern: /^[0-9]+$/, message: "Chỉ nhập số" }
+                            { pattern: /^[0-9]+$/, message: "Chỉ nhập số" },
                         ]}
                     >
-                        <Input placeholder="Nhập % cổ phần (VD: 10)" />
+                        <Input placeholder="VD: 12" />
                     </Form.Item>
 
-                    <Form.Item style={{ textAlign: "right" }}>
-                        <Button onClick={() => setIsModalOpen(false)} style={{ marginRight: 8 }}>
+                    {/* THÔNG TIN CHI TIẾT CỬ TRI */}
+                    {selectedVoter && (
+                        <Card
+                            size="small"
+                            style={{ background: "#f9fafc", borderRadius: 10 }}
+                            title="📌 Thông tin cử tri"
+                        >
+                            <p>
+                                <b>Họ tên:</b> {selectedVoter.fullName}
+                            </p>
+                            <p>
+                                <b>Email:</b> {selectedVoter.email}
+                            </p>
+                            <p>
+                                <b>Chức vụ:</b> {selectedVoter.position}
+                            </p>
+                            <p>
+                                <b>SĐT:</b> {selectedVoter.phone}
+                            </p>
+                            <p>
+                                <b>Phòng ban:</b> {selectedVoter.department}
+                            </p>
+                            <p>
+                                <b>Trạng thái:</b>{" "}
+                                <Tag color={statusColor(selectedVoter.status)}>
+                                    {selectedVoter.status}
+                                </Tag>
+                            </p>
+                        </Card>
+                    )}
+
+                    {/* BUTTONS */}
+                    <Form.Item style={{ textAlign: "right", marginTop: 20 }}>
+                        <Button
+                            onClick={() => {
+                                setIsModalOpen(false);
+                                setSelectedVoter(null);
+                            }}
+                            style={{ marginRight: 8 }}
+                        >
                             Hủy
                         </Button>
+
                         <Button type="primary" htmlType="submit">
                             Lưu
                         </Button>
                     </Form.Item>
-
-                    {/* THÔNG TIN TỰ FILL */}
-                    <Form.Item name="name" label="Họ và tên">
-                        <Input disabled />
-                    </Form.Item>
-
-                    <Form.Item name="email" label="Email">
-                        <Input disabled />
-                    </Form.Item>
-
-                    <Form.Item name="role" label="Chức vụ">
-                        <Input disabled />
-                    </Form.Item>
-
-                    <Form.Item name="phone" label="Số điện thoại">
-                        <Input disabled />
-                    </Form.Item>
-
-                    <Form.Item name="department" label="Phòng ban">
-                        <Input disabled />
-                    </Form.Item>
-
-                    <Form.Item name="status" label="Trạng thái">
-                        <Input disabled />
-                    </Form.Item>
-
-                    {/* NHẬP % CỔ PHẦN */}
-
-
                 </Form>
             </Modal>
         </>

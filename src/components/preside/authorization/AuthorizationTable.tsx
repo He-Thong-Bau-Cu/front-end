@@ -44,13 +44,11 @@ const statusColor: Record<string, string> = {
     SIGNED: "green",
     REJECT: "red",
 };
-interface AuthorizationTable {
-    onClose: () => void;
-}
+// interface AuthorizationTable {
+//     onClose: () => void;
+// }
 
-const AuthorizationTable: React.FC<AuthorizationTable> = ({
-    onClose,
-}) => {
+const AuthorizationTable = () => {
     const [data, setData] = useState<any[]>([]);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");

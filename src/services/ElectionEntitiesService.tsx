@@ -12,6 +12,21 @@ class ElectionEntitiesService extends BaseService {
         return response.data;
     }
 
+    async updateElectionEntities(id: string, body: any): Promise<any> {
+        const response = await this.api.post(`${this.endpoint}/${id}`, body);
+        return response;
+    }
+
+    async getElectionEntitiesById(id: string): Promise<ElectionEntities> {
+        const response = await this.api.get(`${this.endpoint}/${id}`);
+        return response.data;
+    }
+
+    async createElectionEntities(body:any): Promise<any> {
+        const response = await this.api.post<any>(`${this.endpoint}`, body);
+        return response;
+    }
+
 
 }
 

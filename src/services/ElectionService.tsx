@@ -26,6 +26,26 @@ class ElectionService extends BaseService {
       limit: params?.limit || 100, // Lấy nhiều để hiển thị đầy đủ
     });
   }
+
+  async updateElection(id: string, body: any): Promise<any> {
+    try {
+      const response = await this.api.put<any>(`${this.endpoint}/update/${id}`, body);
+      return response;
+    } catch (error) {
+      console.error("Error create election type :", error);
+      throw error;
+    }
+  }
+
+  async getElectionUser( body: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/user-organizer`, body);
+      return response.data;
+    } catch (error) {
+      console.error("Error get user:", error);
+      throw error;
+    }
+  }
 }
 
 export default new ElectionService();

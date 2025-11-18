@@ -37,8 +37,8 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 
   const loadUsers = async () => {
     try {
-      const res = await UserService.getNonVoter();
-      setUserList(res || []);
+      const res = await UserService.getAllUser();
+      setUserList(res);
     } catch (err) {
       console.error("Không thể load user:", err);
     }

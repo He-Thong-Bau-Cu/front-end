@@ -16,97 +16,72 @@ import "@/style/secretary/MettingInfo.model.css";
 import { ElectionTypes } from "@/types/ElectionTypes.interface";
 import { Threshols } from "@/types/Threshols.interface";
 import { VotingMethods } from "@/types/VotingMethods.interface";
-import { User } from "@/types/User.interface";
 import VotingMethodsService from "@/services/VotingMethodsService";
+import ElectionTypesService from "@/services/ElectionTypesService";
+import ThresholdsService from "@/services/ThresholdsService";
+import { string } from "yup";
+import { Decision } from "@/types/Decision.interface";
+import DecisionService from "@/services/DecisionService";
 
 const { Title } = Typography;
 
 interface Props {
-  open: boolean;
-  onSubmit: (payload: any) => void;
+  onChange: (data: any) => void;
+  data: any
 }
 
 interface MeetingFormValues {
-  location: string;
-  method: string;
-  type: string | { type: "other"; typeName: string; typeCode: string; description: string };
-  thresholdMethod:
-  | string
-  | { method: "other"; thresholdName: string; thresholdCode: string; description: string };
-  authorizationStart: Dayjs | null;
-  authorizationEnd: Dayjs | null;
+  location?: string;
+  method?: string;
+  type?: any;
+  threshold?: any;
+  authorizationStart?: Dayjs | null;
+  authorizationEnd?: Dayjs | null;
   candidates?: any[];
 }
 
-const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
+const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
   const [form] = Form.useForm<MeetingFormValues>();
   const [typeOther, setTypeOther] = useState(false);
   const [thresholdOther, setThresholdOther] = useState(false);
   const [voteMethod, setVoteMethod] = useState<string>("");
-  const [types, setType] = useState<ElectionTypes[] | null>(null);
-  const [threshols, setThreshols] = useState<Threshols[] | null>(null);
-  const [method, setMethod] = useState<VotingMethods[] | null>(null);
-  const [voter, setVoter] = useState<User[] | null>(null);
+  const [types, setTypes] = useState<ElectionTypes[] | null>(null);
+  const [thresholds, setThresholds] = useState<Threshols[] | null>(null);
+  const [methods, setMethods] = useState<VotingMethods[] | null>(null);
+  const [election, setElection] = useState<Decision | null>(null);
 
-  /* ============ HANDLE SUBMIT ============ */
-  const handleFinish = (values: MeetingFormValues) => {
-    let transformedCandidates: any[] = [];
-
-    if (values.candidates && Array.isArray(values.candidates)) {
-      if (voteMethod === "CUMULATIVE") {
-        transformedCandidates = values.candidates.map((item: any) => ({
-          title: item.title,
-          description: item.description,
-          metaData: {
-            fullName: item.metaData?.fullName,
-            age: item.metaData?.age,
-            department: item.metaData?.department,
-            experience: item.metaData?.experience,
-            achievements: item.metaData?.achievements,
-          },
-          imageUrl: item.imageUrl,
-          file: item.file?.[0]?.originFileObj || null,
-        }));
-      }
-
-      if (voteMethod === "YES_NO_ABSTAIN") {
-        transformedCandidates = values.candidates.map((item: any) => ({
-          title: item.title,
-          description: item.description,
-          proposerId: item.proposerId,
-          file: item.file?.[0]?.originFileObj || null,
-        }));
-      }
+  /* ===========================================================
+     FETCH DATA ONCE
+  ============================================================ */
+  const fetchData = async () => {
+    try {
+      const res = await VotingMethodsService.searchVotingMethod({});
+      const type = await ElectionTypesService.searchElectionType({});
+      const th = await ThresholdsService.searchThreshold({});
+      setTypes(type);
+      setMethods(res);
+      setThresholds(th);
+    } catch (error) {
+      console.error("Error fetching voting methods:", error);
+      setMethods([]);
     }
-
-    // LẤY DANH SÁCH PHƯƠNG THỨC BẦU CỬ
-    const fetchData = async () => {
-      try {
-        let body = {};
-        const res = await VotingMethodsService.searchVotingMethod(body);
-        setMethod(res?.data || []); // Lưu vào state method
-      } catch (error) {
-        console.error("Error fetching voting methods:", error);
-      }
-    };
-
-    // Khi mở modal thì load lại dữ liệu
-    useEffect(() => {
-      if (open) {
-        fetchData();
-      }
-    }, [open]);
-
-    const payload = {
-      ...values,
-      voteMethod,
-      candidates: transformedCandidates,
-    };
-
-    onSubmit(payload);
   };
 
-  /* ===================== CẤU TRÚC FORM RỖNG ===================== */
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  /* ===========================================================
+     EMIT VALUE TO PARENT (NHƯ DIGITALSIGNMODAL)
+  ============================================================ */
+  const emitChange = () => {
+    const values = form.getFieldsValue(true);
+    onChange(values);
+  };
+
+  /* ===========================================================
+      EMPTY CANDIDATE TEMPLATE
+  ============================================================ */
   const emptyCandidate = {
     title: "",
     description: "",
@@ -118,16 +93,45 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
       achievements: "",
     },
     proposerId: "",
-    file: [],
-    image: [],
+    file: string,
+    image: string,
   };
 
   return (
     <Card className="meeting-card">
-      <Title level={4} className="meeting-title">📄 Nội dung Quyết định</Title>
+      <Title level={4} className="meeting-title">
+        📄 Nội dung Quyết định
+      </Title>
 
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
+      {/* Form KHÔNG submit, chỉ emitChange */}
+      <Form
+        form={form}
+        layout="vertical"
+        onValuesChange={emitChange}
+      >
         <Row gutter={20}>
+
+          {/* ĐỊA ĐIỂM */}
+          <Col span={12}>
+            <Form.Item
+              label="Số nghị quyết"
+              name="decisionNumber"
+              rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
+            >
+              <Input value={data?.decisionNumber} disabled placeholder="Nhập địa điểm tổ chức" />
+            </Form.Item>
+          </Col>
+
+           <Col span={12}>
+            <Form.Item
+              label="Tên nghị quyết"
+              name="decisionName"
+              rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
+            >
+              <Input value={data?.decisionName} disabled placeholder="Nhập địa điểm tổ chức" />
+            </Form.Item>
+          </Col>
+
           {/* ĐỊA ĐIỂM */}
           <Col span={12}>
             <Form.Item
@@ -150,95 +154,95 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
                 placeholder="Chọn hình thức bầu cử"
                 onChange={(v) => {
                   setVoteMethod(v);
-
-                  // ⭐ Tự động tạo 2 nội dung rỗng cho người nhập luôn
                   form.setFieldsValue({
-                    method: v,
                     candidates: [emptyCandidate, emptyCandidate],
                   });
+                  emitChange();
                 }}
               >
-                {method?.map((item) => (
-                  <Select.Option key={item._id} value={item.methodCode}>
-                    {item.methodName}
-                  </Select.Option>
-                ))}
-                <Select.Option value="CUMULATIVE">Cumulative</Select.Option>
-                <Select.Option value="YESNO">Yes / No</Select.Option>
+                {Array.isArray(methods) &&
+                  methods.map((item) => (
+                    <Select.Option key={item._id} value={item._id}>
+                      {item.methodName}
+                    </Select.Option>
+                  ))}
               </Select>
             </Form.Item>
           </Col>
 
-          {/* thể loai BẦU CỬ */}
+          {/* THỂ LOẠI BẦU CỬ */}
           <Col span={12}>
             <Form.Item
-              label="thể loai bầu cử"
-              name="type"
-              rules={[{ required: true, message: "Vui lòng chọn thể loai" }]}
+              label="Thể loại bầu cử"
+              required
             >
               {!typeOther ? (
                 <Select
-                  placeholder="Chọn thể loai"
+                  placeholder="Chọn thể loại"
                   onChange={(v) => {
                     if (v === "other") {
                       setTypeOther(true);
+
                       form.setFieldsValue({
                         type: {
-                          type: "other",
                           typeName: "",
                           typeCode: "",
-                          description: "",
-                        },
+                          description: ""
+                        }
                       });
                     } else {
                       setTypeOther(false);
                       form.setFieldsValue({ type: v });
                     }
+                    emitChange();
                   }}
                 >
-                  <Select.Option value="direct">Bầu trực tiếp</Select.Option>
-                  <Select.Option value="proxy">Ủy quyền</Select.Option>
-                  <Select.Option value="electronic">Bầu điện tử</Select.Option>
                   <Select.Option value="other">Khác…</Select.Option>
+                  {types?.map((item) => (
+                    <Select.Option key={item._id} value={item._id}>
+                      {item.typeName}
+                    </Select.Option>
+                  ))}
                 </Select>
               ) : (
-                <div>
-                  <Input.Group>
-                    <Form.Item
-                      label="Tên thể loai"
-                      name={["type", "typeName"]}
-                      rules={[{ required: true, message: "Nhập tên thể loai" }]}
-                    >
-                      <Input placeholder="Tên thể loai (Khác)" />
-                    </Form.Item>
-                    <Form.Item
-                      label="Mã thể loai"
-                      name={["type", "typeCode"]}
-                      rules={[{ required: true, message: "Nhập mã thể loai" }]}
-                    >
-                      <Input placeholder="Mã thể loai" />
-                    </Form.Item>
-                    <Form.Item
-                      label="Mô tả"
-                      name={["type", "description"]}>
-                      <Input.TextArea rows={2} placeholder="Mô tả thể loai" />
-                    </Form.Item>
-                  </Input.Group>
+                <>
+                  <Form.Item
+                    label="Tên thể loại"
+                    name={["type", "typeName"]}
+                    rules={[{ required: true }]}
+                  >
+                    <Input placeholder="Tên thể loại" />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Mã thể loại"
+                    name={["type", "typeCode"]}
+                    rules={[{ required: true }]}
+                  >
+                    <Input placeholder="Mã thể loại" />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Mô tả"
+                    name={["type", "description"]}
+                  >
+                    <Input.TextArea rows={2} />
+                  </Form.Item>
 
                   <Button type="link" onClick={() => setTypeOther(false)}>
                     ← Quay lại
                   </Button>
-                </div>
+                </>
               )}
             </Form.Item>
           </Col>
+
 
           {/* NGƯỠNG THÔNG QUA */}
           <Col span={12}>
             <Form.Item
               label="Ngưỡng thông qua"
-              name="thresholdMethod"
-              rules={[{ required: true, message: "Vui lòng chọn ngưỡng" }]}
+              rules={[{ required: true }]}
             >
               {!thresholdOther ? (
                 <Select
@@ -247,58 +251,62 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
                     if (v === "other") {
                       setThresholdOther(true);
                       form.setFieldsValue({
-                        thresholdMethod: {
-                          method: "other",
-                          thresholdName: "",
-                          thresholdCode: "",
-                          description: "",
-                        },
+                        threshold: { method: "other" },
                       });
                     } else {
                       setThresholdOther(false);
-                      form.setFieldsValue({ thresholdMethod: v });
+                      form.setFieldsValue({ threshold: v });
                     }
+                    emitChange();
                   }}
                 >
-                  <Select.Option value="majority">Đa số</Select.Option>
-                  <Select.Option value="proportional">Tỷ lệ</Select.Option>
-                  <Select.Option value="absolute">Tuyệt đối</Select.Option>
                   <Select.Option value="other">Khác…</Select.Option>
+
+                  {Array.isArray(thresholds) &&
+                    thresholds.map((item) => (
+                      <Select.Option key={item._id} value={item._id}>
+                        {item.thresholdName}
+                      </Select.Option>
+                    ))}
                 </Select>
               ) : (
                 <div>
                   <Form.Item
                     label="Tên ngưỡng"
-                    name={["thresholdMethod", "thresholdName"]}
-                    rules={[{ required: true, message: "Nhập tên ngưỡng" }]}
+                    name={["threshold", "thresholdName"]}
+                    rules={[{ required: true }]}
                   >
                     <Input placeholder="Tên ngưỡng" />
                   </Form.Item>
 
-                  <Form.Item
-                    label="Loại ngưỡng"
-                    name={["thresholdMethod", "thresholdType"]}
-                    rules={[{ required: true, message: "Nhập loại ngưỡng" }]}
-                  >
-                    <Input placeholder="Loại ngưỡng" />
-                  </Form.Item>
+
                   <Form.Item
                     label="Tỷ lệ thông qua"
-                    name={["thresholdMethod", "value"]}
-                    rules={[{ required: true, message: "Nhập tỷ lệ thông qua" }]}
+                    name={["threshold", "value"]}
+                    rules={[{ required: true }]}
                   >
                     <Input placeholder="Tỷ lệ thông qua" />
                   </Form.Item>
+                  <Form.Item
+                    label="Loại ngưỡng"
+                    name={["threshold", "thresholdType"]}
+                    rules={[{ required: true }]}
+                  >
+                    <Input placeholder="Loại ngưỡng" />
+                  </Form.Item>
+
 
                   <Form.Item
                     label="Mô tả"
-                    name={["thresholdMethod", "description"]}>
-                    <Input.TextArea rows={2} placeholder="Mô tả" />
+                    name={["threshold", "description"]}
+                  >
+                    <Input.TextArea rows={2} />
                   </Form.Item>
 
                   <Form.Item
                     label="Mã ngưỡng"
-                    name={["thresholdMethod", "thresholdCode"]}
+                    name={["threshold", "thresholdCode"]}
+                    rules={[{ required: true }]}
                   >
                     <Input placeholder="Mã ngưỡng" />
                   </Form.Item>
@@ -311,12 +319,12 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
             </Form.Item>
           </Col>
 
-          {/* NGÀY ỦY QUYỀN */}
+          {/* NGÀY BẮT ĐẦU */}
           <Col span={12}>
             <Form.Item
               label="Ngày bắt đầu ủy quyền"
               name="authorizationStart"
-              rules={[{ required: true, message: "Vui lòng chọn ngày" }]}
+              rules={[{ required: true }]}
             >
               <DatePicker
                 style={{ width: "100%" }}
@@ -326,23 +334,12 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
             </Form.Item>
           </Col>
 
+          {/* NGÀY KẾT THÚC */}
           <Col span={12}>
             <Form.Item
               label="Ngày kết thúc ủy quyền"
               name="authorizationEnd"
-              rules={[
-                { required: true, message: "Vui lòng chọn ngày" },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    const start = getFieldValue("authorizationStart");
-                    if (!value || !start) return Promise.resolve();
-                    if (dayjs(value).isBefore(start, "day"))
-                      return Promise.reject("Ngày kết thúc phải sau ngày bắt đầu");
-
-                    return Promise.resolve();
-                  },
-                }),
-              ]}
+              rules={[{ required: true }]}
             >
               <DatePicker
                 style={{ width: "100%" }}
@@ -356,40 +353,16 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
             </Form.Item>
           </Col>
 
-          {/* ===================================== */}
-          {/*     DANH SÁCH BẦU CHỌN – ≥ 2 ITEMS    */}
-          {/* ===================================== */}
+          {/* DANH SÁCH BẦU CHỌN */}
           <Col span={24}>
-            <h4 style={{ marginTop: 10 }}>Danh sách bầu chọn</h4>
-
-            {/* Validate: phải có ít nhất 2 mục */}
-            <Form.Item
-              shouldUpdate
-              rules={[
-                {
-                  validator() {
-                    const list = form.getFieldValue("candidates");
-                    if (!list || list.length < 2) {
-                      return Promise.reject("Vui lòng nhập tối thiểu 2 nội dung bầu chọn");
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <></>
-            </Form.Item>
-
-            {/* Hiển thị khi chọn phương thức */}
+            <h3 style={{ marginTop: 20 }}>📄 Danh sách bầu chọn</h3>
             {!voteMethod ? (
               <p style={{ color: "red" }}>Vui lòng chọn hình thức bầu cử</p>
             ) : (
               <Form.List name="candidates">
                 {(fields, { add, remove }) => (
                   <div>
-
-
-                    {fields.map(({ key, name, ...rest }) => (
+                    {fields.map(({ key, name }) => (
                       <Row
                         key={key}
                         gutter={12}
@@ -401,62 +374,74 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
                         }}
                       >
                         {/* ======== CUMULATIVE ======== */}
-                        {voteMethod === "CUMULATIVE" && (
+                        {voteMethod === "691a36c358ae5966f350b2da" && (
                           <>
                             <Col span={12}>
                               <Form.Item
-                                {...rest}
-                                label="Tiêu đề"
-                                name={[name, "title"]}
-                                rules={[{ required: true, message: "Nhập tiêu đề" }]}
-                              >
-                                <Input placeholder="Tiêu đề mục bầu chọn" />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item {...rest} label="Mô tả" name={[name, "description"]}>
-                                <Input placeholder="Mô tả" />
+                                rules={[{ required: true }]}
+                                name={[name, "title"]} label="Tiêu đề">
+                                <Input />
                               </Form.Item>
                             </Col>
 
                             <Col span={12}>
                               <Form.Item
-                                label="Họ và tên"
+                                rules={[{ required: true }]}
+                                name={[name, "description"]}
+                                label="Mô tả"
+                              >
+                                <Input />
+                              </Form.Item>
+                            </Col>
+
+                            <Col span={12}>
+                              <Form.Item
+                                rules={[{ required: true }]}
                                 name={[name, "metaData", "fullName"]}
-                                rules={[{ required: true, message: "Nhập họ tên" }]}
+                                label="Họ và tên"
                               >
-                                <Input placeholder="Họ và tên ứng viên" />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item label="Tuổi" name={[name, "metaData", "age"]}>
-                                <Input placeholder="Tuổi" />
+                                <Input />
                               </Form.Item>
                             </Col>
 
                             <Col span={12}>
                               <Form.Item
-                                label="Phòng ban"
+
+                                name={[name, "metaData", "age"]} label="Tuổi">
+                                <Input />
+                              </Form.Item>
+                            </Col>
+
+                            <Col span={12}>
+                              <Form.Item
                                 name={[name, "metaData", "department"]}
+                                label="Phòng ban"
                               >
-                                <Input placeholder="Phòng ban" />
+                                <Input />
+                              </Form.Item>
+                            </Col>
+
+                            <Col span={12}>
+                              <Form.Item
+                                name={[name, "metaData", "position"]}
+                                label="Vị trí"
+                              >
+                                <Input />
                               </Form.Item>
                             </Col>
 
                             <Col span={12}>
                               <Form.Item label="Người đề xuất" name={[name, "proposerId"]}>
-                                <Input placeholder="Mã người đề xuất" />
+                                <Input />
                               </Form.Item>
                             </Col>
 
                             <Col span={12}>
                               <Form.Item
                                 label="Ảnh ứng viên"
-                                name={[name, "image"]}
-                                valuePropName="fileList"
-                                getValueFromEvent={(e) => e?.fileList}
+                                name={[name, "metaData", "image"]}
+                              // valuePropName="fileList"
+                              // getValueFromEvent={(e) => e?.fileList}
                               >
                                 <Upload
                                   beforeUpload={() => false}
@@ -472,19 +457,19 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
                               <Form.Item
                                 label="Tài liệu đính kèm"
                                 name={[name, "file"]}
-                                valuePropName="fileList"
-                                getValueFromEvent={(e) => e?.fileList}
+                              // valuePropName="fileList"
+                              // getValueFromEvent={(e) => e?.fileList}
                               >
                                 <Upload beforeUpload={() => false}>
-                                  <Button>Tải file lên</Button>
+                                  <Button>Tải file</Button>
                                 </Upload>
                               </Form.Item>
                             </Col>
 
                             <Col span={24}>
                               <Form.Item
-                                label="Kinh nghiệm"
                                 name={[name, "metaData", "experience"]}
+                                label="Kinh nghiệm"
                               >
                                 <Input.TextArea rows={2} />
                               </Form.Item>
@@ -492,8 +477,8 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
 
                             <Col span={24}>
                               <Form.Item
-                                label="Thành tích"
                                 name={[name, "metaData", "achievements"]}
+                                label="Thành tích"
                               >
                                 <Input.TextArea rows={2} />
                               </Form.Item>
@@ -502,31 +487,30 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
                         )}
 
                         {/* ======== YES / NO ======== */}
-                        {voteMethod === "YESNO" && (
+                        {voteMethod === "691a36f958ae5966f350b2e0" && (
                           <>
                             <Col span={12}>
                               <Form.Item
-                                {...rest}
-                                label="Tiêu đề"
-                                name={[name, "title"]}
-                                rules={[{ required: true, message: "Nhập tiêu đề" }]}
-                              >
-                                <Input placeholder="Tiêu đề" />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item {...rest} label="Mô tả" name={[name, "description"]}>
-                                <Input placeholder="Mô tả" />
+                                rules={[{ required: true }]}
+                                name={[name, "title"]} label="Tiêu đề">
+                                <Input />
                               </Form.Item>
                             </Col>
 
                             <Col span={12}>
                               <Form.Item
-                                label="Tài liệu đính kèm"
+                                rules={[{ required: true }]}
+                                name={[name, "description"]} label="Mô tả">
+                                <Input />
+                              </Form.Item>
+                            </Col>
+
+                            <Col span={12}>
+                              <Form.Item
                                 name={[name, "file"]}
-                                valuePropName="fileList"
-                                getValueFromEvent={(e) => e?.fileList}
+                                label="Tài liệu đính kèm"
+                              // valuePropName="fileList"
+                              // getValueFromEvent={(e) => e?.fileList}
                               >
                                 <Upload beforeUpload={() => false}>
                                   <Button>Tải file</Button>
@@ -535,46 +519,34 @@ const MeetingInfo: React.FC<Props> = ({ open,  onSubmit }) => {
                             </Col>
 
                             <Col span={12}>
-                              <Form.Item
-                                label="Người đề xuất"
-                                name={[name, "proposerId"]}
-                              >
-                                <Input placeholder="Mã người đề xuất" />
+                              <Form.Item name={[name, "proposerId"]} label="Người đề xuất">
+                                <Input />
                               </Form.Item>
                             </Col>
                           </>
                         )}
 
-                        {/* NÚT XÓA */}
-                        <Col span={24} style={{ marginTop: 10 }}>
+                        <Col span={24}>
                           <Button danger onClick={() => remove(name)}>
                             Xóa
                           </Button>
                         </Col>
                       </Row>
                     ))}
-                    {/* Nếu bạn muốn ẩn nút "Thêm", báo mình */}
+
                     <Button
                       type="dashed"
-                      style={{ marginBottom: 12, color: "green" }}
                       onClick={() => add(emptyCandidate)}
+                      style={{ marginBottom: 12 }}
                     >
                       + Thêm nội dung bầu chọn
                     </Button>
                   </div>
-
                 )}
               </Form.List>
             )}
           </Col>
         </Row>
-
-        {/* BUTTON */}
-        <div className="meeting-actions">
-          <Button type="primary" htmlType="submit">
-            Lưu thông tin
-          </Button>
-        </div>
       </Form>
     </Card>
   );
