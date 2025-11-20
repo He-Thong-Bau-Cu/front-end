@@ -1,18 +1,17 @@
 import logo from "@/assets/logo.png";
-import UserService from "@/services/UserService";
+import { getUserLogin } from "@/utils/auth";
 import {
+  HistoryOutlined,
   IdcardOutlined,
   LogoutOutlined,
-  SettingOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Layout, message, Space, Typography } from "antd";
 import { MenuProps } from "antd/lib";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { User } from "../../types/User.interface";
 import ProfileModal from "./ProfileModal";
-import { getUserLogin } from "@/utils/auth";
-import FileService from "@/services/FileService";
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -20,13 +19,15 @@ const { Title, Text } = Typography;
 const HomeHeader: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await getUserLogin();
         setUser(userData as User);
-      } catch (error) {
+      } catch {
         message.error("Không thể tải thông tin người dùng!");
       }
     };
@@ -47,6 +48,12 @@ const HomeHeader: React.FC = () => {
       label: "Hồ sơ cá nhân",
       icon: <IdcardOutlined />,
       onClick: handleOpenProfile,
+    },
+    {
+      key: "authorization",
+      label: "Lịch sử ủy quyền",
+      icon: <HistoryOutlined />,
+      onClick: () => navigate("/home/authorization-history"),
     },
     {
       type: "divider",
@@ -70,7 +77,7 @@ const HomeHeader: React.FC = () => {
           width: "100%",
         }}
       >
-        <Space size={16} align="center">
+        <Space size={16} align="center" onClick={() => navigate("/home")}>
           <div className="sidebar-logo-circle">
             <img src={logo} alt="Logo trang web" width="110" height="160" />
           </div>

@@ -53,6 +53,7 @@ import VoteSuccess from "@/pages/voter/VoteSuccess";
 import VotingHistory from "@/pages/voter/VotingHistory";
 import AuthorizationDetail from "@/components/voter/authorization/AuthorizationDetail";
 import AuthorizationForm from "@/components/voter/authorization/AuthorizationForm";
+import AuthorizationHistory from "@/components/homepage/AuthorizationHistory";
 
 export const privateRoutes = [
   {
@@ -189,9 +190,13 @@ export const privateRoutes = [
       {
         index: true,
         element: <HomePage />,
+
       },
+      { path: "authorization-history", element: <AuthorizationHistory /> },
+
     ],
   },
+
   {
     path: "/change-password-first-time",
     element: <PrivateRoute />,
