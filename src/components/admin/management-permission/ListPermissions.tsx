@@ -32,6 +32,13 @@ import SystemService from "@/services/SystemService";
 
 const { Text } = Typography;
 
+const getPermissionGroup = (name?: string) => {
+  if (!name) return "Khác";
+  const [base] = name.split(/của/i);
+  const normalized = base.trim();
+  return normalized.length ? normalized : "Khác";
+};
+
 interface ListPermissionsProps {
   permissions?: any[];
   total?: number;
@@ -188,6 +195,15 @@ const ListPermissions = ({
             </Text>
           </div>
         </div>
+      ),
+    },
+    {
+      title: "Nhóm quyền",
+      dataIndex: "permissionName",
+      key: "group",
+      width: "20%",
+      render: (text: string) => (
+        <Tag color="processing">{getPermissionGroup(text)}</Tag>
       ),
     },
     {

@@ -2,33 +2,20 @@
    SYSTEM REPORT CONTAINER
    ====================== */
 .system-report-container {
-  padding: 0;
-  margin-left: -24px;
-  margin-right: -14px;
-  background: transparent;
+  padding: 24px 32px 40px;
+  background: #f6f9fc;
   min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Override Ant Design Content background */
-.system-report-container,
-.system-report-container > * {
-  background: transparent !important;
+  box-sizing: border-box;
 }
 
 /* ======================
    PAGE HEADER
    ====================== */
 .system-report-header {
-  background: #fff !important;
+  background: #fff;
   border-radius: 12px;
   padding: 24px 32px;
-  margin-top: 5px;
   margin-bottom: 24px;
-  margin-left: 0 !important;
-  margin-right: 10px !important;
-  width: calc(100% - 10px) !important;
-  max-width: calc(100% - 10px) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
@@ -116,84 +103,10 @@
    ====================== */
 .system-report-stats-section {
   margin-bottom: 24px;
-  margin-left: 0;
-  padding-left: 0;
 }
 
 .report-stats-container {
   background: transparent;
-  padding: 0;
-  margin-left: 0 !important;
-  margin-right: 10px !important;
-  width: calc(100% - 10px) !important;
-  max-width: calc(100% - 10px) !important;
-  box-sizing: border-box;
-}
-
-.report-stats-container .ant-row {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.report-stats-container .stats-row {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-.report-stats-container .stats-row .stats-col {
-  box-sizing: border-box;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 5px;
-  flex: 0 0 calc((100% - 30px) / 5);
-  max-width: calc((100% - 30px) / 5);
-  min-width: 0;
-}
-
-.report-stats-container .stats-row .stats-col:first-child {
-  margin-left: 0 !important;
-}
-
-.report-stats-container .stats-row .stats-col:nth-child(5) {
-  margin-right: 10px;
-}
-
-.report-stats-container .stats-row .stats-col:nth-child(6) {
-  margin-right: 0;
-  margin-left: 0 !important;
-}
-
-/* Override for smaller screens to use Ant Design's responsive system */
-@media (max-width: 1200px) {
-  .report-stats-container .stats-row .stats-col {
-    flex: none;
-    max-width: none;
-  }
-}
-
-@media (max-width: 992px) {
-  .report-stats-container .stats-row .stats-col {
-    flex: none;
-    max-width: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .report-stats-container .stats-row .stats-col {
-    flex: none;
-    max-width: none;
-  }
-}
-
-@media (max-width: 576px) {
-  .report-stats-container .stats-row .stats-col {
-    flex: none;
-    max-width: none;
-  }
 }
 
 .report-stat-card {
@@ -264,40 +177,6 @@
    ====================== */
 .system-report-bottom-section {
   margin-bottom: 24px;
-  margin-left: 0 !important;
-  margin-right: 10px !important;
-  width: calc(100% - 10px) !important;
-  max-width: calc(100% - 10px) !important;
-  box-sizing: border-box;
-}
-
-.system-report-bottom-section .ant-row {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  width: 100%;
-}
-
-.system-report-bottom-section .ant-col {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  box-sizing: border-box;
-}
-
-.system-report-bottom-section .chart-col {
-  padding-right: 0 !important;
-  margin-right: 20px;
-  width: calc(66.67% - 20px) !important; /* lg={16} = 16/24 = 66.67%, trừ 20px cho spacing */
-  flex: 0 0 calc(66.67% - 20px) !important;
-  max-width: calc(66.67% - 20px) !important;
-}
-
-.system-report-bottom-section .activity-col {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin-right: 0;
-  width: 33.33% !important; /* lg={8} = 8/24 = 33.33% */
-  flex: 0 0 33.33% !important;
-  max-width: 33.33% !important;
 }
 
 /* ======================
@@ -308,8 +187,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   background: #fff;
   height: 100%;
-  padding-right: 20px !important;
-  padding-left: 20px !important;
 }
 
 .report-chart-card .ant-card-head {
@@ -391,8 +268,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   background: #fff;
   height: 100%;
-  padding-right: 20px !important;
-  padding-left: 20px !important;
 }
 
 .report-activity-card .ant-card-head {
@@ -514,6 +389,10 @@
 }
 
 @media (max-width: 768px) {
+  .system-report-container {
+    padding: 16px;
+  }
+
   .system-report-header {
     flex-direction: column;
     align-items: flex-start;

@@ -3,7 +3,19 @@ import { SaveOutlined, UndoOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
-const SettingsHeader: React.FC = () => {
+interface SettingsHeaderProps {
+  onSaveAll?: () => void;
+  onResetDefaults?: () => void;
+  saving?: boolean;
+  resetting?: boolean;
+}
+
+const SettingsHeader: React.FC<SettingsHeaderProps> = ({
+  onSaveAll,
+  onResetDefaults,
+  saving,
+  resetting,
+}) => {
   return (
     <Card
       className="settings-header-card"
@@ -58,14 +70,20 @@ const SettingsHeader: React.FC = () => {
           <Button
             icon={<SaveOutlined />}
             className="btn-save"
-            >
+            onClick={onSaveAll}
+            disabled={!onSaveAll}
+            loading={saving}
+          >
             Lưu tất cả
           </Button>
 
           <Button
             icon={<UndoOutlined />}
             className="btn-reset"
-            >
+            onClick={onResetDefaults}
+            disabled={!onResetDefaults}
+            loading={resetting}
+          >
             Khôi phục mặc định
           </Button>
         </div>

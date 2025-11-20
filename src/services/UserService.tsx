@@ -38,6 +38,20 @@ class UserService extends BaseService {
     return response.data;
   }
 
+  async importFromExcel(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return this.api.post(`${this.endpoint}/import/excel`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+
+  async exportToExcel(): Promise<Blob> {
+    return this.api.get(`${this.endpoint}/export/excel`, {
+      responseType: "blob",
+    });
+  }
+
 }
 
 export default new UserService();

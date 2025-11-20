@@ -1,13 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Checkbox, Button, Table } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { VoteVerificationProps } from "../../../types/ElectionVerification.interface";
 
+interface VoteVerificationDetailProps extends VoteVerificationProps {
+  initialConfirmed?: boolean;
+  onApprove?: () => Promise<void> | void;
+  approving?: boolean;
+}
+
 export default function VoteVerificationDetail({
-    verification,
-    logs,
-}: VoteVerificationProps) {
-    const [checked, setChecked] = useState(false);
+  verification,
+  logs,
+  initialConfirmed,
+  onApprove,
+  approving,
+}: VoteVerificationDetailProps) {
+  const [checked, setChecked] = useState<boolean>(!!initialConfirmed);
+
+  useEffect(() => {
+    setChecked(!!initialConfirmed);
+  }, [initialConfirmed]);
 
     const columns = [
         {
@@ -91,10 +104,10 @@ export default function VoteVerificationDetail({
                 <div className="ev-sign-box">
                     <h4 className="ev-sign-title">Khu vực Ký số & Công bố Kết quả</h4>
                     <div>
-
                         <Checkbox
                             checked={checked}
                             onChange={(e) => setChecked(e.target.checked)}
+                            disabled={initialConfirmed}
                         >
                             Tôi xác nhận đã kiểm tra, đối soát và công nhận kết quả
                             trên là chính xác và minh bạch.
@@ -105,9 +118,11 @@ export default function VoteVerificationDetail({
                             icon={<EditOutlined />}
                             type="primary"
                             className="ev-sign-btn"
-                            disabled={!checked}
+                            disabled={!checked || !!initialConfirmed}
+                            loading={approving}
+                            onClick={onApprove}
                         >
-                            Ký số & Công bố Kết quả
+                            {initialConfirmed ? "Đã công bố kết quả" : "Ký số & Công bố Kết quả"}
                         </Button>
                     </div>
                 </div>
