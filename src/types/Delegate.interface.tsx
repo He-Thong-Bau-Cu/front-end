@@ -111,7 +111,8 @@ export type DelegationStatus =
   | "ACTIVE"
   | "EXPIRED"
   | "REVOKED"
-  | "INVALID";
+  | "INVALID"
+  | "SIGNED";
 
 
 export interface DelegateInfoPayload {

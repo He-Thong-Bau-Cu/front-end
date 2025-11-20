@@ -27,6 +27,16 @@ class BallotService extends BaseService {
         return response.data;
     }
 
+    async updateBallot(id: string, payload: any): Promise<Ballot> {
+        const response = await this.api.put(
+            `${this.endpoint}/${id}`,
+            payload
+        ) as ApiResponse<Ballot>;
+
+        return response.data;
+    }
+
+
 }
 
 export default new BallotService();

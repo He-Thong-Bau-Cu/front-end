@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { Typography, Row, Col, Card, Tag, Space, Spin } from "antd";
 import {
   DollarOutlined,
   InfoCircleOutlined,
+  SendOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
+import { Button, Card, Col, Row, Space, Typography } from "antd";
+import { useEffect, useState } from "react";
 
-import CandidateCard from "./CandidateCard";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import VotingRightsService from "@/services/VotingRightsService";
+import CandidateCard from "./CandidateCard";
 
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import BallotService from "@/services/BallotService";
 import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { VotingRight } from "@/types/VotingRights.interface";
-import { useLoading } from "@/contexts/LoadingContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
@@ -22,10 +26,17 @@ const CandidateSection = () => {
   const [electionTitle, setElectionTitle] = useState("");
 
 
+
   const [candidates, setCandidates] = useState<ElectionEntities[]>([]);
   const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const ballotId = location.state?.ballotId;
 
-  const [voteDistribution, setVoteDistribution] = useState<Record<string, number>>({});
+
+
+  const [vote, setVote] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const loadData = async () => {
@@ -69,13 +80,55 @@ const CandidateSection = () => {
 
   // Xử lý phân bổ phiếu
   const handleVoteChange = (entity: ElectionEntities, value: number) => {
-    const newDistribution = { ...voteDistribution, [entity._id]: value };
+    const newDistribution = { ...vote, [entity._id]: value };
 
-    setVoteDistribution(newDistribution);
+    setVote(newDistribution);
 
     const totalUsed = Object.values(newDistribution).reduce((sum, v) => sum + v, 0);
 
     setRemainingVotes(Math.max(totalVotes - totalUsed, 0));
+  };
+
+
+  const handleSubmit = async () => {
+    const voterId = localStorage.getItem("voterId");
+    const electionId = localStorage.getItem("currentElectionId");
+
+    if (!ballotId) {
+      return notify("Không tìm thấy ballotId!", "error");
+    }
+
+    if (remainingVotes > 0) {
+      return notify("Bạn chưa phân bổ hết số phiếu!", "warning");
+    }
+
+    const allocations = Object.entries(vote).map(([entityId, voteValue]) => ({
+      entityId,
+      voteValue,
+    }));
+
+    try {
+      showLoading();
+
+
+      await BallotService.updateBallot(ballotId, {
+        electionId,
+        voterId,
+        allocations,
+        status: "CAST",     //  ✅🔥 Gửi luôn status CAST
+      });
+
+      // ⭐ Gửi status CAST khi quay lại BallotList
+      notify("Gửi phiếu bầu thành công!", "success");
+
+      navigate("/voter/ballots");
+
+    } catch (err) {
+      console.error(err);
+      notify("Có lỗi khi gửi phiếu bầu!", "error");
+    } finally {
+      hideLoading();
+    }
   };
 
 
@@ -130,13 +183,33 @@ const CandidateSection = () => {
           <Title level={5} style={{ margin: 0 }}>Danh sách bầu cử</Title>
         </Space>
 
-        {candidates.map((entity) => (
-          <CandidateCard
-            key={entity._id}
-            entity={entity}
-            onVoteChange={handleVoteChange}
-          />
-        ))}
+        {candidates.map((entity) => {
+          const currentVotes = vote[entity._id] || 0;
+
+          const maxVotesForCandidate = remainingVotes + currentVotes;
+
+          return (
+            <CandidateCard
+              key={entity._id}
+              entity={entity}
+              votes={currentVotes}
+              maxVotes={maxVotesForCandidate}
+              onVoteChange={handleVoteChange}
+            />
+          );
+        })}
+
+
+        {/* 🔥 NÚT SUBMIT PHIẾU */}
+        <Button
+          type="primary"
+          icon={<SendOutlined />}
+          style={{ marginTop: 24, width: "100%", height: 48, borderRadius: 10, fontSize: 16 }}
+          onClick={handleSubmit}
+          disabled={remainingVotes !== 0}
+        >
+          Gửi Phiếu Bầu
+        </Button>
       </Card>
     </div>
   );
