@@ -41,6 +41,27 @@ class ElectionParticipantService extends BaseService {
         }
   }
 
+  async getVoterByElectionId(id: string): Promise<any> {
+     try {
+            const response = await this.api.get(`${this.endpoint}/voters/elections/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
+  }
+
+   async getByElectionId(id: string): Promise<any> {
+     try {
+            const response = await this.api.get(`${this.endpoint}/elections/${id}`);
+            return response.data;
+
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
+  }
+
 }
 
 export default new ElectionParticipantService();

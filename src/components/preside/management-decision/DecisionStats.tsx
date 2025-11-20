@@ -184,7 +184,7 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
             icon: <DatabaseOutlined />,
         },
         {
-            label: "Yêu cầu chỉnh sửa",
+            label: "Từ chối",
             value: stats.requestEdit,
             color: "pink",
             icon: <EditOutlined />,

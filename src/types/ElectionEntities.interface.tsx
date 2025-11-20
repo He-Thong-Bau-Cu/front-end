@@ -1,3 +1,5 @@
+import { User } from "./User.interface";
+
 export interface ElectionEntitiesMetaData {
     fullName: string;
     age: number;
@@ -24,4 +26,5 @@ export interface ElectionEntities {
         typeName: string;
         typeCode: string;
     };
+    proposerId: User;
 }

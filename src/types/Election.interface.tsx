@@ -35,7 +35,8 @@ export interface Election {
     endDate: string;
     status: "DRAFT" | "ACTIVE" | "CLOSED" | "ARCHIVED";
     createdBy: number;
-    companyType: string;
+    decisionName: string;
+    decisionNumber: string;
     createdAt: string;
     updatedAt: string;
 }

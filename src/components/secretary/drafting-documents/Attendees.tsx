@@ -15,9 +15,7 @@ import {
     DeleteOutlined,
 } from "@ant-design/icons";
 import ElectionService from "@/services/ElectionService";
-import DecisionService from "@/services/DecisionService";
 import { User } from "@/types/User.interface";
-import { P } from "framer-motion/dist/types.d-BJcRxCew";
 const { Text } = Typography;
 const { Option } = Select;
 interface Participant {
@@ -36,16 +34,15 @@ interface Participant {
 
 interface Props {
     onChange: (data: Participant[]) => void;
+    data?: any;
+    percent?:any;
 }
-
-
-const Attendees: React.FC<Props> = ({ onChange }) => {
+const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
     const [participants, setParticipants] = useState<any[]>([]);
     const [selectedVoter, setSelectedVoter] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
     const [users, setUsers] = useState<User[]>([]);
-
     /* ===========================================================
         CHỌN CỬ TRI
     ============================================================ */
@@ -55,9 +52,7 @@ const Attendees: React.FC<Props> = ({ onChange }) => {
     };
     const getUsers = async () => {
         try {
-            const electionId = localStorage.getItem("currentElectionId") || "";
-            const election = await DecisionService.getElectionById(electionId);
-            const res = await ElectionService.getElectionUser({ startData: election.startDate, endDate: election.startDate });
+            const res = await ElectionService.getElectionVoter({});
             setUsers(res);
         } catch (err) {
             message.error("Không thể tải danh sách người dùng!");
@@ -67,20 +62,35 @@ const Attendees: React.FC<Props> = ({ onChange }) => {
     useEffect(() => {
         getUsers();
     }, []);
+    useEffect(() => {
+        if (data && Array.isArray(data)) {
+            const mapped = data.map((item: any) => ({
+                id: item._id || String(Date.now() + Math.random()),
+                userId: item.userId._id,
+                fullName: item.userId.fullName,
+                email: item.userId.email,
+                position: item.userId.position,
+                phone: item.userId.phone,
+                citizenId: item.userId.citizenId,
+                address: item.userId.address,
+                department: item.userId.department,
+                percentage: item.percentage,
+                status: item.status,
+            }));
+            setParticipants(mapped);
+            onChange(mapped);
+        }
+    }, [data]);
 
     const totalPercentage = participants.reduce(
         (sum, p) => sum + (Number(p.percentage) || 0),
         0
     );
-
-
     const handleAdd = (values: any) => {
         const userInfo = users.find((u) => u._id === values.userId);
-
         if (!userInfo) {
             return message.error("Không tìm thấy thông tin người dùng!");
         }
-
         const newMember: Participant = {
             id: Date.now(),
             userId: values.userId,
@@ -93,13 +103,10 @@ const Attendees: React.FC<Props> = ({ onChange }) => {
             address: userInfo.address,
             department: userInfo.department,
             percentage: values.percentage
-
         };
-
         const updated = [...participants, newMember];
         setParticipants(updated);
         onChange(updated); // gửi dữ liệu về DraftingDocuments
-
         form.resetFields();
         setSelectedVoter(null);
         setIsModalOpen(false);
@@ -170,7 +177,7 @@ const Attendees: React.FC<Props> = ({ onChange }) => {
                             onClick={() => handleDelete(p.id)}
                             style={{ color: "red", marginLeft: 10 }}
 
-                        />,
+                        />
                     </div>
                 ))}
             </Card>
@@ -216,7 +223,6 @@ const Attendees: React.FC<Props> = ({ onChange }) => {
 
                         </Select>
                     </Form.Item>
-
                     {/* % CỔ PHẦN */}
                     <Form.Item
                         name="percentage"

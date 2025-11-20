@@ -52,51 +52,32 @@ class DecisionService extends BaseService {
     }
   }
 
-  async getElectionById(id: string): Promise<Decision> {
-    try {
-      const response: any = await this.api.get<any>(
-        `${this.endpoint}/get/${id}`
-      );
-      
-      if (response && response.data) {
-        // Nếu response có format { status, message, data: Decision }
-        return response.data as Decision;
-      }
-      
-      // Nếu response chính là Decision object (đã được unwrap)
-      if (response && (response._id || response.decisionNumber || response.title)) {
-        return response.data as Decision;
-      }
-      
-      throw new Error("Invalid response format");
-    } catch (error) {
-      console.error("Error fetching decision:", error);
-      throw error;
-    }
+  async getElectionById(id: string): Promise<any> {
+     try {
+            const response = await this.api.get(
+                `${this.endpoint}/get/${id}`);
+            return response;
+
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
   }
 
-  async createDecision(data: any): Promise<any> {
-    try {
-      const response: any = await this.api.post<any>(
-        `${this.endpoint}`,
-        data
-      );
-            
-      if (response && response.data) {
-        return response as Decision;
-      }
-      
-      // Nếu response chính là Decision object (đã được unwrap)
-      if (response && (response._id || response.decisionNumber || response.title)) {
-        return response as Decision;
-      }
-      
-      throw new Error("Invalid response format");
-    } catch (error) {
-      console.error("Error creating decision:", error);
-      throw error;
+  
+
+  async createDecision(body: any): Promise<any> {
+        try {
+            const response = await this.api.post<any>(
+                `${this.endpoint}`, body);
+            return response;
+
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
+
     }
-  }
 
   async updateDecision(id: string, data: any): Promise<any> {
     try {

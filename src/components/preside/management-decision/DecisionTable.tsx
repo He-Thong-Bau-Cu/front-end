@@ -128,16 +128,16 @@ const DecisionTable = () => {
         decisionNumber: values.decisionNumber,
         decisionName: values.decisionName,
         title: values.decisionName,
-        startDate: values.startTime,
-        endDate: values.endTime
+        startDate: values.startDate,
+        endDate: values.endDate
       };
       const apiData2: any = {
         decisionNumber: values.decisionNumber,
         decisionName: values.decisionName,
         title: values.decisionName,
         statusData: "WAIT_ENTER_DATA",
-        startDate: values.startTime,
-        endDate: values.endTime
+        startDate: values.startDate,
+        endDate: values.endDate
       };
       let response;
       let secretary;

@@ -46,6 +46,16 @@ class ElectionService extends BaseService {
       throw error;
     }
   }
+
+  async getElectionVoter( body: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/user-voter/valid`, body);
+      return response.data;
+    } catch (error) {
+      console.error("Error get user:", error);
+      throw error;
+    }
+  }
 }
 
 export default new ElectionService();

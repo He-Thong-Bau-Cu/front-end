@@ -18,24 +18,34 @@ import ElectionDocumentService from "@/services/ElectionDocumentService";
 import FileService from "@/services/FileService";
 import DecisionService from "@/services/DecisionService";
 import { Decision } from "@/types/Decision.interface";
-
+import { ElectionEntities } from "@/types/ElectionEntities.interface";
+import { Meeting } from "@/types/Meeting.interface";
+import VotingRightService from "@/services/VotingRightService";
 const DraftingDocuments: React.FC = () => {
   const [meetingInfo, setMeetingInfo] = useState<any>(null);
   const [attendees, setAttendees] = useState<any[]>([]);
   const [organization, setOrganization] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
   const [election, setElection] = useState<Decision | null>(null);
+  const [electionentities, setElectionentities] = useState<ElectionEntities[]>([]);
+  const [meeting, setMeeting] = useState<Meeting | null>(null);
+  const [statusData, setStatusData] = useState<string | null>(null);
+  const [voter, setVoter] = useState<any[] | null>(null);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
   const electionId = localStorage.getItem("currentElectionId") || "";
   const userId = localStorage.getItem("userId") || "";
-
-
   const fetchData = async () => {
     try {
-     
+      const v = await ElectionParticipantsService.getVoterByElectionId(electionId);
+      const m = await MeetingService.getByElectionId(electionId);
+      const entities = await ElectionEntitiesService.getElectionEntitiesByElectionId(electionId);
       const e = await DecisionService.getElectionById(electionId);
       setElection(e);
+      setElectionentities(entities);
+      setMeeting(m.data);
+      setStatusData(e.data.statusData);
+      setVoter(v);
     } catch (error) {
       console.error("Error fetching voting methods:", error);
     }
@@ -50,11 +60,9 @@ const DraftingDocuments: React.FC = () => {
 
     try {
       showLoading();
-
       /* ===========================================================
             XỬ LÝ TYPE
          =========================================================== */
-
       let typeId;
       console.log(meetingInfo.type.typeName)
 
@@ -66,7 +74,6 @@ const DraftingDocuments: React.FC = () => {
           description: meetingInfo.type.description,
           status: "PENDING"
         };
-
         const typeRes = await ElectionTypesService.createElectionType(newTypePayload);
         typeId = typeRes.data._id;
 
@@ -78,9 +85,7 @@ const DraftingDocuments: React.FC = () => {
         typeId = meetingInfo.type;
       }
 
-
       let thresholdid;
-
       // Nếu type là object → tạo type mới trước
       if (typeof meetingInfo.threshold === "object") {
         const newThresholPayload = {
@@ -102,9 +107,8 @@ const DraftingDocuments: React.FC = () => {
       } else {
         thresholdid = meetingInfo.threshold
       }
-
       /* ===========================================================
-            TẠO MEETING
+            TẠO Election
       =========================================================== */
       const electionPayload = {
         typeId: typeId,
@@ -112,8 +116,8 @@ const DraftingDocuments: React.FC = () => {
         thresholdId: thresholdid,
         delegationStart: meetingInfo.authorizationStart,
         delegationEnd: meetingInfo.authorizationEnd,
+        statusData: "WAIT_APROVAL"
       };
-
       const election = await ElectionService.updateElection(electionId, electionPayload);
       if (election.success) {
         notify(election.message, "success");
@@ -121,7 +125,6 @@ const DraftingDocuments: React.FC = () => {
         notify(election.message, "error");
       }
       if (Array.isArray(meetingInfo.candidates) && meetingInfo.candidates.length > 0) {
-
         for (const ca of meetingInfo.candidates) {
           const electionentities = {
             electionId: electionId,
@@ -138,7 +141,6 @@ const DraftingDocuments: React.FC = () => {
               imageUrl: ca.metaData.image || "",
             },
             fileUrl: ca.file || "",
-            proposerId: ca.proposerId || "",
             status: "PENDING"
           };
           // GỌI API TẠO ỨNG VIÊN
@@ -152,9 +154,10 @@ const DraftingDocuments: React.FC = () => {
       }
 
       const meeting = {
+        title: `Cuộc họp ${election.data.decisionName}`,
         electionId: electionId,
         location: meetingInfo.location,
-        meetingDate: election.startDate,
+        meetingDate: election.data.startDate,
         status: "PENDING"
       }
       const createMeeting = await MeetingService.add(meeting);
@@ -164,9 +167,7 @@ const DraftingDocuments: React.FC = () => {
       /* ===========================================================
             TẠO DANH SÁCH CỬ TRI
       =========================================================== */
-
       if (Array.isArray(attendees) && attendees.length > 0) {
-
         for (const ca of attendees) {
           const voter = {
             electionId: electionId,
@@ -178,17 +179,29 @@ const DraftingDocuments: React.FC = () => {
           const v = await VoterService.create(voter);
           if (v.success) {
             notify(v.message, "success");
+            const votingRight = {
+              electionId: electionId,
+              voterId: v.data._id,
+              shares: v.data.percentage,
+              votes: 0,
+              status: "PENDING"
+            };
+            const creatVotingRight = await VotingRightService.createVotingRight(votingRight);
+            if (creatVotingRight.success) {
+              notify(creatVotingRight.message, "success");
+            } else {
+              notify(creatVotingRight.message, "error");
+            }
+
           } else {
             notify(v.message, "error");
           }
         }
       }
-
       /* ===========================================================
             TẠO BAN TỔ CHỨC
       =========================================================== */
       if (Array.isArray(organization) && organization.length > 0) {
-
         for (const ca of organization) {
           const organization = {
             electionId: electionId,
@@ -205,11 +218,9 @@ const DraftingDocuments: React.FC = () => {
           }
         }
       }
-
       /* ===========================================================
             UPLOAD TÀI LIỆU ĐÍNH KÈM
       =========================================================== */
-
       if (Array.isArray(documents) && documents.length > 0) {
 
         for (const ca of documents) {
@@ -223,7 +234,7 @@ const DraftingDocuments: React.FC = () => {
             status: "PENDING",
             remarks: ca.remarks
           };
-          // GỌI API TẠO ỨNG VIÊN
+          // GỌI API TẠO tài liệu
           const v = await ElectionDocumentService.CreateDocument(document);
           if (v.success) {
             notify(v.message, "success");
@@ -244,32 +255,38 @@ const DraftingDocuments: React.FC = () => {
       hideLoading();
     }
   };
-
   return (
     <div className="meeting-container">
 
       <div className="meeting-header">
         <h2>Soạn thảo tài liệu bầu cử</h2>
-        <Space>
-          <Button onClick={() => message.info("Đã lưu bản nháp.")}>
-            💾 Lưu nháp
-          </Button>
 
-          <Button type="primary" onClick={handleSubmitAll}>
-            📤 Gửi duyệt
-          </Button>
-        </Space>
+        {statusData === "WAIT_ENTER_DATA" ? (
+          <Space>
+            <Button onClick={() => message.info("Đã lưu bản nháp.")}>
+              💾 Lưu nháp
+            </Button>
+            <Button type="primary" onClick={handleSubmitAll}>
+              📤 Gửi duyệt
+            </Button>
+          </Space>
+        ) : null}
       </div>
 
       <div className="meeting-content">
         <div className="meeting-left">
           <MeetingInfo
+            onChange={setMeetingInfo}
             data={election}
-            onChange={setMeetingInfo} />
+            electionentities={electionentities}
+            meeting={meeting}
+          />
         </div>
-
         <div className="meeting-right">
-          <Attendees onChange={setAttendees} />
+          <Attendees
+            onChange={setAttendees}
+            data={voter}
+          />
           <Organization onChange={setOrganization} />
           <AttachedDocuments onChange={setDocuments} />
         </div>

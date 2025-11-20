@@ -14,13 +14,10 @@ import {
     DeleteOutlined,
 } from "@ant-design/icons";
 import { User } from "@/types/User.interface";
-import UserService from "@/services/UserService";
 import DecisionService from "@/services/DecisionService";
 import ElectionService from "@/services/ElectionService";
-
 const { Text } = Typography;
 const { Option } = Select;
-
 interface Member {
     id: number;
     userId: string;
@@ -29,9 +26,9 @@ interface Member {
     roleName: string;
     status?: string;
 }
-
 interface Props {
     onChange: (data: Member[]) => void;
+    data?: any;
 }
 
 const statusColor = (status: string) => {
@@ -52,7 +49,7 @@ const Organization: React.FC<Props> = ({ onChange }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
     const [users, setUsers] = useState<User[]>([]);
-
+    const [selectedUser, setSelectedUser] = useState<any | null>(null);
     /* =========================================================================
         LẤY DANH SÁCH USER – CHỈ ĐỂ CHỌN, KHÔNG GỬI API KHI LƯU
     ========================================================================= */
@@ -71,6 +68,10 @@ const Organization: React.FC<Props> = ({ onChange }) => {
         getUsers();
     }, []);
 
+    const handleSelectUser = (email: string) => {
+        const voter = users.find((v) => v.email === email);
+        setSelectedUser(voter);
+    };
 
     /* =========================================================================
         HANDLE ADD (LOCAL ONLY — NO API)
@@ -80,6 +81,9 @@ const Organization: React.FC<Props> = ({ onChange }) => {
 
         if (!userInfo) {
             return message.error("Không tìm thấy thông tin người dùng!");
+        }
+        if (members.some((m) => m.userId === values.userId)) {
+            return message.error("Người này đã được thêm vào danh sách!");
         }
 
         const newMember: Member = {
@@ -173,14 +177,24 @@ const Organization: React.FC<Props> = ({ onChange }) => {
                         name="userId"
                         rules={[{ required: true, message: "Vui lòng chọn thành viên" }]}
                     >
-                        <Select placeholder="Chọn thành viên" allowClear showSearch>
-                            {users.map((u) => (
-                                <Option key={u._id} value={u._id}>
-                                    {u.fullName}
-                                </Option>
-                            ))}
+                        <Select
+                            placeholder="Chọn thành viên"
+                            onChange={handleSelectUser}
+                            allowClear
+                            showSearch
+                        >
+                            {users.map((u) => {
+                                const isSelected = members.some((m) => m.userId === u._id);
+
+                                return (
+                                    <Option key={u._id} value={u._id} disabled={isSelected}>
+                                        {u.fullName} {isSelected ? " (đã chọn)" : ""}
+                                    </Option>
+                                );
+                            })}
                         </Select>
                     </Form.Item>
+
 
                     {/* ROLE */}
                     <Form.Item
