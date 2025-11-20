@@ -92,7 +92,8 @@ const VotingHistoryContent = () => {
     const electionTitle = ballot.voterId?.userId?.fullName
         ? `Phiếu bầu của ${ballot.voterId.userId.fullName}`
         : "Thông tin phiếu bầu";
-    const status = ballot.castAt ? "Đã hoàn thành" : "Chưa bỏ phiếu";
+
+    const status = ballot.status === "CAST" ? "Đã hoàn thành" : "Chưa bỏ phiếu";
 
     return (
         <div className="voting-history-content">
@@ -257,7 +258,6 @@ const VotingHistoryContent = () => {
                     <Card
                         size="small"
                         style={{
-                            background: "#f6ffed",
                             border: "none",
                             borderRadius: 12,
                             boxShadow: "none",
@@ -267,11 +267,13 @@ const VotingHistoryContent = () => {
                             {ballot.allocations.map((a, i) => (
                                 <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
                                     <Text strong style={{ color: "#52c41a" }}>
-                                        {a.entityId} — Số phiếu: {a.voteValue}
+                                        {a.entityId.title} — Số phiếu: {a.voteValue}
                                     </Text>
                                 </Descriptions.Item>
                             ))}
                         </Descriptions>
+
+
 
                     </Card>
                 </div>

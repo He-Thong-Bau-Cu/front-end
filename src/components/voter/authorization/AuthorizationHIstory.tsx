@@ -33,6 +33,8 @@ const statusConfig: Record<
     EXPIRED: { label: "Hết hiệu lực", color: "default", icon: <ExclamationCircleOutlined /> },
     REVOKED: { label: "Đã thu hồi", color: "red", icon: <CloseCircleOutlined /> },
     INVALID: { label: "Không hợp lệ", color: "magenta", icon: <StopOutlined /> },
+    SIGNED: { label: "Đã ký", color: "green", icon: <EditOutlined /> },
+
 };
 
 const typeConfig: Record<string, { label: string; color: string }> = {
@@ -82,7 +84,7 @@ export default function AuthorizationHistory() {
 
     // ✅ Kiểm tra có ủy quyền nào bị chặn không (đang hoạt động hoặc chờ duyệt)
     const blockingDelegation = delegations.find((item) =>
-        ["PENDING", "CONFIRMED", "ACTIVE"].includes(item.status)
+        ["PENDING", "CONFIRMED", "ACTIVE", "SIGNED"].includes(item.status)
     );
 
 
@@ -99,18 +101,26 @@ export default function AuthorizationHistory() {
                     icon: <ClockCircleOutlined style={{ color: "#fa8c16" }} />,
                 },
                 CONFIRMED: {
-                    type: "success",
+                    type: "info",
                     message: "Ủy quyền đã được phê duyệt",
-                    description: "Bạn đã có một ủy quyền đã được phê duyệt, không thể tạo thêm.",
-                    bgColor: "#f6ffed",
+                    description: "Bạn đã có một ủy quyền đang chờ phê duyệt, không thể tạo thêm.",
+                    bgColor: "#fff7e6",
                     icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
                 },
                 ACTIVE: {
                     type: "warning",
+
                     message: "Ủy quyền đang có hiệu lực",
                     description: "Bạn đã có một ủy quyền đang hoạt động, không thể tạo thêm.",
                     bgColor: "#e6f7ff",
                     icon: <InfoCircleOutlined style={{ color: "#1890ff" }} />,
+                },
+                SIGNED: {
+                    type: "success",
+                    message: "Ủy quyền đã được ký",
+                    description: "Bạn đã có một ủy quyền đã được chấp nhận, không thể tạo thêm.",
+                    bgColor: "#f6ffed",
+                    icon: <InfoCircleOutlined style={{ color: "#52c41a" }} />,
                 },
             } as const;
 

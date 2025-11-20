@@ -85,8 +85,13 @@ export interface BallotCast {
   encryptedVote: string | null;
   issuedAt: string | null;
   castAt: string | null;
+  status: string;
   allocations: {
-    entityId: string;
+    entityId: {
+      _id: string;
+      title: string;
+      description: string;
+    };
     voteValue: number;
   }[];
 
