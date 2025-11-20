@@ -1,9 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Checkbox, Button } from "antd";
 import { SignatureInfo } from "../../../types/SystemAuditReport.interface";
 
-export default function ReportSignature({ info }: { info: SignatureInfo }) {
+interface ReportSignatureProps {
+  info: SignatureInfo;
+  onConfirm?: () => Promise<void> | void;
+  loading?: boolean;
+}
+
+export default function ReportSignature({ info, onConfirm, loading }: ReportSignatureProps) {
   const [checked, setChecked] = useState(info.isConfirmed);
+
+  useEffect(() => {
+    setChecked(info.isConfirmed);
+  }, [info.isConfirmed]);
 
   return (
     <section className="sar-section-wrap">
@@ -27,9 +37,11 @@ export default function ReportSignature({ info }: { info: SignatureInfo }) {
           <Button
             type="primary"
             className="sar-sign-btn"
-            disabled={!checked}
+            disabled={!checked || info.isConfirmed}
+            loading={loading}
+            onClick={onConfirm}
           >
-            Ký số & Phê duyệt
+            {info.isConfirmed ? "Đã ký số" : "Ký số & Phê duyệt"}
           </Button>
         </div>
       </div>

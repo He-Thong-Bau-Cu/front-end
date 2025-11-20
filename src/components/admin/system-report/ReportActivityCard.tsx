@@ -1,62 +1,28 @@
 import React from "react";
-import { Card, Typography } from "antd";
+import { Card, Typography, Tag, Empty, Skeleton, List } from "antd";
 import {
-  CheckCircleFilled,
-  WarningFilled,
-  FileTextOutlined,
-  UserOutlined,
-  HeartFilled,
   StarOutlined,
   ReloadOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import "../../../style/admin/SystemReport.model.css";
+import type { SystemReportAuditSummary } from "@/types/SystemReport.interface";
 
 const { Text } = Typography;
 
-const activities = [
-  {
-    icon: <CheckCircleFilled />,
-    iconColor: "#22c55e",
-    iconBg: "#dcfce7",
-    title: "Bầu cử hoàn thành",
-    desc: '"Bầu cử lớp trưởng K18" đã kết thúc thành công',
-    time: "5 phút trước",
-  },
-  {
-    icon: <UserOutlined />,
-    iconColor: "#3b82f6",
-    iconBg: "#dbeafe",
-    title: "Người dùng mới",
-    desc: "124 cử tri mới đăng ký tham gia hệ thống",
-    time: "1 giờ trước",
-  },
-  {
-    icon: <FileTextOutlined />,
-    iconColor: "#f59e0b",
-    iconBg: "#fef3c7",
-    title: "Báo cáo được tạo",
-    desc: "Báo cáo tháng 3/2024 đã được xuất thành công",
-    time: "2 giờ trước",
-  },
-  {
-    icon: <HeartFilled />,
-    iconColor: "#f472b6",
-    iconBg: "#fce7f3",
-    title: "Bầu cử mới",
-    desc: '"Bầu BCH Khoa CNTT" đã được tạo và kích hoạt',
-    time: "3 giờ trước",
-  },
-  {
-    icon: <WarningFilled />,
-    iconColor: "#dc2626",
-    iconBg: "#fee2e2",
-    title: "Cảnh báo hệ thống",
-    desc: "Load cao phát hiện, đã xử lý tự động",
-    time: "5 giờ trước",
-  },
-];
+interface ReportActivityCardProps {
+  auditSummary?: SystemReportAuditSummary;
+  loading?: boolean;
+}
 
-const ReportActivityCard: React.FC = () => {
+const ReportActivityCard: React.FC<ReportActivityCardProps> = ({
+  auditSummary,
+  loading,
+}) => {
+  const activities = auditSummary?.latestActivities || [];
+  const topModules = auditSummary?.topModules || [];
+
   return (
     <Card
       className="report-activity-card"
@@ -71,31 +37,51 @@ const ReportActivityCard: React.FC = () => {
         </div>
       }
     >
-      <div className="report-activity-list">
-        {activities.map((item, index) => (
-          <div key={index} className="report-activity-item">
-            <div
-              className="report-activity-icon-wrapper"
-              style={{ backgroundColor: item.iconBg }}
-            >
-              <div className="report-activity-icon" style={{ color: item.iconColor }}>
-                {item.icon}
-              </div>
-            </div>
-            <div className="report-activity-content">
-              <Text strong className="report-activity-title">
-                {item.title}
-              </Text>
-              <Text type="secondary" className="report-activity-desc">
-                {item.desc}
-              </Text>
-            </div>
-            <Text type="secondary" className="report-activity-time">
-              {item.time}
-            </Text>
-          </div>
-        ))}
+      <div style={{ marginBottom: 16 }}>
+        <Text type="secondary">Top module</Text>
+        <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {topModules.length ? (
+            topModules.map((module) => (
+              <Tag color="processing" key={module.module}>
+                {module.module} ({module.count})
+              </Tag>
+            ))
+          ) : (
+            <Text type="secondary">Chưa có thống kê</Text>
+          )}
+        </div>
       </div>
+
+      {loading ? (
+        <Skeleton active paragraph={{ rows: 4 }} />
+      ) : activities.length ? (
+        <List
+          className="report-activity-list"
+          dataSource={activities}
+          renderItem={(item) => (
+            <List.Item className="report-activity-item">
+              <div className="report-activity-icon-wrapper">
+                <div className="report-activity-icon">
+                  <ClockCircleOutlined />
+                </div>
+              </div>
+              <div className="report-activity-content">
+                <Text strong className="report-activity-title">
+                  {item.module}
+                </Text>
+                <Text type="secondary" className="report-activity-desc">
+                  {item.action} {item.user ? `- ${item.user}` : ""}
+                </Text>
+              </div>
+              <Text type="secondary" className="report-activity-time">
+                {dayjs(item.at).format("HH:mm DD/MM")}
+              </Text>
+            </List.Item>
+          )}
+        />
+      ) : (
+        <Empty description="Không có hoạt động gần đây" />
+      )}
     </Card>
   );
 };

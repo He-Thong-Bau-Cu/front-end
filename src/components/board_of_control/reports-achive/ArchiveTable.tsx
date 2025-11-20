@@ -1,12 +1,17 @@
 import {
   CloseCircleFilled,
   EyeOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  DownloadOutlined
 } from "@ant-design/icons";
 import { Button, Descriptions, Divider, Modal, Pagination, Table, Tag, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { ReportArchiveItem } from "../../../types/ReportArchive.interface";
+import BoardControlService from "@/services/BoardControlService";
+import { downloadBlob } from "@/utils/file";
+import { useNotification } from "@/contexts/NotificationContext";
+import { useLoading } from "@/contexts/LoadingContext";
 
 const { Title, Text } = Typography;
 
@@ -27,6 +32,8 @@ export default function ArchiveTable({
 }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ReportArchiveItem | null>(null);
+  const { notify } = useNotification();
+  const { showLoading, hideLoading } = useLoading();
 
   const handleViewDetail = (record: ReportArchiveItem) => {
     setSelectedItem(record);
@@ -36,6 +43,26 @@ export default function ArchiveTable({
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedItem(null);
+  };
+
+  const handleDownload = async (record: ReportArchiveItem) => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) {
+      notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
+      return;
+    }
+    try {
+      showLoading();
+      const blob = await BoardControlService.downloadArchiveReport(electionId, record.id);
+      const fileName = `bao-cao-luu-tru-${record.id}-${Date.now()}.pdf`;
+      downloadBlob(blob, fileName);
+      notify("Tải xuống báo cáo thành công", "success");
+    } catch (error) {
+      console.error(error);
+      notify("Không thể tải xuống báo cáo", "error");
+    } finally {
+      hideLoading();
+    }
   };
   const columns = [
     {
@@ -64,12 +91,13 @@ export default function ArchiveTable({
               style={{ cursor: "pointer" }}
             />
           </Tooltip>
-          {/* <Tooltip title="Tải xuống">
-            <DownloadOutlined className="ra-icon" />
+          <Tooltip title="Tải xuống">
+            <DownloadOutlined
+              className="ra-icon"
+              onClick={() => handleDownload(record)}
+              style={{ cursor: "pointer" }}
+            />
           </Tooltip>
-          <Tooltip title="Lịch sử">
-            <HistoryOutlined className="ra-icon" />
-          </Tooltip> */}
         </div>
       ),
     },

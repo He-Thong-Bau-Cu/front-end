@@ -102,6 +102,13 @@
   width: 100%;
 }
 
+.data-stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 .stats-container {
   width: 100%;
   display: flex;
@@ -359,7 +366,7 @@
 .db-icon {
   font-size: 26px;
   color: #4b8dd8;
-  margin-top: 4px; 
+  margin-top: 4px;
 }
 
 .db-info {
@@ -436,24 +443,24 @@
   .db-item {
     min-width: 100%;
   }
-  
+
   .stats-container {
     flex-direction: column;
   }
-  
+
   .stats-col {
     width: 100%;
     border-bottom: 1px solid #e8e8e8;
   }
-  
+
   .stats-col:not(:last-child)::after {
     display: none;
   }
-  
+
   .stats-col:last-child {
     border-bottom: none;
   }
-  
+
   .stat-card {
     border-radius: 8px;
     margin-bottom: 0;

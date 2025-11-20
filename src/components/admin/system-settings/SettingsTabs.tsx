@@ -6,38 +6,37 @@ import {
   LinkOutlined,
   RocketOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import type { SystemSettingsGroup } from "@/types/SystemConfig.interface";
 
-const SettingsTabs = () => {
-  const [active, setActive] = useState("overview");
+interface SettingsTabsProps {
+  activeKey: SystemSettingsGroup;
+  onChange: (key: SystemSettingsGroup) => void;
+}
 
-  const TabBtn = ({
-    id,
-    icon,
-    label,
-  }: {
-    id: string;
-    icon: React.ReactNode;
-    label: string;
-  }) => (
-    <Button
-      type="text"
-      className={`tab-pill ${active === id ? "tab-pill--active" : ""}`}
-      icon={icon}
-      onClick={() => setActive(id)}
-    >
-      {label}
-    </Button>
-  );
+const tabs: { id: SystemSettingsGroup; icon: React.ReactNode; label: string }[] =
+  [
+    { id: "OVERVIEW", icon: <HomeOutlined />, label: "Tổng quan" },
+    { id: "NOTIFY", icon: <BellOutlined />, label: "Thông báo" },
+    { id: "SECURITY", icon: <SafetyOutlined />, label: "Bảo mật" },
+    { id: "INTEGRATION", icon: <LinkOutlined />, label: "Tích hợp" },
+    { id: "ADVANCED", icon: <RocketOutlined />, label: "Nâng cao" },
+  ];
 
+const SettingsTabs = ({ activeKey, onChange }: SettingsTabsProps) => {
   return (
     <div className="settings-tabs-card">
       <div className="tabs-row">
-        <TabBtn id="overview" icon={<HomeOutlined />} label="Tổng quan" />
-        <TabBtn id="notify" icon={<BellOutlined />} label="Thông báo" />
-        <TabBtn id="security" icon={<SafetyOutlined />} label="Bảo mật" />
-        <TabBtn id="integration" icon={<LinkOutlined />} label="Tích hợp" />
-        <TabBtn id="advanced" icon={<RocketOutlined />} label="Nâng cao" />
+        {tabs.map((tab) => (
+          <Button
+            key={tab.id}
+            type="text"
+            className={`tab-pill ${activeKey === tab.id ? "tab-pill--active" : ""}`}
+            icon={tab.icon}
+            onClick={() => onChange(tab.id)}
+          >
+            {tab.label}
+          </Button>
+        ))}
       </div>
     </div>
   );

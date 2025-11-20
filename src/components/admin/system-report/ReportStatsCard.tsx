@@ -1,137 +1,136 @@
-import React from "react";
-import { Row, Col, Typography } from "antd";
+import React, { useMemo } from "react";
+import { Row, Col, Typography, Skeleton, Empty } from "antd";
 import {
   BarChartOutlined,
-  TeamOutlined,
-  FileTextOutlined,
-  HeartFilled,
+  ThunderboltOutlined,
   CheckCircleFilled,
   WarningFilled,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  RightOutlined,
+  CloudUploadOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import "@/style/admin/SystemReport.model.css";
+import type {
+  SystemReportBackupSummary,
+  SystemReportSummary,
+} from "@/types/SystemReport.interface";
 
 const { Title, Text } = Typography;
 
-const stats = [
-  {
-    title: "TỔNG BẦU CỬ",
-    value: 48,
-    change: 12,
-    changeType: "increase",
-    icon: <BarChartOutlined />,
-    iconColor: "#22c55e",
-    iconBg: "#dcfce7",
-  },
-  {
-    title: "TỔNG CỬ TRI",
-    value: "15,432",
-    change: 8.5,
-    changeType: "increase",
-    icon: <TeamOutlined />,
-    iconColor: "#3b82f6",
-    iconBg: "#dbeafe",
-  },
-  {
-    title: "TỶ LỆ THAM GIA",
-    value: "87.3%",
-    change: 3.2,
-    changeType: "increase",
-    icon: <FileTextOutlined />,
-    iconColor: "#f59e0b",
-    iconBg: "#fef3c7",
-  },
-  {
-    title: "PHIẾU BẦU",
-    value: "13,472",
-    change: 15,
-    changeType: "increase",
-    icon: <HeartFilled />,
-    iconColor: "#f472b6",
-    iconBg: "#fce7f3",
-  },
-  {
-    title: "NGƯỜI DÙNG HOẠT ĐỘNG",
-    value: "1,248",
-    change: 0,
-    changeType: "no-change",
-    icon: <CheckCircleFilled />,
-    iconColor: "#22c55e",
-    iconBg: "#dcfce7",
-  },
-  {
-    title: "LỖI HỆ THỐNG",
-    value: 3,
-    change: 70,
-    changeType: "decrease",
-    icon: <WarningFilled />,
-    iconColor: "#dc2626",
-    iconBg: "#fee2e2",
-  },
-];
+interface ReportStatsCardProps {
+  summary?: SystemReportSummary;
+  backupSummary?: SystemReportBackupSummary;
+  loading?: boolean;
+}
 
-const ReportStatsCard: React.FC = () => {
-  const getTrendIcon = (changeType: string) => {
-    switch (changeType) {
-      case "increase":
-        return <ArrowUpOutlined />;
-      case "decrease":
-        return <ArrowDownOutlined />;
-      default:
-        return <RightOutlined />;
-    }
-  };
+const ReportStatsCard: React.FC<ReportStatsCardProps> = ({
+  summary,
+  backupSummary,
+  loading,
+}) => {
+  const stats = useMemo(
+    () => [
+      {
+        title: "TỔNG REQUEST",
+        value: summary?.totalRequests?.toLocaleString() ?? "--",
+        hint: "Số lượng request ghi nhận",
+        icon: <BarChartOutlined />,
+        iconColor: "#2563eb",
+        iconBg: "#dbeafe",
+      },
+      {
+        title: "THÀNH CÔNG",
+        value: summary?.successCount?.toLocaleString() ?? "--",
+        hint: `Tỷ lệ thành công ${summary?.successRate ?? 0}%`,
+        icon: <CheckCircleFilled />,
+        iconColor: "#16a34a",
+        iconBg: "#dcfce7",
+      },
+      {
+        title: "LỖI HỆ THỐNG",
+        value: summary?.errorCount?.toLocaleString() ?? "--",
+        hint: `Tỷ lệ lỗi ${summary?.errorRate ?? 0}%`,
+        icon: <WarningFilled />,
+        iconColor: "#dc2626",
+        iconBg: "#fee2e2",
+      },
+      {
+        title: "PHẢN HỒI TRUNG BÌNH",
+        value: summary?.avgResponseTime
+          ? `${summary.avgResponseTime}ms`
+          : "--",
+        hint: "Thời gian xử lý trung bình",
+        icon: <ThunderboltOutlined />,
+        iconColor: "#f97316",
+        iconBg: "#ffedd5",
+      },
+      {
+        title: "BẢN SAO LƯU",
+        value: backupSummary?.totalBackups?.toLocaleString() ?? "0",
+        hint: `${Object.keys(backupSummary?.actions || {}).length} hành động`,
+        icon: <CloudUploadOutlined />,
+        iconColor: "#0ea5e9",
+        iconBg: "#e0f2fe",
+      },
+      {
+        title: "SAO LƯU GẦN NHẤT",
+        value: backupSummary?.lastBackupAt
+          ? dayjs(backupSummary.lastBackupAt).format("HH:mm DD/MM")
+          : "Chưa có",
+        hint: "Thời gian backup cuối",
+        icon: <ClockCircleOutlined />,
+        iconColor: "#7c3aed",
+        iconBg: "#ede9fe",
+      },
+    ],
+    [summary, backupSummary]
+  );
 
-  const getTrendColor = (changeType: string) => {
-    switch (changeType) {
-      case "increase":
-        return "#22c55e";
-      case "decrease":
-        return "#ef4444";
-      default:
-        return "#6b7280";
-    }
-  };
+  if (loading) {
+    return (
+      <div className="report-stats-container">
+        <Skeleton active paragraph={{ rows: 3 }} />
+      </div>
+    );
+  }
+
+  if (!summary && !backupSummary) {
+    return (
+      <div className="report-stats-container">
+        <Empty description="Chưa có dữ liệu thống kê" />
+      </div>
+    );
+  }
 
   return (
     <div className="report-stats-container">
-      <Row gutter={[0, 20]} className="stats-row">
+      <Row gutter={[16, 16]} className="stats-row">
         {stats.map((item, index) => (
-          <Col 
-            key={index} 
-            xs={24} 
-            sm={12} 
-            md={8}
-            className="stats-col"
-          >
-            <div 
+          <Col key={index} xs={24} sm={12} md={8} className="stats-col">
+            <div
               className="report-stat-card"
-              style={{ 
+              style={{
                 borderLeft: `4px solid ${item.iconColor}`,
-                paddingLeft: '16px'
+                paddingLeft: "16px",
               }}
             >
               <Text className="report-stat-title">{item.title}</Text>
-              <div className="report-stat-icon-wrapper" style={{ backgroundColor: item.iconBg }}>
-                <div className="report-stat-icon" style={{ color: item.iconColor }}>
+              <div
+                className="report-stat-icon-wrapper"
+                style={{ backgroundColor: item.iconBg }}
+              >
+                <div
+                  className="report-stat-icon"
+                  style={{ color: item.iconColor }}
+                >
                   {item.icon}
                 </div>
               </div>
               <Title level={2} className="report-stat-value">
                 {item.value}
               </Title>
-              <div
-                className="report-stat-change"
-                style={{ color: getTrendColor(item.changeType) }}
-              >
-                {getTrendIcon(item.changeType)}{" "}
-                {item.change > 0
-                  ? `${item.change}% so với tháng trước`
-                  : item.change < 0
-                  ? `${item.change}% so với tháng trước`
-                  : `${item.change}% không thay đổi`}
+              <div className="report-stat-change" style={{ color: "#6b7280" }}>
+                {item.hint}
               </div>
             </div>
           </Col>

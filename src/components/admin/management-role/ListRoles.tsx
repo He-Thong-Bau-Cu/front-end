@@ -23,7 +23,7 @@ import {
 import { TableProps } from "antd/lib";
 import "../../../style/admin/ManagementRole.model.css";
 import type { RoleRecord } from "../../../types/Role.interface";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import RoleModal from "./RoleModal";
 import SystemService from "@/services/SystemService";
 import { STATUS_ROLE } from "@/enums/STATUS";
@@ -232,6 +232,32 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
       checked ? [...prev, key] : prev.filter((p: any) => p !== key)
     );
   };
+
+  const getPermissionGroup = (name?: string) => {
+    if (!name) return "Nhóm khác";
+    const parts = name.split(/của/i);
+    const base = parts[0].trim();
+    return base.length ? base : "Nhóm khác";
+  };
+
+  const groupedPermissions = useMemo(() => {
+    const map = new Map<string, any[]>();
+    (permissions || []).forEach((perm: any) => {
+      const key = getPermissionGroup(perm.permissionName);
+      if (!map.has(key)) {
+        map.set(key, []);
+      }
+      map.get(key)!.push(perm);
+    });
+    return Array.from(map.entries())
+      .map(([label, items]) => ({
+        label,
+        items: items.sort((a, b) =>
+          (a.permissionName || "").localeCompare(b.permissionName || "")
+        ),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [permissions]);
 
   const handleUpdate = async () => {
     try {
@@ -446,28 +472,35 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
                       overflowY: "auto",
                     }}
                   >
-                    <List
-                      dataSource={permissions}
-                      renderItem={(perm: any) => (
-                        <List.Item
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            padding: "6px 0",
-                          }}
-                        >
-                          <Checkbox
-                            checked={selectedPermissions.includes(perm._id)}
-                            onChange={(e) =>
-                              handleTogglePermission(perm._id, e.target.checked)
-                            }
-                            disabled={!isEditing}
-                          >
-                            {perm.permissionName}
-                          </Checkbox>
-                        </List.Item>
-                      )}
-                    />
+                    {groupedPermissions.map((group) => (
+                      <div key={group.label}>
+                        <Text strong style={{ display: "block", marginBottom: 6 }}>
+                          {group.label}
+                        </Text>
+                        <List
+                          dataSource={group.items}
+                          renderItem={(perm: any) => (
+                            <List.Item
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                padding: "4px 0",
+                              }}
+                            >
+                              <Checkbox
+                                checked={selectedPermissions.includes(perm._id)}
+                                onChange={(e) =>
+                                  handleTogglePermission(perm._id, e.target.checked)
+                                }
+                                disabled={!isEditing}
+                              >
+                                {perm.permissionName}
+                              </Checkbox>
+                            </List.Item>
+                          )}
+                        />
+                      </div>
+                    ))}
                   </div>
 
                   <div

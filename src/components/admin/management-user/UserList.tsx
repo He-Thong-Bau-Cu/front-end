@@ -8,15 +8,17 @@ import {
   Pagination,
   Tooltip,
   Modal,
+  Upload,
+  Form,
 } from "antd";
 import {
   PlusOutlined,
   FileExcelOutlined,
-  BarChartOutlined,
   EditOutlined,
   DeleteOutlined,
   SearchOutlined,
   EyeOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import React, { useState } from "react";
 import type { UserRecord } from "@/types/User.interface";
@@ -28,7 +30,7 @@ import UserDetailModal from "./UserDetailModal";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import UserService from "@/services/UserService";
-const { confirm } = Modal;
+import { downloadBlob } from "@/utils/file";
 
 const { Option } = Select;
 
@@ -49,6 +51,11 @@ const UserList = ({
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importForm] = Form.useForm();
   const [values, setValues] = useState({
     fullName: "",
     email: "",
@@ -73,6 +80,49 @@ const UserList = ({
     const v = searchValues || values;
     if (onSearch) {
       onSearch(v);
+    }
+  };
+
+  const handleImportUsers = async () => {
+    if (!importFile) {
+      notify("Vui lòng chọn file Excel hợp lệ", "warning");
+      return;
+    }
+    setImporting(true);
+    showLoading();
+    try {
+      const response = await UserService.importFromExcel(importFile);
+      if (response.success) {
+        notify(response.message || "Import thành công", "success");
+        setIsImportModalOpen(false);
+        setImportFile(null);
+        importForm.resetFields();
+        handleSearch();
+      } else {
+        notify(response.message || "Import thất bại", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      notify("Import thất bại", "error");
+    } finally {
+      setImporting(false);
+      hideLoading();
+    }
+  };
+
+  const handleExportUsers = async () => {
+    setExporting(true);
+    showLoading();
+    try {
+      const blob = await UserService.exportToExcel();
+      downloadBlob(blob, `users-${Date.now()}.xlsx`);
+      notify("Xuất file thành công", "success");
+    } catch (error) {
+      console.error(error);
+      notify("Xuất file thất bại", "error");
+    } finally {
+      setExporting(false);
+      hideLoading();
     }
   };
 
@@ -357,24 +407,27 @@ const UserList = ({
           >
             Thêm người dùng
           </Button>
-
-          {/* <Button
-            type="primary"
+          <Button
             icon={<FileExcelOutlined />}
             style={{
               height: 45,
               background: "linear-gradient(90deg, #ff5a3c, #CA3E30)",
+              color: "#fff",
+              border: "none",
             }}
+            onClick={() => setIsImportModalOpen(true)}
           >
             Import Excel
           </Button>
           <Button
             type="default"
-            icon={<BarChartOutlined />}
+            icon={<DownloadOutlined />}
+            loading={exporting}
             style={{ color: "#16a34a", borderColor: "#16a34a", height: 45 }}
+            onClick={handleExportUsers}
           >
-            Xuất báo cáo
-          </Button> */}
+            Xuất Excel
+          </Button>
         </Space>
       </div>
 
@@ -443,6 +496,44 @@ const UserList = ({
         onCancel={() => setIsDetailModalOpen(false)}
         userData={selectedUser}
       />
+      <Modal
+        title="Import người dùng từ Excel"
+        open={isImportModalOpen}
+        onCancel={() => {
+          setIsImportModalOpen(false);
+          setImportFile(null);
+          importForm.resetFields();
+        }}
+        onOk={handleImportUsers}
+        okText="Import"
+        confirmLoading={importing}
+      >
+        <Form layout="vertical" form={importForm}>
+          <Form.Item label="Chọn file Excel">
+            <Upload.Dragger
+              beforeUpload={(file) => {
+                setImportFile(file);
+                return false;
+              }}
+              maxCount={1}
+              onRemove={() => setImportFile(null)}
+            >
+              <p className="ant-upload-drag-icon">
+                <FileExcelOutlined />
+              </p>
+              <p className="ant-upload-text">
+                Kéo thả hoặc nhấp để chọn file (.xlsx, .xls)
+              </p>
+              {importFile && (
+                <p className="ant-upload-hint">{importFile.name}</p>
+              )}
+            </Upload.Dragger>
+          </Form.Item>
+          <p style={{ color: "#475569" }}>
+            File cần đúng mẫu hệ thống để tránh lỗi định dạng.
+          </p>
+        </Form>
+      </Modal>
     </div>
   );
 };

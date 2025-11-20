@@ -1,4 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Button, Space } from "antd";
+import {
+  DownloadOutlined,
+  FileTextOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 import ReportHeader from "../../components/board_of_control/reports-control/ReportHeader";
 import ReportSummary from "../../components/board_of_control/reports-control/ReportSummary";
 import ReportTabs from "../../components/board_of_control/reports-control/ReportTabs";
@@ -9,130 +15,165 @@ import {
   ReportLogItem,
   SignatureInfo,
 } from "../../types/SystemAuditReport.interface";
-import {
-  DownloadOutlined,
-  FileTextOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
 import "../../style/board-of-control/SystemAuditReport.model.css";
-import { Button, Space } from "antd";
+import BoardControlService from "@/services/BoardControlService";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import { BoardAuditReportPayload } from "@/types/BoardControl.interface";
+import { downloadBlob } from "@/utils/file";
 
 export default function SystemAuditReportPage() {
-  const reportInfo: ReportInfo = {
-    id: "BCKT-2025-09",
-    createdDate: "01/10/2025",
-    reportPeriod: "01/09/2025 - 30/09/2025",
-    status: "Chờ ký duyệt",
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
+  const [reportData, setReportData] = useState<BoardAuditReportPayload | null>(
+    null
+  );
+  const [signing, setSigning] = useState(false);
+
+  useEffect(() => {
+    const loadReport = async () => {
+      const electionId = localStorage.getItem("currentElectionId");
+      if (!electionId) {
+        notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
+        return;
+      }
+      try {
+        showLoading();
+        const response = await BoardControlService.getAuditReport(electionId);
+        if (response.success && response.data) {
+          setReportData(response.data);
+        } else {
+          notify(response.message || "Không thể tải báo cáo kiểm soát", "error");
+        }
+      } catch (error) {
+        console.error(error);
+        notify("Không thể tải báo cáo kiểm soát", "error");
+      } finally {
+        hideLoading();
+      }
+    };
+
+    loadReport();
+  }, []);
+
+  const handleSignReport = async () => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) {
+      notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
+      return;
+    }
+    try {
+      setSigning(true);
+      const response = await BoardControlService.signAuditReport(electionId);
+      if (response.success) {
+        notify(response.message || "Đã ký số báo cáo", "success");
+        setReportData((prev) =>
+          prev
+            ? {
+                ...prev,
+                signature: {
+                  ...prev.signature,
+                  isConfirmed: true,
+                },
+              }
+            : prev
+        );
+      } else {
+        notify(response.message || "Không thể ký số báo cáo", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      notify("Không thể ký số báo cáo", "error");
+    } finally {
+      setSigning(false);
+    }
   };
 
-  const summaryCards: ReportSummaryCard[] = [
-    { title: "Sự kiện An ninh", value: 3 },
-    { title: "Hành động Quản trị", value: 12 },
-    { title: "Tỷ lệ Uptime", value: "99.98%" },
-    { title: "Toàn vẹn Dữ liệu", value: "HỢP LỆ", highlight: true },
-  ];
+  const handleDownloadDraft = async () => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) {
+      notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
+      return;
+    }
+    try {
+      showLoading();
+      const blob = await BoardControlService.downloadAuditReport(electionId);
+      const fileName = `bao-cao-kiem-soat-${electionId}-${Date.now()}.pdf`;
+      downloadBlob(blob, fileName);
+      notify("Tải xuống báo cáo thành công", "success");
+    } catch (error) {
+      console.error(error);
+      notify("Không thể tải xuống báo cáo", "error");
+    } finally {
+      hideLoading();
+    }
+  };
 
-  // 🔹 DỮ LIỆU MẪU ĐỂ TEST FILTER
-  const reportLogs: ReportLogItem[] = [
-    {
-      time: "29/09/2025 14:30",
-      user: "admin_A",
-      action: "TẠO MỚI",
-      details: 'Tạo cuộc bầu cử "Bầu cử HĐQT 2025".',
-    },
-    {
-      time: "28/09/2025 10:00",
-      user: "admin_B",
-      action: "CẬP NHẬT",
-      details: "Cập nhật danh sách cử tri cho sự kiện.",
-    },
-    {
-      time: "26/09/2025 16:15",
-      user: "security_bot",
-      action: "CẢNH BÁO",
-      details: "Phát hiện truy cập bất thường từ IP 192.168.1.10.",
-    },
-    {
-      time: "25/09/2025 09:42",
-      user: "admin_C",
-      action: "XÓA DỮ LIỆU",
-      details: "Xóa bản ghi lỗi trong nhật ký hệ thống.",
-    },
-    {
-      time: "24/09/2025 11:20",
-      user: "auditor_01",
-      action: "KIỂM TRA",
-      details: "Rà soát nhật ký hoạt động của tháng 9.",
-    },
-    {
-      time: "23/09/2025 18:00",
-      user: "admin_A",
-      action: "CẬP NHẬT",
-      details: "Thay đổi chính sách xác thực người dùng.",
-    },
-    {
-      time: "21/09/2025 08:30",
-      user: "security_team",
-      action: "BÁO CÁO",
-      details: "Gửi báo cáo sự kiện an ninh ngày 20/09.",
-    },
-    {
-      time: "18/09/2025 15:10",
-      user: "admin_B",
-      action: "TẠO MỚI",
-      details: "Tạo người dùng hệ thống mới cho Ban Kiểm soát.",
-    },
-    {
-      time: "15/09/2025 09:00",
-      user: "auditor_02",
-      action: "KIỂM TRA",
-      details: "Đối chiếu log truy cập từ ngày 10–14/09.",
-    },
-    {
-      time: "12/09/2025 14:45",
-      user: "admin_D",
-      action: "CẬP NHẬT",
-      details: "Chỉnh sửa thông tin cấu hình hệ thống mạng.",
-    },
-    {
-      time: "09/09/2025 10:25",
-      user: "security_bot",
-      action: "CẢNH BÁO",
-      details: "Hệ thống phát hiện đăng nhập sai mật khẩu 5 lần.",
-    },
-    {
-      time: "05/09/2025 17:00",
-      user: "admin_A",
-      action: "XÓA DỮ LIỆU",
-      details: "Xóa file backup cũ tháng 8 để giải phóng dung lượng.",
-    },
-  ];
+  const handlePrintReport = async () => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) {
+      notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
+      return;
+    }
+    try {
+      showLoading();
+      const blob = await BoardControlService.downloadAuditReport(electionId);
+      const url = window.URL.createObjectURL(blob);
+      const printWindow = window.open(url, "_blank");
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      } else {
+        notify("Không thể mở cửa sổ in. Vui lòng kiểm tra cài đặt trình chặn popup.", "warning");
+      }
+    } catch (error) {
+      console.error(error);
+      notify("Không thể in báo cáo", "error");
+    } finally {
+      hideLoading();
+    }
+  };
 
-  const signatureInfo: SignatureInfo = {
-    signerName: "Nguyễn Văn A",
+  const reportInfo: ReportInfo = reportData?.info || {
+    id: "---",
+    createdDate: "--/--/----",
+    reportPeriod: "--/--/---- - --/--/----",
+    status: "Chờ ký duyệt",
+  };
+  const summaryCards: ReportSummaryCard[] = reportData?.summaryCards || [];
+  const reportLogs: ReportLogItem[] = reportData?.logs || [];
+  const signatureInfo: SignatureInfo = reportData?.signature || {
+    signerName: "Ban Kiểm soát",
     signerRole: "Trưởng Ban Kiểm soát",
     isConfirmed: false,
   };
 
   return (
-    <>
-      {/* Top action bar */}
-      <div className="sar-topbar">
-        <Space>
-          <Button icon={<DownloadOutlined />}>
-            Tải xuống bản nháp
-          </Button>
-          <Button icon={<FileTextOutlined />}>In Báo cáo</Button>
-          <Button danger icon={<CloseCircleOutlined />}>
-            Từ chối & Gửi Phản hồi
-          </Button>
-        </Space>
-      </div>
-      <div className="sar-page">
-        <ReportHeader info={reportInfo} />
-        <ReportSummary cards={summaryCards} />
-        <ReportTabs logs={reportLogs} />
-        <ReportSignature info={signatureInfo} />
-      </div></>
+      <>
+        <div className="sar-topbar">
+          <Space>
+            <Button icon={<DownloadOutlined />} onClick={handleDownloadDraft}>
+              Tải xuống bản nháp
+            </Button>
+            <Button icon={<FileTextOutlined />} onClick={handlePrintReport}>
+              In Báo cáo
+            </Button>
+            <Button danger icon={<CloseCircleOutlined />}>
+              Từ chối & Gửi Phản hồi
+            </Button>
+          </Space>
+        </div>
+        <div className="sar-page">
+          <ReportHeader info={reportInfo} />
+          <ReportSummary cards={summaryCards} />
+          <ReportTabs logs={reportLogs} />
+          <ReportSignature
+              info={signatureInfo}
+              onConfirm={handleSignReport}
+              loading={signing}
+          />
+        </div>
+      </>
   );
 }

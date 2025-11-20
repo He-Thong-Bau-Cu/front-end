@@ -1,79 +1,135 @@
-import { Card, Col, Row, Typography } from "antd";
+import { Card, Col, Row, Typography, Button, Dropdown, Space } from "antd";
 import {
   DatabaseOutlined,
   ThunderboltOutlined,
   ClockCircleOutlined,
   SafetyCertificateOutlined,
-  ExclamationCircleOutlined,
-  SafetyOutlined,
-  CheckCircleOutlined,
+  CloudUploadOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import "@/style/admin/ManagementData.model.css";
+import type { DataManagementStats } from "@/types/DataManagement.interface";
+import type { MenuProps } from "antd";
 
 const { Text } = Typography;
 
-const DataStats = () => {
-  const stats = [
+interface DataStatsProps {
+  stats: DataManagementStats;
+  onRefresh?: () => void;
+  onBackup?: (format: "csv" | "json") => void;
+  backupLoading?: boolean;
+}
+
+const DataStats = ({ stats, onRefresh, onBackup, backupLoading }: DataStatsProps) => {
+  const cards = [
     {
-      icon: <DatabaseOutlined style={{ fontSize: 73, color: "#2ecc71" }} />,
-      title: "2.4 GB",
-      desc: "Dung lượng sử dụng",
-      sub: "Hoạt động tốt (65% capacity)",
-      subcolor: "#22c55e",
-      subIcon: <CheckCircleOutlined style={{ color: "#16a34a" }} />,
+      icon: <DatabaseOutlined style={{ fontSize: 48, color: "#059669" }} />,
+      title: stats.totalRecords.toLocaleString(),
+      desc: "Bản ghi sao lưu",
+      hint: "Tổng số hành động đã lưu",
+      color: "#059669",
     },
     {
-      icon: <ThunderboltOutlined style={{ fontSize: 73, color: "#ffcc00" }} />,
-      title: "127ms",
-      desc: "Thời gian phản hồi TB",
-      sub: "Hiệu năng tốt",
-      subcolor: "#22c55e",
-      subIcon: <CheckCircleOutlined style={{ color: "#16a34a" }} />,
+      icon: <SafetyCertificateOutlined style={{ fontSize: 48, color: "#2563eb" }} />,
+      title: stats.uniqueTables,
+      desc: "Bảng đang quản lý",
+      hint: "Nguồn dữ liệu được bảo vệ",
+      color: "#2563eb",
     },
     {
-      icon: <ClockCircleOutlined style={{ fontSize: 73, color: "#ff8c00" }} />,
-      title: "8h",
-      desc: "Sao lưu lần cuối cùng",
-      sub: "Cần sao lưu",
-      subcolor: "#f59e0b",
-      subIcon: <ExclamationCircleOutlined style={{ color: "#f59e0b" }} />,
+      icon: <ClockCircleOutlined style={{ fontSize: 48, color: "#f97316" }} />,
+      title: stats.latestBackupAt
+        ? dayjs(stats.latestBackupAt).format("HH:mm DD/MM")
+        : "--",
+      desc: "Sao lưu gần nhất",
+      hint: stats.latestActionBy || "Chưa xác định",
+      color: "#f97316",
     },
     {
-      icon: <SafetyCertificateOutlined style={{ fontSize: 73, color: "#16a34a" }} />,
-      title: "99.9%",
-      desc: "Tỷ lệ bảo mật",
-      sub: "An toàn",
-      subcolor: "#22c55e",
-      subIcon: <CheckCircleOutlined style={{ color: "#16a34a" }} />,
+      icon: <CloudUploadOutlined style={{ fontSize: 48, color: "#7c3aed" }} />,
+      title: stats.attachmentCount,
+      desc: "Tệp đính kèm",
+      hint: stats.topAction
+        ? `${stats.topAction.action} (${stats.topAction.count})`
+        : "Chưa có thống kê",
+      color: "#7c3aed",
     },
   ];
 
+  const backupMenu: MenuProps = {
+    items: [
+      { key: "csv", label: "Backup Excel (.csv)" },
+      { key: "json", label: "Backup JSON (.json)" },
+    ],
+    onClick: ({ key }) => onBackup?.(key as "csv" | "json"),
+  };
+
   return (
-    <Row gutter={[16, 16]} style={{ paddingTop: "30px" }}>
-      {stats.map((item, index) => (
-        <Col xs={24} sm={12} md={6} key={index}>
-          <Card
-            bordered={false}
-            className="stat-card"
-            style={{
-              borderTop: `4px solid ${item.subcolor}`,
-              borderRadius: 10,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-              padding: "16px",
-            }}
+    <div style={{ paddingTop: 30 }}>
+      <div className="data-stats-header">
+        <div>
+          <Text strong style={{ fontSize: 20 }}>
+            Hiệu suất dữ liệu
+          </Text>
+          <div style={{ color: "#64748b" }}>
+            Giám sát nhanh hoạt động sao lưu
+          </div>
+        </div>
+        <Space size={12}>
+          <Dropdown.Button
+            menu={backupMenu}
+            icon={<CloudUploadOutlined />}
+            type="primary"
+            loading={!!backupLoading}
+            onClick={() => onBackup?.("csv")}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              {item.icon}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", lineHeight: 1.4 }}>
-                <Text strong style={{ fontSize: 32, lineHeight: 1.2, color: "#000", marginBottom: 4 }}>{item.title}</Text>
-                <div style={{ fontSize: 14.5, color: "#333", lineHeight: 1.4, marginBottom:2 }}>{item.desc}</div>
-                <div style={{ fontSize: 13, color: item.subcolor, lineHeight: 1.4 }}>{item.subIcon} {item.sub}</div>
+            Backup nhanh
+          </Dropdown.Button>
+          <Button icon={<ReloadOutlined />} onClick={onRefresh}>
+            Làm mới
+          </Button>
+        </Space>
+      </div>
+      <Row gutter={[16, 16]}>
+        {cards.map((item, index) => (
+          <Col xs={24} sm={12} md={6} key={index}>
+            <Card
+              bordered={false}
+              className="stat-card"
+              style={{
+                borderTop: `4px solid ${item.color}`,
+                borderRadius: 10,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                padding: 16,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {item.icon}
+                <div>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: 28,
+                      lineHeight: "32px",
+                      color: "#0f172a",
+                    }}
+                  >
+                    {item.title}
+                  </Text>
+                  <div style={{ color: "#1e293b", fontSize: 14 }}>
+                    {item.desc}
+                  </div>
+                  <div style={{ color: item.color, fontSize: 13 }}>
+                    {item.hint}
+                  </div>
+                </div>
               </div>
-            </div>
-          </Card>
-        </Col>
-      ))}
-    </Row>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </div>
   );
 };
 
