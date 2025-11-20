@@ -78,6 +78,13 @@ export interface DelegationSearch {
     position?: string;
   } | null;
 
+  delegatorId: {
+    _id: string;
+    fullName: string;
+    email: string;
+    position?: string;
+  }
+
   delegateInfo?: {
     fullName: string;
     citizenId: string;
@@ -91,6 +98,7 @@ export interface DelegationSearch {
   endDate: string;
   status: string;
   createdAt: string;
+  delegateReason: string;
 }
 
 export interface DelegationSummary {
