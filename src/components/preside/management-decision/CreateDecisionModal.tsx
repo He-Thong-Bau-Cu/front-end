@@ -12,8 +12,8 @@ import {
 } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import "../../../style/preside/CreateDecisionModal.model.css";
-import UserService from "@/services/UserService";
 import dayjs from "dayjs";
+import ElectionService from "@/services/ElectionService";
 
 const { Option } = Select;
 
@@ -25,6 +25,8 @@ interface CreateDecisionModalProps {
   initialData?: any;
 }
 
+const FORMAT = "YYYY-MM-DD HH:mm:ss"; // FORMAT CHUẨN KHÔNG LỆCH GIỜ
+
 const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   open,
   onCancel,
@@ -35,43 +37,72 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   const [form] = Form.useForm();
   const [userList, setUserList] = useState<any[]>([]);
 
-  const loadUsers = async () => {
+  /* ===========================================================
+      LOAD USER THEO THỜI GIAN
+  =========================================================== */
+  const loadUsers = async (body: { startDate: string; endDate: string }) => {
     try {
-      const res = await UserService.getAllUser();
+      if (!body.startDate || !body.endDate) return;
+      const res = await ElectionService.getElectionUser(body);
       setUserList(res);
     } catch (err) {
       console.error("Không thể load user:", err);
     }
   };
 
-  useEffect(() => {
-    if (open) loadUsers();
-  }, [open]);
-
+  /* ===========================================================
+      INIT FORM WHEN OPEN / EDIT
+  =========================================================== */
   useEffect(() => {
     if (open) {
       if (editMode && initialData) {
+        // Convert từ string backend -> dayjs đúng format
+        const start = initialData.startDate
+          ? dayjs(initialData.startDate, FORMAT)
+          : null;
+
+        const end = initialData.endDate
+          ? dayjs(initialData.endDate, FORMAT)
+          : null;
+
         form.setFieldsValue({
           decisionNumber: initialData.decisionNumber || "",
           decisionName: initialData.decisionName || "",
           secretaryId: initialData.signerId || undefined,
-          startTime: initialData.startTime ? dayjs(initialData.startTime) : null,
-          endTime: initialData.endTime ? dayjs(initialData.endTime) : null,
+          startDate: start,
+          endDate: end,
         });
+
+        if (start && end) {
+          loadUsers({
+            startDate: start.format(FORMAT),
+            endDate: end.format(FORMAT),
+          });
+        }
       } else {
         form.resetFields();
+        setUserList([]);
       }
     }
   }, [open, editMode, initialData, form]);
 
+  /* ===========================================================
+      SUBMIT
+  =========================================================== */
   const handleFinish = (values: any) => {
     const payload = {
       ...values,
-      startTime: values.startTime?.toISOString(),
-      endTime: values.endTime?.toISOString(),
+      startDate: values.startDate?.format(FORMAT),
+      endDate: values.endDate?.format(FORMAT),
     };
+
     onSubmit(payload, editMode, initialData?._id);
   };
+
+  /* ===========================================================
+      MIN DATE = TODAY + 20 DAYS
+  =========================================================== */
+  const todayPlus20 = dayjs().add(20, "day").startOf("day");
 
   return (
     <Modal
@@ -80,7 +111,6 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
       footer={null}
       width={750}
       className="create-decision-modal"
-      destroyOnClose
       centered
     >
       {/* HEADER */}
@@ -98,7 +128,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
         </div>
       </div>
 
-      <Divider style={{ margin: "16px 0" }} />
+      <Divider />
 
       {/* FORM */}
       <Form layout="vertical" form={form} onFinish={handleFinish}>
@@ -125,14 +155,97 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
             </Form.Item>
           </Col>
 
-          {/* Người ký / thư ký */}
+          {/* DATE RANGE */}
+          <Row gutter={20} style={{ width: "100%" }}>
+            {/* Thời gian bắt đầu */}
+            <Col span={12}>
+              <Form.Item
+                name="startDate"
+                label="Thời gian bắt đầu"
+                rules={[{ required: true }]}
+              >
+                <DatePicker
+                  showTime
+                  format={FORMAT}
+                  style={{ width: "100%" }}
+                  placeholder="Chọn thời gian bắt đầu"
+                  disabledDate={(current) => current && current < todayPlus20}
+                  onChange={(value) => {
+                    form.setFieldsValue({ startDate: value });
+
+                    const end = form.getFieldValue("endDate");
+                    if (value && end) {
+                      loadUsers({
+                        startDate: value.format(FORMAT),
+                        endDate: end.format(FORMAT),
+                      });
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+
+            {/* Thời gian kết thúc */}
+            <Col span={12}>
+              <Form.Item
+                name="endDate"
+                label="Thời gian kết thúc"
+                dependencies={["startDate"]}
+                rules={[
+                  { required: true },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      const start = getFieldValue("startDate");
+                      if (!value || !start) return Promise.resolve();
+
+                      // Cho phép cùng ngày nhưng giờ phải sau
+                      if (value.isBefore(start)) {
+                        return Promise.reject(
+                          "Thời gian kết thúc phải sau thời gian bắt đầu"
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  }),
+                ]}
+              >
+                <DatePicker
+                  showTime
+                  format={FORMAT}
+                  style={{ width: "100%" }}
+                  placeholder="Chọn thời gian kết thúc"
+                  disabledDate={(current) => {
+                    const start = form.getFieldValue("startDate");
+
+                    if (!start) return current && current < todayPlus20;
+
+                    // Cho phép cùng ngày, chỉ cấm ngày trước
+                    return current && current < start.startOf("day");
+                  }}
+                  onChange={(value) => {
+                    form.setFieldsValue({ endDate: value });
+
+                    const start = form.getFieldValue("startDate");
+                    if (start && value) {
+                      loadUsers({
+                        startDate: start.format(FORMAT),
+                        endDate: value.format(FORMAT),
+                      });
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Thư ký */}
           <Col span={24}>
             <Form.Item
               name="secretaryId"
               label="Thư ký chủ tọa"
               rules={[{ required: true, message: "Vui lòng chọn thư ký" }]}
             >
-              <Select placeholder="Chọn người ký / thư ký" allowClear>
+              <Select placeholder="Chọn thư ký" allowClear>
                 {userList.map((user) => (
                   <Option key={user._id} value={user._id}>
                     {user.fullName}
@@ -141,75 +254,6 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
-
-          {/* Thời gian hiệu lực */}
-          <Col span={24}>
-            <Divider orientation="left">⏰ Thời gian diễn ra cuộc bầu cử</Divider>
-          </Col>
-          {/* Lấy ngày tối thiểu: hôm nay + 20 ngày */}
-          {(() => {
-            const todayPlus20 = dayjs().add(15, "day").startOf("day");
-
-            return (
-              <>
-                {/* Thời gian bắt đầu */}
-                <Col span={24}>
-                  <Form.Item
-                    name="startTime"
-                    label="Thời gian bắt đầu"
-                    rules={[{ required: true, message: "Vui lòng chọn thời gian bắt đầu" }]}
-                  >
-                    <DatePicker
-                      showTime
-                      format="DD/MM/YYYY HH:mm"
-                      style={{ width: "100%" }}
-                      placeholder="Chọn thời gian bắt đầu"
-                      disabledDate={(current) =>
-                        current && current < todayPlus20
-                      }
-                    />
-                  </Form.Item>
-                </Col>
-
-                {/* Thời gian kết thúc */}
-                <Col span={24}>
-                  <Form.Item
-                    name="endTime"
-                    label="Thời gian kết thúc"
-                    dependencies={["startTime"]}
-                    rules={[
-                      { required: true, message: "Vui lòng chọn thời gian kết thúc" },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          const start = getFieldValue("startTime");
-                          if (!value || !start) return Promise.resolve();
-                          if (value.isBefore(start))
-                            return Promise.reject("Thời gian kết thúc phải sau thời gian bắt đầu");
-                          return Promise.resolve();
-                        },
-                      }),
-                    ]}
-                  >
-                    <DatePicker
-                      showTime
-                      format="DD/MM/YYYY HH:mm"
-                      style={{ width: "100%" }}
-                      placeholder="Chọn thời gian kết thúc"
-                      disabledDate={(current) => {
-                        const start = form.getFieldValue("startTime");
-                        if (!start) {
-                          // Nếu chưa chọn startTime thì vẫn khóa ngày quá khứ + 20 ngày
-                          return current && current < todayPlus20;
-                        }
-                        // Nếu đã chọn startTime -> không cho chọn trước startTime
-                        return current && current < start.startOf("day");
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-              </>
-            );
-          })()}
         </Row>
 
         {/* FOOTER */}

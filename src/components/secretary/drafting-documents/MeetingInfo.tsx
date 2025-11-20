@@ -20,17 +20,18 @@ import VotingMethodsService from "@/services/VotingMethodsService";
 import ElectionTypesService from "@/services/ElectionTypesService";
 import ThresholdsService from "@/services/ThresholdsService";
 import { string } from "yup";
-import { Decision } from "@/types/Decision.interface";
-import DecisionService from "@/services/DecisionService";
-
 const { Title } = Typography;
 
 interface Props {
   onChange: (data: any) => void;
-  data: any
+  data?: any;
+  electionentities?: any;
+  meeting?: any;
 }
 
 interface MeetingFormValues {
+  decisionName?: string;
+  decisionNumber?: string;
   location?: string;
   method?: string;
   type?: any;
@@ -40,7 +41,7 @@ interface MeetingFormValues {
   candidates?: any[];
 }
 
-const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
+const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meeting }) => {
   const [form] = Form.useForm<MeetingFormValues>();
   const [typeOther, setTypeOther] = useState(false);
   const [thresholdOther, setThresholdOther] = useState(false);
@@ -48,8 +49,6 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
   const [types, setTypes] = useState<ElectionTypes[] | null>(null);
   const [thresholds, setThresholds] = useState<Threshols[] | null>(null);
   const [methods, setMethods] = useState<VotingMethods[] | null>(null);
-  const [election, setElection] = useState<Decision | null>(null);
-
   /* ===========================================================
      FETCH DATA ONCE
   ============================================================ */
@@ -70,6 +69,49 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
   useEffect(() => {
     fetchData();
   }, []);
+
+
+  useEffect(() => {
+    if (data?.data) {
+      const d = data.data;
+      form.setFieldsValue({
+        decisionNumber: d?.decisionNumber,
+        decisionName: d?.decisionName,
+        method: d.votingMethodId?._id,
+        type: d.typeId?._id,
+        threshold: d.thresholdId?._id,
+        authorizationStart: d.delegationStart ? dayjs(d.delegationStart) : null,
+        authorizationEnd: d.delegationEnd ? dayjs(d.delegationEnd) : null,
+      });
+      setVoteMethod(d.votingMethodId?._id);
+      if (electionentities) {
+        form.setFieldsValue({
+          candidates: Array.isArray(electionentities) ?
+            electionentities.map((c: any) => ({
+              title: c.title,
+              description: c.description,
+              metaData: {
+                fullName: c.metaData?.fullName || "",
+                age: c.metaData?.age || "",
+                department: c.metaData?.department || "",
+                experience: c.metaData?.experience || "",
+                achievements: c.metaData?.achievements || "",
+                image: c.metaData?.image || "",
+              },
+              file: c.file || "",
+            }))
+            : [],
+        });
+      }
+
+      if(meeting){
+        form.setFieldsValue({
+          location: meeting?.location
+        })
+      }
+    }
+
+  }, [data]);
 
   /* ===========================================================
      EMIT VALUE TO PARENT (NHƯ DIGITALSIGNMODAL)
@@ -118,17 +160,17 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
               name="decisionNumber"
               rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
             >
-              <Input value={data?.decisionNumber} disabled placeholder="Nhập địa điểm tổ chức" />
+              <Input disabled placeholder="Nhập địa điểm tổ chức" />
             </Form.Item>
           </Col>
 
-           <Col span={12}>
+          <Col span={12}>
             <Form.Item
               label="Tên nghị quyết"
               name="decisionName"
               rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
             >
-              <Input value={data?.decisionName} disabled placeholder="Nhập địa điểm tổ chức" />
+              <Input disabled placeholder="Nhập địa điểm tổ chức" />
             </Form.Item>
           </Col>
 
@@ -174,6 +216,7 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
           <Col span={12}>
             <Form.Item
               label="Thể loại bầu cử"
+              name="type"
               required
             >
               {!typeOther ? (
@@ -236,13 +279,12 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
               )}
             </Form.Item>
           </Col>
-
-
           {/* NGƯỠNG THÔNG QUA */}
           <Col span={12}>
             <Form.Item
               label="Ngưỡng thông qua"
-              rules={[{ required: true }]}
+              name="threshold"
+              required
             >
               {!thresholdOther ? (
                 <Select
@@ -431,12 +473,6 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
                             </Col>
 
                             <Col span={12}>
-                              <Form.Item label="Người đề xuất" name={[name, "proposerId"]}>
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
                               <Form.Item
                                 label="Ảnh ứng viên"
                                 name={[name, "metaData", "image"]}
@@ -504,6 +540,15 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
                                 <Input />
                               </Form.Item>
                             </Col>
+                            <Col span={12}>
+                              <Form.Item
+                                rules={[{ required: true }]}
+                                name={[name, "metaData", "fullName"]}
+                                label="Tên"
+                              >
+                                <Input />
+                              </Form.Item>
+                            </Col>
 
                             <Col span={12}>
                               <Form.Item
@@ -515,12 +560,6 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data }) => {
                                 <Upload beforeUpload={() => false}>
                                   <Button>Tải file</Button>
                                 </Upload>
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item name={[name, "proposerId"]} label="Người đề xuất">
-                                <Input />
                               </Form.Item>
                             </Col>
                           </>
