@@ -36,6 +36,34 @@ class BallotService extends BaseService {
         return response.data;
     }
 
+    async verifyOtp(id: string, payload: { email: string; otp: string }) {
+        const response = await this.api.post(
+            `${this.endpoint}/verify-otp/${id}`,
+            payload
+        ) as ApiResponse<any>;
+
+        return response.data;
+    }
+
+
+    async signBallot(id: string, file: File, password: string) {
+        const formData = new FormData();
+        formData.append("id", id);
+        formData.append("file", file);
+        formData.append("password", password);
+
+        const res = await this.api.post(
+            `${this.endpoint}/sign`,
+            formData,
+            {
+                headers: { "Content-Type": "multipart/form-data" }
+            }
+        );
+
+        return res.data;
+    }
+
+
 
 }
 
