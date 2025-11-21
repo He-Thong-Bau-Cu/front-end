@@ -152,7 +152,7 @@ const CandidateSection = () => {
         status: "CAST",
       });
 
-      // 4️⃣ Đóng modal → quay lại danh sách
+      notify("Bỏ phiếu thành công!", "success");
       setSignModalOpen(false);
       navigate("/voter/ballots");
 

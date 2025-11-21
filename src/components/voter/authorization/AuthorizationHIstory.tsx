@@ -28,7 +28,7 @@ const statusConfig: Record<
 > = {
     DRAFT: { label: "Bản nháp", color: "purple", icon: <EditOutlined /> },
     PENDING: { label: "Đang chờ phê duyệt", color: "orange", icon: <ClockCircleOutlined /> },
-    CONFIRMED: { label: "Đã phê duyệt", color: "green", icon: <CheckCircleOutlined /> },
+    CONFIRMED: { label: "Đang chờ phê duyệt", color: "orange", icon: <ClockCircleOutlined /> },
     ACTIVE: { label: "Đang hiệu lực", color: "blue", icon: <CheckCircleOutlined /> },
     EXPIRED: { label: "Hết hiệu lực", color: "default", icon: <ExclamationCircleOutlined /> },
     REVOKED: { label: "Đã thu hồi", color: "red", icon: <CloseCircleOutlined /> },
@@ -102,10 +102,10 @@ export default function AuthorizationHistory() {
                 },
                 CONFIRMED: {
                     type: "info",
-                    message: "Ủy quyền đã được phê duyệt",
-                    description: "Bạn đã có một ủy quyền đang chờ phê duyệt, không thể tạo thêm.",
+                    message: "Ủy quyền đang chờ phê duyệt",
+                    description: "Bạn đã có một ủy quyền đang chờ phê duyệt, không thể tạo thêm ủy quyền.",
                     bgColor: "#fff7e6",
-                    icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+                    icon: <CheckCircleOutlined style={{ color: "#fa8c16" }} />,
                 },
                 ACTIVE: {
                     type: "warning",

@@ -3,7 +3,6 @@
   min-height: 100vh;
 }
 
-
 .status-tag {
   font-size: 15px;
   padding: 6px 14px;
@@ -102,47 +101,45 @@
 }
 
 /* Nút xác nhận */
-.confirm-btn {
-  flex: 1;
-  height: 44px !important;
-  background: #dfeeda !important; /* mờ khi chưa chọn */
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 12px !important;
-  font-weight: 600;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-/* Khi hover và đã active */
-.confirm-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(124, 179, 66, 0.25);
-}
-
-/* Khi người dùng chọn (active) → sáng rõ */
-.confirm-btn.active {
-  background: #7cb342 !important;
-  box-shadow: 0 3px 10px rgba(124, 179, 66, 0.3);
-  color: #fff !important;
-}
-
-/* Khi disabled */
-.confirm-btn:disabled {
-  background: #e8f1e5 !important;
-  color: #fff !important;
-  cursor: not-allowed !important;
-  box-shadow: none !important;
-}
+/* ===============================
+   NÚT GỬI PHIẾU BẦU (YES/NO)
+================================ */
 .vote-form-buttons {
-  display: flex;
-  gap: 12px;
-  width: 100%;
   margin-top: 24px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.confirm-btn {
+  height: 44px !important;
+  border-radius: 10px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding: 0 28px !important;
+  border: none !important;
+  outline: none !important;
+  color: #fff !important;
+
+  /* giống y nghĩa vụ */
+  background: linear-gradient(90deg, #c9c9c9, #a5a5a5) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  opacity: 0.6;
+  transition: all 0.25s ease;
+  cursor: not-allowed;
+}
+
+.confirm-btn.active {
+  opacity: 1;
+  cursor: pointer;
+
+  /* 🔥 Gradient giống CandidateSection */
+  background: linear-gradient(90deg, #89e68b, #4fcf5a) !important;
+}
+
+.confirm-btn.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
 /* Countdown card */
@@ -230,4 +227,80 @@
     align-items: flex-start;
     gap: 12px;
   }
+}
+
+/* ===========================
+   BASE OPTION
+=========================== */
+.vote-option {
+  border-radius: 12px !important;
+  border: 1px solid #ececec !important;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: #fff;
+}
+
+/* Hover */
+.vote-option:hover {
+  transform: translateY(-2px);
+}
+
+/* ICON BASE */
+.vote-option .icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* ===========================
+   YES — Xanh
+=========================== */
+.vote-option.YES .icon {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #81c784;
+}
+
+.vote-option.active.YES {
+  background: #e8f5e9 !important;
+  border: 1px solid #4caf50 !important;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* ===========================
+   NO — Đỏ
+=========================== */
+.vote-option.NO .icon {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
+
+.vote-option.active.NO {
+  background: #ffebee !important;
+  border: 1px solid #f44336 !important;
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+/* ===========================
+   CONFIRM BUTTON
+=========================== */
+.confirm-btn {
+  background: #ccc !important;
+  border-radius: 8px;
+  color: white !important;
+  opacity: 0.7;
+}
+
+.confirm-btn.active {
+  opacity: 1;
+}
+
+.confirm-btn.active:hover {
+  transform: translateY(-2px);
 }

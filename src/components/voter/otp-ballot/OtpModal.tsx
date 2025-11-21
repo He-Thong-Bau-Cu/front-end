@@ -11,9 +11,17 @@ interface Props {
     loading?: boolean;
 }
 
+// Format 300s → 05:00
+const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+};
+
+
 export default function OtpModal({ open, onClose, onVerify, onResend, loading }: Props) {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-    const [timer, setTimer] = useState(30);
+    const [timer, setTimer] = useState(300);
     const [canResend, setCanResend] = useState(false);
     const email = localStorage.getItem("email") || "";
     const [restartTimer, setRestartTimer] = useState(0);
@@ -22,7 +30,7 @@ export default function OtpModal({ open, onClose, onVerify, onResend, loading }:
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
         if (open) {
-            setTimer(30);
+            setTimer(300);
             setCanResend(false);
 
             interval = setInterval(() => {
@@ -77,7 +85,7 @@ export default function OtpModal({ open, onClose, onVerify, onResend, loading }:
 
     const handleResend = async () => {
         setOtp(["", "", "", "", "", ""]);
-        setTimer(30);
+        setTimer(300);
         setCanResend(false);
 
         setRestartTimer(prev => prev + 1);  // 👈 KÍCH HOẠT USEEFFECT ĐẾM NGƯỢC
@@ -196,7 +204,7 @@ export default function OtpModal({ open, onClose, onVerify, onResend, loading }:
 
             {/* RESEND */}
             <div style={{ marginTop: 20, fontSize: 14 }}>
-                <Text type="secondary">Không nhận được mã?</Text>
+                {/* <Text type="secondary">Không nhận được mã?</Text> */}
                 <br />
 
                 {canResend ? (
@@ -208,7 +216,7 @@ export default function OtpModal({ open, onClose, onVerify, onResend, loading }:
                         Gửi lại mã xác thực
                     </Button>
                 ) : (
-                    <Text style={{ color: "#34aa44" }}>Gửi lại sau {timer}s</Text>
+                    <Text style={{ color: "#34aa44" }}>  Gửi lại sau {formatTime(timer)}</Text>
                 )}
 
             </div>

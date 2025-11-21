@@ -8,23 +8,22 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   HistoryOutlined,
-  InfoCircleOutlined,
+  InboxOutlined,
+  InfoCircleOutlined
 } from "@ant-design/icons";
 import {
   Alert,
   Button,
   Col,
   Divider,
-  Empty,
-  message,
   Row,
   Space,
-  Typography,
+  Typography
 } from "antd";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../style/voter/BallotList.model.css";
-import dayjs from "dayjs";
 
 const { Text, Title } = Typography;
 
@@ -247,13 +246,24 @@ export default function BallotList() {
             </Col>
           </Row>
         ) : (
-          <div className="no-result">
-            <Empty
-              description={<Text type="secondary">Bạn chưa có phiếu bầu nào.</Text>}
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+          <div className="voting-history-content" style={{ marginTop: 16 }}>
+            <div className="no-voting-container">
+              <div className="no-voting-icon">
+                <InboxOutlined />
+              </div>
+
+              <Title level={4} className="no-voting-title">
+                Bạn chưa có phiếu bầu nào
+              </Title>
+
+              <Text type="secondary" className="no-voting-description">
+                Hiện tại bạn chưa được tạo phiếu bầu nào cho các cuộc bầu cử.
+              </Text>
+
+            </div>
           </div>
-        )}
+        )
+        }
       </div>
     </div>
   );
