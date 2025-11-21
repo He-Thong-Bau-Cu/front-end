@@ -26,6 +26,11 @@ class MeetingAttendeeService extends BaseService {
       { attended }
     );
   }
+
+  // Lấy danh sách người tham gia theo meeting ID
+  async getByMeetingId(meetingId: string): Promise<any> {
+    return await this.api.get(`${this.endpoint}/meetings/${meetingId}`);
+  }
 }
 
 export default new MeetingAttendeeService();

@@ -129,6 +129,7 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
             <p>Thêm nhanh một đại biểu mới vào danh sách mà không cần file Excel</p>
 
             <Button
+                id="delegate-manual-add-button"
                 type="primary"
                 icon={<PlusOutlined />}
                 style={{

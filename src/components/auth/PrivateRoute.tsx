@@ -55,7 +55,25 @@ const PrivateRoute: React.FC = () => {
   //   (userRole !== "admin" && currentPath === "/employee/dashboard");
   const allPermissions = [...permissions, ...permissionsElections];
 
-  if (!allPermissions.includes(currentPath)) {
+  // Check exact path match
+  const hasExactPermission = allPermissions.includes(currentPath);
+  
+  // Check if any permission is a parent path of current path
+  // Ví dụ: permission = "/organizing-committee" và currentPath = "/organizing-committee/create-participants"
+  const hasParentPermission = allPermissions.some((perm: string) => {
+    // Chỉ match khi permission là prefix đầy đủ và theo sau là "/" hoặc kết thúc path
+    // Tránh match sai như "/organ" với "/organizing-committee"
+    if (currentPath === perm) {
+      return true; // Exact match
+    }
+    // Check parent path: currentPath phải bắt đầu bằng perm + "/"
+    if (currentPath.startsWith(perm + "/")) {
+      return true;
+    }
+    return false;
+  });
+
+  if (!hasExactPermission && !hasParentPermission) {
     return <Navigate to="/403" replace state={{ unauthorized: true }} />;
   }
 

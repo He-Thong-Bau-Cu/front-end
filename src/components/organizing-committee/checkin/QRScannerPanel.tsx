@@ -4,6 +4,7 @@ import { ArrowLeftOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
 import DelegateCardService from "@/services/DelegateCardService";
+import MeetingService from "@/services/MeetingService";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
 import ElectionParticipantService from "@/services/ElectionParticipantsService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
@@ -153,19 +154,47 @@ const QRScannerPanel: React.FC = () => {
 
               // Tự động cập nhật trạng thái tham gia (attended = true)
               try {
-                const meetingId = localStorage.getItem("currentMeetingId");
+                // Lấy cuộc bầu cử từ localStorage (đã chọn ở trang home)
+                const currentElectionId = localStorage.getItem("currentElectionId") || electionId;
+                if (!currentElectionId) {
+                  console.warn("⚠️ Không tìm thấy currentElectionId trong localStorage");
+                  message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
+                  return;
+                }
+
+                // Lấy cuộc họp theo electionId (1 cuộc bầu cử chỉ có 1 cuộc họp)
+                const meetingsResponse: BaseResponse<any> = await MeetingService.getByElectionId(currentElectionId);
+                if (!meetingsResponse || !meetingsResponse.success || !meetingsResponse.data) {
+                  console.warn("⚠️ Không tìm thấy cuộc họp cho cuộc bầu cử này");
+                  message.warning("Không tìm thấy cuộc họp cho cuộc bầu cử này");
+                  return;
+                }
+
+                const meetings = Array.isArray(meetingsResponse.data) ? meetingsResponse.data : [meetingsResponse.data];
+                if (meetings.length === 0) {
+                  console.warn("⚠️ Chưa có cuộc họp nào được tạo cho cuộc bầu cử này");
+                  message.warning("Chưa có cuộc họp nào được tạo cho cuộc bầu cử này");
+                  return;
+                }
+
+                // Lấy meeting đầu tiên (vì 1 cuộc bầu cử chỉ có 1 cuộc họp)
+                const meeting = meetings[0];
+                const meetingId = meeting._id || meeting.id;
                 if (!meetingId) {
-                  console.warn("⚠️ Không tìm thấy meetingId trong localStorage");
-                  message.warning("Vui lòng chọn cuộc họp trước khi check-in");
+                  console.warn("⚠️ Không tìm thấy ID cuộc họp");
+                  message.warning("Không tìm thấy ID cuộc họp");
                   return;
                 }
 
                 if (electionId && userId._id) {
                   // Tìm ElectionParticipant đã tồn tại trong cuộc bầu cử (không tạo mới)
-                  const participants = await ElectionParticipantService.getByUserId(userId._id);
-                  const participant = Array.isArray(participants) 
-                    ? participants.find((p: any) => p.electionId?._id === electionId || p.electionId === electionId)
-                    : null;
+                  const participantResponse: BaseResponse<any> = await ElectionParticipantService.getByUserId(userId._id);
+                  const participantList = participantResponse?.data
+                    ? (Array.isArray(participantResponse.data) ? participantResponse.data : [participantResponse.data])
+                    : [];
+                  const participant = participantList.find(
+                    (p: any) => p.electionId?._id === electionId || p.electionId === electionId
+                  );
                   
                   if (participant && participant._id) {
                     try {
@@ -310,12 +339,119 @@ const QRScannerPanel: React.FC = () => {
     };
   }, []);
 
-  // 👉 Khi nhấn “Lưu” trong modal
-  const handleSave = () => {
-    message.success(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`);
-    setIsModalVisible(false);
-    // Quay lại màn tổng quan
-    navigate("/organizing-committee");
+  // 👉 Khi nhấn "Checkin" trong modal
+  const handleSave = async () => {
+    try {
+      if (!delegateData) {
+        message.error("Không có thông tin đại biểu");
+        return;
+      }
+
+      // Lấy cuộc bầu cử từ localStorage (đã chọn ở trang home)
+      const currentElectionId = localStorage.getItem("currentElectionId");
+      if (!currentElectionId) {
+        message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
+        return;
+      }
+
+      // Lấy cuộc họp theo electionId (1 cuộc bầu cử chỉ có 1 cuộc họp)
+      const meetingsResponse: BaseResponse<any> = await MeetingService.getByElectionId(currentElectionId);
+      if (!meetingsResponse || !meetingsResponse.success || !meetingsResponse.data) {
+        message.error("Không tìm thấy cuộc họp cho cuộc bầu cử này");
+        return;
+      }
+
+      const meetings = Array.isArray(meetingsResponse.data) ? meetingsResponse.data : [meetingsResponse.data];
+      if (meetings.length === 0) {
+        message.error("Chưa có cuộc họp nào được tạo cho cuộc bầu cử này");
+        return;
+      }
+
+      // Lấy meeting đầu tiên (vì 1 cuộc bầu cử chỉ có 1 cuộc họp)
+      const meeting = meetings[0];
+      const meetingId = meeting._id || meeting.id;
+      if (!meetingId) {
+        message.error("Không tìm thấy ID cuộc họp");
+        return;
+      }
+
+      const electionId = delegateData.electionId || currentElectionId;
+      const userId = delegateData.userId;
+
+      if (!electionId || !userId) {
+        message.error("Thiếu thông tin cuộc bầu cử hoặc người dùng");
+        return;
+      }
+
+      setLoading(true);
+
+      // Tìm ElectionParticipant đã tồn tại trong cuộc bầu cử (giống VerificationPanel)
+      try {
+        const participantResponse: BaseResponse<any> = await ElectionParticipantService.getByUserId(userId);
+        const participantList = participantResponse?.data
+          ? (Array.isArray(participantResponse.data) ? participantResponse.data : [participantResponse.data])
+          : [];
+        const participant = participantList.find(
+          (p: any) => p.electionId?._id === electionId || p.electionId === electionId
+        );
+
+        if (!participant || !participant._id) {
+          message.warning("Người này chưa được thêm vào danh sách tham gia cuộc bầu cử");
+          setLoading(false);
+          return;
+        }
+
+        // Thử cập nhật trạng thái tham gia cuộc họp (nếu MeetingAttendee record đã tồn tại)
+        try {
+          const updateResult = await MeetingAttendeeService.updateStatusAttendance(
+            meetingId,
+            participant._id,
+            true
+          );
+          // Kiểm tra xem response có data không - nếu null thì record chưa tồn tại, cần tạo mới
+          if (!updateResult?.data || updateResult?.data === null) {
+            throw new Error("Record not found");
+          }
+          console.log("✅ Đã cập nhật trạng thái tham gia cuộc họp thành công");
+          message.success(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`);
+          setIsModalVisible(false);
+          setDelegateData(null);
+          // Quay lại màn tổng quan
+          navigate("/organizing-committee");
+        } catch (updateError: any) {
+          // Nếu MeetingAttendee record chưa tồn tại, tạo mới record ghi nhận tham gia cuộc họp
+          const errorStatus = updateError?.response?.status;
+          const errorMessage = updateError?.message || "";
+          if (errorStatus === 404 || errorStatus === 500 || errorMessage === "Record not found") {
+            console.log("📝 Tạo mới MeetingAttendee record (ghi nhận tham gia cuộc họp)...");
+            await MeetingAttendeeService.create({
+              meetingId: meetingId,
+              participantId: participant._id, // Sử dụng participant đã tồn tại
+              checkInTime: new Date(),
+              attended: true,
+            });
+            console.log("✅ Đã tạo mới MeetingAttendee record và cập nhật trạng thái tham gia thành công");
+            message.success(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`);
+            setIsModalVisible(false);
+            setDelegateData(null);
+            // Quay lại màn tổng quan
+            navigate("/organizing-committee");
+          } else {
+            throw updateError;
+          }
+        }
+      } catch (attendanceError: any) {
+        console.error("❌ Lỗi khi cập nhật trạng thái tham gia:", attendanceError);
+        const errorMsg = attendanceError?.response?.data?.message || attendanceError?.message || "Không thể cập nhật trạng thái tham gia";
+        message.error(`❌ ${errorMsg}`);
+      }
+    } catch (error: any) {
+      console.error("❌ Lỗi khi check-in:", error);
+      const errorMsg = error?.response?.data?.message || error?.message || "Không thể check-in";
+      message.error(`❌ ${errorMsg}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 👉 Khi nhấn "Hủy"
@@ -425,10 +561,13 @@ const QRScannerPanel: React.FC = () => {
 
               if (electionId && userId._id) {
                 // Tìm ElectionParticipant đã tồn tại trong cuộc bầu cử (không tạo mới)
-                const participants = await ElectionParticipantService.getByUserId(userId._id);
-                const participant = Array.isArray(participants) 
-                  ? participants.find((p: any) => p.electionId?._id === electionId || p.electionId === electionId)
-                  : null;
+                const participantResponse: BaseResponse<any> = await ElectionParticipantService.getByUserId(userId._id);
+                const participantList = participantResponse?.data
+                  ? (Array.isArray(participantResponse.data) ? participantResponse.data : [participantResponse.data])
+                  : [];
+                const participant = participantList.find(
+                  (p: any) => p.electionId?._id === electionId || p.electionId === electionId
+                );
                 
                 if (participant && participant._id) {
                   try {

@@ -14,6 +14,7 @@ const OrganizingCommitteeLayout = () => {
         const map: Record<string, string> = {
             "/organizing-committee": "Tổng quan",
             "/organizing-committee/checkin": "Checkin",
+            "/organizing-committee/create-participants": "Danh sách người tham dự cuộc họp",
             "/organizing-committee/verify-delegates": "Xác thực đại biểu",
             "/organizing-committee/manage-delegates": "Quản lý danh sách đại biểu và cổ đông",
         };
@@ -38,7 +39,7 @@ const OrganizingCommitteeLayout = () => {
                 <Content
                     style={{
                         flex: 1,
-                        padding: '100px 24px 24px',
+                        padding: '32px 24px 24px',
                         background: '#EFF8EF',
                         overflowY: 'auto',
                         overflowX: 'hidden',
