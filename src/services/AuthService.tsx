@@ -25,6 +25,10 @@ class AuthService {
   async twoFaLogin(body: any): Promise<any> {
     return await this.api.post(`${this.endpoint}/2fa/login`, body);
   }
+
+  async sendOtp(body: any): Promise<any> {
+    return await this.api.post(`${this.endpoint}/send-otp`, body);
+  }
 }
 
 export default new AuthService();

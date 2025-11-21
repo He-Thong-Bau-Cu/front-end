@@ -47,19 +47,25 @@ export default function LoginScreen() {
             decoded.fullname,
             decoded.permissions || []
           );
+
+          const user = await getUserLogin();
+          if (user?.email) {
+            localStorage.setItem("email", user.email);
+          }
+
           notify("Đăng nhập thành công!!!", "success");
           if (decoded.role === USER_ROLE.ADMIN) {
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
-            }else{
+            } else {
               navigate(PATH.ADMIN);
             }
           } else if (decoded.role === USER_ROLE.PRESIDE) {
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
-            }else{
+            } else {
               navigate(PATH.PRESIDE);
             }
           } else {

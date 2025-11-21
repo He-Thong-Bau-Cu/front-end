@@ -6,17 +6,18 @@ import {
 } from "@ant-design/icons";
 import { Button, Card, Col, Row, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
-
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import VotingRightsService from "@/services/VotingRightsService";
 import CandidateCard from "./CandidateCard";
-
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import BallotService from "@/services/BallotService";
 import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { VotingRight } from "@/types/VotingRights.interface";
 import { useLocation, useNavigate } from "react-router-dom";
+import AuthService from "@/services/AuthService";
+import OtpModal from "../otp-ballot/OtpModal";
+import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 
 const { Title, Text } = Typography;
 
@@ -25,8 +26,6 @@ const CandidateSection = () => {
   const [remainingVotes, setRemainingVotes] = useState(0);
   const [electionTitle, setElectionTitle] = useState("");
 
-
-
   const [candidates, setCandidates] = useState<ElectionEntities[]>([]);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
@@ -34,7 +33,9 @@ const CandidateSection = () => {
   const navigate = useNavigate();
   const ballotId = location.state?.ballotId;
 
-
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [signModalOpen, setSignModalOpen] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
 
   const [vote, setVote] = useState<Record<string, number>>({});
 
@@ -61,7 +62,6 @@ const CandidateSection = () => {
         setRemainingVotes(votes);
         setElectionTitle(right?.electionId?.title ?? "");
 
-
         // 🔥 2. API lấy danh sách ứng viên
         const list = await ElectionEntitiesService.getElectionEntitiesByElectionId(
           electionId!
@@ -81,55 +81,89 @@ const CandidateSection = () => {
   // Xử lý phân bổ phiếu
   const handleVoteChange = (entity: ElectionEntities, value: number) => {
     const newDistribution = { ...vote, [entity._id]: value };
-
     setVote(newDistribution);
-
     const totalUsed = Object.values(newDistribution).reduce((sum, v) => sum + v, 0);
-
     setRemainingVotes(Math.max(totalVotes - totalUsed, 0));
   };
 
-
-  const handleSubmit = async () => {
-    const voterId = localStorage.getItem("voterId");
-    const electionId = localStorage.getItem("currentElectionId");
-
-    if (!ballotId) {
-      return notify("Không tìm thấy ballotId!", "error");
-    }
-
-    if (remainingVotes > 0) {
+  //send otp
+  const handleOpenOtp = async () => {
+    if (remainingVotes > 0)
       return notify("Bạn chưa phân bổ hết số phiếu!", "warning");
-    }
-
-    const allocations = Object.entries(vote).map(([entityId, voteValue]) => ({
-      entityId,
-      voteValue,
-    }));
-
     try {
       showLoading();
-
-
-      await BallotService.updateBallot(ballotId, {
-        electionId,
-        voterId,
-        allocations,
-        status: "CAST",     //  ✅🔥 Gửi luôn status CAST
-      });
-
-      // ⭐ Gửi status CAST khi quay lại BallotList
-      notify("Gửi phiếu bầu thành công!", "success");
-
-      navigate("/voter/ballots");
-
+      const email = localStorage.getItem("email");
+      await AuthService.sendOtp({ email });
+      setOtpModalOpen(true);
     } catch (err) {
-      console.error(err);
-      notify("Có lỗi khi gửi phiếu bầu!", "error");
+      notify("Không gửi được OTP!", "error");
     } finally {
       hideLoading();
     }
   };
+
+  const handleResendOtp = async (): Promise<void> => {
+    const email = localStorage.getItem("email");
+    try {
+      await AuthService.sendOtp({ email });
+    } catch {
+      notify("Gửi lại OTP thất bại!", "error");
+    }
+  };
+
+
+  const handleVerifyOtp = async (otp: string) => {
+    try {
+      const email = localStorage.getItem("email") || "";
+      const res = await BallotService.verifyOtp(ballotId, { email, otp });
+      notify(res.message || "Xác minh thành công!", "success");
+      setOtpModalOpen(false);
+      setSignModalOpen(true);
+    } catch (error: any) {
+      notify(error?.response?.data?.message || "Có lỗi xảy ra!", "error");
+    }
+  };
+
+
+
+  const handleSignBallot = async ({ file, password }: { file: File; password: string }) => {
+    try {
+      showLoading();
+
+      // 1️⃣ Gọi API để ký số
+      await BallotService.signBallot(ballotId, file, password);
+
+      notify("Ký phiếu bầu thành công!", "success");
+
+      // 2️⃣ Lấy dữ liệu cần lưu
+      const voterId = localStorage.getItem("voterId");
+      const electionId = localStorage.getItem("currentElectionId");
+
+      const allocations = Object.entries(vote).map(([entityId, voteValue]) => ({
+        entityId,
+        voteValue
+      }));
+
+      // 3️⃣ Update ballot để lưu allocations + CAST
+      await BallotService.updateBallot(ballotId, {
+        electionId,
+        voterId,
+        allocations,
+        status: "CAST",
+      });
+
+      // 4️⃣ Đóng modal → quay lại danh sách
+      setSignModalOpen(false);
+      navigate("/voter/ballots");
+
+    } catch (error: any) {
+      notify(error?.response?.data?.message || "Ký số thất bại!", "error");
+    } finally {
+      hideLoading();
+    }
+  };
+
+
 
 
   return (
@@ -201,15 +235,44 @@ const CandidateSection = () => {
 
 
         {/* 🔥 NÚT SUBMIT PHIẾU */}
-        <Button
-          type="primary"
-          icon={<SendOutlined />}
-          style={{ marginTop: 24, width: "100%", height: 48, borderRadius: 10, fontSize: 16 }}
-          onClick={handleSubmit}
-          disabled={remainingVotes !== 0}
-        >
-          Gửi Phiếu Bầu
-        </Button>
+        <Row justify="end" style={{ marginTop: 24 }}>
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            style={{
+              height: 44,
+              borderRadius: 10,
+              fontSize: 16,
+              fontWeight: 600,
+              padding: "0 28px",
+              background: "linear-gradient(90deg, #89e68b, #4fcf5a)",
+              border: "none",
+              outline: "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.12)"
+            }}
+            onClick={handleOpenOtp}
+            disabled={remainingVotes !== 0}
+          >
+            Gửi Phiếu Bầu
+          </Button>
+        </Row>
+
+
+        <OtpModal
+          open={otpModalOpen}
+          onClose={() => setOtpModalOpen(false)}
+          onVerify={handleVerifyOtp}
+          onResend={handleResendOtp}
+          loading={otpLoading}
+        />
+
+
+        <DigitalSignModal
+          open={signModalOpen}
+          onClose={() => setSignModalOpen(false)}
+          onSubmit={handleSignBallot}
+        />
+
       </Card>
     </div>
   );
