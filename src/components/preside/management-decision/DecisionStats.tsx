@@ -190,7 +190,7 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
             icon: <EditOutlined />,
         },
         {
-            label: "Đã xóa",
+            label: "Lưu nháp",
             value: stats.draft,
             color: "#d81b60",
             icon: <FileAddOutlined />,

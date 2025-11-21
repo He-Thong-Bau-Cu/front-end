@@ -13,10 +13,8 @@ import {
 } from "antd";
 import {
   SearchOutlined,
-  FileExcelOutlined,
   PlusOutlined,
   EditOutlined,
-  DeleteOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect, useMemo } from "react";
@@ -28,6 +26,9 @@ import * as XLSX from "xlsx";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { useNotification } from "@/contexts/NotificationContext";
 import ElectionParticipantsService from "@/services/ElectionParticipantsService";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
+import ElectionEntitiesService from "@/services/ElectionEntitiesService";
+import MeetingService from "@/services/MeetingService";
 const { Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
@@ -51,14 +52,17 @@ const formatDate = (dateString: string | Date | null | undefined): string => {
 const statusMap: { [key: string]: string } = {
   "APPROVED_SIGNED": "Đã phê duyệt",
   "WAIT_APPROVAL": "Chờ duyệt",
-  "REQUEST_EDIT": "Yêu cầu chỉnh sửa",
+  "REQUEST_EDIT": "Từ chối",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
-  "DRAFT": "Đã xóa",
+  "DRAFT": "Lưu nháp"
 };
 const DecisionTable = () => {
-
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [document, setDocument] = useState<any[]>([]);
+  const [voters, setVoters] = useState<any[]>([]);
+  const [organize, setOrganize] = useState<any[]>([]);
+  const [entities, setEntities] = useState<any[]>([]);
   const [editingDecision, setEditingDecision] = useState<Decision | null>(null);
   const [editLoading, setEditLoading] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -68,32 +72,29 @@ const DecisionTable = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [meeting, setMeeting] = useState<any|null>(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
   const [openConfirm, setOpenConfirm] = useState(false);
+  const [secretary, setSecrytary] = useState<any | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<Decision | null>(null);
   const { notify } = useNotification();
-  // Load danh sách decisions khi component mount
   useEffect(() => {
     loadDecisions(1, pagination.pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, searchText]);
 
   useEffect(() => {
-    // Bỏ qua lần mount đầu tiên
     if (searchText === "" && statusFilter === "") {
       return;
     }
-
     const timer = setTimeout(() => {
       loadDecisions(1, pagination.pageSize); // Reset về trang 1 khi search thay đổi
     }, 500); // Debounce 500ms cho search text
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   const loadDecisions = async (page: number = 1, limit: number = 10) => {
@@ -105,7 +106,6 @@ const DecisionTable = () => {
         textSearch: searchText.trim() || undefined,
         statusData: statusFilter || undefined,
       });
-
       setData(response?.content || []);
       setPagination({
         current: response.page || page,
@@ -118,30 +118,20 @@ const DecisionTable = () => {
       setLoading(false);
     }
   };
-
-
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
     try {
       setLoading(true);
-
-      const apiData: any = {
-        decisionNumber: values.decisionNumber,
-        decisionName: values.decisionName,
-        title: values.decisionName,
-        startDate: values.startDate,
-        endDate: values.endDate
-      };
-      const apiData2: any = {
-        decisionNumber: values.decisionNumber,
-        decisionName: values.decisionName,
-        title: values.decisionName,
-        statusData: "WAIT_ENTER_DATA",
-        startDate: values.startDate,
-        endDate: values.endDate
-      };
       let response;
       let secretary;
       if (isEdit && id) {
+        const apiData: any = {
+          decisionNumber: values.decisionNumber,
+          decisionName: values.decisionName,
+          title: values.decisionName,
+          statusData: values.statusData,
+          startDate: values.startDate,
+          endDate: values.endDate
+        };
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
           notify(response.message, "success");
@@ -151,18 +141,23 @@ const DecisionTable = () => {
           message.error("Không thể cập nhật nghị quyết. Vui lòng thử lại.");
         }
       } else {
+        const apiData2: any = {
+          decisionNumber: values.decisionNumber,
+          decisionName: values.decisionName,
+          title: values.decisionName,
+          statusData: values.statusData,
+          startDate: values.startDate,
+          endDate: values.endDate
+        };
         response = await DecisionService.createDecision(apiData2);
-
         const apiData3: any = {
           electionId: response.data?._id,
           userId: values.secretaryId,
           roleId: "6904d5f7105b6a336b819be5",
           position: "Thư ký chủ tọa",
           status: "ACTIVE"
-
         };
         secretary = await ElectionParticipantsService.createParticipant(apiData3);
-
         if (response.status === 201 && response.success) {
           notify(response.message, "success");
           message.success("Tạo nghị quyết thành công!");
@@ -171,9 +166,8 @@ const DecisionTable = () => {
           message.error("Không thể tạo nghị quyết. Vui lòng thử lại.");
         }
       }
-
       setOpen(false);
-      setEditMode(false);
+      // setEditMode(false);
       setEditingDecision(null);
       await loadDecisions(pagination.current, pagination.pageSize);
     } catch (error: any) {
@@ -191,11 +185,21 @@ const DecisionTable = () => {
     try {
       setViewLoading(true);
       setViewModalOpen(true);
+      const data1 = await ElectionDocumentService.getDocumentByElectionId(record._id);
+      setDocument(data1);
+      const data2 = await ElectionParticipantsService.getVoterByElectionId(record._id);
+      setVoters(data2);
+      const data3 = await ElectionEntitiesService.getElectionEntitiesByElectionId(record._id);
+      setEntities(data3);
+      const data4 = await ElectionParticipantsService.getByElectionId(record._id);
+      setOrganize(data4);
 
+      const data5 = await MeetingService.getByElectionId(record._id);
+      setMeeting(data5)
       // Gọi API để lấy chi tiết decision
       const decisionDetail = await DecisionService.getElectionById(record._id);
 
-      setViewDecisionData(decisionDetail);
+      setViewDecisionData(decisionDetail.data);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || "Không thể tải chi tiết quyết định. Vui lòng thử lại.";
       message.error(errorMessage);
@@ -211,7 +215,14 @@ const DecisionTable = () => {
       setEditLoading(true);
       setEditMode(true);
       const decisionDetail = await DecisionService.getElectionById(record._id);
-      setEditingDecision(decisionDetail);
+      const secrytary = await ElectionParticipantsService.getByElectionId(record._id);
+      for (const a of secrytary) {
+        if (a.roleId?._id === "6904d5f7105b6a336b819be5") {
+          setSecrytary(a);
+          break;
+        }
+      }
+      setEditingDecision(decisionDetail.data);
       setOpen(true);
     } catch (error: any) {
       message.error(error.response?.data?.message || "Không thể tải dữ liệu chỉnh sửa.");
@@ -325,7 +336,6 @@ const DecisionTable = () => {
       ),
     },
     { title: "TÊN QUYẾT ĐỊNH", dataIndex: "decisionName" },
-
     {
       title: "TRẠNG THÁI",
       dataIndex: "statusData", render: (statusData: string) => {
@@ -358,14 +368,14 @@ const DecisionTable = () => {
             icon={<EyeOutlined />}
             onClick={() => handleViewDecision(record)}
           />
-          {record.statusData !== "DRAFT" && (
+          {record.statusData === "DRAFT" && (
             <Button
               size="small"
               icon={<EditOutlined />}
               onClick={() => handleEditDecision(record)}
             />
           )}
-          {record.statusData !== "DRAFT" && (
+          {/* {record.statusData === "DRAFT" && (
             <Button
               size="small"
               danger
@@ -375,17 +385,16 @@ const DecisionTable = () => {
                 setOpenConfirm(true);
               }}
             />
-          )}
+          )} */}
         </Space>
       ),
     },
   ];
-
   return (
     <Card className="decision-table-card">
       <div className="decision-toolbar">
         <Input
-          placeholder="Tìm kiếm theo số quyết định, kỳ bầu cử..."
+          placeholder="Tìm kiếm theo tên quyết định..."
           prefix={<SearchOutlined />}
           style={{ width: 300 }}
           value={searchText}
@@ -405,11 +414,12 @@ const DecisionTable = () => {
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
             <Option value="REQUEST_EDIT">Yêu cầu chỉnh sửa</Option>
-            <Option value="DRAFT">Đã xóa</Option>
+            {/* <Option value="DELETE">Đã xóa</Option> */}
+            <Option value="DRAFT">Lưu nháp</Option>
           </Select>
-          <Button icon={<FileExcelOutlined />} onClick={handleExportExcel}>
+          {/* <Button icon={<FileExcelOutlined />} onClick={handleExportExcel}>
             Xuất Excel
-          </Button>
+          </Button> */}
 
           <Button
             type="primary"
@@ -460,6 +470,7 @@ const DecisionTable = () => {
         onSubmit={handleCreateDecision}
         editMode={editMode}
         initialData={editingDecision}
+        secrytary={secretary}
       />
 
       {/* 🧩 Modal xem chi tiết quyết định */}
@@ -471,6 +482,11 @@ const DecisionTable = () => {
         }}
         data={viewDecisionData}
         loading={viewLoading}
+        voters={voters}
+        organize={organize}
+        document={document}
+        electionentities={entities}
+        meeting={meeting}
       />
 
       <ConfirmDeleteModal
@@ -480,8 +496,7 @@ const DecisionTable = () => {
           if (!selectedRecord?._id) return;
           try {
             setLoading(true);
-            const re = await DecisionService.deleteDecision(selectedRecord._id);
-            await DecisionService.updateDecision(selectedRecord._id, { statusData: "DRAFT", status: "CANCEL" });
+            const re = await DecisionService.updateDecision(selectedRecord._id, { statusData: "DELETE", status: "DELETED" });
             if (re.status === 200 && re.success) {
               notify(re.message, "success");
               message.success("Xóa nghị quyết thành công!");

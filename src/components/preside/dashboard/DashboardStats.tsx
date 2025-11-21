@@ -41,7 +41,7 @@ const DashboardStats = () => {
         <Row gutter={[16, 16]} className="dashboard-stats-row">
             {statistic.map((s, i) => (
                 <Col xs={24} sm={12} md={8} lg={6} key={i}>
-                    <Card bordered={false} hoverable className="dashboard-stat-card">
+                    <Card hoverable className="dashboard-stat-card">
                         <div className="dashboard-stat-icon">{s.icon}</div>
                         <Text strong className="dashboard-stat-value">
                             {Math.round(s.value)}{s.icon === "how_to_vote" ? "%" : ""}
