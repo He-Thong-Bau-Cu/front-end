@@ -1,64 +1,51 @@
-import React, { useState, useEffect } from "react";
-import { Typography, Row, Col } from "antd";
 import {
   CheckCircleOutlined,
-  FileTextOutlined,
   ClockCircleOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
-import VotingContent from "./ResolutionContent";
-import VotingOptions from "./VotingOptions";
-import CountdownCard from "./CountdownCard";
-import { VotingLayoutProps } from "./VotingTypes";
+import { Col, Row, Typography } from "antd";
+import React from "react";
 import "../../../style/voter/ResolutionVoting.model.css";
 
-const { Title, Text } = Typography;
+import CountdownCard from "./CountdownCard";
+import ResolutionContent from "./ResolutionContent";
 
-const VotingLayout: React.FC<VotingLayoutProps> = ({
-  title,
-  status,
-  data,
-  options,
-  countdown,
-  onSubmit,
-}) => {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [comment, setComment] = useState("");
-  const [timeLeft, setTimeLeft] = useState(
-    countdown ? countdown.minutes * 60 + parseInt(countdown.seconds) : 0
-  );
+const { Title } = Typography;
 
-  useEffect(() => {
-    if (!countdown) return;
-    const timer = setInterval(
-      () => setTimeLeft((t) => (t > 0 ? t - 1 : 0)),
-      1000
-    );
-    return () => clearInterval(timer);
-  }, [countdown]);
+const VotingLayout: React.FC = () => {
+  // ==========================
+  // 🔥 FIX CỨNG 100% DỮ LIỆU
+  // ==========================
+  const resolutionTitle = "Biểu quyết Nghị quyết 01/2025";
+  const resolutionCode = "01/2025/NQ-HĐQT";
+  const resolutionDate = "21/11/2025";
+  const statusText = "Đang diễn ra";
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = String(timeLeft % 60).padStart(2, "0");
+  // CountDown fix cứng
+  const minutes = 10;
+  const seconds = 0;
 
   return (
     <div className="resolution-page">
+      {/* ===== HEADER ===== */}
       <div className="resolution-header">
         <div className="header-left">
           <Title level={3} className="header-title">
-            {title}
+            {resolutionTitle}
           </Title>
 
           <div className="header-meta">
             <span className="meta-item">
               <FileTextOutlined className="meta-icon" />
               <span>
-                Nghị quyết số: <b>{data.code}</b>
+                Nghị quyết số: <b>{resolutionCode}</b>
               </span>
             </span>
 
             <span className="meta-item">
               <ClockCircleOutlined className="meta-icon" />
               <span>
-                Thời gian: <b>{data.date}</b>
+                Thời gian: <b>{resolutionDate}</b>
               </span>
             </span>
           </div>
@@ -66,28 +53,19 @@ const VotingLayout: React.FC<VotingLayoutProps> = ({
 
         <div className="status-pill">
           <CheckCircleOutlined />
-          <span>{status}</span>
+          <span>{statusText}</span>
         </div>
       </div>
 
-      {/* ✅ NỘI DUNG BIỂU QUYẾT */}
+      {/* ===== NỘI DUNG & COUNTDOWN ===== */}
       <Row gutter={[32, 32]}>
         <Col xs={24} lg={16}>
-          <VotingContent data={data} />
-          <VotingOptions
-            options={options}
-            selected={selected}
-            setSelected={setSelected}
-            comment={comment}
-            setComment={setComment}
-            onSubmit={() => onSubmit(selected, comment)}
-          />
+          <ResolutionContent />
         </Col>
-        {countdown && (
-          <Col xs={24} lg={8}>
-            <CountdownCard minutes={minutes} seconds={seconds} />
-          </Col>
-        )}
+
+        <Col xs={24} lg={8}>
+          <CountdownCard minutes={minutes} seconds={seconds} />
+        </Col>
       </Row>
     </div>
   );
