@@ -25,7 +25,6 @@ import VotingProcess from "@/pages/board_of_control/VotingProcess";
 import AttendanceConfirm from "@/pages/head_of_the_organizing_comittee/AttendanceConfirm";
 import CreateDelegateCardPage from "@/pages/head_of_the_organizing_comittee/CreateDelegateCardPage";
 import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/ManagementMeeting";
-import MeetingListPage from "@/pages/head_of_the_organizing_comittee/MeetingListPage";
 import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/OrganizerDashboardPage";
 import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
 import HomePage from "@/pages/HomePage";
@@ -157,7 +156,6 @@ export const privateRoutes = [
         element: <HeadOfTheOrganizingCommitteeLayout />,
         children: [
           { index: true, element: <OrganizerDashboardPage /> },
-          { path: "list_meeting", element: <MeetingListPage /> },
           { path: "meetings", element: <ManagementMeeting /> },
           { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
           { path: "election_tracking", element: <VotingDashboardPage /> },
@@ -178,7 +176,6 @@ export const privateRoutes = [
           { path: "control-reports", element: <SystemAuditReportPage /> },
           { path: "verify-results", element: <ElectionVerificationPage /> },
           { path: "voting-process", element: <VotingProcess /> },
-          { path: "list_meeting", element: <MeetingListPage /> },
           { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
           { path: "election_tracking", element: <VotingDashboardPage /> },
         ],
