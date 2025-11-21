@@ -1,9 +1,43 @@
 /* ======= PAGE BACKDROP ======= */
 .organizer-wrap {
   min-height: 100vh;
-  padding: 24px;
+  padding: 24px 40px; /* khoảng cách giống màn tracking */
   box-sizing: border-box;
-  /* font-family: Inter, "Segoe UI", Arial, sans-serif; */
+  width: 100%;
+  max-width: 1440px; /* mở rộng giống layout tracking */
+  margin: 0 auto;
+}
+
+/* ================================
+   FIX: CARD WIDTH MATCH HEADER
+=================================*/
+.organizer-wrap .ant-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+}
+
+.organizer-wrap .ant-col {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.organizer-wrap .ant-col > * {
+  width: 100% !important;
+}
+
+/* ===== EXTRA: Tạo khoảng cách giữa các thẻ card ===== */
+.elevated,
+.event-progress-card,
+.task-card,
+.activity-card,
+.upcoming-card {
+  margin-bottom: 20px !important;
+}
+
+/* Khoảng cách giữa các row lớn */
+.organizer-wrap .ant-row {
+  margin-top: 20px !important;
 }
 
 /* ======= HEADER GREEN ======= */
@@ -18,9 +52,7 @@
 .header-title {
   margin: 0 !important;
   padding: 0 !important;
-  /* color: #fff !important; */
   font-weight: 800;
-  letter-spacing: 0.2px;
   font-size: 26px;
   line-height: 1.2;
 }
@@ -28,8 +60,6 @@
 .header-sub {
   opacity: 0.9;
   margin-top: 2px;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
   display: block;
   line-height: 1.2;
 }
@@ -52,7 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.25) inset;
+  box-shadow: inset 0 4px 12px rgba(255, 255, 255, 0.25);
 }
 
 .header-right .ant-btn {
@@ -75,126 +105,38 @@
   background: #fff;
   border: 1px solid #eef5ee;
   border-radius: 14px !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
 
-/* ======= STAT CARDS (4 ô) ======= */
-.stat-card {
-  padding: 18px;
-}
+/* ======= STAT CARDS ======= */
+.stat-card { padding: 18px; }
+.stat-label { color: #7b8a7b; font-weight: 600; }
+.stat-number { margin-top: 8px; font-size: 34px; font-weight: 800; color: #111; }
+.stat-card--highlight { border-color: #eef5ee !important; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
 
-.stat-label {
-  color: #7b8a7b;
-  font-weight: 600;
-}
+/* ===== TASK ===== */
+.task-card { border-radius: 14px !important; }
+.task-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; }
+.task-header.with-divider { border-bottom: 1px solid #f0f0f0; }
+.task-icon { color: #6b7280; font-size: 18px; }
+.task-title { margin: 0 !important; font-weight: 700; }
+.task-body { padding: 10px 16px 14px; }
+.task-row { padding: 8px 0; }
+.task-text { color: #111827; font-size: 15px; }
+.task-square { width: 14px; height: 14px; border-radius: 4px; }
+.task-text.is-done { color: #6b7280; text-decoration: line-through; }
 
-.stat-number {
-  margin-top: 8px;
-  font-size: 34px;
-  font-weight: 800;
-  color: #111;
-  line-height: 1;
-}
-
-.stat-card--highlight {
-  /* Bỏ border viền xanh, giữ bóng nhẹ như card thường */
-  border-color: #eef5ee !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-}
-
-/* Card */
-.task-card {
-  border-radius: 14px !important;
-}
-
-/* Header với đường kẻ mảnh */
-.task-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-}
-
-.task-header.with-divider {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.task-icon {
-  color: #6b7280;
-  font-size: 18px;
-}
-
-.task-title {
-  margin: 0 !important;
-  font-weight: 700;
-}
-
-/* Body */
-.task-body {
-  padding: 10px 16px 14px 16px;
-}
-
-.task-row {
-  padding: 8px 0;
-}
-
-/* Checkbox căn lề giống ảnh */
-.task-checkbox .ant-checkbox {
-  margin-right: 10px;
-}
-
-.task-text {
-  color: #111827;
-  font-size: 15px;
-}
-
-/* Dòng ô vuông xanh */
-.task-square-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.task-square {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  /* vuông bo nhẹ */
-}
-
-.task-text.is-done {
-  color: #6b7280;
-  text-decoration: line-through;
-}
-
-/* Giảm khoảng trắng mặc định của checkbox để canh hàng gọn gàng */
-.ant-checkbox-wrapper {
-  gap: 8px;
-}
-
-/* ======= EVENT PROGRESS BLOCK (ĐANG DIỄN RA) ======= */
+/* ===== EVENT PROGRESS ===== */
 .event-progress-card {
   padding: 20px 24px;
-  border: none !important;
   background: #fff;
   border-radius: 14px !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
 }
 
-.event-progress-header {
-  text-align: center;
-  margin-bottom: 10px;
-}
+.event-progress-header { text-align: center; margin-bottom: 10px; }
+.event-progress-title { color: #2f7f2f !important; font-weight: 800; font-size: 18px; }
 
-.event-progress-title {
-  color: #2f7f2f !important;
-  font-weight: 800;
-  margin: 0;
-  font-size: 18px;
-  letter-spacing: 0.2px;
-}
-
-/* Legend (Bắt đầu / Tạm dừng / Kết thúc) */
 .event-progress-legend {
   display: flex;
   justify-content: center;
@@ -203,35 +145,6 @@
   flex-wrap: wrap;
 }
 
-.legend-item {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid transparent;
-}
-
-.legend-item.start {
-  background: #f0fff0;
-  border-color: #b9e6b9;
-  color: #2f7f2f;
-}
-
-.legend-item.pause {
-  background: #fff7e6;
-  border-color: #ffd591;
-  color: #b36b00;
-}
-
-.legend-item.end {
-  background: #fff1f0;
-  border-color: #ffccc7;
-  color: #a8071a;
-}
-
-/* Hai khối song song */
 .event-progress-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -239,215 +152,58 @@
 }
 
 .progress-box {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #eef3ee;
   border-radius: 12px;
   padding: 16px;
   text-align: center;
-  transition: all 0.3s ease;
-}
-
-.progress-box:hover {
-  box-shadow: 0 4px 14px rgba(82, 196, 26, 0.12);
-  transform: translateY(-2px);
-}
-
-.progress-label {
-  font-weight: 700;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.progress-bar {
-  margin-bottom: 6px;
 }
 
 .progress-percent {
   font-size: 28px;
   font-weight: 900;
   color: #111;
-  line-height: 1.2;
 }
 
-.progress-foot {
-  display: block;
-  font-size: 13px;
-  color: #7a7a7a;
-}
-
-/* ======= CHECKLIST ======= */
-.block-title {
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.checklist .ant-checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  padding: 9px 0;
-}
-
-/* ======= RECENT ACTIVITY ======= */
-.activity-card {
-  padding: 16px 18px;
-}
-
-.activity-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 6px 0;
-  line-height: 1.45;
-}
-
-.activity-icon {
-  font-size: 16px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.activity-text {
-  font-size: 14px;
-  color: #4a4a4a;
-  flex: 1;
-}
-
-/* ===== RecentActivity (Right column card) ===== */
+/* ===== ACTIVITY ===== */
 .activity-card {
   border-radius: 14px !important;
-  padding-right: 0 !important;
-}
-
-.activity-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-}
-
-.activity-header--with-divider {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.activity-headicon {
-  color: #6b7280;
-  font-size: 18px;
-}
-
-.activity-title {
-  margin: 0 !important;
-  font-weight: 800;
-}
-
-.activity-body {
-  padding: 6px 16px 12px 16px;
+  padding: 16px 18px;
 }
 
 .activity-row {
   display: flex;
   align-items: center;
-  gap: 10px;
   padding: 12px 0;
-}
-
-.activity-row--with-divider {
-  border-top: 1px solid #f5f5f5;
+  gap: 10px;
 }
 
 .activity-bullet {
   font-size: 18px;
   color: #52c41a;
-  /* xanh lá giống ảnh */
 }
 
-.activity-text {
-  color: #111827;
-  font-size: 15px;
-}
-
-.activity-text strong {
-  font-weight: 700;
-}
-/* ===== Upcoming (Sự kiện sắp diễn ra) ===== */
+/* ===== UPCOMING ===== */
 .upcoming-card {
   padding: 10px 12px;
   border-radius: 14px !important;
 }
 
-/* header có đường kẻ ngay dưới */
-.up-head {
-  padding: 2px 0 12px 0;
-  border-bottom: 1px solid #eff3ef;
-}
-.up-title {
-  margin: 0;
-  color: #111 !important;
-}
-
-/* từng hàng */
 .up-row {
   display: grid;
-  grid-template-columns: 2fr 1.7fr auto; /* Tên | Bắt đầu | Trạng thái/Link */
+  grid-template-columns: 2fr 1.7fr auto;
   gap: 12px;
-  align-items: center;
   padding: 14px 8px;
   border-bottom: 1px solid #eff3ef;
 }
+
 .up-row:last-child {
   border-bottom: none;
 }
 
-.up-name {
-  font-weight: 800;
-  color: #111;
-  line-height: 1.25;
-}
-
-/* text “Bắt đầu …” xám nhạt giống ảnh */
-.up-time {
-  color: #6b7280; /* gray-500 */
-  font-weight: 500;
-}
-
-/* cột phải: trạng thái + link */
-.up-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 16px;
-}
-
-/* trạng thái là chữ cam (không badge) */
-.status-warn {
-  color: #faad14; /* orange-6 */
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* link xanh, đậm, underline khi hover */
-.up-link {
-  color: #1677ff;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.up-link:hover {
-  text-decoration: underline;
-}
-
-
-/* ======= RESPONSIVE ======= */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
-  .event-progress-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .up-row {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-  .up-actions {
-    justify-content: flex-start;
-  }
+  .event-progress-grid { grid-template-columns: 1fr; }
+  .up-row { grid-template-columns: 1fr; }
+  .up-actions { justify-content: flex-start; }
 }

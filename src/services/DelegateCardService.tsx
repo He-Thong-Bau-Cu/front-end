@@ -26,8 +26,14 @@ class DelegateCardService extends BaseService {
     }
 
     // Lấy thông tin thẻ đại biểu bằng ID
-    async getById(id: string): Promise<any> {
-        return await this.api.get(`${this.endpoint}/${id}`);
+    async getById(id: string): Promise<BaseResponse<any>> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/${id}`) as BaseResponse<any>;
+            return response;
+        } catch (error: any) {
+            console.error("❌ Error in getById:", error);
+            throw error;
+        }
     }
 
     // Tạo mã QR cho thẻ đại biểu

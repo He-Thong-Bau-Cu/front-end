@@ -32,6 +32,7 @@ import HomePage from "@/pages/HomePage";
 import Checkin from "@/pages/organizing-committee/Checkin";
 import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
 import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
+import CreateMeetingAttendee from "@/pages/organizing-committee/CreateMeetingAttendee";
 import AuthorizationPreside from "@/pages/preside/Authorization";
 import DashboardPreside from "@/pages/preside/Dashboard";
 import ReportsPage from "@/pages/preside/manage_report/ReportsPage";
@@ -143,6 +144,7 @@ export const privateRoutes = [
           { index: true, element: <DashboardOrganizingCommittee /> },
           { path: "checkin", element: <Checkin /> },
           { path: "manage-delegates", element: <ManagementDelegates /> },
+          { path: "create-participants", element: <CreateMeetingAttendee /> },
         ],
       },
     ],

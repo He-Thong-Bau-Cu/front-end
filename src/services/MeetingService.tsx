@@ -15,7 +15,10 @@ class MeetingService extends BaseService {
         return await this.api.get(`${this.endpoint}/elections/${electionId}`);
     }
 
-   
+    // Lấy thông tin cuộc họp theo ID
+    async getById(meetingId: string): Promise<any> {
+        return await this.api.get(`${this.endpoint}/${meetingId}`);
+    }
 }
 
 export default new MeetingService();
