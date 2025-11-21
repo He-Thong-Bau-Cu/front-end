@@ -180,7 +180,6 @@ const DecisionTable = () => {
     }
   };
 
-
   const handleViewDecision = async (record: Decision) => {
     try {
       setViewLoading(true);
@@ -231,10 +230,7 @@ const DecisionTable = () => {
     }
   };
 
-  // Handle pagination change
-  // Nếu đang filter, không gọi API mà chỉ thay đổi pagination state
-  // Nếu không filter, gọi API với page và pageSize mới
-  const handleTableChange = (pagination: any) => {
+   const handleTableChange = (pagination: any) => {
     const { current, pageSize } = pagination;
     setPagination((prev) => ({ ...prev, current, pageSize }));
     loadDecisions(current, pageSize); // ✅ luôn gọi API với statusFilter hiện tại
@@ -375,17 +371,6 @@ const DecisionTable = () => {
               onClick={() => handleEditDecision(record)}
             />
           )}
-          {/* {record.statusData === "DRAFT" && (
-            <Button
-              size="small"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => {
-                setSelectedRecord(record);
-                setOpenConfirm(true);
-              }}
-            />
-          )} */}
         </Space>
       ),
     },
@@ -414,13 +399,8 @@ const DecisionTable = () => {
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
             <Option value="REQUEST_EDIT">Yêu cầu chỉnh sửa</Option>
-            {/* <Option value="DELETE">Đã xóa</Option> */}
             <Option value="DRAFT">Lưu nháp</Option>
           </Select>
-          {/* <Button icon={<FileExcelOutlined />} onClick={handleExportExcel}>
-            Xuất Excel
-          </Button> */}
-
           <Button
             type="primary"
             icon={<PlusOutlined />}

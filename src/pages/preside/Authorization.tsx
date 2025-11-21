@@ -4,7 +4,7 @@ import AuthorizationTable from "@/components/preside/authorization/Authorization
 
 const Authorization = () => (
     <div>
-        <AuthorizationStats />
+        {/* <AuthorizationStats /> */}
         <AuthorizationTable />
     </div>
 );
