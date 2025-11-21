@@ -6,16 +6,26 @@ import { Decision } from "@/types/Decision.interface";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import ViewDecisionModal from "../management-decision/ViewDecisionModal";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
+import ElectionParticipantsService from "@/services/ElectionParticipantsService";
+import ElectionEntitiesService from "@/services/ElectionEntitiesService";
+import MeetingService from "@/services/MeetingService";
 
 const { Text } = Typography;
 
 const DecisionList: React.FC = () => {
   const [decisions, setDecisions] = useState<any[]>([]);
+  const [document, setDocument] = useState<any[]>([]);
+  const [voters, setVoters] = useState<any[]>([]);
+  const [organize, setOrganize] = useState<any[]>([]);
+  const [entities, setEntities] = useState<any[]>([]);
+  const [meeting, setMeeting] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewDecisionData, setViewDecisionData] = useState<any>(null);
+  const [viewLoading, setViewLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
@@ -48,27 +58,35 @@ const DecisionList: React.FC = () => {
     }
   };
 
+
   const handleViewDecision = async (record: Decision) => {
     try {
-      showLoading();
+      setViewLoading(true);
       setViewModalOpen(true);
+      const data1 = await ElectionDocumentService.getDocumentByElectionId(record._id);
+      setDocument(data1);
+      const data2 = await ElectionParticipantsService.getVoterByElectionId(record._id);
+      setVoters(data2);
+      const data3 = await ElectionEntitiesService.getElectionEntitiesByElectionId(record._id);
+      setEntities(data3);
+      const data4 = await ElectionParticipantsService.getByElectionId(record._id);
+      setOrganize(data4);
 
+      const data5 = await MeetingService.getByElectionId(record._id);
+      setMeeting(data5)
       // Gọi API để lấy chi tiết decision
       const decisionDetail = await DecisionService.getElectionById(record._id);
 
-      console.log("Decision detail from API:", decisionDetail);
-      setViewDecisionData(decisionDetail);
+      setViewDecisionData(decisionDetail.data);
     } catch (error: any) {
-      console.error("Error loading decision details:", error);
       const errorMessage = error.response?.data?.message || error.message || "Không thể tải chi tiết quyết định. Vui lòng thử lại.";
       message.error(errorMessage);
       setViewModalOpen(false);
       setViewDecisionData(null);
     } finally {
-      hideLoading();
+      setViewLoading(false);
     }
   };
-
 
   // 🔹 Khi đổi trang hoặc thay đổi số phần tử/trang
   const handlePageChange = (page: number, pageSize: number) => {
@@ -146,6 +164,7 @@ const DecisionList: React.FC = () => {
           </div>
         )}
       </Card>
+      {/* 🧩 Modal xem chi tiết quyết định */}
       <ViewDecisionModal
         open={viewModalOpen}
         onClose={() => {
@@ -153,6 +172,12 @@ const DecisionList: React.FC = () => {
           setViewDecisionData(null);
         }}
         data={viewDecisionData}
+        loading={viewLoading}
+        voters={voters}
+        organize={organize}
+        document={document}
+        electionentities={entities}
+        meeting={meeting}
       />
     </>
   );

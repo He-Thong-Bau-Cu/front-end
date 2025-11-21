@@ -14,78 +14,106 @@ import {
 import {
     SearchOutlined,
     EyeOutlined,
-    EditOutlined,
-    CheckOutlined,
-    CloseOutlined,
     FileTextOutlined,
     DownloadOutlined,
 } from "@ant-design/icons";
-
 import { useState, useEffect } from "react";
 import DelegationService from "@/services/DelegationService";
 import { useLoading } from "@/contexts/LoadingContext";
 import AuthorizationDetailModal from "./AuthorizationDetailModal";
-import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
-import { DelegationSummary } from "@/types/Delegate.interface";
 import FileService from "@/services/FileService";
 
 const { Text } = Typography;
 const { Option } = Select;
 
-const statusMap: Record<string, string> = {
-    PENDING: "Chờ duyệt",
-    SIGNED: "Đã duyệt",
-    REJECT: "Từ chối",
+const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "—";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+    });
 };
 
-const statusColor: Record<string, string> = {
-    PENDING: "orange",
-    SIGNED: "green",
-    REJECT: "red",
+const removeVietnameseTones = (str: string) => {
+    if (!str) return "";
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // xóa dấu
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .toLowerCase();
 };
-// interface AuthorizationTable {
-//     onClose: () => void;
-// }
+
 
 const AuthorizationTable = () => {
     const [data, setData] = useState<any[]>([]);
+    const [rawData, setRawData] = useState<any[]>([]); // LƯU RAW DATA
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
-    const [detailData, setDetailData] = useState<any>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailRecordId, setDetailRecordId] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [urlFile, setUrlFile] = useState<any>(null);
-    const [modalOpen, setModalOpen] = useState(false);
-    const { showLoading, hideLoading } = useLoading();
-    const [electionId, setElectionId] = useState<any>(null);
+    const [monthFilter, setMonthFilter] = useState<string>("");
+
+    // RECORD của cuộc bầu cử đang xem chi tiết
     const [signRecord, setSignRecord] = useState<any>(null);
+
+    // Danh sách ID ủy quyền được chọn từ modal chi tiết
+    const [selectedDelegations, setSelectedDelegations] = useState<string[]>([]);
+
+    // Mở modal ký số
+    const [signModalOpen, setSignModalOpen] = useState(false);
+
     const reload = () => loadDelegation();
 
-
-    // ================= LOAD API =================
+    // ========================== LOAD API ==========================
     const loadDelegation = async () => {
         setLoading(true);
+
         try {
-            const res = await DelegationService.getAllSummaryDelegation({
-                status: statusFilter || undefined,
-                textSearch: search.trim() || undefined,
-            });
-            setData(res?.data || []);
-        } catch {
-            console.error("Không thể load dữ liệu");
+            const params: any = {};
+
+            if (statusFilter) params.status = statusFilter;
+            if (search.trim()) params.textSearch = search.trim();
+
+            const res = await DelegationService.getAllSummaryDelegation(params);
+
+            const list = res?.data || [];
+
+            setRawData(list);
+            setData(list);
+        } catch (err) {
+            console.error("Không thể load dữ liệu", err);
         } finally {
             setLoading(false);
         }
     };
-    const handleViewDecision = async (record: SummaryDelegate) => {
-        showLoading();
-        setSignRecord(record);   // <--- LƯU RECORD TẠI ĐÂY
-        setModalOpen(true);
-        hideLoading();
+
+    // Load theo STATUS
+    useEffect(() => {
+        loadDelegation();
+    }, [statusFilter]);
+
+    // Debounce SEARCH
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            loadDelegation();
+        }, 350);
+
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    // ================== MỞ MODAL CHI TIẾT ==================
+    const openDetail = (record: any) => {
+        setDetailRecordId(record?.election?._id);
+        setSignRecord(record);
+        setDetailOpen(true);
     };
 
+    // ================== DOWNLOAD FILE ==================
     const downloadUrlFile = async (data: SummaryDelegate) => {
         try {
             const response = await DelegationService.getSummaryDelegationPdf({
@@ -93,6 +121,7 @@ const AuthorizationTable = () => {
                 electionId: data?.election?._id,
                 recipient: "Chủ tịch"
             });
+
             const blob = new Blob([response], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
 
@@ -101,12 +130,53 @@ const AuthorizationTable = () => {
             a.download = "Danh_sach_uy_quyen.pdf";
             a.click();
 
-            URL.revokeObjectURL(url); // cleanup
+            URL.revokeObjectURL(url);
         } catch (err) {
             console.error(err);
             message.error("Không thể tải file!");
         }
     };
+
+    // ---- FILTER CLIENT BY DECISION NUMBER + NAME ----
+    const filteredData = data.filter((item) => {
+        const text = search.trim().toLowerCase();
+        const noAccentText = removeVietnameseTones(text);
+
+        const decisionNumber = item?.election?.decisionNumber || "";
+        const decisionName = item?.election?.decisionName || "";
+        const delegationEnd = item?.election?.delegationEnd;
+
+        // ----- SEARCH FILTER -----
+        if (text) {
+            const d1 = decisionNumber.toLowerCase();
+            const d2 = decisionName.toLowerCase();
+
+            const nd1 = removeVietnameseTones(decisionNumber);
+            const nd2 = removeVietnameseTones(decisionName);
+
+            if (
+                !(
+                    d1.includes(text) ||
+                    d2.includes(text) ||
+                    nd1.includes(noAccentText) ||
+                    nd2.includes(noAccentText)
+                )
+            ) {
+                return false;
+            }
+        }
+
+        // ----- MONTH FILTER (delegationEnd) -----
+        if (monthFilter && delegationEnd) {
+            const m = new Date(delegationEnd).getMonth() + 1; // 1-12
+            if (m.toString() !== monthFilter) return false;
+        }
+
+        return true;
+    });
+
+
+
 
     const downloadUrlFileSign = async (data: SummaryDelegate) => {
         try {
@@ -116,60 +186,17 @@ const AuthorizationTable = () => {
 
             const a = document.createElement("a");
             a.href = url;
-            a.download = "Danh_sach_uy_quyen_da_co_chung_tu_so.pdf";
+            a.download = "Danh_sach_uy_quyen_da_ky.pdf";
             a.click();
 
-            URL.revokeObjectURL(url); // cleanup
+            URL.revokeObjectURL(url);
         } catch (err) {
             console.error(err);
             message.error("Không thể tải file!");
         }
     };
-    const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
-        try {
-            showLoading();
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("password", password);
-            formData.append("electionId", signRecord?.election?._id || "");
-            const res = await DelegationService.delegationApprove(formData);
-            if (res.success) {
-                message.success("Ký số thành công!");
 
-                // đóng modal ký số
-                setModalOpen(false);
-                // reload table cha nếu cần
-                reload();
-            } else {
-                message.error(res.message || "Ký số thất bại!");
-            }
-        } catch (err) {
-            console.error(err);
-            message.error("Ký số thất bại!");
-        } finally {
-            hideLoading();
-        }
-    };
-
-
-
-    useEffect(() => {
-        loadDelegation();
-    }, [statusFilter]);
-
-    useEffect(() => {
-        const timer = setTimeout(loadDelegation, 400);
-        return () => clearTimeout(timer);
-    }, [search]);
-
-
-
-    // Open modal
-    const openDetail = (record: any) => {
-        setDetailData(record);
-        setDetailOpen(true);
-    };
-    // ================= TABLE COLUMNS =================
+    // ================== COLUMNS ==================
     const columns = [
         {
             title: "Số quyết định",
@@ -184,83 +211,55 @@ const AuthorizationTable = () => {
             ),
         },
         {
-            title: "Trạng thái",
-            dataIndex: "status",
-            render: (st: string) => (
-                <Tag color={statusColor[st]}>{statusMap[st]}</Tag>
+            title: "Số ủy quyền",
+            align: "center" as const,
+            render: (r: any) => {
+                const total = r.delegations?.length || 0;
+                return (
+                    <Tag color="blue" style={{ fontSize: 14, padding: "4px 12px" }}>
+                        {total}
+                    </Tag>
+                );
+            }
+        },
+
+        {
+            title: "Hạn ủy quyền",
+            render: (r: any) => (
+                <Text strong>{formatDate(r.election?.delegationEnd) || "—"}</Text>
             ),
         },
         {
             title: "Thao tác",
             render: (_: any, record: any) => (
                 <Space>
+
+                    {/* Xem chi tiết */}
                     <Button
                         type="text"
-                        icon={<EyeOutlined style={{ fontSize: 16 }} />}
-                        onClick={() => {
-                            setDetailRecordId(record);
-                            setDetailOpen(true);
-                        }}
+                        icon={<EyeOutlined style={{ fontSize: 16, color: "blue" }} />}
+                        onClick={() => openDetail(record)}
                     />
-                    {record.status === "SIGNED" ? (
-                        <>
-                            <Button
-                                icon={<DownloadOutlined />}
-                                style={{ marginRight: 12 }}
-                                onClick={()=>downloadUrlFileSign}
-                            >
-                                Tải tài liệu
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button
-                                icon={<DownloadOutlined />}
-                                style={{ marginRight: 12 }}
-                                onClick={() => downloadUrlFile(record)}
-                            >
-                                Tải tài liệu
-                            </Button>
-                        </>
-                    )}
 
-                    {record.status === "CONFIRMED" && (
-                        <>
-                            <Button
-                                onClick={() => handleViewDecision(record)}
-                                icon={<CheckOutlined />}
-                                size="small"
-                                style={{
-                                    background: "#52c41a",
-                                    color: "#fff",
-                                    borderRadius: 6,
-                                    padding: 15
-                                }}
-                            >
-                                Ký số
-                            </Button>
+                    {/* Tải file */}
 
-                            <Button
-                                icon={<CloseOutlined />}
-                                size="small"
-                                danger
-                                style={{ borderRadius: 6, padding: 15 }}
-                            >
-                                Từ chối
-                            </Button>
-                        </>
-                    )}
+                    <Button
+                        icon={<DownloadOutlined />}
+                        onClick={() => downloadUrlFile(record)}
+                    >
+                        Tải tài liệu
+                    </Button>
                 </Space>
             ),
         },
     ];
 
-    // ================= RENDER =================
     return (
         <Card
             style={{
-                borderRadius: 14,
-                padding: 24,
+                borderRadius: 20,
+                padding: 20,
+                margin:30,
                 boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
             }}
         >
@@ -279,45 +278,48 @@ const AuthorizationTable = () => {
                         Danh sách ủy quyền
                     </Text>
                 </div>
+
                 <div style={{ display: "flex", gap: 12 }}>
+
+                    {/* TÌM KIẾM */}
                     <Input
-                        placeholder="Tìm kiếm tài liệu..."
+                        placeholder="Tìm kiếm tài liệu theo tên, số quyết định..."
                         prefix={<SearchOutlined />}
+                        allowClear
+                        onClear={() => setSearch("")}
                         style={{ width: 260, borderRadius: 8 }}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
 
+                    {/* LỌC TRẠNG THÁI */}
                     <Select
-                        value={statusFilter}
-                        style={{ width: 170 }}
-                        onChange={(v) => setStatusFilter(v)}
+                        value={monthFilter}
+                        style={{ width: 160 }}
+                        onChange={(v) => setMonthFilter(v)}
+                        placeholder="Lọc theo tháng có hạn ủy quyền"
                     >
-                        <Option value="">Tất cả trạng thái</Option>
-                        <Option value="PENDING">Chờ duyệt</Option>
-                        <Option value="SIGNED">Đã duyệt</Option>
-                        <Option value="REJECT">Từ chối</Option>
+                        <Option value="">Tất cả tháng</Option>
+                        {Array.from({ length: 12 }, (_, i) => (
+                            <Option key={i + 1} value={(i + 1).toString()}>
+                                Tháng {i + 1}
+                            </Option>
+                        ))}
                     </Select>
+
                 </div>
             </div>
 
             {/* TABLE */}
             <Spin spinning={loading}>
+
                 <Table
                     columns={columns}
-                    dataSource={data}
+                    dataSource={filteredData}
                     pagination={{ pageSize: 8 }}
                     rowKey="_id"
-                    locale={{
-                        emptyText: (
-                            <Empty
-                                description="Không có dữ liệu ủy quyền"
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            />
-                        ),
-                    }}
-                    style={{ borderRadius: 10 }}
                 />
+
             </Spin>
 
             {/* MODAL CHI TIẾT */}
@@ -325,11 +327,11 @@ const AuthorizationTable = () => {
                 open={detailOpen}
                 onClose={() => setDetailOpen(false)}
                 recordId={detailRecordId}
-            />
-            <DigitalSignModal
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onSubmit={handleDigitalSign}
+                onSelectApproved={(ids) => {
+                    console.log("Danh sách được chọn:", ids);
+                    setSelectedDelegations(ids);
+                    setSignModalOpen(true);
+                }}
             />
         </Card>
     );

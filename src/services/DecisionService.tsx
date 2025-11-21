@@ -79,27 +79,16 @@ class DecisionService extends BaseService {
 
     }
 
-  async updateDecision(id: string, data: any): Promise<any> {
-    try {
-      const response: any = await this.api.put<any>(
-        `${this.endpoint}/update/${id}`,
-        data
-      );
-            
-      if (response && response.data) {
-        return response as Decision;
-      }
-      
-      // Nếu response chính là Decision object (đã được unwrap)
-      if (response && (response._id || response.decisionNumber || response.decisionName || response.title)) {
-        return response as Decision;
-      }
-      
-      throw new Error("Invalid response format");
-    } catch (error) {
-      console.error("Error updating decision:", error);
-      throw error;
-    }
+  async updateDecision(id: string, body: any): Promise<any> {
+   try {
+            const response = await this.api.put<any>(`${this.endpoint}/update/${id}`, body);
+            return response;
+
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
+
   }
 
   async deleteDecision(id: string): Promise<any> {

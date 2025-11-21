@@ -102,7 +102,6 @@ export interface DelegationSearch {
 }
 
 export interface DelegationSummary {
-
   id: string;
   delegateReason: string;
   timeDelegation: number;
@@ -110,6 +109,7 @@ export interface DelegationSummary {
   delegate: User1;
   createdAt: string;
   endDate: string;
+  status: string;
 }
 
 export type DelegationStatus =

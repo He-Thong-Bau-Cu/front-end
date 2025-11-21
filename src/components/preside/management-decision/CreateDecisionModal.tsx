@@ -14,29 +14,27 @@ import { FileTextOutlined } from "@ant-design/icons";
 import "../../../style/preside/CreateDecisionModal.model.css";
 import dayjs from "dayjs";
 import ElectionService from "@/services/ElectionService";
-
 const { Option } = Select;
-
 interface CreateDecisionModalProps {
   open: boolean;
   onCancel: () => void;
   onSubmit: (values: any, isEdit?: boolean, id?: string) => void;
   editMode?: boolean;
   initialData?: any;
+  secrytary?: any;
 }
 
 const FORMAT = "YYYY-MM-DD HH:mm:ss"; // FORMAT CHUẨN KHÔNG LỆCH GIỜ
-
 const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   open,
   onCancel,
   onSubmit,
-  editMode = false,
+  editMode,
   initialData,
+  secrytary
 }) => {
   const [form] = Form.useForm();
   const [userList, setUserList] = useState<any[]>([]);
-
   /* ===========================================================
       LOAD USER THEO THỜI GIAN
   =========================================================== */
@@ -60,15 +58,14 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
         const start = initialData.startDate
           ? dayjs(initialData.startDate, FORMAT)
           : null;
-
         const end = initialData.endDate
           ? dayjs(initialData.endDate, FORMAT)
           : null;
-
         form.setFieldsValue({
           decisionNumber: initialData.decisionNumber || "",
           decisionName: initialData.decisionName || "",
-          secretaryId: initialData.signerId || undefined,
+          secretaryId: secrytary?.userId?._id || undefined,
+          statusData: initialData.statusData || "",
           startDate: start,
           endDate: end,
         });
@@ -245,7 +242,11 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
               label="Thư ký chủ tọa"
               rules={[{ required: true, message: "Vui lòng chọn thư ký" }]}
             >
-              <Select placeholder="Chọn thư ký" allowClear>
+              <Select
+                placeholder="Chọn thư ký"
+                allowClear
+                disabled={editMode}   // 👈 THÊM DÒNG NÀY
+              >
                 {userList.map((user) => (
                   <Option key={user._id} value={user._id}>
                     {user.fullName}
@@ -254,6 +255,23 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
+
+          <Col span={24}>
+            <Form.Item
+              name="statusData"
+              label="Trạng thái nghị quyết"
+              rules={[{ required: true, message: "Vui lòng chọn trạng thái nghị quyết" }]}
+            >
+              <Select
+                placeholder="Chọn trạng thái nghị quyết"
+                allowClear
+              >
+                <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu (Chờ thư ký nhập dữ liệu)</Option>
+                <Option value="DRAFT">Lưu Nháp</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+
         </Row>
 
         {/* FOOTER */}
