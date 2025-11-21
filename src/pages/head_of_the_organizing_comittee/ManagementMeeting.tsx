@@ -3,7 +3,6 @@ import { Layout, Row, Col } from "antd";
 import EventStatusCard from "@/components/head_of_the_organizing_committee/management-meeting/EventStatusCard";
 import EventStageControl from "@/components/head_of_the_organizing_committee/management-meeting/EventStageControl";
 import AnnouncementCard from "@/components/head_of_the_organizing_committee/management-meeting/AnnouncementCard";
-import SupportRequestCard from "@/components/head_of_the_organizing_committee/management-meeting/SupportRequestCard";
 import '../../style/head-of-the-organizing-committee/ManagementMeeting.model.css'
 
 
@@ -33,7 +32,6 @@ const ManagementMeeting: React.FC = () => {
 
                 <Col xs={24} md={7}>
                     <AnnouncementCard />
-                    <SupportRequestCard />
                 </Col>
             </Row>
         </Layout>

@@ -3,6 +3,7 @@ import {
   CheckCircleOutlined,
   FileTextOutlined,
   UserSwitchOutlined,
+  UserAddOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -22,6 +23,14 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     localStorage.getItem("permissionsElections") || "[]"
   );
 
+  // Kiểm tra xem user có quyền truy cập organizing-committee không
+  const hasOrganizingCommitteeAccess = 
+    permissions.includes("/organizing-committee") || 
+    permissionsElections.includes("/organizing-committee") ||
+    permissions.some((p: string) => p.startsWith("/organizing-committee")) ||
+    permissionsElections.some((p: string) => p.startsWith("/organizing-committee")) ||
+    location.pathname.startsWith("/organizing-committee"); // Nếu đang ở trong organizing-committee, hiển thị tất cả menu
+
   const menuItems = [
     {
       key: "/organizing-committee",
@@ -34,11 +43,27 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
       label: "Checkin",
     },
     {
+      key: "/organizing-committee/create-participants",
+      icon: <UserAddOutlined />,
+      label: "Danh sách người tham dự cuộc họp",
+    },
+    {
       key: "/organizing-committee/manage-delegates",
       icon: <FileTextOutlined />,
       label: "Quản lý danh sách đại biểu và cổ đông",
     },
-  ].filter((item) => permissions.includes(item.key) || permissionsElections.includes(item.key));
+  ].filter((item) => {
+    // Menu "Tổng quan" luôn hiển thị
+    if (item.key === "/organizing-committee") {
+      return true;
+    }
+    // Nếu user có quyền truy cập organizing-committee hoặc đang ở trong organizing-committee, hiển thị tất cả menu con
+    if (hasOrganizingCommitteeAccess) {
+      return true;
+    }
+    // Nếu không, check permissions cụ thể
+    return permissions.includes(item.key) || permissionsElections.includes(item.key);
+  });
 
   const handleClick = (e: { key: string }) => {
     const selected = menuItems.find((item) => item.key === e.key);

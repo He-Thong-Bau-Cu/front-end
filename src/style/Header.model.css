@@ -42,8 +42,8 @@
 
 /* Icon chuông */
 .header-icon {
-  font-size: 22px;
-  color: #c41d1d;
+  font-size: 22px !important;
+  color: #c41d1d !important;
   cursor: pointer;
   transition: transform 0.2s ease;
 }

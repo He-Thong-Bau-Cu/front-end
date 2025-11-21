@@ -1,15 +1,15 @@
 import {
     CalendarOutlined,
-    UserOutlined,
-    EyeOutlined,
-    RightOutlined,
-    ClockCircleOutlined,
     CheckCircleOutlined,
+    ClockCircleOutlined,
     FireOutlined,
+    RightOutlined,
+    UserOutlined
 } from "@ant-design/icons";
-import { Card, List, Tag, Typography, Button, Space, Tooltip, Progress } from "antd";
+import { Card, List, Progress, Space, Tag, Tooltip, Typography } from "antd";
+import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import React, { useEffect } from "react";
+import React from "react";
 
 const { Text } = Typography;
 
@@ -31,11 +31,17 @@ export interface ElectionItem {
 }
 
 interface ElectionListProps {
-  data: ElectionItem[];
-  onSelectElection: (electionId: string) => void;
+    data: ElectionItem[];
+    onSelectElection: (electionId: string) => void;
 }
 
-const ElectionList: React.FC<ElectionListProps> = ({data, onSelectElection}) => {
+const formatDateTime = (date?: string) => {
+    if (!date) return "";
+    return dayjs(date).format("DD/MM/YYYY HH:mm");
+};
+
+
+const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) => {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -115,18 +121,18 @@ const ElectionList: React.FC<ElectionListProps> = ({data, onSelectElection}) => 
                                         <div className="election-meta">
                                             <CalendarOutlined className="calendar-icon" />
                                             <Text type="secondary" className="election-date">
-                                                Ngày bắt đầu: {item.startDate}
+                                                Ngày bắt đầu: {formatDateTime(item.startDate)}
                                             </Text>
+
                                             {item.endDate && (
                                                 <>
-                                                    <Text type="secondary" style={{ margin: "0 4px" }}>
-                                                        •
-                                                    </Text>
+                                                    <Text type="secondary" style={{ margin: "0 4px" }}>•</Text>
                                                     <Text type="secondary" className="election-date">
-                                                        Kết thúc: {item.endDate}
+                                                        Kết thúc: {formatDateTime(item.endDate)}
                                                     </Text>
                                                 </>
                                             )}
+
                                         </div>
                                         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                                             <Tag className="role-tag" icon={<UserOutlined />}>

@@ -30,7 +30,7 @@ const statusConfig: Record<
 > = {
     DRAFT: { label: "Bản nháp", color: "purple", icon: <EditOutlined /> },
     PENDING: { label: "Đang chờ phê duyệt", color: "orange", icon: <ClockCircleOutlined /> },
-    CONFIRMED: { label: "Đã phê duyệt", color: "green", icon: <CheckCircleOutlined /> },
+    CONFIRMED: { label: "Đang chờ phê duyệt", color: "orange", icon: <ClockCircleOutlined /> },
     ACTIVE: { label: "Đang hiệu lực", color: "blue", icon: <CheckCircleOutlined /> },
     EXPIRED: { label: "Hết hiệu lực", color: "default", icon: <ExclamationCircleOutlined /> },
     REVOKED: { label: "Đã thu hồi", color: "red", icon: <CloseCircleOutlined /> },

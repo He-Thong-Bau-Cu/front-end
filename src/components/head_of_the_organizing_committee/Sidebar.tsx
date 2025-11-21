@@ -28,11 +28,6 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
       label: "Tổng quan",
     },
     {
-      key: "/head_of_the_Organizing_committee/list_meeting",
-      icon: <FileTextOutlined />,
-      label: "Danh sách cuộc họp",
-    },
-    {
       key: "/head_of_the_Organizing_committee/meetings",
       icon: <FileTextOutlined />,
       label: "Quản lý cuộc họp",

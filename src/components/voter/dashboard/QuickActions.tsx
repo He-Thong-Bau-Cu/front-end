@@ -1,20 +1,18 @@
-import { Card, Typography } from "antd";
 import {
-    TeamOutlined,
     BarChartOutlined,
-    FileTextOutlined,
-    SettingOutlined,
+    FileTextOutlined
 } from "@ant-design/icons";
-import "../../../style/voter/Dashboard.model.css";
+import { Card, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
+import "../../../style/voter/Dashboard.model.css";
 
 const { Text } = Typography;
 
 const actions = [
-    { icon: <TeamOutlined />, label: "Chi tiết bầu cử", path: "/voter/candidates" },
+    // { icon: <TeamOutlined />, label: "Chi tiết bầu cử", path: "/voter/candidates" },
     { icon: <BarChartOutlined />, label: "Kết quả bầu cử", path: "/voter/results" },
     { icon: <FileTextOutlined />, label: "Lịch sử bỏ phiếu", path: "/voter/voting-history" },
-    { icon: <SettingOutlined />, label: "Cài đặt", path: "/voter/settings" },
+    // { icon: <SettingOutlined />, label: "Cài đặt", path: "/voter/settings" },
 ];
 
 const QuickActions = () => {

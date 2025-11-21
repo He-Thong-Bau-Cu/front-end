@@ -13,6 +13,7 @@ const WelcomeCard = () => {
     const { showLoading, hideLoading } = useLoading();
 
     useEffect(() => {
+
         const fetchUserData = async () => {
             try {
                 showLoading();

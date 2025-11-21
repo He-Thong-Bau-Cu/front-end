@@ -27,12 +27,6 @@ export default function HeaderOverview({
             </div>
           </div>
         </div>
-
-        <div className="header-right">
-          <Button size="large" icon={<BarChartOutlined />} onClick={onCreateMeeting}>
-            Tạo cuộc họp mới
-          </Button>
-        </div>
       </div>
     </div>
   );

@@ -5,8 +5,24 @@ import {
     UserAddOutlined,
     ProfileOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const DelegateManagement: React.FC = () => {
+    const navigate = useNavigate();
+    const handleNavigateToManageDelegates = () => {
+        navigate("/organizing-committee/manage-delegates");
+    };
+
+    const handleOpenCreateDelegateModal = () => {
+        handleNavigateToManageDelegates();
+        setTimeout(() => {
+            const createButton = document.getElementById("delegate-manual-add-button");
+            if (createButton) {
+                createButton.click();
+            }
+        }, 200);
+    };
+
     return (
         <Card
             className="delegate-card"
@@ -18,7 +34,12 @@ const DelegateManagement: React.FC = () => {
             }
             bordered={false}
         >
-            <Button block icon={<EditOutlined />} className="delegate-btn">
+            <Button
+                block
+                icon={<EditOutlined />}
+                className="delegate-btn"
+                onClick={handleNavigateToManageDelegates}
+            >
                 Xem & Chỉnh sửa Danh sách
             </Button>
 
@@ -26,7 +47,12 @@ const DelegateManagement: React.FC = () => {
                 Nhập từ file Excel
             </Button>
 
-            <Button block icon={<UserAddOutlined />} className="delegate-btn">
+            <Button
+                block
+                icon={<UserAddOutlined />}
+                className="delegate-btn"
+                onClick={handleOpenCreateDelegateModal}
+            >
                 Thêm Đại biểu mới
             </Button>
         </Card>
