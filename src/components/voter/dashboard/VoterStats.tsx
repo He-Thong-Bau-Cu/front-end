@@ -25,8 +25,6 @@ const VoterStats = () => {
     const { notify } = useNotification();
 
 
-
-
     useEffect(() => {
         async function fetchStats() {
             try {
@@ -52,6 +50,13 @@ const VoterStats = () => {
 
     const stats = [
         {
+            icon: <FileDoneOutlined />,
+            title: "Tổng người tham gia",
+            value: statsData.totalParticipants,
+            color: "#4A90E2",
+            bg: "#E8F1FB",
+        },
+        {
             icon: <CheckCircleOutlined />,
             title: "Tổng số cử tri",
             value: statsData.totalVoters,
@@ -59,11 +64,11 @@ const VoterStats = () => {
             bg: "#E8F8F2",
         },
         {
-            icon: <FileDoneOutlined />,
-            title: "Tổng người tham gia",
-            value: statsData.totalParticipants,
-            color: "#4A90E2",
-            bg: "#E8F1FB",
+            icon: <UserOutlined />,
+            title: "Chưa tham gia",
+            value: `${statsData.voterNotActive}`,
+            color: "#8E44AD",
+            bg: "#F4E6FA",
         },
         {
             icon: <BarChartOutlined />,
@@ -72,13 +77,6 @@ const VoterStats = () => {
             color: "#F39C12",
             bg: "#FFF6E5",
         },
-        {
-            icon: <UserOutlined />,
-            title: "Chưa tham gia",
-            value: `${statsData.voterNotActive}%`,
-            color: "#8E44AD",
-            bg: "#F4E6FA",
-        }
 
     ];
 
