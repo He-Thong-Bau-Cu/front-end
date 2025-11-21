@@ -13,7 +13,7 @@ interface Props {
 
 export default function OtpModal({ open, onClose, onVerify, onResend, loading }: Props) {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-    const [timer, setTimer] = useState(60);
+    const [timer, setTimer] = useState(30);
     const [canResend, setCanResend] = useState(false);
     const email = localStorage.getItem("email") || "";
     const [restartTimer, setRestartTimer] = useState(0);
@@ -22,7 +22,7 @@ export default function OtpModal({ open, onClose, onVerify, onResend, loading }:
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
         if (open) {
-            setTimer(60);
+            setTimer(30);
             setCanResend(false);
 
             interval = setInterval(() => {
@@ -77,7 +77,7 @@ export default function OtpModal({ open, onClose, onVerify, onResend, loading }:
 
     const handleResend = async () => {
         setOtp(["", "", "", "", "", ""]);
-        setTimer(60);
+        setTimer(30);
         setCanResend(false);
 
         setRestartTimer(prev => prev + 1);  // 👈 KÍCH HOẠT USEEFFECT ĐẾM NGƯỢC
