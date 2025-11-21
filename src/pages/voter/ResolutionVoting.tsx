@@ -5,8 +5,8 @@ import {
   MinusCircleOutlined,
 } from "@ant-design/icons";
 import VotingLayout from "../../components/voter/resolution_voting/VotingLayout";
-import DigitalSignModal from "../../components/voter/signdigitalBallot/DigitalSignModal";
 import { Resolution, VotingOption } from "@/types/Resolution.interface"; // 👈 import interface
+import DigitalSignModal from "../digitalSignature/DigitalSignModal";
 
 // ✅ Dữ liệu nghị quyết
 const data: Resolution = {
