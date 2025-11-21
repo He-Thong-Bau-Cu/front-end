@@ -1,20 +1,16 @@
 import ElectionList, { ElectionItem } from "@/components/homepage/ElectionList";
 import HomeHeader from "@/components/homepage/HomeHeader";
-import QuickActions from "@/components/homepage/QuickActions";
 import WelcomeCard from "@/components/homepage/WelcomeCard";
-import StatisticsDashboard from "@/components/homepage/StatisticsDashboard";
-import CountdownTimer from "@/components/homepage/CountdownTimer";
-import ActivityTimeline from "@/components/homepage/ActivityTimeline";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import { PATH } from "@/enums/PATH";
+import { USER_ROLE } from "@/enums/STATUS";
+import ElectionParticipantsService from "@/services/ElectionParticipantsService";
 import { Col, Layout, Row, Space } from "antd";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import "../style/HomePage.model.css";
-import { useNotification } from "@/contexts/NotificationContext";
-import { useLoading } from "@/contexts/LoadingContext";
-import ElectionParticipantsService from "@/services/ElectionParticipantsService";
-import { USER_ROLE } from "@/enums/STATUS";
 import { useNavigate } from "react-router-dom";
-import { PATH } from "@/enums/PATH";
+import "../style/HomePage.model.css";
 
 const { Content } = Layout;
 
