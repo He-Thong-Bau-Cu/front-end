@@ -2,6 +2,7 @@ import { CreateDelegationPayload, DelegationDetail, DelegationSearch } from "@/t
 import BaseService from "./BaseService";
 import { ApiResponse } from "@/types/ApiResponse.interface";
 import { User } from "@/types/User.interface";
+import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
 
 
 
@@ -75,6 +76,39 @@ class DelegationService extends BaseService {
     async delegationApprove(body: any): Promise<any> {
         try {
             const response = await this.api.post<any>(`${this.endpoint}/approve`, body)
+            return response;
+
+        } catch (error) {
+            console.error("Error fetching delegations:", error);
+            throw error;
+        }
+    }
+
+    async getDelegationByElectionId(id: string): Promise<any> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/election/${id}`)
+            return response.data;
+
+        } catch (error) {
+            console.error("Error fetching delegations:", error);
+            throw error;
+        }
+    }
+
+    async getDelegationPresideByElectionId(id: string): Promise<any> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/summary/preside/election/${id}`)
+            return response.data;
+
+        } catch (error) {
+            console.error("Error fetching delegations:", error);
+            throw error;
+        }
+    }
+
+    async delegationReject(body: any): Promise<any> {
+        try {
+            const response = await this.api.post<any>(`${this.endpoint}/reject`, body)
             return response;
 
         } catch (error) {

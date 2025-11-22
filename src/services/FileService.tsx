@@ -93,7 +93,7 @@ export class FileService extends BaseService {
     return this.getSignedFile(key);
   }
 
-  async upfile(body:any): Promise<any> {
+  async upfile(body: any): Promise<any> {
     try {
       const response = await this.api.post<any>(`${this.endpoint}/upload`, body)
       return response.data;
@@ -104,8 +104,28 @@ export class FileService extends BaseService {
 
   }
 
-  
-  
+  async getImageFile(body: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/profile-image/url`, body)
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching decisions:", error);
+      throw error;
+    }
+
+  }
+  async getFile(body: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/url/key`, body)
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching decisions:", error);
+      throw error;
+    }
+
+  }
+
+
 
 }
 

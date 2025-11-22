@@ -16,8 +16,8 @@ import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { VotingRight } from "@/types/VotingRights.interface";
 import { useLocation, useNavigate } from "react-router-dom";
 import AuthService from "@/services/AuthService";
-import OtpModal from "../otp-ballot/OtpModal";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
+import OtpModal from "../otp-ballot/OtpModal";
 
 const { Title, Text } = Typography;
 
@@ -151,8 +151,8 @@ const CandidateSection = () => {
         allocations,
         status: "CAST",
       });
-
       notify("Bỏ phiếu thành công!", "success");
+      // 4️⃣ Đóng modal → quay lại danh sách
       setSignModalOpen(false);
       navigate("/voter/ballots");
 

@@ -3,9 +3,6 @@ import SecretaryStats from "@/components/secretary/dashboard/SecretaryStats";
 import '../../style/secretary/Dashboard.model.css'
 import { Col, Row } from "antd";
 import DelegationRequests from "@/components/secretary/dashboard/DelegationRequests";
-import ElectionOverview from "@/components/secretary/dashboard/ElectionOverview";
-import QuickActions from "@/components/secretary/dashboard/QuickActions";
-import RecentActivities from "@/components/secretary/dashboard/RecentActivities";
 
 const Dashboard = () => {
     return (
@@ -14,14 +11,14 @@ const Dashboard = () => {
             <SecretaryStats />
 
             <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-                <Col xs={24} lg={16}>
+                <Col xs={24} lg={24}>
                     <DelegationRequests />
                 </Col>
 
-                <Col xs={24} lg={8}>
+                {/* <Col xs={24} lg={8}>
                     <RecentActivities />
 
-                </Col>
+                </Col> */}
             </Row>
 
 
