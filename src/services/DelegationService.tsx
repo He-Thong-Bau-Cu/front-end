@@ -1,6 +1,7 @@
 import { CreateDelegationPayload, DelegationDetail, DelegationSearch } from "@/types/Delegate.interface";
 import BaseService from "./BaseService";
 import { ApiResponse } from "@/types/ApiResponse.interface";
+import { User } from "@/types/User.interface";
 
 
 
@@ -94,6 +95,14 @@ class DelegationService extends BaseService {
         return response.data;
     }
 
+
+    async getUserNotSpecialByElectionId(id: string): Promise<User[]> {
+        const response = await this.api.get(
+            `${this.endpoint}/users-not-special/elections/${id}`
+        ) as ApiResponse<User[]>;
+
+        return response.data;
+    }
 }
 
 

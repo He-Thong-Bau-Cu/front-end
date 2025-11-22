@@ -1,6 +1,6 @@
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import UserService from "@/services/UserService";
+import DelegationService from "@/services/DelegationService";
 import { User } from "@/types/User.interface";
 import { LeftOutlined, SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
@@ -21,7 +21,6 @@ const { Text, Title } = Typography;
 const { Search } = Input;
 
 
-// ❗ Không cần props nữa
 const UserSelection = () => {
     const [searchText, setSearchText] = useState("");
     const [users, setUsers] = useState<User[]>([]);
@@ -53,7 +52,7 @@ const UserSelection = () => {
         const fetchUsers = async () => {
             try {
                 showLoading();
-                const usersData = await UserService.getAllUser();
+                const usersData = await DelegationService.getUserNotSpecialByElectionId(electionId);
                 setUsers(usersData);
                 setError(null);
             } catch {
@@ -82,7 +81,6 @@ const UserSelection = () => {
         );
     });
 
-    // 🔹 Cấu hình cột bảng
     const columns = [
         {
             title: "Người dùng",
