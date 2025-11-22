@@ -19,7 +19,8 @@ import { User } from "@/types/User.interface";
 const { Text } = Typography;
 const { Option } = Select;
 interface Participant {
-    id?: number;
+    _id?: string; // ID từ backend (nếu có = edit, không có = mới)
+    id?: number; // ID tạm cho UI
     userId: string
     fullName: string;
     email: string;
@@ -65,17 +66,19 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
     useEffect(() => {
         if (data && Array.isArray(data)) {
             const mapped = data.map((item: any) => ({
-                id: item._id || String(Date.now() + Math.random()),
-                userId: item.userId._id,
-                fullName: item.userId.fullName,
-                email: item.userId.email,
-                position: item.userId.position,
-                phone: item.userId.phone,
-                citizenId: item.userId.citizenId,
-                address: item.userId.address,
-                department: item.userId.department,
-                percentage: item.percentage,
+                _id: item._id, // Giữ _id để có thể update
+                id: item._id || String(Date.now() + Math.random()), // Giữ id cho UI
+                userId: item.userId || item.user?._id,
+                fullName: item.user?.fullName || item.fullName,
+                email: item.user?.email || item.email,
+                position: item.user?.position || item.position,
+                phone: item.user?.phone || item.phone,
+                citizenId: item.user?.citizenId || item.citizenId,
+                address: item.user?.address || item.address,
+                department: item.user?.department || item.department,
+                percentage: item.percentage || item.shares,
                 status: item.status,
+                eligible: item.eligible
             }));
             setParticipants(mapped);
             onChange(mapped);
@@ -106,13 +109,15 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
         };
         const updated = [...participants, newMember];
         setParticipants(updated);
-        onChange(updated); // gửi dữ liệu về DraftingDocuments
+        onChange(updated); // gửi dữ liệu về DraftingDocuments (không có _id = mới)
         form.resetFields();
         setSelectedVoter(null);
         setIsModalOpen(false);
     };
-    const handleDelete = (id: number) => {
-        const updated = participants.filter((m) => m.id !== id);
+    const handleDelete = (participant: Participant) => {
+        const updated = participants.filter((m) =>
+            m._id ? m._id !== participant._id : m.id !== participant.id
+        );
         setParticipants(updated);
         onChange(updated);
     };
@@ -174,7 +179,7 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
                         </Tag>
 
                         <DeleteOutlined
-                            onClick={() => handleDelete(p.id)}
+                            onClick={() => handleDelete(p)}
                             style={{ color: "red", marginLeft: 10 }}
 
                         />

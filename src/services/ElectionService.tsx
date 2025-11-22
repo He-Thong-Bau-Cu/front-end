@@ -27,6 +27,16 @@ class ElectionService extends BaseService {
     });
   }
 
+   async bulkSaveDraft(body: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/bulk-save-draft`, body);
+      return response;
+    } catch (error) {
+      console.error("Error bulk save draft:", error);
+      throw error;
+    }
+  }
+
   async updateElection(id: string, body: any): Promise<any> {
     try {
       const response = await this.api.put<any>(`${this.endpoint}/update/${id}`, body);
@@ -53,6 +63,16 @@ class ElectionService extends BaseService {
       return response.data;
     } catch (error) {
       console.error("Error get user:", error);
+      throw error;
+    }
+  }
+
+  async getDraftData(electionId: string): Promise<any> {
+    try {
+      const response = await this.api.get<any>(`${this.endpoint}/${electionId}/draft-data`);
+      return response;
+    } catch (error) {
+      console.error("Error get draft data:", error);
       throw error;
     }
   }

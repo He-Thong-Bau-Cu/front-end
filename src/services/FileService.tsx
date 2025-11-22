@@ -93,15 +93,14 @@ export class FileService extends BaseService {
     return this.getSignedFile(key);
   }
 
-  async upfile(body: any): Promise<any> {
+  async upfile(formData: FormData): Promise<any> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/upload`, body)
+      const response = await this.api.post<any>(`${this.endpoint}/upload`, formData);
       return response.data;
     } catch (error) {
-      console.error("Error fetching decisions:", error);
+      console.error("Error uploading file:", error);
       throw error;
     }
-
   }
 
   async getImageFile(body: any): Promise<any> {
