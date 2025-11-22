@@ -24,7 +24,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     const menuItems = [
         { key: "/secretary", icon: <DashboardOutlined />, label: "Tổng quan" },
         { key: "/secretary/drafting-documents", icon: <FileAddOutlined />, label: "Quản lý soạn thảo" },
-        { key: "/secretary/documents", icon: <FolderOpenOutlined />, label: "Quản lý tài liệu" },
+        { key: "/secretary/delegations", icon: <FolderOpenOutlined />, label: "Quản lý ủy quyền" },
         { key: "/secretary/notifications", icon: <BellOutlined />, label: "Trung tâm thông báo" },
         // { key: "/secretary/reports", icon: <TrophyOutlined />, label: "Trung tâm báo cáo" },
     ].filter((item) => permissions.includes(item.key) || permissionsElections.includes(item.key));

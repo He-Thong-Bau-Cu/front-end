@@ -72,7 +72,7 @@ const DecisionTable = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [meeting, setMeeting] = useState<any|null>(null);
+  const [meeting, setMeeting] = useState<any | null>(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -186,13 +186,16 @@ const DecisionTable = () => {
       setViewModalOpen(true);
       const data1 = await ElectionDocumentService.getDocumentByElectionId(record._id);
       setDocument(data1);
-      const data2 = await ElectionParticipantsService.getVoterByElectionId(record._id);
-      setVoters(data2);
+      // const data2 = await ElectionParticipantsService.getVoterByElectionId(record._id);
+      // setVoters(data2);
       const data3 = await ElectionEntitiesService.getElectionEntitiesByElectionId(record._id);
       setEntities(data3);
       const data4 = await ElectionParticipantsService.getByElectionId(record._id);
-      setOrganize(data4);
-
+      const roleId1List: any = data4.filter((p: any) => p.roleId.roleCode === "VOTER");
+      // MẢNG 2: roleId != 1
+      const otherRolesList: any = data4.filter((p: any) => p.roleId.roleCode !== "VOTER");
+      setVoters(roleId1List? roleId1List : []);
+      setOrganize(otherRolesList? otherRolesList : []);
       const data5 = await MeetingService.getByElectionId(record._id);
       setMeeting(data5)
       // Gọi API để lấy chi tiết decision
@@ -230,7 +233,7 @@ const DecisionTable = () => {
     }
   };
 
-   const handleTableChange = (pagination: any) => {
+  const handleTableChange = (pagination: any) => {
     const { current, pageSize } = pagination;
     setPagination((prev) => ({ ...prev, current, pageSize }));
     loadDecisions(current, pageSize); // ✅ luôn gọi API với statusFilter hiện tại
@@ -238,88 +241,14 @@ const DecisionTable = () => {
   // Hàm xuất Excel
 
 
-  const handleExportExcel = async () => {
-    try {
-      message.loading({ content: "Đang xuất file Excel...", key: "export" });
-
-      // 🔹 Lấy toàn bộ dữ liệu (không phân trang)
-      const response = await DecisionService.getAllDecisions({
-        page: 1,
-        limit: pagination.total || 10000, // lấy tất cả
-        statusData: statusFilter || undefined,
-        textSearch: searchText?.trim() || undefined,
-      });
-
-      // 🔹 Kiểm tra dữ liệu phản hồi
-      const data = response?.content;
-      if (!data || !Array.isArray(data) || data.length === 0) {
-        notify("Không có dữ liệu để xuất.", "warning");
-        message.warning({ content: "Không có dữ liệu để xuất.", key: "export" });
-        return;
-      }
-
-      // 🔹 Chuẩn hóa dữ liệu xuất Excel
-      const exportData = data.map((item: any, index: number) => ({
-        STT: index + 1,
-        "Số quyết định": item.decisionNumber || "",
-        "Tên quyết định": item.decisionName || "",
-        "Trạng thái": statusMap[item.status] || item.status || "",
-        "Trạng thái dữ liệu": statusMap[item.statusData] || item.statusData || "",
-        "Ngày bắt đầu ủy quyền": item.delegationStart
-          ? formatDate(item.delegationStart)
-          : "",
-        "Ngày kết thúc ủy quyền": item.delegationEnd
-          ? formatDate(item.delegationEnd)
-          : "",
-        "Ngày tạo": item.createdAt ? formatDate(item.createdAt) : "", // ✅ Sửa chính tả
-        "Ngày bắt đầu": item.startDate ? formatDate(item.startDate) : "",
-        "Ngày kết thúc": item.endDate ? formatDate(item.endDate) : "",
-        "Loại bầu cử": item.typeId?.typeName || "",
-        "Phương thức bầu cử": item.votingMethodId?.votingMethodName || "",
-        "Người tạo": item.createdByUserId?.fullName || "",
-      }));
-
-      // 🔹 Tạo file Excel
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Danh sách nghị quyết");
-
-      // 🔹 Cài đặt độ rộng cột
-      const colWidths = [
-        { wch: 5 }, // STT
-        { wch: 20 },
-        { wch: 40 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 25 },
-        { wch: 25 },
-        { wch: 25 },
-      ];
-      ws["!cols"] = colWidths;
-
-      // 🔹 Ghi file ra local
-      const fileName = `Danh_sach_nghi_quyet_${new Date()
-        .toISOString()
-        .split("T")[0]}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-      notify("Xuất file Excel thành công!", "success");
-      message.success({ content: "Xuất file Excel thành công!", key: "export" });
-    } catch (error: any) {
-      notify("Không thể xuất file Excel. Vui lòng thử lại.", "error");
-      message.error({
-        content: "Không thể xuất file Excel. Vui lòng thử lại.",
-        key: "export",
-      });
-    }
-  };
-
   // Định nghĩa columns bên trong component để có thể sử dụng các hàm xử lý
   const columns = [
+     {
+        title: "STT",
+        width: 70,
+        align: "center" as const,
+        render: (_: any, __: any, index: number) => index + 1,
+    },
     {
       title: "SỐ QUYẾT ĐỊNH",
       decision_number: "SỐ QUYẾT ĐỊNH",

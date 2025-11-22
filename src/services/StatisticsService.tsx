@@ -4,13 +4,13 @@ import BaseService from "./BaseService";
 
 class StatisticsService extends BaseService {
     constructor() {
-        super("statistics/preside");
+        super("statistics");
     }
 
     async getDashboardStats(): Promise<any> {
         try {
             const response = await this.api.get<any>(
-                `${this.endpoint}`);
+                `${this.endpoint}/preside`);
             return response.data;
 
         } catch (error) {
@@ -22,7 +22,7 @@ class StatisticsService extends BaseService {
     async getDashboardChart(): Promise<any[]> {
         try {
             const response = await this.api.get(
-                `${this.endpoint}/recent-participation`);
+                `${this.endpoint}/preside/recent-participation`);
             return response.data;
 
         } catch (error) {
@@ -32,6 +32,16 @@ class StatisticsService extends BaseService {
         }
 
 
+    }
+
+    async getDashBoardSecratary(id: string, electionId:string): Promise<any> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/secretary/elections/${electionId}/users/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
     }
 
 }

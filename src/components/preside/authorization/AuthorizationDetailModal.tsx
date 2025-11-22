@@ -241,6 +241,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             delegate: item.delegate,
             createdAt: formatDate(item.createdAt),
             status: item.status,
+            delegateReason: item.delegateReason,
             raw: item,
         })) || [];
 
