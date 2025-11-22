@@ -8,7 +8,6 @@ import {
     Space,
     Typography,
     Spin,
-    Empty,
     message,
 } from "antd";
 import {
@@ -19,7 +18,6 @@ import {
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import DelegationService from "@/services/DelegationService";
-import { useLoading } from "@/contexts/LoadingContext";
 import AuthorizationDetailModal from "./AuthorizationDetailModal";
 import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
 import FileService from "@/services/FileService";
@@ -37,20 +35,21 @@ const formatDate = (dateStr?: string) => {
     });
 };
 
+// remove accents
 const removeVietnameseTones = (str: string) => {
     if (!str) return "";
     return str
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // xóa dấu
+        .replace(/[\u0300-\u036f]/g, "")
         .replace(/đ/g, "d")
         .replace(/Đ/g, "D")
         .toLowerCase();
 };
 
-
 const AuthorizationTable = () => {
     const [data, setData] = useState<any[]>([]);
-    const [rawData, setRawData] = useState<any[]>([]); // LƯU RAW DATA
+    const [rawData, setRawData] = useState<any[]>([]);
+
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [detailOpen, setDetailOpen] = useState(false);
@@ -58,13 +57,14 @@ const AuthorizationTable = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [monthFilter, setMonthFilter] = useState<string>("");
 
-    // RECORD của cuộc bầu cử đang xem chi tiết
+    // Pagination state
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+    });
+
     const [signRecord, setSignRecord] = useState<any>(null);
-
-    // Danh sách ID ủy quyền được chọn từ modal chi tiết
     const [selectedDelegations, setSelectedDelegations] = useState<string[]>([]);
-
-    // Mở modal ký số
     const [signModalOpen, setSignModalOpen] = useState(false);
 
     const reload = () => loadDelegation();
@@ -72,7 +72,6 @@ const AuthorizationTable = () => {
     // ========================== LOAD API ==========================
     const loadDelegation = async () => {
         setLoading(true);
-
         try {
             const params: any = {};
 
@@ -80,7 +79,6 @@ const AuthorizationTable = () => {
             if (search.trim()) params.textSearch = search.trim();
 
             const res = await DelegationService.getAllSummaryDelegation(params);
-
             const list = res?.data || [];
 
             setRawData(list);
@@ -92,17 +90,15 @@ const AuthorizationTable = () => {
         }
     };
 
-    // Load theo STATUS
     useEffect(() => {
         loadDelegation();
     }, [statusFilter]);
 
-    // Debounce SEARCH
+    // debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
             loadDelegation();
         }, 350);
-
         return () => clearTimeout(timer);
     }, [search]);
 
@@ -113,13 +109,13 @@ const AuthorizationTable = () => {
         setDetailOpen(true);
     };
 
-    // ================== DOWNLOAD FILE ==================
+    // ================== TẢI FILE ==================
     const downloadUrlFile = async (data: SummaryDelegate) => {
         try {
             const response = await DelegationService.getSummaryDelegationPdf({
                 secretaryId: "651f0a7c1f2b4d1a12345678",
                 electionId: data?.election?._id,
-                recipient: "Chủ tịch"
+                recipient: "Chủ tịch",
             });
 
             const blob = new Blob([response], { type: "application/pdf" });
@@ -137,7 +133,25 @@ const AuthorizationTable = () => {
         }
     };
 
-    // ---- FILTER CLIENT BY DECISION NUMBER + NAME ----
+    const downloadUrlFileSign = async (data: SummaryDelegate) => {
+        try {
+            const response = await FileService.getSignedFile(data.documents);
+            const blob = new Blob([response], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+            a.click();
+
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            message.error("Không thể tải file!");
+        }
+    };
+
+    // ================== FILTER CLIENT ==================
     const filteredData = data.filter((item) => {
         const text = search.trim().toLowerCase();
         const noAccentText = removeVietnameseTones(text);
@@ -146,7 +160,6 @@ const AuthorizationTable = () => {
         const decisionName = item?.election?.decisionName || "";
         const delegationEnd = item?.election?.delegationEnd;
 
-        // ----- SEARCH FILTER -----
         if (text) {
             const d1 = decisionNumber.toLowerCase();
             const d2 = decisionName.toLowerCase();
@@ -166,38 +179,23 @@ const AuthorizationTable = () => {
             }
         }
 
-        // ----- MONTH FILTER (delegationEnd) -----
         if (monthFilter && delegationEnd) {
-            const m = new Date(delegationEnd).getMonth() + 1; // 1-12
+            const m = new Date(delegationEnd).getMonth() + 1;
             if (m.toString() !== monthFilter) return false;
         }
 
         return true;
     });
 
-
-
-
-    const downloadUrlFileSign = async (data: SummaryDelegate) => {
-        try {
-            const response = await FileService.getSignedFile(data.documents)
-            const blob = new Blob([response], { type: "application/pdf" });
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "Danh_sach_uy_quyen_da_ky.pdf";
-            a.click();
-
-            URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error(err);
-            message.error("Không thể tải file!");
-        }
-    };
-
     // ================== COLUMNS ==================
     const columns = [
+        {
+            title: "STT",
+            width: 70,
+            align: "center" as const,
+            render: (_: any, __: any, index: number) =>
+                (pagination.current - 1) * pagination.pageSize + (index + 1),
+        },
         {
             title: "Số quyết định",
             render: (r: any) => (
@@ -220,9 +218,8 @@ const AuthorizationTable = () => {
                         {total}
                     </Tag>
                 );
-            }
+            },
         },
-
         {
             title: "Hạn ủy quyền",
             render: (r: any) => (
@@ -233,15 +230,12 @@ const AuthorizationTable = () => {
             title: "Thao tác",
             render: (_: any, record: any) => (
                 <Space>
-
-                    {/* Xem chi tiết */}
                     <Button
-                        type="text"
                         icon={<EyeOutlined style={{ fontSize: 16, color: "blue" }} />}
                         onClick={() => openDetail(record)}
-                    />
-
-                    {/* Tải file */}
+                    >
+                        Phê duyệt
+                    </Button>
 
                     <Button
                         icon={<DownloadOutlined />}
@@ -259,7 +253,7 @@ const AuthorizationTable = () => {
             style={{
                 borderRadius: 20,
                 padding: 20,
-                margin:30,
+                margin: 30,
                 boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
             }}
         >
@@ -280,10 +274,8 @@ const AuthorizationTable = () => {
                 </div>
 
                 <div style={{ display: "flex", gap: 12 }}>
-
-                    {/* TÌM KIẾM */}
                     <Input
-                        placeholder="Tìm kiếm tài liệu theo tên, số quyết định..."
+                        placeholder="Tìm kiếm tài liệu..."
                         prefix={<SearchOutlined />}
                         allowClear
                         onClear={() => setSearch("")}
@@ -292,12 +284,11 @@ const AuthorizationTable = () => {
                         onChange={(e) => setSearch(e.target.value)}
                     />
 
-                    {/* LỌC TRẠNG THÁI */}
                     <Select
                         value={monthFilter}
                         style={{ width: 160 }}
                         onChange={(v) => setMonthFilter(v)}
-                        placeholder="Lọc theo tháng có hạn ủy quyền"
+                        placeholder="Lọc theo tháng"
                     >
                         <Option value="">Tất cả tháng</Option>
                         {Array.from({ length: 12 }, (_, i) => (
@@ -306,20 +297,25 @@ const AuthorizationTable = () => {
                             </Option>
                         ))}
                     </Select>
-
                 </div>
             </div>
 
             {/* TABLE */}
             <Spin spinning={loading}>
-
                 <Table
                     columns={columns}
                     dataSource={filteredData}
-                    pagination={{ pageSize: 8 }}
                     rowKey="_id"
+                    pagination={{
+                        current: pagination.current,
+                        pageSize: pagination.pageSize,
+                        showSizeChanger: true,
+                        pageSizeOptions: ["5", "10", "20", "100"],
+                        onChange: (page, pageSize) => {
+                            setPagination({ current: page, pageSize });
+                        },
+                    }}
                 />
-
             </Spin>
 
             {/* MODAL CHI TIẾT */}
@@ -328,7 +324,6 @@ const AuthorizationTable = () => {
                 onClose={() => setDetailOpen(false)}
                 recordId={detailRecordId}
                 onSelectApproved={(ids) => {
-                    console.log("Danh sách được chọn:", ids);
                     setSelectedDelegations(ids);
                     setSignModalOpen(true);
                 }}

@@ -117,6 +117,16 @@ class DelegationService extends BaseService {
         }
     }
 
+      async delegationConfirmed(body: any): Promise<any> {
+        try {
+            const response = await this.api.post<any>(`${this.endpoint}/approve/secretary`, body)
+            return response;
+  
+        } catch (error) {
+            console.error("Error fetching delegations:", error);
+            throw error;
+        }
+    }
 
     async delegationApproveVoter(body: any): Promise<any> {
         const response = await this.api.post(`${this.endpoint}/voter/approve`, body);

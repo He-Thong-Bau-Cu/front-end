@@ -54,6 +54,7 @@ import VotingHistory from "@/pages/voter/VotingHistory";
 import AuthorizationDetail from "@/components/voter/authorization/AuthorizationDetail";
 import AuthorizationForm from "@/components/voter/authorization/AuthorizationForm";
 import AuthorizationHistory from "@/components/homepage/AuthorizationHistory";
+import AuthorizationTable from "@/components/secretary/management-delegations/AuthorizationTable";
 
 export const privateRoutes = [
   {
@@ -124,9 +125,9 @@ export const privateRoutes = [
       {
         element: <SecretaryLayout />,
         children: [
-          { index: true, element: <DashboardSecretary /> },
+          { index: true, element: <DashboardSecretary /> },        
           { path: "drafting-documents", element: <DraftingDocuments /> },
-          { path: "documents", element: <ManagementDocument /> },
+          { path: "delegations", element: <AuthorizationTable /> },
           { path: "notifications", element: <NotificationCenterPage /> },
           { path: "reports", element: <ReportCenterPage /> },
         ],

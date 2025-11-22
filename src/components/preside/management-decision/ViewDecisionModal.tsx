@@ -7,7 +7,6 @@ import {
   Descriptions,
   Tag,
   Table,
-  Divider,
   Button,
   Space,
 } from "antd";
@@ -20,9 +19,7 @@ import {
   SolutionOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
-
 import CandidateDetailModal from "./CandidateDetailModal";
-
 const { Title } = Typography;
 
 interface ViewDecisionModalProps {
@@ -31,7 +28,6 @@ interface ViewDecisionModalProps {
   onSign?: () => void;
   data?: any;
   loading?: boolean;
-
   voters?: any[];
   organize?: any[];
   electionentities?: any[];
@@ -76,7 +72,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Họ tên", dataIndex: ["userId", "fullName"] },
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
-    { title: "Chức vụ", dataIndex: ["userId", "position"] },
+    { title: "Vai trò", dataIndex: ["roleId", "roleName"] },
     { title: "Số cổ phần", dataIndex: "shares" },
   ];
 
@@ -84,7 +80,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Họ tên", dataIndex: ["userId", "fullName"] },
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
-    { title: "Chức vụ", dataIndex: ["userId", "position"] },
+    { title: "Vai trò", dataIndex: ["roleId", "roleName"] },
   ];
   const STATUS_MAP: any = {
     WAIT_ENTER_DATA: { label: "Chờ nhập dữ liệu", color: "gold" },
@@ -233,7 +229,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                 key: "2",
                 label: (
                   <span>
-                    <UserOutlined /> Danh sách Voter
+                    <UserOutlined /> Danh sách cử tri
                   </span>
                 ),
                 children: (

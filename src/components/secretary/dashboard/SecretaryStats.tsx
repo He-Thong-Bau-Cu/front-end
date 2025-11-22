@@ -3,29 +3,28 @@ import {
     PieChartOutlined,
     TeamOutlined,
     FileTextOutlined,
-    BarChartOutlined,
-    AlertOutlined,
-    ThunderboltOutlined,
 } from "@ant-design/icons";
-import { useLoading } from "@/contexts/LoadingContext";
-import { useNotification } from "@/contexts/NotificationContext";
 import { useEffect, useState } from "react";
-import SystemService from "@/services/StatisticsService";
+import StatisticsService from "@/services/StatisticsService";
+import DelegationService from "@/services/DelegationService";
 const { Text } = Typography;
 const SecretaryStats = () => {
-    const { showLoading, hideLoading } = useLoading();
-    const { notify } = useNotification();
     const [statistic, setStatistic] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const data = await SystemService.getDashboardStats();
+                const electionId = localStorage.getItem("currentElectionId") || "";
+                const userId = localStorage.getItem("userId") || "";
+                const res = await DelegationService.getDelegationByElectionId(electionId);
+                const onlyPending = res.filter((item: any) => item?.status === "PENDING");
+                const pendingCount = onlyPending.length;
+                const data = await StatisticsService.getDashBoardSecratary(userId, electionId);
                 let dataMap = [] as any[];
-                dataMap.push({ title: "Bầu cử đang tham gia", icon: <PieChartOutlined />, value: data.totalElections !== null ? data.totalElections : 0 })
                 dataMap.push({ title: "Tổng số cử tri", icon: <TeamOutlined />, value: data.totalVoters !== null ? data.totalVoters : 0 })
-                dataMap.push({ title: "Yêu cầu chờ duyệt", icon: <FileTextOutlined />, value: data.pendingApprovals !== null ? data.pendingApprovals : 0 })
-                dataMap.push({ title: "Thông báo", icon: <BarChartOutlined />, value: data.participationRate !== null ? data.participationRate : 0 })
+                dataMap.push({ title: "Uỷ quyền đã xác nhận", icon: <PieChartOutlined />, value: data.totalConfirmed !== null ? data.totalConfirmed : 0 })
+                dataMap.push({ title: "Uỷ quyền chờ xác nhận", icon: <FileTextOutlined />, value: pendingCount===0 ? 0 : pendingCount })
+                dataMap.push({ title: "Số cuộc bầu cử đang tham gia", icon: <FileTextOutlined />, value: data.totalElectionsParticipated !== null ? data.totalElectionsParticipated : 0 })
                 setStatistic(dataMap);
             } catch (error) {
                 message.error("Không thể tải thông tin người dùng!");
@@ -37,7 +36,7 @@ const SecretaryStats = () => {
         <Row gutter={[16, 16]} className="dashboard-stats-row">
             {statistic.map((s, i) => (
                 <Col xs={24} sm={12} md={8} lg={6} key={i}>
-                    <Card bordered={false} hoverable className="dashboard-stat-card">
+                    <Card hoverable className="dashboard-stat-card">
                         <div className="dashboard-stat-icon">{s.icon}</div>
                         <Text strong className="dashboard-stat-value">
                             {Math.round(s.value)}{s.icon === "how_to_vote" ? "%" : ""}
