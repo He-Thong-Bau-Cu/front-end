@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   Card,
   Form,
@@ -9,8 +9,25 @@ import {
   DatePicker,
   Row,
   Col,
-  Upload,
+  Tag,
+  Avatar,
+  Descriptions,
+  Space,
+  Divider,
+  Table,
+  Modal,
+  message,
+  Tooltip,
 } from "antd";
+import {
+  UserOutlined,
+  FileTextOutlined,
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  FolderOutlined,
+} from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import "@/style/secretary/MettingInfo.model.css";
 import { ElectionTypes } from "@/types/ElectionTypes.interface";
@@ -19,8 +36,10 @@ import { VotingMethods } from "@/types/VotingMethods.interface";
 import VotingMethodsService from "@/services/VotingMethodsService";
 import ElectionTypesService from "@/services/ElectionTypesService";
 import ThresholdsService from "@/services/ThresholdsService";
-import { string } from "yup";
-const { Title } = Typography;
+import VotingMethodModal from "./VotingMethodModal";
+import VotingMethodSelectModal from "./VotingMethodSelectModal";
+import ThresholdModal from "./ThresholdModal";
+const { Title, Text } = Typography;
 
 interface Props {
   onChange: (data: any) => void;
@@ -34,21 +53,43 @@ interface MeetingFormValues {
   decisionNumber?: string;
   location?: string;
   method?: string;
+  methodName?: string;
   type?: any;
   threshold?: any;
+  thresholdName?: string;
   authorizationStart?: Dayjs | null;
   authorizationEnd?: Dayjs | null;
   candidates?: any[];
 }
 
-const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meeting }) => {
+const MeetingInfo: React.FC<Props> = ({
+  onChange,
+  data,
+  electionentities,
+  meeting,
+}) => {
   const [form] = Form.useForm<MeetingFormValues>();
   const [typeOther, setTypeOther] = useState(false);
-  const [thresholdOther, setThresholdOther] = useState(false);
   const [voteMethod, setVoteMethod] = useState<string>("");
   const [types, setTypes] = useState<ElectionTypes[] | null>(null);
   const [thresholds, setThresholds] = useState<Threshols[] | null>(null);
   const [methods, setMethods] = useState<VotingMethods[] | null>(null);
+  const [isVotingMethodSelectModalOpen, setIsVotingMethodSelectModalOpen] =
+    useState(false);
+  const [isVotingMethodModalOpen, setIsVotingMethodModalOpen] = useState(false);
+  const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [selectedThreshold, setSelectedThreshold] = useState<Threshols | null>(
+    null
+  );
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+  const [editCandidateIndex, setEditCandidateIndex] = useState<number | null>(
+    null
+  );
+  const [searchText, setSearchText] = useState<string>("");
+  // Removed complex state flags to simplify logic
+  const isMountedRef = useRef(true);
   /* ===========================================================
      FETCH DATA ONCE
   ============================================================ */
@@ -67,92 +108,316 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meetin
   };
 
   useEffect(() => {
-    fetchData();
+    let isMounted = true;
+
+    const loadData = async () => {
+      try {
+        if (isMounted) {
+          await fetchData();
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Error loading data:", error);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-
+  // Simple useEffect for electionentities - no complex dependencies
   useEffect(() => {
-    if (data?.data) {
-      const d = data.data;
-      form.setFieldsValue({
-        decisionNumber: d?.decisionNumber,
-        decisionName: d?.decisionName,
-        method: d.votingMethodId?._id,
-        type: d.typeId?._id,
-        threshold: d.thresholdId?._id,
-        authorizationStart: d.delegationStart ? dayjs(d.delegationStart) : null,
-        authorizationEnd: d.delegationEnd ? dayjs(d.delegationEnd) : null,
-      });
-      setVoteMethod(d.votingMethodId?._id);
-      if (electionentities) {
-        form.setFieldsValue({
-          candidates: Array.isArray(electionentities) ?
-            electionentities.map((c: any) => ({
-              title: c.title,
-              description: c.description,
-              metaData: {
-                fullName: c.metaData?.fullName || "",
-                age: c.metaData?.age || "",
-                department: c.metaData?.department || "",
-                experience: c.metaData?.experience || "",
-                achievements: c.metaData?.achievements || "",
-                image: c.metaData?.image || "",
-              },
-              file: c.file || "",
-            }))
-            : [],
-        });
-      }
+    let isMounted = true;
 
-      if(meeting){
-        form.setFieldsValue({
-          location: meeting?.location
-        })
+    if (electionentities && Array.isArray(electionentities) && electionentities.length > 0 && isMounted) {
+      try {
+        const loadedCandidates = electionentities.map((c: any) => ({
+          _id: c._id,
+          title: c.title || "",
+          description: c.description || "",
+          metaData: {
+            fullName: c.metaData?.fullName || "",
+            age: c.metaData?.age || "",
+            department: c.metaData?.department || "",
+            position: c.metaData?.position || "",
+            experience: c.metaData?.experience || "",
+            achievements: c.metaData?.achievements || "",
+            image: c.metaData?.image || c.metaData?.imageUrl || "",
+          },
+          fileUrl: c.fileUrl || c.file || "",
+        }));
+
+        if (isMounted) {
+          setCandidates(loadedCandidates);
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Error loading candidates:", error);
+        }
       }
     }
 
-  }, [data]);
+    return () => {
+      isMounted = false;
+    };
+  }, [electionentities]);
+
+  // Emit change when candidates change - with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (isMountedRef.current) {
+        try {
+          const values = form.getFieldsValue(true);
+          values.candidates = candidates;
+          onChange(values);
+        } catch (error) {
+          console.error("Error emitting candidates change:", error);
+        }
+      }
+    }, 200);
+
+    return () => clearTimeout(timeoutId);
+  }, [candidates]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    if (data?.data) {
+      const d = data.data;
+
+      try {
+        form.setFieldsValue({
+          decisionNumber: d?.election?.decisionNumber,
+          decisionName: d?.election?.decisionName,
+          method: d?.meetingInfo.methodDetails?._id,
+          methodName: d?.meetingInfo.methodDetails?.methodName,
+          type: d?.meetingInfo.typeDetails?._id,
+          threshold: d?.meetingInfo?.thresholdDetails?._id,
+          thresholdName: d?.meetingInfo?.thresholdDetails?.thresholdName,
+          authorizationStart: d?.election?.delegationStart
+            ? dayjs(d.election.delegationStart)
+            : null,
+          authorizationEnd: d?.election?.delegationEnd
+            ? dayjs(d.election.delegationEnd)
+            : null,
+        });
+
+        setVoteMethod(d?.meetingInfo.methodDetails?._id);
+
+        if (d?.meetingInfo?.thresholdDetails?._id) {
+          loadThresholdData(d.meetingInfo.thresholdDetails._id);
+        }
+
+        if (meeting?.location) {
+          form.setFieldsValue({
+            location: meeting.location,
+          });
+        }
+
+        // Emit change once after all updates
+        timeoutId = setTimeout(() => {
+          try {
+            const values = form.getFieldsValue(true);
+            values.candidates = candidates;
+            onChange(values);
+          } catch (error) {
+            console.error("Error emitting change:", error);
+          }
+        }, 100);
+      } catch (error) {
+        console.error("Error setting form values:", error);
+      }
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [data, meeting]);
+
+  const loadThresholdData = async (thresholdId: string) => {
+    try {
+      const threshold = await ThresholdsService.getThresholdById(thresholdId);
+      setSelectedThreshold(threshold);
+    } catch (error) {
+      console.error("Error loading threshold:", error);
+    }
+  };
 
   /* ===========================================================
      EMIT VALUE TO PARENT (NHƯ DIGITALSIGNMODAL)
   ============================================================ */
-  const emitChange = () => {
-    const values = form.getFieldsValue(true);
-    onChange(values);
+  const emitChange = useCallback((updatedCandidates?: any[]) => {
+    try {
+      const values = form.getFieldsValue(true);
+      values.candidates = updatedCandidates !== undefined ? updatedCandidates : candidates;
+      onChange(values);
+    } catch (error) {
+      console.error("Error in emitChange:", error);
+    }
+  }, [candidates, form, onChange]);
+
+  const handleVotingMethodSelect = useCallback((methodId: string, methodName: string) => {
+    if (!isMountedRef.current) return;
+
+    setVoteMethod(methodId);
+    form.setFieldsValue({ method: methodId, methodName: methodName });
+    setCandidates([]);
+    setIsVotingMethodSelectModalOpen(false);
+
+    // Emit change after state updates
+    setTimeout(() => {
+      if (isMountedRef.current) {
+        try {
+          const values = form.getFieldsValue(true);
+          values.candidates = [];
+          onChange(values);
+        } catch (error) {
+          console.error("Error in handleVotingMethodSelect:", error);
+        }
+      }
+    }, 50);
+  }, [form, onChange]);
+
+  const handleCandidatesModalSubmit = (newCandidates: any[]) => {
+    let updatedCandidates: any[] = [];
+
+    if (editCandidateIndex !== null && editCandidateIndex >= 0) {
+      updatedCandidates = [...candidates];
+      const existingCandidate = updatedCandidates[editCandidateIndex];
+      // Giữ lại _id từ candidate cũ nếu có
+      updatedCandidates[editCandidateIndex] = {
+        ...newCandidates[0], // Lấy candidate đầu tiên từ modal (vì edit chỉ edit 1 candidate)
+        _id: existingCandidate?._id, // Giữ lại _id nếu có
+      };
+      setEditCandidateIndex(null);
+    } else {
+      // Thêm mới: merge với candidates hiện có, giữ lại _id của candidates cũ
+      updatedCandidates = newCandidates.map((newCandidate, index) => {
+        // Tìm candidate cũ tại cùng index (nếu có)
+        const existingCandidate = candidates[index];
+        if (existingCandidate && existingCandidate._id) {
+          // Nếu candidate cũ có _id, giữ lại _id và merge data
+          return {
+            ...newCandidate,
+            _id: existingCandidate._id,
+          };
+        }
+        // Candidate mới, không có _id
+        return newCandidate;
+      });
+    }
+
+    console.log("Before setCandidates:", candidates);
+    console.log("New candidates to set:", updatedCandidates);
+    setCandidates(updatedCandidates);
+
+    // Emit ngay với updatedCandidates để tránh dùng state cũ
+    emitChange(updatedCandidates); // Emit về parent để lưu vào meetingInfo.candidates
   };
 
-  /* ===========================================================
-      EMPTY CANDIDATE TEMPLATE
-  ============================================================ */
-  const emptyCandidate = {
-    title: "",
-    description: "",
-    metaData: {
-      fullName: "",
-      age: "",
-      department: "",
-      experience: "",
-      achievements: "",
-    },
-    proposerId: "",
-    file: string,
-    image: string,
+  const selectedMethodName =
+    methods?.find((m) => m._id === voteMethod)?.methodName || "";
+
+  const handleThresholdSelect = useCallback((
+    thresholdId: string,
+    thresholdName: string
+  ) => {
+    if (!isMountedRef.current) return;
+
+    form.setFieldsValue({ threshold: thresholdId, thresholdName: thresholdName });
+    loadThresholdData(thresholdId);
+    setIsThresholdModalOpen(false);
+
+    // Emit change after state updates
+    setTimeout(() => {
+      if (isMountedRef.current) {
+        try {
+          const values = form.getFieldsValue(true);
+          values.candidates = candidates;
+          onChange(values);
+        } catch (error) {
+          console.error("Error in handleThresholdSelect:", error);
+        }
+      }
+    }, 50);
+  }, [form, candidates, onChange]);
+
+  // Xử lý View candidate
+  const handleViewCandidate = (candidate: any, index: number) => {
+    setSelectedCandidate({ ...candidate, index });
+    setViewModalVisible(true);
   };
+
+  // Xử lý Edit candidate - mở modal với candidate đã chọn
+  const handleEditCandidate = (index: number) => {
+    setEditCandidateIndex(index);
+    setIsVotingMethodModalOpen(true);
+  };
+
+  // Xử lý Delete candidate
+  const handleDeleteCandidate = (index: number) => {
+    Modal.confirm({
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc chắn muốn xóa nội dung bầu chọn này?",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: () => {
+        const newCandidates = candidates.filter((_, i) => i !== index);
+        setCandidates(newCandidates);
+        // Emit ngay với newCandidates để tránh dùng state cũ
+        emitChange(newCandidates);
+        message.success("Đã xóa nội dung bầu chọn");
+      },
+    });
+  };
+
+  // Lọc candidates theo search text
+  const filteredCandidates = candidates.filter((candidate) => {
+    if (!searchText.trim()) return true;
+    const search = searchText.toLowerCase().trim();
+    const title = (candidate.title || "").toLowerCase();
+    const description = (candidate.description || "").toLowerCase();
+    const fullName = (candidate.metaData?.fullName || "").toLowerCase();
+    const department = (candidate.metaData?.department || "").toLowerCase();
+    const position = (candidate.metaData?.position || "").toLowerCase();
+
+    return (
+      title.includes(search) ||
+      description.includes(search) ||
+      fullName.includes(search) ||
+      department.includes(search) ||
+      position.includes(search)
+    );
+  });
 
   return (
-    <Card className="meeting-card">
-      <Title level={4} className="meeting-title">
-        📄 Nội dung Quyết định
-      </Title>
-
+    <Card
+      className="meeting-side-card"
+      title={
+        <div className="card-header">
+          <Text style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>
+            📄 Nội dung Quyết định
+          </Text>
+        </div>
+      }
+    >
       {/* Form KHÔNG submit, chỉ emitChange */}
-      <Form
-        form={form}
-        layout="vertical"
-        onValuesChange={emitChange}
-      >
-        <Row gutter={20}>
-
+      <Form form={form} layout="vertical">
+        <Row gutter={16}>
           {/* ĐỊA ĐIỂM */}
           <Col span={12}>
             <Form.Item
@@ -187,38 +452,34 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meetin
 
           {/* PHƯƠNG THỨC BẦU CỬ */}
           <Col span={12}>
+            {/* Hidden field for method ID */}
+            <Form.Item name="method" hidden>
+              <Input />
+            </Form.Item>
             <Form.Item
               label="Hình thức bầu cử"
-              name="method"
+              name="methodName"
               rules={[{ required: true, message: "Vui lòng chọn hình thức" }]}
             >
-              <Select
+              <Input
                 placeholder="Chọn hình thức bầu cử"
-                onChange={(v) => {
-                  setVoteMethod(v);
-                  form.setFieldsValue({
-                    candidates: [emptyCandidate, emptyCandidate],
-                  });
-                  emitChange();
-                }}
-              >
-                {Array.isArray(methods) &&
-                  methods.map((item) => (
-                    <Select.Option key={item._id} value={item._id}>
-                      {item.methodName}
-                    </Select.Option>
-                  ))}
-              </Select>
+                readOnly
+                value={selectedMethodName}
+                onClick={() => setIsVotingMethodSelectModalOpen(true)}
+                style={{ cursor: "pointer" }}
+                suffix={
+                  <FolderOutlined
+                    style={{ color: "#52c41a", cursor: "pointer" }}
+                    onClick={() => setIsVotingMethodSelectModalOpen(true)}
+                  />
+                }
+              />
             </Form.Item>
           </Col>
 
           {/* THỂ LOẠI BẦU CỬ */}
           <Col span={12}>
-            <Form.Item
-              label="Thể loại bầu cử"
-              name="type"
-              required
-            >
+            <Form.Item label="Thể loại bầu cử" name="type" required>
               {!typeOther ? (
                 <Select
                   placeholder="Chọn thể loại"
@@ -230,8 +491,8 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meetin
                         type: {
                           typeName: "",
                           typeCode: "",
-                          description: ""
-                        }
+                          description: "",
+                        },
                       });
                     } else {
                       setTypeOther(false);
@@ -265,10 +526,7 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meetin
                     <Input placeholder="Mã thể loại" />
                   </Form.Item>
 
-                  <Form.Item
-                    label="Mô tả"
-                    name={["type", "description"]}
-                  >
+                  <Form.Item label="Mô tả" name={["type", "description"]}>
                     <Input.TextArea rows={2} />
                   </Form.Item>
 
@@ -281,83 +539,24 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meetin
           </Col>
           {/* NGƯỠNG THÔNG QUA */}
           <Col span={12}>
-            <Form.Item
-              label="Ngưỡng thông qua"
-              name="threshold"
-              required
-            >
-              {!thresholdOther ? (
-                <Select
-                  placeholder="Chọn ngưỡng"
-                  onChange={(v) => {
-                    if (v === "other") {
-                      setThresholdOther(true);
-                      form.setFieldsValue({
-                        threshold: { method: "other" },
-                      });
-                    } else {
-                      setThresholdOther(false);
-                      form.setFieldsValue({ threshold: v });
-                    }
-                    emitChange();
-                  }}
-                >
-                  <Select.Option value="other">Khác…</Select.Option>
-
-                  {Array.isArray(thresholds) &&
-                    thresholds.map((item) => (
-                      <Select.Option key={item._id} value={item._id}>
-                        {item.thresholdName}
-                      </Select.Option>
-                    ))}
-                </Select>
-              ) : (
-                <div>
-                  <Form.Item
-                    label="Tên ngưỡng"
-                    name={["threshold", "thresholdName"]}
-                    rules={[{ required: true }]}
-                  >
-                    <Input placeholder="Tên ngưỡng" />
-                  </Form.Item>
-
-
-                  <Form.Item
-                    label="Tỷ lệ thông qua"
-                    name={["threshold", "value"]}
-                    rules={[{ required: true }]}
-                  >
-                    <Input placeholder="Tỷ lệ thông qua" />
-                  </Form.Item>
-                  <Form.Item
-                    label="Loại ngưỡng"
-                    name={["threshold", "thresholdType"]}
-                    rules={[{ required: true }]}
-                  >
-                    <Input placeholder="Loại ngưỡng" />
-                  </Form.Item>
-
-
-                  <Form.Item
-                    label="Mô tả"
-                    name={["threshold", "description"]}
-                  >
-                    <Input.TextArea rows={2} />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Mã ngưỡng"
-                    name={["threshold", "thresholdCode"]}
-                    rules={[{ required: true }]}
-                  >
-                    <Input placeholder="Mã ngưỡng" />
-                  </Form.Item>
-
-                  <Button type="link" onClick={() => setThresholdOther(false)}>
-                    ← Quay lại
-                  </Button>
-                </div>
-              )}
+            {/* Hidden field for threshold ID */}
+            <Form.Item name="threshold" hidden>
+              <Input />
+            </Form.Item>
+            <Form.Item label="Ngưỡng thông qua" name="thresholdName" required>
+              <Input
+                placeholder="Chọn ngưỡng thông qua"
+                readOnly
+                value={selectedThreshold?.thresholdName || ""}
+                onClick={() => setIsThresholdModalOpen(true)}
+                style={{ cursor: "pointer" }}
+                suffix={
+                  <FolderOutlined
+                    style={{ color: "#52c41a", cursor: "pointer" }}
+                    onClick={() => setIsThresholdModalOpen(true)}
+                  />
+                }
+              />
             </Form.Item>
           </Col>
 
@@ -397,198 +596,529 @@ const MeetingInfo: React.FC<Props> = ({ onChange, data, electionentities, meetin
 
           {/* DANH SÁCH BẦU CHỌN */}
           <Col span={24}>
-            <h3 style={{ marginTop: 20 }}>📄 Danh sách bầu chọn</h3>
-            {!voteMethod ? (
-              <p style={{ color: "red" }}>Vui lòng chọn hình thức bầu cử</p>
-            ) : (
-              <Form.List name="candidates">
-                {(fields, { add, remove }) => (
-                  <div>
-                    {fields.map(({ key, name }) => (
-                      <Row
-                        key={key}
-                        gutter={12}
-                        style={{
-                          marginBottom: 10,
-                          padding: 12,
-                          border: "1px solid #eee",
-                          borderRadius: 6,
-                        }}
-                      >
-                        {/* ======== CUMULATIVE ======== */}
-                        {voteMethod === "691a36c358ae5966f350b2da" && (
-                          <>
-                            <Col span={12}>
-                              <Form.Item
-                                rules={[{ required: true }]}
-                                name={[name, "title"]} label="Tiêu đề">
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                rules={[{ required: true }]}
-                                name={[name, "description"]}
-                                label="Mô tả"
-                              >
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                rules={[{ required: true }]}
-                                name={[name, "metaData", "fullName"]}
-                                label="Họ và tên"
-                              >
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-
-                                name={[name, "metaData", "age"]} label="Tuổi">
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                name={[name, "metaData", "department"]}
-                                label="Phòng ban"
-                              >
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                name={[name, "metaData", "position"]}
-                                label="Vị trí"
-                              >
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                label="Ảnh ứng viên"
-                                name={[name, "metaData", "image"]}
-                              // valuePropName="fileList"
-                              // getValueFromEvent={(e) => e?.fileList}
-                              >
-                                <Upload
-                                  beforeUpload={() => false}
-                                  listType="picture-card"
-                                  maxCount={1}
-                                >
-                                  <div>Tải ảnh</div>
-                                </Upload>
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                label="Tài liệu đính kèm"
-                                name={[name, "file"]}
-                              // valuePropName="fileList"
-                              // getValueFromEvent={(e) => e?.fileList}
-                              >
-                                <Upload beforeUpload={() => false}>
-                                  <Button>Tải file</Button>
-                                </Upload>
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={24}>
-                              <Form.Item
-                                name={[name, "metaData", "experience"]}
-                                label="Kinh nghiệm"
-                              >
-                                <Input.TextArea rows={2} />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={24}>
-                              <Form.Item
-                                name={[name, "metaData", "achievements"]}
-                                label="Thành tích"
-                              >
-                                <Input.TextArea rows={2} />
-                              </Form.Item>
-                            </Col>
-                          </>
-                        )}
-
-                        {/* ======== YES / NO ======== */}
-                        {voteMethod === "691a36f958ae5966f350b2e0" && (
-                          <>
-                            <Col span={12}>
-                              <Form.Item
-                                rules={[{ required: true }]}
-                                name={[name, "title"]} label="Tiêu đề">
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                rules={[{ required: true }]}
-                                name={[name, "description"]} label="Mô tả">
-                                <Input />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item
-                                rules={[{ required: true }]}
-                                name={[name, "metaData", "fullName"]}
-                                label="Tên"
-                              >
-                                <Input />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                name={[name, "file"]}
-                                label="Tài liệu đính kèm"
-                              // valuePropName="fileList"
-                              // getValueFromEvent={(e) => e?.fileList}
-                              >
-                                <Upload beforeUpload={() => false}>
-                                  <Button>Tải file</Button>
-                                </Upload>
-                              </Form.Item>
-                            </Col>
-                          </>
-                        )}
-
-                        <Col span={24}>
-                          <Button danger onClick={() => remove(name)}>
-                            Xóa
-                          </Button>
-                        </Col>
-                      </Row>
-                    ))}
-
-                    <Button
-                      type="dashed"
-                      onClick={() => add(emptyCandidate)}
-                      style={{ marginBottom: 12 }}
+            <div style={{ marginTop: 16 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 12,
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <Text
+                    strong
+                    style={{ fontSize: 15, display: "block", marginBottom: 4 }}
+                  >
+                    📄 Danh sách bầu chọn
+                  </Text>
+                  {voteMethod && candidates.length > 0 && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Tổng: {candidates.length} nội dung bầu chọn
+                    </Text>
+                  )}
+                </div>
+                {voteMethod && (
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                  >
+                    <Input
+                      placeholder="Tìm kiếm..."
+                      prefix={<SearchOutlined />}
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      allowClear
+                      style={{ width: 250 }}
+                    />
+                    <a
+                      className="add-link"
+                      onClick={() => {
+                        setEditCandidateIndex(null);
+                        setIsVotingMethodModalOpen(true);
+                      }}
+                      style={{ cursor: "pointer", whiteSpace: "nowrap" }}
                     >
-                      + Thêm nội dung bầu chọn
-                    </Button>
+                      + Thêm mới
+                    </a>
                   </div>
                 )}
-              </Form.List>
-            )}
+              </div>
+
+              {!voteMethod ? (
+                <Card>
+                  <p
+                    style={{
+                      color: "#ff4d4f",
+                      margin: 0,
+                      textAlign: "center",
+                      padding: "20px 0",
+                    }}
+                  >
+                    ⚠️ Vui lòng chọn hình thức bầu cử để quản lý danh sách bầu
+                    chọn
+                  </p>
+                </Card>
+              ) : (
+                <Table
+                  columns={(() => {
+                    // Kiểm tra xem cột nào có dữ liệu từ filteredCandidates
+                    const hasTitle = filteredCandidates.some(
+                      (c) => c.title || c.description
+                    );
+                    const hasCandidateInfo = filteredCandidates.some(
+                      (c) => c.metaData?.fullName
+                    );
+                    const hasDetails = filteredCandidates.some(
+                      (c) => c.metaData?.experience || c.metaData?.achievements
+                    );
+                    const hasFile = filteredCandidates.some((c) => c.file);
+
+                    const columns: any[] = [
+                      {
+                        title: "STT",
+                        key: "index",
+                        width: 70,
+                        align: "center" as const,
+                        render: (_: any, __: any, index: number) => (
+                          <Tag
+                            color="green"
+                            style={{
+                              margin: 0,
+                              minWidth: 32,
+                              textAlign: "center",
+                            }}
+                          >
+                            {index + 1}
+                          </Tag>
+                        ),
+                      },
+                    ];
+
+                    // Chỉ thêm cột Tiêu đề nếu có dữ liệu
+                    if (hasTitle) {
+                      columns.push({
+                        title: "Tiêu đề / Mô tả",
+                        dataIndex: "title",
+                        key: "title",
+                        width: 250,
+                        render: (text: string, record: any, index: number) => (
+                          <div>
+                            <Text
+                              strong
+                              style={{
+                                fontSize: 14,
+                                display: "block",
+                                marginBottom: 4,
+                              }}
+                            >
+                              {text || `Ứng viên ${index + 1}`}
+                            </Text>
+                            {record.description && (
+                              <Text
+                                type="secondary"
+                                ellipsis={{ tooltip: record.description }}
+                                style={{ fontSize: 12, display: "block" }}
+                              >
+                                {record.description}
+                              </Text>
+                            )}
+                          </div>
+                        ),
+                      });
+                    }
+
+                    // Chỉ thêm cột Thông tin ứng viên nếu có dữ liệu
+                    if (hasCandidateInfo) {
+                      columns.push({
+                        title: "Thông tin ứng viên",
+                        key: "candidateInfo",
+                        width: 300,
+                        render: (_: any, record: any) => {
+                          if (!record.metaData?.fullName) {
+                            return (
+                              <Text
+                                type="secondary"
+                                style={{ fontStyle: "italic" }}
+                              >
+                                Chưa có thông tin
+                              </Text>
+                            );
+                          }
+                          return (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                              }}
+                            >
+                              <Avatar
+                                size={48}
+                                src={record.metaData?.image}
+                                icon={<UserOutlined />}
+                                style={{
+                                  background:
+                                    "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <Text
+                                  strong
+                                  style={{
+                                    display: "block",
+                                    fontSize: 14,
+                                    marginBottom: 6,
+                                  }}
+                                >
+                                  {record.metaData.fullName}
+                                </Text>
+                                <Space
+                                  size={[4, 4]}
+                                  wrap
+                                  style={{ marginTop: 4 }}
+                                >
+                                  {record.metaData.age && (
+                                    <Tag
+                                      color="green"
+                                      style={{ margin: 0, fontSize: 11 }}
+                                    >
+                                      {record.metaData.age} tuổi
+                                    </Tag>
+                                  )}
+                                  {record.metaData.department && (
+                                    <Tag
+                                      color="green"
+                                      style={{ margin: 0, fontSize: 11 }}
+                                    >
+                                      {record.metaData.department}
+                                    </Tag>
+                                  )}
+                                  {record.metaData.position && (
+                                    <Tag
+                                      color="orange"
+                                      style={{ margin: 0, fontSize: 11 }}
+                                    >
+                                      {record.metaData.position}
+                                    </Tag>
+                                  )}
+                                </Space>
+                              </div>
+                            </div>
+                          );
+                        },
+                      });
+                    }
+
+                    // Chỉ thêm cột Kinh nghiệm/Thành tích nếu có dữ liệu
+                    if (hasDetails) {
+                      columns.push({
+                        title: "Kinh nghiệm / Thành tích",
+                        key: "details",
+                        width: 250,
+                        render: (_: any, record: any) => {
+                          const hasExperience = record.metaData?.experience;
+                          const hasAchievements = record.metaData?.achievements;
+                          if (!hasExperience && !hasAchievements) {
+                            return (
+                              <Text
+                                type="secondary"
+                                style={{ fontStyle: "italic", fontSize: 12 }}
+                              >
+                                -
+                              </Text>
+                            );
+                          }
+                          return (
+                            <div style={{ lineHeight: 1.6 }}>
+                              {hasExperience && (
+                                <div style={{ marginBottom: 8 }}>
+                                  <Tag
+                                    color="purple"
+                                    style={{ marginBottom: 4, fontSize: 11 }}
+                                  >
+                                    Kinh nghiệm
+                                  </Tag>
+                                  <div>
+                                    <Text
+                                      ellipsis={{
+                                        tooltip: record.metaData.experience,
+                                      }}
+                                      style={{ fontSize: 12, display: "block" }}
+                                    >
+                                      {record.metaData.experience}
+                                    </Text>
+                                  </div>
+                                </div>
+                              )}
+                              {hasAchievements && (
+                                <div>
+                                  <Tag
+                                    color="cyan"
+                                    style={{ marginBottom: 4, fontSize: 11 }}
+                                  >
+                                    Thành tích
+                                  </Tag>
+                                  <div>
+                                    <Text
+                                      ellipsis={{
+                                        tooltip: record.metaData.achievements,
+                                      }}
+                                      style={{ fontSize: 12, display: "block" }}
+                                    >
+                                      {record.metaData.achievements}
+                                    </Text>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        },
+                      });
+                    }
+
+                    // Chỉ thêm cột File đính kèm nếu có dữ liệu
+                    if (hasFile) {
+                      columns.push({
+                        title: "Tài liệu",
+                        key: "file",
+                        width: 100,
+                        align: "center" as const,
+                        render: (_: any, record: any) =>
+                          record.file ? (
+                            <Tooltip title="Có tài liệu đính kèm">
+                              <Tag
+                                icon={<FileTextOutlined />}
+                                color="green"
+                                style={{ cursor: "pointer" }}
+                              >
+                                File
+                              </Tag>
+                            </Tooltip>
+                          ) : (
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              -
+                            </Text>
+                          ),
+                      });
+                    }
+
+                    // Luôn thêm cột Hành động
+                    columns.push({
+                      title: "Thao tác",
+                      key: "action",
+                      width: 140,
+                      fixed: "right" as const,
+                      align: "center" as const,
+                      render: (_: any, record: any, index: number) => {
+                        return (
+                          <Space size="small">
+                            <Tooltip title="Xem chi tiết">
+                              <Button
+                                type="text"
+                                icon={<EyeOutlined />}
+                                size="small"
+                                onClick={() => handleViewCandidate(record, index)}
+                                style={{
+                                  color: "#52c41a",
+                                }}
+                              />
+                            </Tooltip>
+                            <Tooltip title="Chỉnh sửa">
+                              <Button
+                                type="text"
+                                icon={<EditOutlined />}
+                                size="small"
+                                onClick={() => handleEditCandidate(index)}
+                                style={{
+                                  color: "#f59e0b",
+                                }}
+                              />
+                            </Tooltip>
+                            <Tooltip title="Xóa">
+                              <Button
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined />}
+                                size="small"
+                                onClick={() => handleDeleteCandidate(index)}
+                              />
+                            </Tooltip>
+                          </Space>
+                        );
+                      },
+                    });
+
+                    return columns;
+                  })()}
+                  dataSource={filteredCandidates}
+                  rowKey={(record) => {
+                    // Use _id if available, otherwise create unique key
+                    return record._id || `candidate-${record.title || Math.random()}`;
+                  }}
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: true,
+                    showTotal: (total, range) =>
+                      searchText
+                        ? `${range[0]}-${range[1]} của ${total} kết quả (Tổng: ${candidates.length})`
+                        : `${range[0]}-${range[1]} của ${total} nội dung bầu chọn`,
+                    pageSizeOptions: ["5", "10", "20", "50"],
+                  }}
+                  scroll={{ x: "max-content" }}
+                  locale={{
+                    emptyText: searchText ? (
+                      <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                        <SearchOutlined
+                          style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+                        />
+                        <p style={{ color: "#999", margin: 0, fontSize: 14 }}>
+                          Không tìm thấy kết quả phù hợp với "{searchText}"
+                        </p>
+                        <Button
+                          type="link"
+                          onClick={() => setSearchText("")}
+                          style={{ marginTop: 8 }}
+                        >
+                          Xóa bộ lọc
+                        </Button>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                        <FileTextOutlined
+                          style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+                        />
+                        <p style={{ color: "#999", margin: 0, fontSize: 14 }}>
+                          Chưa có nội dung bầu chọn. Nhấn "Thêm mới" ở trên để thêm.
+                        </p>
+                      </div>
+                    ),
+                  }}
+                />
+              )}
+            </div>
           </Col>
         </Row>
       </Form>
+
+      {/* Modal chọn hình thức bầu cử */}
+      <VotingMethodSelectModal
+        open={isVotingMethodSelectModalOpen}
+        onCancel={() => setIsVotingMethodSelectModalOpen(false)}
+        onSelect={handleVotingMethodSelect}
+        selectedMethodId={voteMethod}
+      />
+
+      {/* Modal quản lý danh sách bầu chọn */}
+      <VotingMethodModal
+        open={isVotingMethodModalOpen}
+        onCancel={() => {
+          setIsVotingMethodModalOpen(false);
+          setEditCandidateIndex(null);
+        }}
+        onSubmit={(newCandidates) => {
+          handleCandidatesModalSubmit(newCandidates);
+        }}
+        methods={methods || []}
+        selectedMethodId={voteMethod}
+        initialCandidates={
+          editCandidateIndex !== null && editCandidateIndex >= 0
+            ? [candidates[editCandidateIndex]] // Chỉ truyền candidate đang edit
+            : candidates // Truyền tất cả nếu thêm mới
+        }
+      />
+
+      {/* Modal xem chi tiết candidate */}
+      <Modal
+        open={viewModalVisible}
+        title={
+          <span style={{ fontSize: "18px", fontWeight: 600 }}>
+            Chi tiết nội dung bầu chọn
+          </span>
+        }
+        onCancel={() => {
+          setViewModalVisible(false);
+          setSelectedCandidate(null);
+        }}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => {
+              setViewModalVisible(false);
+              setSelectedCandidate(null);
+            }}
+          >
+            Đóng
+          </Button>,
+        ]}
+        width={700}
+        destroyOnClose
+      >
+        {selectedCandidate && (
+          <div>
+            <Descriptions column={1} bordered>
+              <Descriptions.Item label="Tiêu đề">
+                {selectedCandidate.title ||
+                  `Ứng viên ${selectedCandidate.index + 1}`}
+              </Descriptions.Item>
+              {selectedCandidate.description && (
+                <Descriptions.Item label="Mô tả">
+                  {selectedCandidate.description}
+                </Descriptions.Item>
+              )}
+              {selectedCandidate.metaData?.fullName && (
+                <>
+                  <Descriptions.Item label="Họ và tên">
+                    {selectedCandidate.metaData.fullName}
+                  </Descriptions.Item>
+                  {selectedCandidate.metaData.age && (
+                    <Descriptions.Item label="Tuổi">
+                      {selectedCandidate.metaData.age}
+                    </Descriptions.Item>
+                  )}
+                  {selectedCandidate.metaData.department && (
+                    <Descriptions.Item label="Phòng ban">
+                      {selectedCandidate.metaData.department}
+                    </Descriptions.Item>
+                  )}
+                  {selectedCandidate.metaData.position && (
+                    <Descriptions.Item label="Vị trí">
+                      {selectedCandidate.metaData.position}
+                    </Descriptions.Item>
+                  )}
+                  {selectedCandidate.metaData.experience && (
+                    <Descriptions.Item label="Kinh nghiệm">
+                      {selectedCandidate.metaData.experience}
+                    </Descriptions.Item>
+                  )}
+                  {selectedCandidate.metaData.achievements && (
+                    <Descriptions.Item label="Thành tích">
+                      {selectedCandidate.metaData.achievements}
+                    </Descriptions.Item>
+                  )}
+                </>
+              )}
+              {selectedCandidate.file && (
+                <Descriptions.Item label="File đính kèm">
+                  <Tag icon={<FileTextOutlined />} color="green">
+                    Có tài liệu đính kèm
+                  </Tag>
+                </Descriptions.Item>
+              )}
+            </Descriptions>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal quản lý ngưỡng thông qua */}
+      <ThresholdModal
+        open={isThresholdModalOpen}
+        onCancel={() => setIsThresholdModalOpen(false)}
+        onSelect={handleThresholdSelect}
+        selectedThresholdId={form.getFieldValue("threshold")}
+      />
     </Card>
   );
 };
 
-export default MeetingInfo;
+export default React.memo(MeetingInfo);
