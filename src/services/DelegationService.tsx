@@ -1,8 +1,7 @@
-import { CreateDelegationPayload, DelegationDetail, DelegationSearch } from "@/types/Delegate.interface";
-import BaseService from "./BaseService";
 import { ApiResponse } from "@/types/ApiResponse.interface";
+import { CreateDelegationPayload, DelegationDetail, DelegationSearch } from "@/types/Delegate.interface";
 import { User } from "@/types/User.interface";
-import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
+import BaseService from "./BaseService";
 
 
 
