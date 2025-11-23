@@ -29,6 +29,8 @@ import ElectionParticipantsService from "@/services/ElectionParticipantsService"
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import MeetingService from "@/services/MeetingService";
+import ResultService from "@/services/ResultService";
+import ViewDecisionResultModal from "./ViewDecisionResultModal";
 const { Text } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
@@ -73,6 +75,8 @@ const DecisionTable = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [meeting, setMeeting] = useState<any | null>(null);
+  const [openResultModal, setOpenResultModal] = useState(false);
+  const [resultData, setResultData] = useState<any[]>([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -116,6 +120,16 @@ const DecisionTable = () => {
       message.error("Không thể tải danh sách nghị quyết.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewResult = async (record: any) => {
+    try {
+      const res = await ResultService.getResultByElectionId(record._id); // API lấy kết quả
+      setResultData(res);
+      setOpenResultModal(true);
+    } catch (err) {
+      message.error("Không lấy được kết quả");
     }
   };
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
@@ -194,8 +208,8 @@ const DecisionTable = () => {
       const roleId1List: any = data4.filter((p: any) => p.roleId.roleCode === "VOTER");
       // MẢNG 2: roleId != 1
       const otherRolesList: any = data4.filter((p: any) => p.roleId.roleCode !== "VOTER");
-      setVoters(roleId1List? roleId1List : []);
-      setOrganize(otherRolesList? otherRolesList : []);
+      setVoters(roleId1List ? roleId1List : []);
+      setOrganize(otherRolesList ? otherRolesList : []);
       const data5 = await MeetingService.getByElectionId(record._id);
       setMeeting(data5)
       // Gọi API để lấy chi tiết decision
@@ -243,11 +257,11 @@ const DecisionTable = () => {
 
   // Định nghĩa columns bên trong component để có thể sử dụng các hàm xử lý
   const columns = [
-     {
-        title: "STT",
-        width: 70,
-        align: "center" as const,
-        render: (_: any, __: any, index: number) => index + 1,
+    {
+      title: "STT",
+      width: 70,
+      align: "center" as const,
+      render: (_: any, __: any, index: number) => index + 1,
     },
     {
       title: "SỐ QUYẾT ĐỊNH",
@@ -300,6 +314,19 @@ const DecisionTable = () => {
               onClick={() => handleEditDecision(record)}
             />
           )}
+
+          {
+            record.status === "CLOSED" && (
+              <Button
+                size="small"
+                icon={<EyeOutlined />}
+                style={{ color: "green" }}
+                onClick={() => handleViewResult(record)}
+              >
+                Xem kết quả
+              </Button>
+            )
+          }
         </Space>
       ),
     },
@@ -397,6 +424,14 @@ const DecisionTable = () => {
         electionentities={entities}
         meeting={meeting}
       />
+
+      <ViewDecisionResultModal
+        open={openResultModal}
+        onClose={() => setOpenResultModal(false)}
+        data={resultData}
+      />
+
+
 
       <ConfirmDeleteModal
         open={openConfirm}

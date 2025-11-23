@@ -24,6 +24,7 @@ import { DelegationSummary } from "@/types/Delegate.interface";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import FileService from "@/services/FileService";
 const { Title, Text } = Typography;
 
 const formatDate = (dateString: string | Date | null | undefined): string => {
@@ -62,7 +63,6 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
     const { showLoading, hideLoading } = useLoading();
     const [selectedDelegations, setSelectedDelegations] = useState<string[]>([]);
     const [rejectModalOpen, setRejectModalOpen] = useState(false);
-    const [rejectReason, setRejectReason] = useState("");
     const { notify } = useNotification();
     const [rejectReasons, setRejectReasons] = useState<Record<string, string>>({});
 
@@ -140,7 +140,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             message.error("Không thể tải file!");
         }
     };
-
+   
     const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
         try {
             showLoading();
@@ -160,7 +160,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 setModalOpen(false);
                 onClose();
             } else {
-                message.error(res.message || "Ký số thất bại!");
+                notify(res.message, "error");
             }
         } catch {
             message.error("Ký số thất bại!");
@@ -317,7 +317,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                             rowSelection={{
                                 type: "checkbox",
                                 getCheckboxProps: (record: any) => ({
-                                    disabled: record.status === "SIGNED" || record.status === "REJECTED",
+                                    disabled: record.status === "SIGNED" || record.status === "REJECTED" || record.status === "PENDING",
                                 }),
                                 selectedRowKeys: selectedDelegations,
                                 onChange: (keys) => setSelectedDelegations(keys as string[]),
@@ -329,13 +329,15 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         />
 
                         <Row justify="end" style={{ marginTop: 22 }} gutter={12}>
-                            <Col>
-                                <Button icon={<DownloadOutlined />} onClick={downloadUrlFile}>
-                                    Tải file
-                                </Button>
-                            </Col>
+                            {data?.status === "PENDING" ? (
+                                <Col>
+                                    <Button icon={<DownloadOutlined />} onClick={downloadUrlFile}>
+                                        Tải file
+                                    </Button>
+                                </Col>
 
-                            <Col>
+                            ) : null}
+                            <>  <Col>
                                 <Button
                                     danger
                                     disabled={selectedDelegations.length === 0}
@@ -346,20 +348,21 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
 
                             </Col>
 
-                            <Col>
-                                <Button
-                                    type="primary"
-                                    onClick={handleOpenSign}
-                                    disabled={selectedDelegations.length === 0}
-                                    style={{
-                                        background: "#52c41a",
-                                        borderColor: "#52c41a",
-                                        color: "white"
-                                    }}
-                                >
-                                    Ký số
-                                </Button>
-                            </Col>
+                                <Col>
+                                    <Button
+                                        type="primary"
+                                        onClick={handleOpenSign}
+                                        disabled={selectedDelegations.length === 0}
+                                        style={{
+                                            background: "#52c41a",
+                                            borderColor: "#52c41a",
+                                            color: "white"
+                                        }}
+                                    >
+                                        Ký số
+                                    </Button>
+                                </Col>
+                            </>
                         </Row>
                     </Card>
                 </Spin>

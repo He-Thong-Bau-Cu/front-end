@@ -32,6 +32,19 @@ class ResultService extends BaseService {
 
     }
 
+     async getResultByElectionId(id:string): Promise<any> {
+        try {
+            const response = await this.api.get<any>(
+                `${this.endpoint}/elections/${id}`);
+            return response.data;
+
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
+
+    }
+
 }
 
 export default new ResultService();

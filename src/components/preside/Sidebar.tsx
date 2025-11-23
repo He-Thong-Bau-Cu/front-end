@@ -37,11 +37,6 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Phê duyệt ủy quyền",
         },
         {
-            key: "/preside/election-monitor",
-            icon: <HistoryOutlined />,
-            label: "Giám sát bầu cử",
-        },
-        {
             key: "/preside/reports",
             icon: <BarChartOutlined />,
             label: "Quản lý báo cáo",

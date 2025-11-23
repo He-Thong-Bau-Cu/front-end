@@ -83,10 +83,8 @@ export class FileService extends BaseService {
   }
 
   async getSignedFile(key: string): Promise<Blob> {
-    return this.api.get(`${this.endpoint}/key`, {
-      params: { key },
-      responseType: "blob",
-    });
+     const params = key? `?key=${key}` : "";
+    return this.api.get(`${this.endpoint}/key${params}`,{ responseType: "blob", });
   }
 
   async downloadByKey(key: string): Promise<Blob> {

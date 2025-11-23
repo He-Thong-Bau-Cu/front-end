@@ -133,9 +133,15 @@ const AuthorizationTable = () => {
         }
     };
 
-    const downloadUrlFileSign = async (data: SummaryDelegate) => {
+    const downloadUrlFileSign = async (data: any) => {
         try {
-            const response = await FileService.getSignedFile(data.documents);
+            const data1 = await DelegationService.getDelegationPresideByElectionId(
+                data?.election?._id
+            );
+            const response = await FileService.getSignedFile(
+                data1[0]?.documents[0]?.fileUrl
+            );
+
             const blob = new Blob([response], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
 
@@ -234,15 +240,24 @@ const AuthorizationTable = () => {
                         icon={<EyeOutlined style={{ fontSize: 16, color: "blue" }} />}
                         onClick={() => openDetail(record)}
                     >
-                        Phê duyệt
+                        Xem chi tiết hoặc ký
                     </Button>
 
-                    <Button
-                        icon={<DownloadOutlined />}
-                        onClick={() => downloadUrlFile(record)}
-                    >
-                        Tải tài liệu
-                    </Button>
+                    {record.status === "PENDING" ? (
+                        <Button
+                            icon={<DownloadOutlined />}
+                            onClick={() => downloadUrlFile(record)}
+                        >
+                            Tải tài liệu
+                        </Button>
+                    ) : (
+                        <Button
+                            icon={<DownloadOutlined />}
+                            onClick={() => downloadUrlFileSign(record)}
+                        >
+                            Tải tài liệu
+                        </Button>
+                    )}
                 </Space>
             ),
         },
