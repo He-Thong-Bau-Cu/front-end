@@ -16,6 +16,7 @@ import {
   PlusOutlined,
   EditOutlined,
   EyeOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect, useMemo } from "react";
 import type { Decision } from "@/types/Decision.interface";
@@ -32,6 +33,7 @@ import ViewDecisionResultModal from "./ViewDecisionResultModal";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
+import FileService from "@/services/FileService";
 const { Option } = Select;
 const { confirm } = Modal;
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
@@ -61,7 +63,7 @@ const statusMap: { [key: string]: string } = {
 const DecisionTable = () => {
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [document, setDocument] = useState<any[]>([]);
+  const [documents, setDocument] = useState<any[]>([]);
   const [voters, setVoters] = useState<any[]>([]);
   const [organize, setOrganize] = useState<any[]>([]);
   const [entities, setEntities] = useState<any[]>([]);
@@ -242,7 +244,7 @@ const DecisionTable = () => {
     }
     try {
       // Gọi API
-      const reject = await DecisionService.RejectDecision({electionId: rejectModal.record,rejectReason: rejectReason.trim()});
+      const reject = await DecisionService.RejectDecision({ electionId: rejectModal.record, rejectReason: rejectReason.trim() });
       if (reject.status === 200 && reject.success) {
         notify(reject.message, "success");
         loadDecisions(pagination.current, pagination.pageSize);
@@ -254,6 +256,30 @@ const DecisionTable = () => {
       message.error("Từ chối thất bại!");
     }
   };
+
+
+  const downloadUrlFileSign = async (data: any) => {
+    try {
+      const data1 = await ElectionDocumentService.getDocumentByElectionId(
+        data?._id
+      );
+      const signedDocuments = data1.filter((item: any) => item?.type === "signed-documents");
+      const response = await FileService.getSignedFile(signedDocuments[0]?.fileUrl);
+
+      const blob = new Blob([response], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải file!");
+    }
+  };
+
 
 
 
@@ -377,6 +403,16 @@ const DecisionTable = () => {
               onClick={() => handleEditDecision(record)}
             />
           )}
+
+          {record.statusData === "APPROVED_SIGNED" ? (
+            <Button
+            style={{color:"blue"}}
+              icon={<DownloadOutlined />}
+              onClick={() => downloadUrlFileSign(record)}
+            >
+              Tải tài liệu có chữ ký số
+            </Button>
+          ) : null}
 
           {
             record.statusData === "WAIT_APPROVAL" && (
@@ -506,7 +542,7 @@ const DecisionTable = () => {
         loading={viewLoading}
         voters={voters}
         organize={organize}
-        document={document}
+        document={documents}
         electionentities={entities}
         meeting={meeting}
       />

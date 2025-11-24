@@ -243,7 +243,7 @@ const AuthorizationTable = () => {
                         Xem chi tiết hoặc ký
                     </Button>
 
-                    {record.status === "PENDING" ? (
+                    {record.status !== "SIGNED"? (
                         <Button
                             icon={<DownloadOutlined />}
                             onClick={() => downloadUrlFile(record)}
@@ -255,7 +255,7 @@ const AuthorizationTable = () => {
                             icon={<DownloadOutlined />}
                             onClick={() => downloadUrlFileSign(record)}
                         >
-                            Tải tài liệu
+                            Tải tài liệu có chữ ký số
                         </Button>
                     )}
                 </Space>
