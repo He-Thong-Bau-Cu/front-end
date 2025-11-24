@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button, Space, message } from "antd";
+import { Button, Space, Tag } from "antd";
+import { SaveOutlined, SendOutlined, EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "../../style/secretary/DraftingDocuments.model.css";
 import MeetingInfo from "@/components/secretary/drafting-documents/MeetingInfo";
@@ -11,6 +12,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import ElectionService from "@/services/ElectionService";
 import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { Meeting } from "@/types/Meeting.interface";
+import { USER_ROLE } from "@/enums/STATUS";
 const DraftingDocuments: React.FC = () => {
   const [meetingInfo, setMeetingInfo] = useState<any>(null);
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -130,7 +132,7 @@ const DraftingDocuments: React.FC = () => {
     } catch (error) {
       console.error("Error fetching draft data:", error);
       notify("Có lỗi xảy ra khi tải dữ liệu", "error");
-    }finally{
+    } finally {
       hideLoading();
     }
   };
@@ -142,30 +144,65 @@ const DraftingDocuments: React.FC = () => {
   // Validation function
   const validateForm = (isSubmit: boolean): boolean => {
     if (!meetingInfo) {
-      message.warning("Vui lòng nhập thông tin cuộc họp!");
+      notify("Vui lòng nhập thông tin cuộc họp!", "warning");
       return false;
     }
 
     if (isSubmit) {
       // Gửi duyệt: bắt required
       if (!meetingInfo.method) {
-        message.warning("Vui lòng chọn hình thức bầu cử!");
+        notify("Vui lòng chọn hình thức bầu cử!", "warning");
         return false;
       }
       if (!meetingInfo.type) {
-        message.warning("Vui lòng chọn thể loại bầu cử!");
+        notify("Vui lòng chọn thể loại bầu cử!", "warning");
         return false;
       }
       if (!meetingInfo.threshold) {
-        message.warning("Vui lòng chọn ngưỡng thông qua!");
+        notify("Vui lòng chọn ngưỡng thông qua!", "warning");
         return false;
       }
       if (!meetingInfo.location) {
-        message.warning("Vui lòng nhập địa điểm!");
+        notify("Vui lòng nhập địa điểm!", "warning");
         return false;
       }
       if (!meetingInfo.authorizationStart || !meetingInfo.authorizationEnd) {
-        message.warning("Vui lòng nhập ngày bắt đầu và kết thúc ủy quyền!");
+        notify("Vui lòng nhập ngày bắt đầu và kết thúc ủy quyền!", "warning");
+        return false;
+      }
+
+      // Kiểm tra candidates/electionEntities
+      if (!meetingInfo.candidates || !Array.isArray(meetingInfo.candidates) || meetingInfo.candidates.length === 0) {
+        notify("Vui lòng thêm ít nhất một ứng viên/bầu chọn trước khi gửi duyệt", "warning");
+        return false;
+      }
+
+      // Kiểm tra documents
+      if (!documents || !Array.isArray(documents) || documents.length === 0) {
+        notify("Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt", "warning");
+        return false;
+      }
+
+      // Kiểm tra voters
+      if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
+        notify("Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt", "warning");
+        return false;
+      }
+
+      // Kiểm tra participants (thành viên ban tổ chức)
+      const participantsList = organization || [];
+      const mapParticipants = participantsList.filter((p: any) => p?.roleId?.roleCode !== USER_ROLE.VOTER);
+      if (!Array.isArray(mapParticipants) || mapParticipants.length === 0) {
+        notify("Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt", "warning");
+        return false;
+      }
+
+      // Kiểm tra từng participant phải có đầy đủ thông tin
+      const invalidParticipants = participantsList.filter(
+        (p: any) => !p.userId || !p.roleId
+      );
+      if (invalidParticipants.length > 0) {
+        notify("Vui lòng kiểm tra lại thông tin thành viên tổ chức, một số thành viên thiếu thông tin", "warning");
         return false;
       }
     }
@@ -179,9 +216,13 @@ const DraftingDocuments: React.FC = () => {
     try {
       showLoading();
       await handleBulkSave(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      message.error("Có lỗi xảy ra trong quá trình lưu nháp");
+      // Message đã được hiển thị trong handleBulkSave, không cần hiển thị lại
+      // Chỉ hiển thị nếu chưa có message
+      if (!err?.response?.data?.message && !err?.message) {
+        notify("Có lỗi xảy ra trong quá trình lưu nháp", "error");
+      }
     } finally {
       hideLoading();
     }
@@ -193,16 +234,88 @@ const DraftingDocuments: React.FC = () => {
     try {
       showLoading();
       await handleBulkSave(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      message.error("Có lỗi xảy ra trong quá trình gửi duyệt");
+      // Message đã được hiển thị trong handleBulkSave, không cần hiển thị lại
+      // Chỉ hiển thị nếu chưa có message
+      if (!err?.response?.data?.message && !err?.message) {
+        notify("Có lỗi xảy ra trong quá trình gửi duyệt", "error");
+      }
     } finally {
       hideLoading();
     }
   };
 
+  const handlePreviewPdf = async () => {
+    try {
+      showLoading();
+      const blob = await ElectionService.previewPdf(electionId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.click();
+      window.URL.revokeObjectURL(url);
+      notify("Đang mở preview PDF", "success");
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage = err?.response?.data?.message || err?.message || "Có lỗi xảy ra khi xem preview";
+      notify(errorMessage, "error");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const getStatusTag = (status: string | null) => {
+    if (!status) return { text: "Chưa có trạng thái", color: "default" };
+
+    const statusMap: Record<string, { text: string; color: string }> = {
+      WAIT_ENTER_DATA: { text: "Chờ nhập dữ liệu", color: "orange" },
+      WAIT_APPROVAL: { text: "Chờ duyệt", color: "blue" },
+      APPROVED_SIGNED: { text: "Đã duyệt và ký", color: "green" },
+      REJECTED: { text: "Đã từ chối", color: "red" },
+      ACTIVE: { text: "Đang hoạt động", color: "green" },
+      INACTIVE: { text: "Không hoạt động", color: "default" },
+    };
+
+    return statusMap[status] || { text: status, color: "default" };
+  };
+
   const handleBulkSave = async (isSubmitForApproval: boolean) => {
     try {
+      // Chuẩn bị data trước
+      const participantsList = organization || [];
+      const candidatesList = meetingInfo?.candidates || [];
+      const documentsList = documents || [];
+      const votersList = attendees || [];
+
+      // Validation bổ sung trước khi gửi (đặc biệt cho gửi duyệt)
+      if (isSubmitForApproval) {
+        // Kiểm tra candidates
+        if (!Array.isArray(candidatesList) || candidatesList.length === 0) {
+          notify("Vui lòng thêm ít nhất một ứng viên/bầu chọn trước khi gửi duyệt", "warning");
+          return;
+        }
+
+        // Kiểm tra documents
+        if (!Array.isArray(documentsList) || documentsList.length === 0) {
+          notify("Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt", "warning");
+          return;
+        }
+
+        // Kiểm tra voters
+        if (!Array.isArray(votersList) || votersList.length === 0) {
+          notify("Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt", "warning");
+          return;
+        }
+
+        // Kiểm tra participants
+        if (!Array.isArray(participantsList) || participantsList.length === 0) {
+          notify("Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt", "warning");
+          return;
+        }
+      }
+
       // Chuẩn bị body tổng hợp
       const bulkBody = {
         electionId: electionId,
@@ -214,20 +327,20 @@ const DraftingDocuments: React.FC = () => {
           authorizationStart: meetingInfo.authorizationStart?.toISOString(),
           authorizationEnd: meetingInfo.authorizationEnd?.toISOString(),
         },
-        electionEntities: meetingInfo.candidates || [],
-        electionDocuments: (documents || []).map((doc: any) => ({
+        electionEntities: candidatesList,
+        electionDocuments: documentsList.map((doc: any) => ({
           _id: doc._id, // Có _id nếu edit
           title: doc.title,
           content: doc.content || "",
           fileUrl: doc.fileUrl || "",
           remarks: doc.remarks || "",
         })),
-        voters: (attendees || []).map((v: any) => ({
+        voters: votersList.map((v: any) => ({
           _id: v._id, // Có _id nếu edit
           userId: v.userId,
           percentage: v.percentage,
         })),
-        participants: (organization || []).map((p: any) => ({
+        participants: participantsList.map((p: any) => ({
           _id: p._id, // Có _id nếu edit
           userId: p.userId,
           roleId: p.roleId,
@@ -250,24 +363,41 @@ const DraftingDocuments: React.FC = () => {
       } else {
         notify(response?.data?.message || "Có lỗi xảy ra", "error");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      // Hiển thị message từ backend nếu có
+      const errorMessage = err?.response?.data?.message || err?.message || "Có lỗi xảy ra";
+      notify(errorMessage, "error");
       throw err;
     }
   };
   return (
     <div className="meeting-container">
       <div className="meeting-header">
-        <h2>Soạn thảo tài liệu bầu cử</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <h2 style={{ margin: 0 }}>Soạn thảo tài liệu bầu cử</h2>
+          {statusData && (
+            <Tag color={getStatusTag(statusData).color}>
+              {getStatusTag(statusData).text}
+            </Tag>
+          )}
+        </div>
 
-        {statusData === "WAIT_ENTER_DATA" ? (
-          <Space>
-            <Button onClick={handleSaveDraft}>💾 Lưu nháp</Button>
-            <Button type="primary" onClick={handleSubmitAll}>
-              📤 Gửi duyệt
-            </Button>
-          </Space>
-        ) : null}
+        <Space>
+          {statusData === "WAIT_ENTER_DATA" && (
+            <>
+              <Button icon={<SaveOutlined />} onClick={handleSaveDraft}>
+                Lưu nháp
+              </Button>
+              <Button type="primary" icon={<SendOutlined />} onClick={handleSubmitAll}>
+                Gửi duyệt
+              </Button>
+            </>
+          )}
+          <Button icon={<EyeOutlined />} onClick={handlePreviewPdf}>
+            Xem preview PDF
+          </Button>
+        </Space>
       </div>
 
       <div className="meeting-content">
@@ -277,19 +407,25 @@ const DraftingDocuments: React.FC = () => {
             data={election}
             electionentities={electionentities}
             meeting={meeting}
+            disabled={statusData !== "WAIT_ENTER_DATA"}
           />
         </div>
         <div className="meeting-right">
-          {voter && voter.length > 0 && (
-            <Attendees onChange={setAttendees} data={voter} />
-          )}
-          {organization && organization.length > 0 && (
-            <Organization onChange={setOrganization} data={organization} />
-          )}
+          <Attendees
+            onChange={setAttendees}
+            data={voter}
+            disabled={statusData !== "WAIT_ENTER_DATA"}
+          />
+          <Organization
+            onChange={setOrganization}
+            data={organization}
+            disabled={statusData !== "WAIT_ENTER_DATA"}
+          />
           <AttachedDocuments
             onChange={setDocuments}
             electionId={electionId}
             initialDocuments={existingDocuments}
+            disabled={statusData !== "WAIT_ENTER_DATA"}
           />
         </div>
       </div>

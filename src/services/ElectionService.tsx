@@ -76,6 +76,18 @@ class ElectionService extends BaseService {
       throw error;
     }
   }
+
+  async previewPdf(electionId: string): Promise<Blob> {
+    try {
+      const response = await this.api.get(`${this.endpoint}/preview-pdf/${electionId}`, {
+        responseType: 'blob',
+      });
+      return response;
+    } catch (error) {
+      console.error("Error preview PDF:", error);
+      throw error;
+    }
+  }
 }
 
 export default new ElectionService();
