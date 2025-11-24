@@ -46,6 +46,7 @@ interface Props {
   data?: any;
   electionentities?: any;
   meeting?: any;
+  disabled?: boolean;
 }
 
 interface MeetingFormValues {
@@ -67,6 +68,7 @@ const MeetingInfo: React.FC<Props> = ({
   data,
   electionentities,
   meeting,
+  disabled = false,
 }) => {
   const [form] = Form.useForm<MeetingFormValues>();
   const [typeOther, setTypeOther] = useState(false);
@@ -218,7 +220,6 @@ const MeetingInfo: React.FC<Props> = ({
         if (d?.meetingInfo?.thresholdDetails?._id) {
           loadThresholdData(d.meetingInfo.thresholdDetails._id);
         }
-
         if (meeting?.location) {
           form.setFieldsValue({
             location: meeting.location,
@@ -425,7 +426,7 @@ const MeetingInfo: React.FC<Props> = ({
               name="decisionNumber"
               rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
             >
-              <Input disabled placeholder="Nhập địa điểm tổ chức" />
+              <Input disabled={disabled} placeholder="Nhập số nghị quyết" />
             </Form.Item>
           </Col>
 
@@ -435,7 +436,7 @@ const MeetingInfo: React.FC<Props> = ({
               name="decisionName"
               rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
             >
-              <Input disabled placeholder="Nhập địa điểm tổ chức" />
+              <Input disabled={disabled} placeholder="Nhập tên nghị quyết" />
             </Form.Item>
           </Col>
 
@@ -446,7 +447,7 @@ const MeetingInfo: React.FC<Props> = ({
               name="location"
               rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
             >
-              <Input placeholder="Nhập địa điểm tổ chức" />
+              <Input placeholder="Nhập địa điểm tổ chức" disabled={disabled} />
             </Form.Item>
           </Col>
 
@@ -454,7 +455,7 @@ const MeetingInfo: React.FC<Props> = ({
           <Col span={12}>
             {/* Hidden field for method ID */}
             <Form.Item name="method" hidden>
-              <Input />
+              <Input disabled={disabled} />
             </Form.Item>
             <Form.Item
               label="Hình thức bầu cử"
@@ -464,13 +465,14 @@ const MeetingInfo: React.FC<Props> = ({
               <Input
                 placeholder="Chọn hình thức bầu cử"
                 readOnly
+                disabled={disabled}
                 value={selectedMethodName}
-                onClick={() => setIsVotingMethodSelectModalOpen(true)}
-                style={{ cursor: "pointer" }}
+                onClick={() => !disabled && setIsVotingMethodSelectModalOpen(true)}
+                style={{ cursor: disabled ? "not-allowed" : "pointer" }}
                 suffix={
                   <FolderOutlined
-                    style={{ color: "#52c41a", cursor: "pointer" }}
-                    onClick={() => setIsVotingMethodSelectModalOpen(true)}
+                    style={{ color: disabled ? "#ccc" : "#52c41a", cursor: disabled ? "not-allowed" : "pointer" }}
+                    onClick={() => !disabled && setIsVotingMethodSelectModalOpen(true)}
                   />
                 }
               />
@@ -483,7 +485,9 @@ const MeetingInfo: React.FC<Props> = ({
               {!typeOther ? (
                 <Select
                   placeholder="Chọn thể loại"
+                  disabled={disabled}
                   onChange={(v) => {
+                    if (disabled) return;
                     if (v === "other") {
                       setTypeOther(true);
 
@@ -515,7 +519,7 @@ const MeetingInfo: React.FC<Props> = ({
                     name={["type", "typeName"]}
                     rules={[{ required: true }]}
                   >
-                    <Input placeholder="Tên thể loại" />
+                    <Input placeholder="Tên thể loại" disabled={disabled} />
                   </Form.Item>
 
                   <Form.Item
@@ -523,14 +527,14 @@ const MeetingInfo: React.FC<Props> = ({
                     name={["type", "typeCode"]}
                     rules={[{ required: true }]}
                   >
-                    <Input placeholder="Mã thể loại" />
+                    <Input placeholder="Mã thể loại" disabled={disabled} />
                   </Form.Item>
 
                   <Form.Item label="Mô tả" name={["type", "description"]}>
-                    <Input.TextArea rows={2} />
+                    <Input.TextArea rows={2} disabled={disabled} />
                   </Form.Item>
 
-                  <Button type="link" onClick={() => setTypeOther(false)}>
+                  <Button type="link" onClick={() => !disabled && setTypeOther(false)} disabled={disabled}>
                     ← Quay lại
                   </Button>
                 </>
@@ -541,19 +545,20 @@ const MeetingInfo: React.FC<Props> = ({
           <Col span={12}>
             {/* Hidden field for threshold ID */}
             <Form.Item name="threshold" hidden>
-              <Input />
+              <Input disabled={disabled} />
             </Form.Item>
             <Form.Item label="Ngưỡng thông qua" name="thresholdName" required>
               <Input
                 placeholder="Chọn ngưỡng thông qua"
                 readOnly
+                disabled={disabled}
                 value={selectedThreshold?.thresholdName || ""}
-                onClick={() => setIsThresholdModalOpen(true)}
-                style={{ cursor: "pointer" }}
+                onClick={() => !disabled && setIsThresholdModalOpen(true)}
+                style={{ cursor: disabled ? "not-allowed" : "pointer" }}
                 suffix={
                   <FolderOutlined
-                    style={{ color: "#52c41a", cursor: "pointer" }}
-                    onClick={() => setIsThresholdModalOpen(true)}
+                    style={{ color: disabled ? "#ccc" : "#52c41a", cursor: disabled ? "not-allowed" : "pointer" }}
+                    onClick={() => !disabled && setIsThresholdModalOpen(true)}
                   />
                 }
               />
@@ -570,6 +575,7 @@ const MeetingInfo: React.FC<Props> = ({
               <DatePicker
                 style={{ width: "100%" }}
                 format="DD/MM/YYYY"
+                disabled={disabled}
                 disabledDate={(d) => d && d < dayjs().startOf("day")}
               />
             </Form.Item>
@@ -585,6 +591,7 @@ const MeetingInfo: React.FC<Props> = ({
               <DatePicker
                 style={{ width: "100%" }}
                 format="DD/MM/YYYY"
+                disabled={disabled}
                 disabledDate={(d) => {
                   const start = form.getFieldValue("authorizationStart");
                   if (!start) return d && d < dayjs().startOf("day");
@@ -626,17 +633,24 @@ const MeetingInfo: React.FC<Props> = ({
                       placeholder="Tìm kiếm..."
                       prefix={<SearchOutlined />}
                       value={searchText}
-                      onChange={(e) => setSearchText(e.target.value)}
+                      onChange={(e) => !disabled && setSearchText(e.target.value)}
                       allowClear
+                      disabled={disabled}
                       style={{ width: 250 }}
                     />
                     <a
                       className="add-link"
                       onClick={() => {
+                        if (disabled) return;
                         setEditCandidateIndex(null);
                         setIsVotingMethodModalOpen(true);
                       }}
-                      style={{ cursor: "pointer", whiteSpace: "nowrap" }}
+                      style={{
+                        cursor: disabled ? "not-allowed" : "pointer",
+                        whiteSpace: "nowrap",
+                        opacity: disabled ? 0.5 : 1,
+                        pointerEvents: disabled ? "none" : "auto"
+                      }}
                     >
                       + Thêm mới
                     </a>
@@ -748,7 +762,7 @@ const MeetingInfo: React.FC<Props> = ({
                             <div
                               style={{
                                 display: "flex",
-                                alignItems: "center",
+                                alignItems: "flex-start",
                                 gap: 12,
                               }}
                             >
@@ -769,6 +783,7 @@ const MeetingInfo: React.FC<Props> = ({
                                     display: "block",
                                     fontSize: 14,
                                     marginBottom: 6,
+                                    lineHeight: 1.5,
                                   }}
                                 >
                                   {record.metaData.fullName}
@@ -776,7 +791,7 @@ const MeetingInfo: React.FC<Props> = ({
                                 <Space
                                   size={[4, 4]}
                                   wrap
-                                  style={{ marginTop: 4 }}
+                                  style={{ marginTop: 0 }}
                                 >
                                   {record.metaData.age && (
                                     <Tag
@@ -918,9 +933,10 @@ const MeetingInfo: React.FC<Props> = ({
                                 type="text"
                                 icon={<EyeOutlined />}
                                 size="small"
-                                onClick={() => handleViewCandidate(record, index)}
+                                disabled={disabled}
+                                onClick={() => !disabled && handleViewCandidate(record, index)}
                                 style={{
-                                  color: "#52c41a",
+                                  color: disabled ? "#ccc" : "#52c41a",
                                 }}
                               />
                             </Tooltip>
@@ -929,9 +945,10 @@ const MeetingInfo: React.FC<Props> = ({
                                 type="text"
                                 icon={<EditOutlined />}
                                 size="small"
-                                onClick={() => handleEditCandidate(index)}
+                                disabled={disabled}
+                                onClick={() => !disabled && handleEditCandidate(index)}
                                 style={{
-                                  color: "#f59e0b",
+                                  color: disabled ? "#ccc" : "#f59e0b",
                                 }}
                               />
                             </Tooltip>
@@ -941,7 +958,8 @@ const MeetingInfo: React.FC<Props> = ({
                                 danger
                                 icon={<DeleteOutlined />}
                                 size="small"
-                                onClick={() => handleDeleteCandidate(index)}
+                                disabled={disabled}
+                                onClick={() => !disabled && handleDeleteCandidate(index)}
                               />
                             </Tooltip>
                           </Space>

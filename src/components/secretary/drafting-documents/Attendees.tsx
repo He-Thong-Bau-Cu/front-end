@@ -13,6 +13,8 @@ import {
 
 import {
     DeleteOutlined,
+    TeamOutlined,
+    PlusOutlined,
 } from "@ant-design/icons";
 import ElectionService from "@/services/ElectionService";
 import { User } from "@/types/User.interface";
@@ -37,8 +39,9 @@ interface Props {
     onChange: (data: Participant[]) => void;
     data?: any;
     percent?:any;
+    disabled?: boolean;
 }
-const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
+const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false }) => {
     const [participants, setParticipants] = useState<any[]>([]);
     const [selectedVoter, setSelectedVoter] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,7 +148,8 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
                 title={
                     <div className="card-header">
                         <Text style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>
-                            👥 Danh sách cử tri ({participants.length})
+                            <TeamOutlined style={{ marginRight: 8 }} />
+                            Danh sách cử tri ({participants.length})
                         </Text>
                         <Tag color="blue" style={{ marginLeft: 10 }}>
                             Tổng cổ phần: {totalPercentage}%
@@ -153,10 +157,15 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
 
                         <a
                             className="add-link"
-                            onClick={() => setIsModalOpen(true)}
-                            style={{ cursor: "pointer" }}
+                            onClick={() => !disabled && setIsModalOpen(true)}
+                            style={{
+                                cursor: disabled ? "not-allowed" : "pointer",
+                                opacity: disabled ? 0.5 : 1,
+                                pointerEvents: disabled ? "none" : "auto"
+                            }}
                         >
-                            + Thêm
+                            <PlusOutlined style={{ marginRight: 4 }} />
+                            Thêm
                         </a>
                     </div>
                 }
@@ -170,26 +179,36 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
                                 <b>% Cổ phần:</b> {p.percentage}%
                             </p>
                         </div>
-                        <Tag color={statusColor(p.status || "PENDING")}>
-                            {p.status === "ACTIVE"
-                                ? "Đã xác nhận"
-                                : p.status === "INACTIVE"
-                                    ? "Đã hủy"
-                                    : "Chờ duyệt"}
-                        </Tag>
-
-                        <DeleteOutlined
-                            onClick={() => handleDelete(p)}
-                            style={{ color: "red", marginLeft: 10 }}
-
-                        />
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                            <Tag color={statusColor(p.status || "PENDING")} style={{ margin: 0, marginTop: 2 }}>
+                                {p.status === "ACTIVE"
+                                    ? "Đã xác nhận"
+                                    : p.status === "INACTIVE"
+                                        ? "Đã hủy"
+                                        : "Chờ duyệt"}
+                            </Tag>
+                            <DeleteOutlined
+                                onClick={() => !disabled && handleDelete(p)}
+                                style={{
+                                    color: disabled ? "#ccc" : "red",
+                                    cursor: disabled ? "not-allowed" : "pointer",
+                                    opacity: disabled ? 0.5 : 1,
+                                    marginTop: 2
+                                }}
+                            />
+                        </div>
                     </div>
                 ))}
             </Card>
 
             {/* ==================== MODAL CHỌN CỬ TRI ==================== */}
             <Modal
-                title="➕ Chọn cử tri"
+                title={
+                    <>
+                        <PlusOutlined style={{ marginRight: 8 }} />
+                        Chọn cử tri
+                    </>
+                }
                 open={isModalOpen}
                 onCancel={() => {
                     setIsModalOpen(false);
@@ -216,6 +235,7 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
                         <Select
                             showSearch
                             placeholder="Tìm theo tên hoặc email"
+                            disabled={disabled}
                             onChange={handleSelectVoter}
                         >
                             {users
@@ -237,7 +257,7 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
                             { pattern: /^[0-9]+$/, message: "Chỉ nhập số" },
                         ]}
                     >
-                        <Input placeholder="VD: 12" />
+                        <Input placeholder="VD: 12" disabled={disabled} />
                     </Form.Item>
 
                     {/* THÔNG TIN CHI TIẾT CỬ TRI */}
@@ -278,12 +298,13 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent }) => {
                                 setIsModalOpen(false);
                                 setSelectedVoter(null);
                             }}
+                            disabled={disabled}
                             style={{ marginRight: 8 }}
                         >
                             Hủy
                         </Button>
 
-                        <Button type="primary" htmlType="submit">
+                        <Button type="primary" htmlType="submit" disabled={disabled}>
                             Lưu
                         </Button>
                     </Form.Item>

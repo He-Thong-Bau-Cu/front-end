@@ -18,10 +18,13 @@ import {
   FilePptOutlined,
   PaperClipOutlined,
   EditOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
+import { downloadBlob } from "@/utils/file";
+import { useLoading } from "@/contexts/LoadingContext";
 
 const { TextArea } = Input;
 
@@ -29,12 +32,14 @@ interface Props {
   onChange: (data: any[]) => void;
   electionId?: string;
   initialDocuments?: any[];
+  disabled?: boolean;
 }
 
 const AttachedDocuments: React.FC<Props> = ({
   onChange,
   electionId,
   initialDocuments,
+  disabled = false,
 }) => {
   const [documents, setDocuments] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -44,6 +49,7 @@ const AttachedDocuments: React.FC<Props> = ({
   const [editingDoc, setEditingDoc] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
   const { notify } = useNotification();
+  const { showLoading, hideLoading } = useLoading();
   const userId = localStorage.getItem("userId") || "";
 
   // Track file đã upload nhưng chưa save (để cleanup khi cần)
@@ -262,6 +268,30 @@ const AttachedDocuments: React.FC<Props> = ({
     setFileName("");
   };
 
+  /* ===========================================================
+        DOWNLOAD FILE
+    ============================================================ */
+  const handleDownload = async (doc: any) => {
+    if (!doc.fileUrl) {
+      notify("Không tìm thấy file để tải xuống", "warning");
+      return;
+    }
+
+    try {
+      showLoading();
+      const blob = await FileService.downloadByKey(doc.fileUrl);
+      const fileName = doc.fileName || doc.fileUrl.split("/").pop() || "document";
+      downloadBlob(blob, fileName);
+      notify("Tải file thành công", "success");
+    } catch (error: any) {
+      console.error("Error downloading file:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Không thể tải file";
+      notify(errorMessage, "error");
+    } finally {
+      hideLoading();
+    }
+  };
+
   return (
     <>
       <Card
@@ -269,13 +299,15 @@ const AttachedDocuments: React.FC<Props> = ({
         title={
           <div className="card-header">
             <span style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>
-              📎 Tài liệu đính kèm
+              <PaperClipOutlined style={{ marginRight: 8 }} />
+              Tài liệu đính kèm
             </span>
             <Col>
               <Button
                 icon={<UploadOutlined />}
                 type="link"
-                onClick={() => setModalOpen(true)}
+                disabled={disabled}
+                onClick={() => !disabled && setModalOpen(true)}
               >
                 Tải tài liệu lên
               </Button>
@@ -289,13 +321,32 @@ const AttachedDocuments: React.FC<Props> = ({
           renderItem={(item) => (
             <List.Item
               actions={[
+                <DownloadOutlined
+                  onClick={() => handleDownload(item)}
+                  style={{
+                    color: "#52c41a",
+                    marginRight: 8,
+                    cursor: "pointer",
+                    fontSize: 16
+                  }}
+                  title="Tải xuống"
+                />,
                 <EditOutlined
-                  onClick={() => handleEdit(item)}
-                  style={{ color: "#1890ff", marginRight: 8 }}
+                  onClick={() => !disabled && handleEdit(item)}
+                  style={{
+                    color: disabled ? "#ccc" : "#1890ff",
+                    marginRight: 8,
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    opacity: disabled ? 0.5 : 1
+                  }}
                 />,
                 <DeleteOutlined
-                  onClick={() => handleDeleteLocal(item)}
-                  style={{ color: "red" }}
+                  onClick={() => !disabled && handleDeleteLocal(item)}
+                  style={{
+                    color: disabled ? "#ccc" : "red",
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    opacity: disabled ? 0.5 : 1
+                  }}
                 />,
               ]}
             >
@@ -333,16 +384,16 @@ const AttachedDocuments: React.FC<Props> = ({
             label="Tên tài liệu"
             rules={[{ required: true }]}
           >
-            <Input placeholder="Nhập tên tài liệu..." />
+            <Input placeholder="Nhập tên tài liệu..." disabled={disabled} />
           </Form.Item>
 
           <Form.Item name="content" label="Mô tả tài liệu">
-            <TextArea rows={3} placeholder="Nhập mô tả..." />
+            <TextArea rows={3} placeholder="Nhập mô tả..." disabled={disabled} />
           </Form.Item>
 
           <Form.Item label="File đính kèm">
-            <Upload beforeUpload={handleUpload} showUploadList={false}>
-              <Button icon={<UploadOutlined />} loading={uploading}>
+            <Upload beforeUpload={handleUpload} showUploadList={false} disabled={disabled}>
+              <Button icon={<UploadOutlined />} loading={uploading} disabled={disabled}>
                 {editingDoc && !fileObj
                   ? "Chọn file mới (tùy chọn)"
                   : "Chọn file"}
@@ -362,17 +413,18 @@ const AttachedDocuments: React.FC<Props> = ({
           </Form.Item>
 
           <Form.Item name="remarks" label="Ghi chú">
-            <TextArea rows={2} placeholder="Ghi chú..." />
+            <TextArea rows={2} placeholder="Ghi chú..." disabled={disabled} />
           </Form.Item>
 
           <div style={{ textAlign: "right" }}>
             <Button
               onClick={handleCloseModal}
+              disabled={disabled}
               style={{ marginRight: 8 }}
             >
               Hủy
             </Button>
-            <Button type="primary" htmlType="submit" loading={uploading}>
+            <Button type="primary" htmlType="submit" loading={uploading} disabled={disabled}>
               {editingDoc ? "Cập nhật" : "Lưu tài liệu"}
             </Button>
           </div>
