@@ -25,6 +25,7 @@ import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
+import { set } from "react-hook-form";
 const { Title, Text } = Typography;
 
 const formatDate = (dateString: string | Date | null | undefined): string => {
@@ -63,8 +64,11 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
     const { showLoading, hideLoading } = useLoading();
     const [selectedDelegations, setSelectedDelegations] = useState<string[]>([]);
     const [rejectModalOpen, setRejectModalOpen] = useState(false);
+    const [reject1ModalOpen, setReject1ModalOpen] = useState(false);
     const { notify } = useNotification();
     const [rejectReasons, setRejectReasons] = useState<Record<string, string>>({});
+    const [warningModalOpen, setWarningModalOpen] = useState(false);
+    const [delegationsToReject, setDelegationsToReject] = useState<string[]>([]);
 
     const loadDetail = async () => {
         if (!recordId) return;
@@ -87,19 +91,39 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
         }
     }, [open, recordId]);
 
+
     const handleOpenSign = () => {
         if (selectedDelegations.length === 0) {
-            return message.warning("Hãy chọn ít nhất 1 ủy quyền để phê duyệt!");
+            return message.warning("Hãy chọn ít nhất 1 ủy quyền để ký số!");
         }
+
+        // Lấy toàn bộ ủy quyền đang ở trạng thái CHỜ DUYỆT (CONFIRMED)
+        const confirmedIds = mappedList
+            .filter(item => item.status === "CONFIRMED")
+            .map(item => item.id);
+
+        // Những ủy quyền CONFIRMED nhưng KHÔNG được chọn -> phải bị từ chối
+        const toReject = confirmedIds.filter(id => !selectedDelegations.includes(id));
+
+        if (toReject.length > 0) {
+            setDelegationsToReject(toReject);
+            setWarningModalOpen(true);
+            return;
+        }
+
+        // Không có mục nào cần từ chối -> mở ký số luôn
         onSelectApproved?.(selectedDelegations);
         setModalOpen(true);
     };
     const handleReject = async () => {
         try {
+
             const delegationList = selectedDelegations.map((id) => ({
                 id,
                 rejectReason: rejectReasons[id] || "",
             }));
+
+
             const payload = {
                 electionId: data?.election?._id,
                 delegationIds: delegationList
@@ -111,14 +135,44 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 notify(reject.message, "error");
             }
             setRejectModalOpen(false);
-            setSelectedDelegations([]);
+            // setSelectedDelegations([]);
         } catch (error) {
             console.error(error);
             message.error("Từ chối thất bại!");
         }
     };
 
+    const handleReject1 = async () => {
+        try {
 
+            const delegationList = delegationsToReject.map((id) => ({
+                id,
+                rejectReason: rejectReasons[id] || "",
+            }));
+
+
+            const payload = {
+                electionId: data?.election?._id,
+                delegationIds: delegationList
+            };
+            const reject = await DelegationService.delegationReject(payload);
+            if (!reject.success) {
+                notify(reject.message, "error");
+                // notify(reject.message, "success");
+            }
+            setReject1ModalOpen(false);
+            const confirmedIds = mappedList
+                .filter(item => item.status === "CONFIRMED")
+                .map(item => item.id);
+            setSelectedDelegations(confirmedIds.filter(id => !delegationsToReject.includes(id)));
+            onSelectApproved?.(selectedDelegations);
+            setModalOpen(true);
+
+        } catch (error) {
+            console.error(error);
+            message.error("Từ chối thất bại!");
+        }
+    };
     const downloadUrlFile = async () => {
         try {
             const response = await DelegationService.getSummaryDelegationPdf({
@@ -140,7 +194,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             message.error("Không thể tải file!");
         }
     };
-   
+
     const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
         try {
             showLoading();
@@ -157,8 +211,8 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
 
             if (res.success) {
                 notify(res.message, "success");
+                loadDetail();
                 setModalOpen(false);
-                showLoading();
                 onClose();
             } else {
                 notify(res.message, "error");
@@ -196,6 +250,10 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
 
                 switch (status) {
                     case "PENDING":
+                        color = "yellow";
+                        text = "Chờ thư ký xác nhận";
+                        break;
+                    case "CONFIRMED":
                         color = "gold";
                         text = "Chờ duyệt";
                         break;
@@ -285,6 +343,14 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                 <Text type="secondary" style={{ fontSize: 13 }}>
                                     Xem – chọn – phê duyệt các ủy quyền hợp lệ
                                 </Text>
+                                <Text type="secondary" style={{ fontSize: 13, whiteSpace: "pre-line", color: "#faad14", display: "block", marginTop: 6 }}>
+                                    {"\n"}Lưu ý:
+                                    {"\n"}1. Chỉ những ủy quyền có trạng thái "Chờ duyệt" mới có thể được ký số.
+                                    {"\n"}2. Những ủy quyền đã "Đã ký duyệt" hoặc "Từ chối" sẽ không thể được chọn.
+                                    {"\n"}3. Khi bấm "Ký số", hệ thống sẽ ký số tập trung tất cả các ủy quyền bạn đã chọn.
+                                    {"\n"}4. Các ủy quyền không được chọn sẽ bị bắt buộc từ chối. Bạn hãy kiểm tra lại và chắc chắn với sự lựa chọn của mình.
+                                </Text>
+
                             </div>
                         </div>
 
@@ -330,7 +396,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         />
 
                         <Row justify="end" style={{ marginTop: 22 }} gutter={12}>
-                            {data?.status === "PENDING" ? (
+                            {data?.status === "PENDING" || data?.status === "CONFIRMED" ? (
                                 <Col>
                                     <Button icon={<DownloadOutlined />} onClick={downloadUrlFile}>
                                         Tải file
@@ -338,16 +404,17 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                 </Col>
 
                             ) : null}
-                            <>  <Col>
-                                <Button
-                                    danger
-                                    disabled={selectedDelegations.length === 0}
-                                    onClick={() => setRejectModalOpen(true)}
-                                >
-                                    Từ chối
-                                </Button>
+                            <>
+                                <Col>
+                                    <Button
+                                        danger
+                                        disabled={selectedDelegations.length === 0}
+                                        onClick={() => setRejectModalOpen(true)}
+                                    >
+                                        Từ chối
+                                    </Button>
 
-                            </Col>
+                                </Col>
 
                                 <Col>
                                     <Button
@@ -605,7 +672,98 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
 
                 </div>
             </Modal>
+            <Modal
+                title="Từ chối ủy quyền"
+                open={reject1ModalOpen}
+                onCancel={() => setReject1ModalOpen(false)}
+                onOk={handleReject1}
+                okText="Xác nhận từ chối"
+                okButtonProps={{ danger: true }}
+                width={650}
+            >
+                <p style={{ marginBottom: 10 }}>
+                    Bạn đang từ chối <strong>{selectedDelegations.length}</strong> ủy quyền.
+                    Vui lòng nhập lý do cho từng ủy quyền:
+                </p>
 
+                <div style={{ maxHeight: 400, overflowY: "auto", paddingRight: 5 }}>
+                    {delegationsToReject.map((id) => {
+                        const info = mappedList.find((row) => row.id === id);
+
+                        return (
+                            <div
+                                key={id}
+                                style={{
+                                    marginBottom: 16,
+                                    padding: "12px 14px",
+                                    border: "1px solid #eee",
+                                    borderRadius: 8,
+                                    background: "#fafafa"
+                                }}
+                            >
+                                <p style={{ marginBottom: 6 }}>
+                                    <strong>Người ủy quyền:</strong>{" "}
+                                    {info?.delegator.fullName || "Không rõ"}
+                                </p>
+
+                                <Input.TextArea
+                                    rows={3}
+                                    placeholder="Nhập lý do từ chối cho ủy quyền này..."
+                                    value={rejectReasons[id] || ""}
+                                    onChange={(e) =>
+                                        setRejectReasons((prev) => ({
+                                            ...prev,
+                                            [id]: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        );
+                    })}
+
+                </div>
+            </Modal>
+
+            <Modal
+                open={warningModalOpen}
+                title={
+                    <span style={{ color: "red", fontWeight: 600 }}>
+                        ⚠️ Cảnh báo quan trọng
+                    </span>
+                }
+                centered
+                okText="Đã hiểu"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}   // nút OK màu đỏ
+                onOk={() => {
+                    setWarningModalOpen(false);
+                    setReject1ModalOpen(true);
+                }}
+                onCancel={() => {
+                    setWarningModalOpen(false);
+                }}
+            >
+                <div
+                    style={{
+                        background: "#fff1f0",       // nền đỏ nhạt cảnh báo
+                        border: "1px solid #ffa39e",
+                        padding: "12px 16px",
+                        borderRadius: 8,
+                    }}
+                >
+                    <p style={{
+                        fontSize: 15,
+                        color: "#cf1322",
+                        margin: 0,
+                        lineHeight: "22px"
+                    }}>
+                        Các ủy quyền <strong>không được chọn</strong> sẽ bị
+                        <strong> bắt buộc từ chối</strong>.<br />
+                        Bạn phải nhập <strong>lý do từ chối cho từng ủy quyền</strong>
+                        trước khi hệ thống có thể tiến hành ký số.
+                    </p>
+                </div>
+            </Modal>
 
         </>
     );
