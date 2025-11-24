@@ -7,6 +7,7 @@ import { Avatar, Button, Card, Col, Descriptions, Divider, Row, Space, Tag, Typo
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./../../../style/voter/AuthorizationHistory.module.css";
+import FileService from "@/services/FileService";
 
 
 const { Text, Title } = Typography;
@@ -83,6 +84,28 @@ const AuthorizationDetail = () => {
     const delegationId = location.state?.id;
     const navigate = useNavigate();
 
+    const [fileUrl, setFileUrl] = useState<string>("");
+
+    useEffect(() => {
+        const loadFile = async () => {
+            if (!delegationData?.documentId?.fileUrl) return;
+
+            try {
+                const key = delegationData.documentId.fileUrl;
+
+                const fileBlob = await FileService.getSignedFile(key);
+
+                const url = URL.createObjectURL(fileBlob);
+
+                setFileUrl(url);
+            } catch (err) {
+                console.error("Lỗi load file:", err);
+            }
+        };
+
+        loadFile();
+    }, [delegationData]);
+
 
 
 
@@ -138,6 +161,7 @@ const AuthorizationDetail = () => {
                         >
                             Quay lại
                         </Button>
+
                     </div>
                 }
                 className={styles.delegationHistoryCard}
@@ -270,8 +294,31 @@ const AuthorizationDetail = () => {
                                 {confirmedBy.fullName} ({confirmedBy.email})
                             </Descriptions.Item>
                         )} */}
+
+
                         </Descriptions>
                     </Card>
+                    {fileUrl ? (
+                        <Card size="small" title="📄 File đã ký" style={{ marginTop: 16 }}>
+                            <Button
+                                type="primary"
+                                onClick={() => {
+                                    const a = document.createElement("a");
+                                    a.href = fileUrl;
+                                    a.download = "file_uy_quyen_da_ky.pdf";
+                                    a.click();
+                                }}
+                            >
+                                Tải xuống file
+                            </Button>
+                        </Card>
+                    ) : (
+                        <Card size="small" title="📄 File đã ký" style={{ marginTop: 16 }}>
+                            <Text type="secondary">Không có file ký</Text>
+                        </Card>
+                    )}
+
+
                 </Space>
             </Card>
         </>

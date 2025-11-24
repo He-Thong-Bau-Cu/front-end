@@ -64,6 +64,11 @@ class BallotService extends BaseService {
     }
 
 
+    async getBallotById(id: string): Promise<Ballot> {
+        const response = await this.api.get(`${this.endpoint}/${id}`) as ApiResponse<Ballot>;
+        return response.data;
+    }
+
 
 }
 
