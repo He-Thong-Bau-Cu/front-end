@@ -36,8 +36,20 @@ export interface AuthorizationUser {
 }
 
 
+export interface DelegationDocument {
+  _id: string;
+  title: string;
+  type: string;
+  fileUrl: string | null;
+  status: string;
+  createdAt?: string;
+  updatedAt?: string;
+  remark?: string | null;
+}
+
+
 export interface DelegationDetail {
-  documentId: string | null;
+  documentId: DelegationDocument | null;
   delegateReason: string | null;
   signature: string | null;
   _id: string;
@@ -61,6 +73,8 @@ export interface DelegationDetail {
   createdAt: string;
   __v: number;
 }
+
+
 
 
 
@@ -91,6 +105,11 @@ export interface DelegationSearch {
     phone: string;
     email: string;
     address: string;
+  };
+
+  documentId?: {
+    _id: string;
+    fileUrl: string;
   };
 
   delegationType: string;

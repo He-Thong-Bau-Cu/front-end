@@ -106,8 +106,8 @@ const ResolutionContent: React.FC = () => {
       notify("Bỏ phiếu thành công!", "success");
       setSignModalOpen(false);
       navigate("/voter/ballots");
-    } catch (err: any) {
-      notify(err?.response?.data?.message || "Ký số thất bại!", "error");
+    } catch {
+      notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư.", "error");
     } finally {
       hideLoading();
     }
@@ -131,17 +131,17 @@ const ResolutionContent: React.FC = () => {
 
   return (
     <Card bordered={false} className="resolution-card">
-      <Title level={5} className="section-title">Nội dung Nghị quyết</Title>
+      {/* <Title level={5} className="section-title">Nội dung Nghị quyết</Title> */}
 
       {!entity && <Paragraph>Không có dữ liệu nghị quyết.</Paragraph>}
 
       {entity && (
         <>
-          <Title level={5} style={{ marginBottom: 6 }}>{entity.title}</Title>
+          <Title level={5} style={{ marginBottom: 6 }}>Bầu cử: {entity.title}</Title>
 
           {entity.description && (
             <Text type="secondary" style={{ marginBottom: 12, display: "block" }}>
-              {entity.description}
+              Nội dung: {entity.description}
             </Text>
           )}
 
