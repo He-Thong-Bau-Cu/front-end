@@ -161,10 +161,6 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 // notify(reject.message, "success");
             }
             setReject1ModalOpen(false);
-            const confirmedIds = mappedList
-                .filter(item => item.status === "CONFIRMED")
-                .map(item => item.id);
-            setSelectedDelegations(confirmedIds.filter(id => !delegationsToReject.includes(id)));
             onSelectApproved?.(selectedDelegations);
             setModalOpen(true);
 
