@@ -84,7 +84,7 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
                     waitEnterData++;
                 } else if (statusData === "WAIT_APPROVAL") {
                     waitApproval++;
-                } else if (statusData === "REQUEST_EDIT") {
+                } else if (statusData === "REJECTED") {
                     requestEdit++;
                 } else if (statusData === "DRAFT") {
                     draft++;

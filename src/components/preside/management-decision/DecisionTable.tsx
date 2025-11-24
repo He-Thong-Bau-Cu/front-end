@@ -22,16 +22,16 @@ import type { Decision } from "@/types/Decision.interface";
 import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal";
 import ViewDecisionModal from "@/components/preside/management-decision/ViewDecisionModal";
 import DecisionService from "@/services/DecisionService";
-import * as XLSX from "xlsx";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import { useNotification } from "@/contexts/NotificationContext";
 import ElectionParticipantsService from "@/services/ElectionParticipantsService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import MeetingService from "@/services/MeetingService";
 import ResultService from "@/services/ResultService";
 import ViewDecisionResultModal from "./ViewDecisionResultModal";
-const { Text } = Typography;
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 const { Option } = Select;
 const { confirm } = Modal;
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
@@ -54,7 +54,7 @@ const formatDate = (dateString: string | Date | null | undefined): string => {
 const statusMap: { [key: string]: string } = {
   "APPROVED_SIGNED": "Đã phê duyệt",
   "WAIT_APPROVAL": "Chờ duyệt",
-  "REQUEST_EDIT": "Từ chối",
+  "REJECTED": "Từ chối",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
   "DRAFT": "Lưu nháp"
 };
@@ -77,11 +77,20 @@ const DecisionTable = () => {
   const [meeting, setMeeting] = useState<any | null>(null);
   const [openResultModal, setOpenResultModal] = useState(false);
   const [resultData, setResultData] = useState<any[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [recordId, setRecordId] = useState<string | null>(null);
+  const { showLoading, hideLoading } = useLoading();
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
+  const [rejectModal, setRejectModal] = useState({
+    open: false,
+    record: null,
+  });
+  const [rejectReason, setRejectReason] = useState("");
+
   const [openConfirm, setOpenConfirm] = useState(false);
   const [secretary, setSecrytary] = useState<any | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<Decision | null>(null);
@@ -122,7 +131,10 @@ const DecisionTable = () => {
       setLoading(false);
     }
   };
-
+  const handleOpenSign = (data: any) => {
+    setRecordId(data._id);
+    setModalOpen(true);
+  };
   const handleViewResult = async (record: any) => {
     try {
       const res = await ResultService.getResultByElectionId(record._id); // API lấy kết quả
@@ -193,6 +205,57 @@ const DecisionTable = () => {
       setLoading(false);
     }
   };
+
+  const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
+    try {
+      showLoading();
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("password", password);
+      formData.append("electionId", recordId || "");
+      const res = await DecisionService.SignedDecision(formData);
+      if (res.success) {
+        notify(res.message, "success");
+        loadDecisions(1, pagination.pageSize);
+        setModalOpen(false);
+        showLoading();
+      } else {
+        notify(res.message, "error");
+      }
+    } catch {
+      message.error("Ký số thất bại!");
+    } finally {
+      hideLoading();
+    }
+  };
+  const openRejectModal = (record: any) => {
+    setRejectModal({
+      open: true,
+      record: record._id,
+    });
+    setRejectReason("");
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) {
+      return message.error("Vui lòng nhập lý do từ chối!");
+    }
+    try {
+      // Gọi API
+      const reject = await DecisionService.RejectDecision({electionId: rejectModal.record,rejectReason: rejectReason.trim()});
+      if (reject.status === 200 && reject.success) {
+        notify(reject.message, "success");
+        loadDecisions(pagination.current, pagination.pageSize);
+      } else {
+        notify(reject.message, "error");
+      }
+      setRejectModal({ open: false, record: null });
+    } catch (err) {
+      message.error("Từ chối thất bại!");
+    }
+  };
+
+
 
   const handleViewDecision = async (record: Decision) => {
     try {
@@ -285,7 +348,7 @@ const DecisionTable = () => {
               ? "orange"
               : statusData === "WAIT_APPROVAL"
                 ? "yellow"
-                : statusData === "REQUEST_EDIT"
+                : statusData === "REJECTED"
                   ? "pink"
                   : statusData === "DRAFT"
                     ? "red"
@@ -314,6 +377,29 @@ const DecisionTable = () => {
               onClick={() => handleEditDecision(record)}
             />
           )}
+
+          {
+            record.statusData === "WAIT_APPROVAL" && (
+              <>
+                <Button
+                  size="small"
+                  icon={<EditOutlined />}
+                  style={{ color: "green" }}
+                  onClick={() => handleOpenSign(record)}
+                >
+                  Ký số
+                </Button>
+                <Button
+                  size="small"
+                  style={{ color: "red" }}
+                  onClick={() => openRejectModal(record)}
+                >
+                  Từ chối
+                </Button>
+
+              </>
+            )
+          }
 
           {
             record.status === "CLOSED" && (
@@ -354,7 +440,7 @@ const DecisionTable = () => {
             <Option value="APPROVED_SIGNED">Đã phê duyệt</Option>
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
-            <Option value="REQUEST_EDIT">Yêu cầu chỉnh sửa</Option>
+            <Option value="REJECTED">Yêu cầu chỉnh sửa</Option>
             <Option value="DRAFT">Lưu nháp</Option>
           </Select>
           <Button
@@ -458,6 +544,43 @@ const DecisionTable = () => {
           }
         }}
       />
+      {/* MODAL KÝ SỐ */}
+      <DigitalSignModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleDigitalSign}
+      />
+
+      <Modal
+        title="Xác nhận từ chối"
+        open={rejectModal.open}
+        onCancel={() => setRejectModal({ open: false, record: null })}
+        footer={null}
+        centered
+      >
+        <p>Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> ủy quyền này không?</p>
+
+        <Input.TextArea
+          rows={4}
+          placeholder="Nhập lý do từ chối..."
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+        />
+
+        <div style={{ textAlign: "right", marginTop: 16 }}>
+          <Button
+            style={{ marginRight: 8 }}
+            onClick={() => setRejectModal({ open: false, record: null })}
+          >
+            Hủy
+          </Button>
+
+          <Button danger type="primary" onClick={handleRejectSubmit}>
+            Xác nhận từ chối
+          </Button>
+        </div>
+      </Modal>
+
 
     </Card>
   );
