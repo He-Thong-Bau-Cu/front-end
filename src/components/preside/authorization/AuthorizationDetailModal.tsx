@@ -156,8 +156,9 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             const res = await DelegationService.delegationApprove(formData);
 
             if (res.success) {
-                message.success("Ký số thành công!");
+                notify(res.message, "success");
                 setModalOpen(false);
+                showLoading();
                 onClose();
             } else {
                 notify(res.message, "error");
