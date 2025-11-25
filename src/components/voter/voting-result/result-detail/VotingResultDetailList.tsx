@@ -1,60 +1,104 @@
 import { FileTextOutlined } from "@ant-design/icons";
-import { Card, Progress, Tag, Typography } from "antd";
-import React from "react";
+import { Card, Progress, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import ElectionService from "@/services/ElectionService";
+import ResultService from "@/services/ResultService";
 
 const { Text } = Typography;
 
-interface Candidate {
-    id: number;
-    name: string;
-    abbreviation: string;
-    party: string;
-    age: number;
-    location: string;
-    votes: number;
-    percent: number;
-    diff: number;
-    highlight?: boolean;
+interface YesNoResult {
+    id: string;
+    entityTitle: string;
+    yes: { count: number; percent: number };
+    no: { count: number; percent: number };
+    abstain: { count: number; percent: number };
 }
 
-const candidates: Candidate[] = [
-    {
-        id: 1,
-        name: "Nguyễn Văn A",
-        abbreviation: "NA",
-        party: "Đảng Cộng sản Việt Nam",
-        age: 50,
-        location: "TP. Hồ Chí Minh",
-        votes: 5842,
-        percent: 39.3,
-        diff: 1234,
-        highlight: true,
-    },
-    {
-        id: 2,
-        name: "Trần Thị B",
-        abbreviation: "TB",
-        party: "Đảng Cộng sản Việt Nam",
-        age: 45,
-        location: "TP. Hồ Chí Minh",
-        votes: 4608,
-        percent: 31.0,
-        diff: -1234,
-    },
-    {
-        id: 3,
-        name: "Lê Văn C",
-        abbreviation: "LC",
-        party: "Đảng Cộng sản Việt Nam",
-        age: 52,
-        location: "TP. Hồ Chí Minh",
-        votes: 2672,
-        percent: 18.0,
-        diff: -1936,
-    },
-];
+interface CumulativeItem {
+    _id: string;
+    totalVotes: number;
+    percentage: number;
+    entityTitle: string;
+}
+
+interface CandidateResult {
+    id: string;
+    totalVotes?: number;
+    percentage?: number;
+    entityTitle: string;
+
+    yes?: { count: number; percent: number };
+    no?: { count: number; percent: number };
+}
 
 const VotingResultDetailList: React.FC = () => {
+    const [methodCode, setMethodCode] = useState<string | null>(null);
+    const [candidates, setCandidates] = useState<CandidateResult[]>([]);
+    const electionId = localStorage.getItem("currentElectionId") || "";
+
+    // Load voting method
+    useEffect(() => {
+        const loadElection = async () => {
+            const election = await ElectionService.getElectionId(electionId);
+            setMethodCode(election.votingMethodId.methodCode);
+        };
+        loadElection();
+    }, [electionId]);
+
+    // Load result
+    useEffect(() => {
+        if (!methodCode) return;
+
+        const loadResult = async () => {
+            try {
+                /** ===============================
+                 *   CASE 1: CUMULATIVE
+                 * =============================== */
+                if (methodCode === "CUMULATIVE") {
+                    const result: CumulativeItem[] =
+                        await ResultService.getCumulativeResult(electionId);
+
+                    const mapped: CandidateResult[] = result.map((item) => ({
+                        id: item._id,
+                        totalVotes: item.totalVotes,
+                        percentage: item.percentage,
+                        entityTitle: item.entityTitle,
+                    }));
+
+                    setCandidates(mapped);
+                }
+
+                else if (methodCode === "YES_NO_ABSTAIN") {
+                    const result = await ResultService.getYesNoResult(electionId);
+
+                    const item = result[0]; // backend trả 1 object duy nhất
+
+                    const yesPercent = item.totalVotes ? (item.agree / item.totalVotes) * 100 : 0;
+                    const noPercent = item.totalVotes ? (item.disagree / item.totalVotes) * 100 : 0;
+                    const abstainPercent = item.totalVotes ? (item.abstain / item.totalVotes) * 100 : 0;
+
+                    const mapped: YesNoResult = {
+                        id: item._id,
+                        entityTitle: item.entityTitle,
+                        yes: { count: item.agree, percent: yesPercent },
+                        no: { count: item.disagree, percent: noPercent },
+                        abstain: { count: item.abstain, percent: abstainPercent }
+                    };
+
+                    setCandidates([mapped]);
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        loadResult();
+    }, [methodCode]);
+
+    if (!methodCode) return <p>Đang tải phương thức bầu cử...</p>;
+
+    const yesNoItem = candidates[0] as YesNoResult;
 
 
     return (
@@ -67,82 +111,80 @@ const VotingResultDetailList: React.FC = () => {
                     </div>
                 }
                 className="detail-card"
-
             >
-                {candidates.map((c, index) => (
-                    <Card
-                        key={c.id}
-                        className={`candidate-card ${c.highlight ? "highlight" : ""}`}
-                    >
-                        <div className="candidate-row">
-                            {/* Ứng viên */}
-                            <div className="candidate-info">
-                                <div
-                                    className={`rank-circle ${c.highlight ? "rank-highlight" : ""
-                                        }`}
-                                >
-                                    {index + 1}
-                                </div>
-                                <div
-                                    className={`abbr-circle ${c.highlight ? "abbr-highlight" : ""
-                                        }`}
-                                >
-                                    {c.abbreviation}
-                                </div>
-                                <div>
-                                    <Text strong>{c.name}</Text>
-                                    <p className="candidate-meta">
-                                        {c.party} • {c.age} tuổi • {c.location}
-                                    </p>
-                                </div>
-                            </div>
 
-                            {/* Số liệu */}
-                            <div className="candidate-stats">
-                                <div>
-                                    <Text strong className="stat-green">
-                                        {c.votes}
-                                    </Text>
-                                    <p>Phiếu bầu</p>
-                                </div>
-                                <div>
-                                    <Text strong className="stat-green">
-                                        {c.percent}%
-                                    </Text>
-                                    <p>Tỷ lệ</p>
-                                </div>
-                                <div>
-                                    <Text
-                                        strong
-                                        className={c.diff > 0 ? "stat-green" : "stat-red"}
-                                    >
-                                        {c.diff > 0 ? `+${c.diff}` : c.diff}
-                                    </Text>
-                                    <p>Cách biệt</p>
-                                </div>
-                                {c.highlight && (
-                                    <Tag color="green" className="winner-tag">
-                                        Đắc cử
-                                    </Tag>
-                                )}
-                            </div>
-                        </div>
 
-                        {/* Thanh tiến độ */}
-                        <div className="progress-row">
+                {methodCode === "YES_NO_ABSTAIN" && yesNoItem && (
+                    <div className="yesno-wrapper">
+
+                        <h3 className="yesno-title">Bầu cử: {yesNoItem.entityTitle}</h3>
+                        <div className="yesno-row">
+                            <span className="yesno-label">Đồng ý</span>
+
+                            <span className="yesno-percent yes">{yesNoItem.yes.percent.toFixed(0)}%</span>
+
                             <Progress
-                                percent={c.percent}
+                                percent={yesNoItem.yes.percent}
                                 showInfo={false}
-                                strokeColor={c.highlight ? "#7ECB50" : "#95a5a6"}
-                                trailColor="#f0f0f0"
-                                strokeWidth={10}
+                                strokeColor="#52c41a"
+                                strokeWidth={8}
+                                className="yesno-progress"
                             />
-                            <Text type="secondary" className="vote-count">
-                                {c.votes.toLocaleString()} phiếu
-                            </Text>
+
+                            <span className="yesno-count">{yesNoItem.yes.count} phiếu</span>
                         </div>
-                    </Card>
-                ))}
+
+                        <div className="yesno-row">
+                            <span className="yesno-label">Không đồng ý</span>
+                            <span className="yesno-percent no">{yesNoItem.no.percent.toFixed(0)}%</span>
+
+                            <Progress
+                                percent={yesNoItem.no.percent}
+                                showInfo={false}
+                                strokeColor="#f5222d"
+                                strokeWidth={8}
+                                className="yesno-progress"
+                            />
+
+                            <span className="yesno-count">{yesNoItem.no.count} phiếu</span>
+                        </div>
+
+
+
+                    </div>
+                )}
+
+
+                {methodCode === "CUMULATIVE" &&
+                    candidates.map((c, index) => (
+                        <Card key={c.id} className="candidate-card">
+                            <div className="candidate-row">
+                                <div className="candidate-info">
+                                    <div className="rank-circle">{index + 1}</div>
+                                    <div className="abbr-circle">{c.entityTitle.substring(0, 1)}</div>
+                                    <Text strong>{c.entityTitle}</Text>
+                                </div>
+
+                                <div className="candidate-stats">
+                                    <div>
+                                        <Text strong className="stat-green">{c.totalVotes}</Text>
+                                        <p>Phiếu bầu</p>
+                                    </div>
+                                    <div>
+                                        <Text strong className="stat-green">{c.percentage}%</Text>
+                                        <p>Tỷ lệ</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Progress
+                                percent={c.percentage}
+                                showInfo={false}
+                                strokeColor="#7ECB50"
+                            />
+                        </Card>
+                    ))}
+
             </Card>
         </div>
     );

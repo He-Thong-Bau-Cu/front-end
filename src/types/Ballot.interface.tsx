@@ -80,6 +80,13 @@ export interface BallotCast {
     statusData: string;
     decisionNumber: string;
     decisionName: string;
+    votingMethodId: {
+      _id: string;
+      methodName: string;
+      methodCode: string;
+      description: string;
+      status: string;
+    };
   };
   voteValue: string | null;
   encryptedVote: string | null;
