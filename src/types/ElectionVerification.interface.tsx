@@ -3,9 +3,10 @@
 // ===============================
 
 export interface CandidateResult {
-  name: string;        // Tên ứng viên
-  votes: number;       // Số phiếu
-  percent: number;     // Tỷ lệ %
+  id: string;
+  entityTitle: number;       // Số phiếu
+  percentage: number;
+  totalVotes: number;  // Tỷ lệ %
 }
 
 export interface VoteSummaryCard {

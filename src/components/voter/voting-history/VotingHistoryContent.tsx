@@ -33,6 +33,7 @@ const VotingHistoryContent = () => {
 
     const voterId = localStorage.getItem("voterId") || "";
 
+
     useEffect(() => {
         const fetchBallot = async () => {
             try {
@@ -94,6 +95,14 @@ const VotingHistoryContent = () => {
         : "Thông tin phiếu bầu";
 
     const status = ballot.status === "CAST" ? "Đã hoàn thành" : "Chưa bỏ phiếu";
+    const methodCode = ballot.electionId?.votingMethodId?.methodCode;
+
+    // Hàm convert voteValue → text cho YES/NO/ABSTAIN
+    const convertYesNo = (value: number) => {
+        if (value === 1) return "Đồng ý";
+        if (value === 0) return "Không đồng ý";
+        return "Không xác định";
+    };
 
     return (
         <div className="voting-history-content">
@@ -264,14 +273,29 @@ const VotingHistoryContent = () => {
                         }}
                     >
                         <Descriptions column={1} size="small">
-                            {ballot.allocations.map((a, i) => (
-                                <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
+
+                            {/* 👉 CUMULATIVE: hiển thị nguyên như cũ */}
+                            {methodCode === "CUMULATIVE" &&
+                                ballot.allocations.map((a, i) => (
+                                    <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
+                                        <Text strong style={{ color: "#52c41a" }}>
+                                            {a.entityId?.title} - Số phiếu: {a.voteValue}
+                                        </Text>
+                                    </Descriptions.Item>
+                                ))
+                            }
+
+                            {/* 👉 YES_NO_ABSTAIN: chỉ hiển thị 1 kết quả */}
+                            {methodCode === "YES_NO_ABSTAIN" && ballot.allocations.length > 0 && (
+                                <Descriptions.Item>
                                     <Text strong style={{ color: "#52c41a" }}>
-                                        {a.entityId.title} — Số phiếu: {a.voteValue}
+                                        {ballot.allocations[0].entityId.title} - {convertYesNo(ballot.allocations[0].voteValue)}
                                     </Text>
                                 </Descriptions.Item>
-                            ))}
+                            )}
+
                         </Descriptions>
+
 
 
 

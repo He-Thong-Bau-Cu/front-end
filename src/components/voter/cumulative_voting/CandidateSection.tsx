@@ -244,6 +244,7 @@ const CandidateSection = () => {
         <Row justify="space-between" align="middle">
           <Col>
             <Title level={4}>{electionTitle}</Title>
+
             <Text>Phân bổ {totalVotes} phiếu bầu của bạn cho các ứng cử viên</Text>
           </Col>
 
