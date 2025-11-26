@@ -54,6 +54,16 @@ export class VotingRightService extends BaseService {
         }
     }
 
+     async getVotingRightByElectionId(id: string): Promise<any> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/elections/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error("Error create voting right:", error);
+            throw error;
+        }
+    }
+
 
 
 

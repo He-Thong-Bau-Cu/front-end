@@ -11,7 +11,7 @@ class MeetingService extends BaseService {
     }
 
     // Lấy danh sách cuộc họp theo electionId
-    async getByElectionId(electionId: string | number): Promise<any> {
+    async getByElectionId(electionId: string): Promise<any> {
         return await this.api.get(`${this.endpoint}/elections/${electionId}`);
     }
 

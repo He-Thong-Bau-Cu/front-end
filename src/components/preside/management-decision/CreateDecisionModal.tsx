@@ -23,7 +23,6 @@ interface CreateDecisionModalProps {
   initialData?: any;
   secrytary?: any;
 }
-
 const FORMAT = "YYYY-MM-DD HH:mm:ss"; // FORMAT CHUẨN KHÔNG LỆCH GIỜ
 const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   open,
@@ -99,7 +98,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   /* ===========================================================
       MIN DATE = TODAY + 20 DAYS
   =========================================================== */
-  const todayPlus20 = dayjs().add(20, "day").startOf("day");
+  const todayPlus20 = dayjs().add(21, "day").startOf("day");
 
   return (
     <Modal
@@ -249,7 +248,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
               >
                 {userList.map((user) => (
                   <Option key={user._id} value={user._id}>
-                    {user.fullName}
+                    {user.fullName} - {user.email}
                   </Option>
                 ))}
               </Select>

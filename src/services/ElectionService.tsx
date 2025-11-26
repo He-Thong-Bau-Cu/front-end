@@ -82,7 +82,7 @@ class ElectionService extends BaseService {
       const response = await this.api.get(`${this.endpoint}/preview-pdf/${electionId}`, {
         responseType: 'blob',
       });
-      return response;
+      return response.data;
     } catch (error) {
       console.error("Error preview PDF:", error);
       throw error;
