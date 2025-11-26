@@ -217,6 +217,7 @@
 .report-chart-card-title-icon {
   color: #22c55e;
   font-size: 18px;
+  padding-left: 20px;
 }
 
 .report-chart-card-actions {
@@ -298,6 +299,7 @@
 .report-activity-card-title-icon {
   color: #fbbf24;
   font-size: 18px;
+  padding-left: 20px;
 }
 
 .report-activity-card-refresh-icon {
