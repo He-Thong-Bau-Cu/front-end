@@ -40,8 +40,9 @@ interface Props {
     data?: any;
     percent?:any;
     disabled?: boolean;
+    organizationMembers?: any[]; // Danh sách thành viên tổ chức để lọc
 }
-const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false }) => {
+const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false, organizationMembers = [] }) => {
     const [participants, setParticipants] = useState<any[]>([]);
     const [selectedVoter, setSelectedVoter] = useState<any | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -185,6 +186,8 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false 
                                     ? "Đã xác nhận"
                                     : p.status === "INACTIVE"
                                         ? "Đã hủy"
+                                        : p.status === "AUTHORIZED"
+                                        ? "Được ủy quyền"
                                         : "Chờ duyệt"}
                             </Tag>
                             <DeleteOutlined
@@ -239,9 +242,15 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false 
                             onChange={handleSelectVoter}
                         >
                             {users
-                                .filter((u) => !participants.some((p) => p.userId === u._id))
+                                .filter((u) => {
+                                    // Lọc bỏ user đã được chọn trong danh sách cử tri
+                                    const isInParticipants = participants.some((p) => p.userId === u._id);
+                                    // Lọc bỏ user đã được chọn trong danh sách thành viên tổ chức
+                                    const isInOrganization = organizationMembers.some((m) => m.userId === u._id);
+                                    return !isInParticipants && !isInOrganization;
+                                })
                                 .map((v, i) => (
-                                    <Option key={i} value={v._id}>
+                                    <Option key={v._id || i} value={v._id}>
                                         {v.fullName} — {v.email}
                                     </Option>
                                 ))}

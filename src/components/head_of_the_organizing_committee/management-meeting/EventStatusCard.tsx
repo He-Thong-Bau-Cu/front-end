@@ -25,9 +25,10 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
     election,
     onRefresh
 }) => {
-    // tổng thời gian còn lại (giây)
-    const [timeLeft, setTimeLeft] = useState(stats?.timeLeft || 0);
+    // Thời gian đã trôi qua từ khi bắt đầu (giây) - đếm từ 0 lên
+    const [timeElapsed, setTimeElapsed] = useState(0);
     const [isRunning, setIsRunning] = useState(stats?.isRunning || false);
+    const [meetingStartTime, setMeetingStartTime] = useState<number | null>(null);
 
     // format về dạng HH:MM:SS
     const formatTime = (seconds: number) => {
@@ -43,28 +44,54 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
         return `${h}:${m}:${s}`;
     };
 
+    // Tính thời gian đã trôi qua từ khi meeting bắt đầu
     useEffect(() => {
         if (stats) {
-            setTimeLeft(stats.timeLeft);
             setIsRunning(stats.isRunning);
         }
-    }, [stats]);
 
+        // Tìm thời điểm bắt đầu meeting (từ timeline hoặc createdAt)
+        if (meeting) {
+            // Ưu tiên lấy từ timeline (checkinAt là giai đoạn đầu tiên)
+            const timeline = election?.timeline || {};
+            let startTime: Date | null = null;
+
+            // Tìm giai đoạn đầu tiên đã bắt đầu
+            if (timeline.checkinAt) {
+                startTime = new Date(timeline.checkinAt);
+            } else if (timeline.reportAt) {
+                startTime = new Date(timeline.reportAt);
+            } else if (timeline.votingAt) {
+                startTime = new Date(timeline.votingAt);
+            } else if (meeting.createdAt) {
+                startTime = new Date(meeting.createdAt);
+            }
+
+            if (startTime) {
+                setMeetingStartTime(startTime.getTime());
+                // Tính thời gian đã trôi qua
+                const now = new Date().getTime();
+                const elapsed = Math.floor((now - startTime.getTime()) / 1000);
+                setTimeElapsed(Math.max(0, elapsed));
+            } else {
+                setMeetingStartTime(null);
+                setTimeElapsed(0);
+            }
+        }
+    }, [stats, meeting, election]);
+
+    // Đếm thời gian từ 0 lên khi meeting đang chạy
     useEffect(() => {
         let timer: NodeJS.Timeout;
-        if (isRunning && timeLeft > 0) {
+        if (isRunning && meetingStartTime) {
             timer = setInterval(() => {
-                setTimeLeft((prev) => {
-                    if (prev <= 0) {
-                        setIsRunning(false);
-                        return 0;
-                    }
-                    return prev - 1;
-                });
+                const now = new Date().getTime();
+                const elapsed = Math.floor((now - meetingStartTime) / 1000);
+                setTimeElapsed(Math.max(0, elapsed));
             }, 1000);
         }
         return () => clearInterval(timer);
-    }, [isRunning, timeLeft]);
+    }, [isRunning, meetingStartTime]);
 
     // Kiểm tra trạng thái meeting
     const meetingStatus = meeting?.status || "PENDING";
@@ -92,7 +119,7 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                     {isCompleted ? "ĐÃ KẾT THÚC" : isRunning ? "ĐANG DIỄN RA" : "TẠM DỪNG"}
                 </Tag>
 
-                <h2 className="event-status-timer">{formatTime(timeLeft)}</h2>
+                <h2 className="event-status-timer">{formatTime(timeElapsed)}</h2>
 
                 <div className="event-status-buttons">
                     {isPending && (

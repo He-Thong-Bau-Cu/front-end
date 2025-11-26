@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Card, Button, Modal, Descriptions, Spin } from "antd";
-import { ArrowLeftOutlined, QrcodeOutlined } from "@ant-design/icons";
+import { Card, Button, Modal, Descriptions, Spin, Alert } from "antd";
+import { ArrowLeftOutlined, QrcodeOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
 import DelegateCardService from "@/services/DelegateCardService";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
+import ElectionService from "@/services/ElectionService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
 import { useNotification } from "@/contexts/NotificationContext";
+import { io, Socket } from "socket.io-client";
 
 const QRScannerPanel: React.FC = () => {
   const navigate = useNavigate();
@@ -14,14 +16,87 @@ const QRScannerPanel: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [delegateData, setDelegateData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [checkinStage, setCheckinStage] = useState<any>(null); // Trạng thái giai đoạn checkin
+  const [canCheckin, setCanCheckin] = useState(false); // Có thể checkin hay không
   const isProcessingRef = useRef(false); // Flag để ngăn quét lại khi đang xử lý (dùng ref vì callback không cập nhật state)
   const lastProcessedTokenRef = useRef<string | null>(null); // Lưu token đã xử lý để tránh xử lý lại
   const scannerReadyRef = useRef(false); // Flag để đảm bảo scanner đã sẵn sàng trước khi xử lý QR code
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null); // Timer để debounce các lần quét
+  const scannerRef = useRef<Html5Qrcode | null>(null); // Ref để lưu scanner instance
+
+  // Kiểm tra trạng thái checkin
+  const checkCheckinStage = async () => {
+    try {
+      const electionId = localStorage.getItem("currentElectionId");
+      if (!electionId) {
+        setCanCheckin(false);
+        return;
+      }
+
+      const stageResponse = await ElectionService.getCurrentStage(electionId);
+      const stageData = stageResponse?.data || stageResponse;
+
+      setCheckinStage(stageData);
+
+      // Kiểm tra xem có thể checkin không (chỉ khi giai đoạn checkin đang STARTED)
+      const isCheckinActive =
+        stageData?.currentStage === 'checkin' &&
+        stageData?.stageStatus === 'STARTED';
+
+      setCanCheckin(isCheckinActive);
+    } catch (error: any) {
+      console.error("Error checking checkin stage:", error);
+      setCanCheckin(false);
+    }
+  };
+
+  // Setup socket listener để nhận cập nhật realtime
+  useEffect(() => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) return;
+
+    const socket: Socket = io("http://54.253.192.210:80/notification", {
+      transports: ["websocket"],
+    });
+
+    socket.on("connect", () => {
+      console.log("Socket connected for checkin stage:", socket.id);
+      socket.emit("join", electionId);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err.message);
+    });
+
+    // Lắng nghe cập nhật trạng thái giai đoạn
+    socket.on("transferData", (data: any) => {
+      if (data.type === "stage-started" || data.type === "stage-ended") {
+        console.log("📊 Received stage update:", data);
+        // Refresh trạng thái khi có cập nhật
+        checkCheckinStage();
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+      console.log("Socket disconnected for checkin stage");
+    };
+  }, []);
+
+  // Kiểm tra trạng thái khi component mount
+  useEffect(() => {
+    checkCheckinStage();
+  }, []);
 
   useEffect(() => {
+    // Không bật camera nếu không thể checkin
+    if (!canCheckin) {
+      return;
+    }
+
     const elementId = "qr-reader-element";
     const scanner = new Html5Qrcode(elementId, false); // verbose = false để tránh spam console với NotFoundException
+    scannerRef.current = scanner;
 
     // Override console.error/warn tạm thời để lọc bỏ lỗi "NotFoundException" từ html5-qrcode
     const originalConsoleError = console.error;
@@ -79,6 +154,12 @@ const QRScannerPanel: React.FC = () => {
           async (decodedText: string) => {
             // decodedText là token từ QR code
             console.log("✅ QR Code detected! Raw token:", decodedText);
+
+            // Kiểm tra xem có thể checkin không
+            if (!canCheckin) {
+              notify("❌ Giai đoạn checkin chưa bắt đầu hoặc đã kết thúc", "warning");
+              return;
+            }
 
             // Kiểm tra xem scanner đã sẵn sàng chưa (tránh trigger ngay khi mở camera)
             if (!scannerReadyRef.current) {
@@ -284,13 +365,19 @@ const QRScannerPanel: React.FC = () => {
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
     };
-  }, []);
+  }, [canCheckin]);
 
   // 👉 Khi nhấn "Checkin" trong modal
   const handleSave = async () => {
     try {
       if (!delegateData) {
         notify("Không có thông tin đại biểu", "error");
+        return;
+      }
+
+      // Kiểm tra lại trạng thái checkin trước khi checkin
+      if (!canCheckin) {
+        notify("❌ Giai đoạn checkin chưa bắt đầu hoặc đã kết thúc", "warning");
         return;
       }
 
@@ -498,6 +585,46 @@ const QRScannerPanel: React.FC = () => {
     }
   };
 
+  // Hiển thị thông báo trạng thái
+  const getStageMessage = () => {
+    if (!checkinStage) {
+      return null;
+    }
+
+    if (checkinStage.currentStage === 'checkin' && checkinStage.stageStatus === 'STARTED') {
+      return null; // Không hiển thị gì khi đang active
+    }
+
+    if (checkinStage.currentStage === 'not_started' ||
+        (checkinStage.currentStage !== 'checkin' && checkinStage.stageStatus !== 'STARTED')) {
+      return (
+        <Alert
+          message="Giai đoạn checkin chưa bắt đầu"
+          description="Vui lòng đợi giai đoạn checkin được bắt đầu trước khi quét mã QR."
+          type="warning"
+          icon={<ExclamationCircleOutlined />}
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      );
+    }
+
+    if (checkinStage.currentStage === 'checkin' && checkinStage.stageStatus === 'COMPLETED') {
+      return (
+        <Alert
+          message="Giai đoạn checkin đã kết thúc"
+          description="Giai đoạn checkin đã kết thúc. Không thể thực hiện checkin nữa."
+          type="info"
+          icon={<ExclamationCircleOutlined />}
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
       <div
         style={{
@@ -505,11 +632,19 @@ const QRScannerPanel: React.FC = () => {
           height: "100%",
           display: "flex",
           justifyContent: "center",
-          alignItems: "center"
+          alignItems: "center",
+          flexDirection: "column"
         }}
       >
+        {/* Hiển thị thông báo trạng thái */}
+        {getStageMessage()}
+
         <div
           className="qr-dark-frame"
+          style={{
+            opacity: canCheckin ? 1 : 0.5,
+            pointerEvents: canCheckin ? 'auto' : 'none'
+          }}
         >
           {/* Nút quay lại */}
           <Button
@@ -546,17 +681,22 @@ const QRScannerPanel: React.FC = () => {
               key="save"
               type="primary"
               onClick={handleSave}
+              disabled={!canCheckin}
               style={{
-                backgroundColor: '#52c41a',
-                borderColor: '#52c41a',
+                backgroundColor: canCheckin ? '#52c41a' : '#d9d9d9',
+                borderColor: canCheckin ? '#52c41a' : '#d9d9d9',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#73d13d';
-                e.currentTarget.style.borderColor = '#73d13d';
+                if (canCheckin) {
+                  e.currentTarget.style.backgroundColor = '#73d13d';
+                  e.currentTarget.style.borderColor = '#73d13d';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#52c41a';
-                e.currentTarget.style.borderColor = '#52c41a';
+                if (canCheckin) {
+                  e.currentTarget.style.backgroundColor = '#52c41a';
+                  e.currentTarget.style.borderColor = '#52c41a';
+                }
               }}
             >
               Checkin

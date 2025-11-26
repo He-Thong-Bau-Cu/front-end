@@ -221,27 +221,80 @@ export default function VotingDashboardPage() {
         return;
       }
 
+      // Kiểm tra xem voting stage có thực sự đã bắt đầu chưa
+      // Lấy lại election data để kiểm tra timeline.votingAt
       try {
-        setAutoEndTriggered(true);
-        await ElectionService.endStage(electionId, 'voting');
-        message.success("Thời gian bỏ phiếu đã hết. Giai đoạn bỏ phiếu đã được tự động kết thúc.");
-        setIsVotingCompleted(true);
-        setTimeLeft("00:00:00");
-        setTimeLeftSeconds(0);
-        // Reload data để cập nhật trạng thái
-        loadData();
+        const eventStatsResponse = await MeetingService.getEventManagementStats(electionId);
+        const eventStats = eventStatsResponse?.data || eventStatsResponse;
+        const election = eventStats?.election || {};
+        const timeline = election.timeline || {};
+
+        if (!timeline.votingAt) {
+          // Chưa bắt đầu voting stage, không tự động kết thúc
+          console.log("Voting stage chưa bắt đầu, không tự động kết thúc");
+          return;
+        }
+
+        // Chỉ tự động kết thúc nếu thời gian đã thực sự hết (đợi ít nhất 2 giây sau khi bắt đầu để tránh race condition)
+        const votingStartTime = new Date(timeline.votingAt).getTime();
+        const now = new Date().getTime();
+        const timeSinceStart = (now - votingStartTime) / 1000; // seconds
+
+        // Nếu mới bắt đầu (< 2 giây), không tự động kết thúc (có thể do tính toán sai)
+        if (timeSinceStart < 2) {
+          console.warn("Voting just started, skipping auto-end to avoid race condition");
+          return;
+        }
+
+        // Lấy lại config để tính toán lại thời gian còn lại
+        const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
+        const config = configResponse?.data || configResponse;
+        const timeVoteElection = config?.configValue?.value || config?.configValue || 0;
+        const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(String(timeVoteElection)) || 0;
+        const voteDurationSeconds = voteDurationMinutes * 60;
+
+        if (voteDurationSeconds > 0) {
+          const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
+          const timeRemaining = votingEndTime - now;
+
+          // Nếu vẫn còn thời gian (> 5 giây), không tự động kết thúc
+          if (timeRemaining > 5000) {
+            console.log("Vẫn còn thời gian, không tự động kết thúc");
+            return;
+          }
+        }
+
+        try {
+          setAutoEndTriggered(true);
+          await ElectionService.endStage(electionId, 'voting');
+          message.success("Thời gian bỏ phiếu đã hết. Giai đoạn bỏ phiếu đã được tự động kết thúc.");
+          setIsVotingCompleted(true);
+          setTimeLeft("00:00:00");
+          setTimeLeftSeconds(0);
+          // Reload data để cập nhật trạng thái
+          loadData();
+        } catch (error: any) {
+          console.error("Error auto-ending voting stage:", error);
+          message.error(error?.response?.data?.message || "Không thể tự động kết thúc giai đoạn bỏ phiếu");
+          setAutoEndTriggered(false); // Reset để có thể thử lại
+        }
       } catch (error: any) {
-        console.error("Error auto-ending voting stage:", error);
-        message.error(error?.response?.data?.message || "Không thể tự động kết thúc giai đoạn bỏ phiếu");
-        setAutoEndTriggered(false); // Reset để có thể thử lại
+        console.error("Error checking voting status:", error);
+        // Không tự động kết thúc nếu có lỗi khi kiểm tra
       }
     };
 
-    if (timeLeftSeconds === 0 && !isVotingCompleted && !autoEndTriggered) {
-      autoEndVoting();
+    // Chỉ tự động kết thúc nếu đã load data xong và thời gian = 0
+    if (timeLeftSeconds === 0 && !isVotingCompleted && !autoEndTriggered && !loading) {
+      // Delay một chút để đảm bảo data đã load xong
+      const timeoutId = setTimeout(() => {
+        autoEndVoting();
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeftSeconds, isVotingCompleted, autoEndTriggered]);
+  }, [timeLeftSeconds, isVotingCompleted, autoEndTriggered, loading]);
 
   // Timer đếm ngược mỗi giây (chỉ chạy khi voting chưa completed)
   useEffect(() => {

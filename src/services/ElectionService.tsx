@@ -121,6 +121,17 @@ class ElectionService extends BaseService {
       throw error;
     }
   }
+
+  // Lấy giai đoạn hiện tại của cuộc bầu cử
+  async getCurrentStage(electionId: string): Promise<any> {
+    try {
+      const response = await this.api.get(`${this.endpoint}/${electionId}/current-stage`);
+      return response;
+    } catch (error) {
+      console.error("Error getting current stage:", error);
+      throw error;
+    }
+  }
 }
 
 export default new ElectionService();

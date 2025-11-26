@@ -92,6 +92,8 @@ const MeetingInfo: React.FC<Props> = ({
   const [searchText, setSearchText] = useState<string>("");
   // Removed complex state flags to simplify logic
   const isMountedRef = useRef(true);
+  const [electionStartDate, setElectionStartDate] = useState<Dayjs | null>(null);
+  const [electionEndDate, setElectionEndDate] = useState<Dayjs | null>(null);
   /* ===========================================================
      FETCH DATA ONCE
   ============================================================ */
@@ -197,6 +199,14 @@ const MeetingInfo: React.FC<Props> = ({
 
     if (data?.data) {
       const d = data.data;
+
+      // Lưu startDate và endDate của election để validate
+      if (d?.election?.startDate) {
+        setElectionStartDate(dayjs(d.election.startDate));
+      }
+      if (d?.election?.endDate) {
+        setElectionEndDate(dayjs(d.election.endDate));
+      }
 
       try {
         form.setFieldsValue({
@@ -570,13 +580,42 @@ const MeetingInfo: React.FC<Props> = ({
             <Form.Item
               label="Ngày bắt đầu ủy quyền"
               name="authorizationStart"
-              rules={[{ required: true }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày bắt đầu ủy quyền" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value) return Promise.resolve();
+                    // Phải từ ngày hiện tại trở đi
+                    if (value.isBefore(dayjs().startOf("day"))) {
+                      return Promise.reject("Ngày bắt đầu ủy quyền không được là ngày trong quá khứ");
+                    }
+                    // Phải trước hoặc bằng ngày bắt đầu cuộc bầu cử
+                    if (electionStartDate && value.isAfter(electionStartDate, "day")) {
+                      return Promise.reject(
+                        `Ngày bắt đầu ủy quyền phải trước hoặc bằng ngày bắt đầu cuộc bầu cử (${electionStartDate.format("DD/MM/YYYY")})`
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
             >
               <DatePicker
                 style={{ width: "100%" }}
                 format="DD/MM/YYYY"
                 disabled={disabled}
-                disabledDate={(d) => d && d < dayjs().startOf("day")}
+                disabledDate={(d) => {
+                  if (!d) return false;
+                  // Không cho chọn ngày trong quá khứ
+                  if (d < dayjs().startOf("day")) return true;
+                  // Không cho chọn sau startDate của election
+                  if (electionStartDate && d.isAfter(electionStartDate, "day")) return true;
+                  return false;
+                }}
+                onChange={() => {
+                  // Reset ngày kết thúc khi thay đổi ngày bắt đầu
+                  form.setFieldsValue({ authorizationEnd: null });
+                }}
               />
             </Form.Item>
           </Col>
@@ -586,16 +625,47 @@ const MeetingInfo: React.FC<Props> = ({
             <Form.Item
               label="Ngày kết thúc ủy quyền"
               name="authorizationEnd"
-              rules={[{ required: true }]}
+              dependencies={["authorizationStart"]}
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày kết thúc ủy quyền" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value) return Promise.resolve();
+                    const start = getFieldValue("authorizationStart");
+                    if (!start) {
+                      return Promise.reject("Vui lòng chọn ngày bắt đầu ủy quyền trước");
+                    }
+                    // Phải sau ngày bắt đầu ủy quyền
+                    if (value.isBefore(start, "day") || value.isSame(start, "day")) {
+                      return Promise.reject("Ngày kết thúc phải sau ngày bắt đầu");
+                    }
+                    // Phải cách ngày bắt đầu ít nhất 10 ngày
+                    const daysDiff = value.diff(start, "day");
+                    if (daysDiff < 10) {
+                      return Promise.reject("Ngày kết thúc ủy quyền phải cách ngày bắt đầu ít nhất 10 ngày");
+                    }
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
             >
               <DatePicker
                 style={{ width: "100%" }}
                 format="DD/MM/YYYY"
                 disabled={disabled}
                 disabledDate={(d) => {
+                  if (!d) return false;
                   const start = form.getFieldValue("authorizationStart");
-                  if (!start) return d && d < dayjs().startOf("day");
-                  return d && d < start;
+                  if (!start) {
+                    // Nếu chưa chọn ngày bắt đầu, chỉ cho chọn từ ngày hiện tại
+                    return d < dayjs().startOf("day");
+                  }
+                  // Không cho chọn trước hoặc bằng ngày bắt đầu ủy quyền
+                  if (d.isBefore(start, "day") || d.isSame(start, "day")) return true;
+                  // Phải cách ngày bắt đầu ít nhất 10 ngày
+                  const daysDiff = d.diff(start, "day");
+                  if (daysDiff < 10) return true;
+                  return false;
                 }}
               />
             </Form.Item>

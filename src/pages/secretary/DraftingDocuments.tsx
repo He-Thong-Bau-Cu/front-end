@@ -415,11 +415,13 @@ const DraftingDocuments: React.FC = () => {
             onChange={setAttendees}
             data={voter}
             disabled={statusData !== "WAIT_ENTER_DATA"}
+            organizationMembers={organization}
           />
           <Organization
             onChange={setOrganization}
             data={organization}
             disabled={statusData !== "WAIT_ENTER_DATA"}
+            attendeesList={attendees}
           />
           <AttachedDocuments
             onChange={setDocuments}
