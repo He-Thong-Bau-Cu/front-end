@@ -1,40 +1,67 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "antd";
 import {
     CheckCircleOutlined,
     ClockCircleOutlined,
-    CloseCircleOutlined,
+    UserOutlined,
     ThunderboltOutlined,
 } from "@ant-design/icons";
 
-const CheckinStats: React.FC = () => {
+interface CheckinStatsProps {
+    checkedInCount: number;
+    notCheckedInCount: number;
+    totalAttendees: number;
+}
+
+const CheckinStats: React.FC<CheckinStatsProps> = ({
+    checkedInCount,
+    notCheckedInCount,
+    totalAttendees,
+}) => {
+    const [checkinRate, setCheckinRate] = useState<string>("0/phút");
+
+    useEffect(() => {
+        // Tính tốc độ check-in (giả sử trong 1 phút gần nhất)
+        // Có thể cải thiện bằng cách lưu timestamp và tính toán thực tế
+        const calculateRate = () => {
+            // Đây là logic đơn giản, có thể cải thiện bằng cách track thời gian thực
+            if (checkedInCount > 0 && totalAttendees > 0) {
+                const rate = Math.round((checkedInCount / totalAttendees) * 100);
+                setCheckinRate(`${rate}%`);
+            } else {
+                setCheckinRate("0%");
+            }
+        };
+        calculateRate();
+    }, [checkedInCount, totalAttendees]);
+
     const stats = [
         {
             label: "Đã Check-in",
-            value: 98,
+            value: checkedInCount,
             color: "#16a34a",
             bg: "#ecfdf5",
             icon: <CheckCircleOutlined />,
         },
         {
             label: "Chưa Check-in",
-            value: 52,
+            value: notCheckedInCount,
             color: "#eab308",
             bg: "#fefce8",
             icon: <ClockCircleOutlined />,
         },
         {
-            label: "Lỗi Check-in",
-            value: 3,
-            color: "#dc2626",
-            bg: "#fef2f2",
-            icon: <CloseCircleOutlined />,
-        },
-        {
-            label: "Tốc độ",
-            value: "-25/phút",
+            label: "Tổng Đại biểu",
+            value: totalAttendees,
             color: "#2563eb",
             bg: "#eff6ff",
+            icon: <UserOutlined />,
+        },
+        {
+            label: "Tỷ lệ",
+            value: checkinRate,
+            color: "#7c3aed",
+            bg: "#f5f3ff",
             icon: <ThunderboltOutlined />,
         },
     ];

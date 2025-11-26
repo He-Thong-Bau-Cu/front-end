@@ -39,6 +39,10 @@ class SystemConfigService extends BaseService {
   async remove(id: string): Promise<BaseResponse<SystemConfig>> {
     return this.api.delete(`${this.endpoint}/${id}`);
   }
+
+  async getByKey(key: string): Promise<BaseResponse<SystemConfig>> {
+    return this.api.get(`${this.endpoint}/key/${key}`);
+  }
 }
 
 export default new SystemConfigService();

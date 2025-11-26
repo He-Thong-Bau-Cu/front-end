@@ -88,6 +88,39 @@ class ElectionService extends BaseService {
       throw error;
     }
   }
+
+  // Kết thúc giai đoạn bỏ phiếu
+  async endVotingStage(electionId: string): Promise<any> {
+    try {
+      const response = await this.api.post(`${this.endpoint}/${electionId}/end-voting-stage`, {});
+      return response;
+    } catch (error) {
+      console.error("Error ending voting stage:", error);
+      throw error;
+    }
+  }
+
+  // Bắt đầu một giai đoạn
+  async startStage(electionId: string, stage: string): Promise<any> {
+    try {
+      const response = await this.api.post(`${this.endpoint}/${electionId}/stages/${stage}/start`, {});
+      return response;
+    } catch (error) {
+      console.error("Error starting stage:", error);
+      throw error;
+    }
+  }
+
+  // Kết thúc một giai đoạn
+  async endStage(electionId: string, stage: string): Promise<any> {
+    try {
+      const response = await this.api.post(`${this.endpoint}/${electionId}/stages/${stage}/end`, {});
+      return response;
+    } catch (error) {
+      console.error("Error ending stage:", error);
+      throw error;
+    }
+  }
 }
 
 export default new ElectionService();

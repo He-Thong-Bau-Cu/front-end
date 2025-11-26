@@ -16,7 +16,7 @@ const OrganizingCommitteeLayout = () => {
             "/organizing-committee/checkin": "Checkin",
             "/organizing-committee/create-participants": "Danh sách người tham dự cuộc họp",
             "/organizing-committee/verify-delegates": "Xác thực đại biểu",
-            "/organizing-committee/manage-delegates": "Quản lý danh sách đại biểu và cổ đông",
+            // "/organizing-committee/manage-delegates": "Quản lý danh sách đại biểu và cổ đông",
         };
 
         setPageTitle(map[location.pathname] || "Trang quản lý Ban Tổ chức");

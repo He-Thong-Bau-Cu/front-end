@@ -1,4 +1,4 @@
-import { Card, Input, Button, Modal, Descriptions, Spin, message } from "antd";
+import { Card, Input, Button, Modal, Descriptions, Spin } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import DelegateCardService from "@/services/DelegateCardService";
@@ -6,8 +6,10 @@ import MeetingService from "@/services/MeetingService";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
 import ElectionParticipantService from "@/services/ElectionParticipantsService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
+import { useNotification } from "@/contexts/NotificationContext";
 
 const VerificationPanel: React.FC = () => {
+    const { notify } = useNotification();
     const [searchText, setSearchText] = useState("");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [delegateData, setDelegateData] = useState<any>(null);
@@ -16,7 +18,7 @@ const VerificationPanel: React.FC = () => {
 
     const handleOpenModal = async () => {
         if (!searchText.trim()) {
-            message.warning("Vui lòng nhập ID thẻ đại biểu");
+            notify("Vui lòng nhập ID thẻ đại biểu", "warning");
             return;
         }
 
@@ -31,22 +33,22 @@ const VerificationPanel: React.FC = () => {
             console.log("📡 Đang gọi API getById với ID:", cardId);
             const response: BaseResponse<any> = await DelegateCardService.getById(cardId);
             console.log("📥 Response từ API:", response);
-            
+
             if (!response || !response.success || !response.data) {
                 console.error("❌ Response không hợp lệ:", response);
-                message.error("Không tìm thấy thẻ đại biểu với ID này");
+                notify("Không tìm thấy thẻ đại biểu với ID này", "error");
                 setLoading(false);
                 return;
             }
 
             const delegateCard = response.data;
             console.log("📋 DelegateCard data:", delegateCard);
-            
+
             // Lấy thông tin voter từ delegateCard
             const voter = delegateCard.voterId;
             if (!voter || !voter.userId) {
                 console.error("❌ Không tìm thấy voter hoặc userId:", { voter });
-                message.error("Không tìm thấy thông tin cử tri");
+                notify("Không tìm thấy thông tin cử tri", "error");
                 setLoading(false);
                 return;
             }
@@ -54,7 +56,7 @@ const VerificationPanel: React.FC = () => {
             // Map dữ liệu để hiển thị trong modal (giống QRScannerPanel)
             const userId = voter.userId;
             const electionId = delegateCard.electionId?._id || delegateCard.electionId;
-            
+
             const delegateInfo = {
                 id: delegateCard._id,
                 fullName: userId.fullName || "",
@@ -86,17 +88,17 @@ const VerificationPanel: React.FC = () => {
 
                     if (participant && participant._id) {
                         setParticipantId(participant._id);
-                        message.success("✅ Đã tìm thấy đại biểu");
+                        notify("✅ Đã tìm thấy đại biểu", "success");
                     } else {
-                        message.warning("⚠️ Người này chưa được thêm vào danh sách tham gia cuộc bầu cử. Vẫn có thể xem thông tin nhưng không thể check-in.");
+                        notify("⚠️ Người này chưa được thêm vào danh sách tham gia cuộc bầu cử. Vẫn có thể xem thông tin nhưng không thể check-in.", "warning");
                     }
                 } catch (participantError: any) {
                     console.warn("⚠️ Lỗi khi tìm ElectionParticipant:", participantError);
-                    message.warning("⚠️ Không thể kiểm tra trạng thái tham gia cuộc bầu cử. Vẫn có thể xem thông tin.");
+                    notify("⚠️ Không thể kiểm tra trạng thái tham gia cuộc bầu cử. Vẫn có thể xem thông tin.", "warning");
                 }
             } else {
                 console.warn("⚠️ Thiếu electionId hoặc userId._id:", { electionId, userId: userId._id });
-                message.warning("⚠️ Thiếu thông tin cuộc bầu cử hoặc người dùng. Vẫn có thể xem thông tin.");
+                notify("⚠️ Thiếu thông tin cuộc bầu cử hoặc người dùng. Vẫn có thể xem thông tin.", "warning");
             }
         } catch (error: any) {
             console.error("❌ Lỗi khi lấy thông tin thẻ đại biểu:", error);
@@ -107,7 +109,7 @@ const VerificationPanel: React.FC = () => {
                 status: error?.response?.status,
             });
             const errorMsg = error?.response?.data?.message || error?.message || "Không thể lấy thông tin thẻ đại biểu";
-            message.error(`❌ ${errorMsg}`);
+            notify(`❌ ${errorMsg}`, "error");
         } finally {
             setLoading(false);
         }
@@ -116,27 +118,27 @@ const VerificationPanel: React.FC = () => {
     const handleSave = async () => {
         try {
             if (!delegateData) {
-                message.error("Không có thông tin đại biểu");
+                notify("Không có thông tin đại biểu", "error");
                 return;
             }
 
             // Lấy cuộc bầu cử từ localStorage (đã chọn ở trang home)
             const currentElectionId = localStorage.getItem("currentElectionId");
             if (!currentElectionId) {
-                message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
+                notify("Vui lòng chọn cuộc bầu cử từ trang chủ", "warning");
                 return;
             }
 
             // Lấy cuộc họp theo electionId (1 cuộc bầu cử chỉ có 1 cuộc họp)
             const meetingsResponse: BaseResponse<any> = await MeetingService.getByElectionId(currentElectionId);
             if (!meetingsResponse || !meetingsResponse.success || !meetingsResponse.data) {
-                message.error("Không tìm thấy cuộc họp cho cuộc bầu cử này");
+                notify("Không tìm thấy cuộc họp cho cuộc bầu cử này", "error");
                 return;
             }
 
             const meetings = Array.isArray(meetingsResponse.data) ? meetingsResponse.data : [meetingsResponse.data];
             if (meetings.length === 0) {
-                message.error("Chưa có cuộc họp nào được tạo cho cuộc bầu cử này");
+                notify("Chưa có cuộc họp nào được tạo cho cuộc bầu cử này", "error");
                 return;
             }
 
@@ -144,7 +146,7 @@ const VerificationPanel: React.FC = () => {
             const meeting = meetings[0];
             const meetingId = meeting._id || meeting.id;
             if (!meetingId) {
-                message.error("Không tìm thấy ID cuộc họp");
+                notify("Không tìm thấy ID cuộc họp", "error");
                 return;
             }
 
@@ -152,7 +154,7 @@ const VerificationPanel: React.FC = () => {
             const userId = delegateData.userId;
 
             if (!electionId || !userId) {
-                message.error("Thiếu thông tin cuộc bầu cử hoặc người dùng");
+                notify("Thiếu thông tin cuộc bầu cử hoặc người dùng", "error");
                 return;
             }
 
@@ -169,7 +171,7 @@ const VerificationPanel: React.FC = () => {
                 );
 
                 if (!participant || !participant._id) {
-                    message.warning("Người này chưa được thêm vào danh sách tham gia cuộc bầu cử");
+                    notify("Người này chưa được thêm vào danh sách tham gia cuộc bầu cử", "warning");
                     setLoading(false);
                     return;
                 }
@@ -186,7 +188,7 @@ const VerificationPanel: React.FC = () => {
                         throw new Error("Record not found");
                     }
                     console.log("✅ Đã cập nhật trạng thái tham gia cuộc họp thành công");
-                    message.success(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`);
+                    notify(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`, "success");
                     setIsModalVisible(false);
                     setDelegateData(null);
                     setParticipantId(null);
@@ -204,7 +206,7 @@ const VerificationPanel: React.FC = () => {
                             attended: true,
                         });
                         console.log("✅ Đã tạo mới MeetingAttendee record và cập nhật trạng thái tham gia thành công");
-                        message.success(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`);
+                        notify(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`, "success");
                         setIsModalVisible(false);
                         setDelegateData(null);
                         setParticipantId(null);
@@ -216,12 +218,12 @@ const VerificationPanel: React.FC = () => {
             } catch (attendanceError: any) {
                 console.error("❌ Lỗi khi cập nhật trạng thái tham gia:", attendanceError);
                 const errorMsg = attendanceError?.response?.data?.message || attendanceError?.message || "Không thể cập nhật trạng thái tham gia";
-                message.error(`❌ ${errorMsg}`);
+                notify(`❌ ${errorMsg}`, "error");
             }
         } catch (error: any) {
             console.error("❌ Lỗi khi check-in:", error);
             const errorMsg = error?.response?.data?.message || error?.message || "Không thể check-in";
-            message.error(`❌ ${errorMsg}`);
+            notify(`❌ ${errorMsg}`, "error");
         } finally {
             setLoading(false);
         }
@@ -232,7 +234,7 @@ const VerificationPanel: React.FC = () => {
         setDelegateData(null);
         setParticipantId(null);
         setSearchText("");
-        message.info("❎ Đã hủy xác nhận.");
+        notify("❎ Đã hủy xác nhận.", "info");
     };
 
     return (
@@ -276,12 +278,12 @@ const VerificationPanel: React.FC = () => {
                     <Button key="cancel" onClick={handleCancel}>
                         Hủy
                     </Button>,
-                    <Button 
-                        key="save" 
-                        type="primary" 
+                    <Button
+                        key="save"
+                        type="primary"
                         onClick={handleSave}
-                        style={{ 
-                            backgroundColor: '#52c41a', 
+                        style={{
+                            backgroundColor: '#52c41a',
                             borderColor: '#52c41a',
                         }}
                         onMouseEnter={(e) => {

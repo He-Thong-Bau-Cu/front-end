@@ -1,7 +1,7 @@
 import CheckInPanel from "@/components/organizing-committee/dashboard/CheckInPanel";
 import CommitteeInfo from "@/components/organizing-committee/dashboard/CommitteeInfo";
-import DelegateManagement from "@/components/organizing-committee/dashboard/DelegateManagement";
 import VerificationPanel from "@/components/organizing-committee/dashboard/VerificationPanel";
+import StatisticsPanel from "@/components/organizing-committee/dashboard/StatisticsPanel";
 import { Row, Col } from "antd";
 import '../../style/organizing-committee/Dashboard.model.css'
 
@@ -16,8 +16,10 @@ const Dashboard: React.FC = () => {
                     <CheckInPanel />
                 </Col>
                 <Col xs={24} lg={8}>
-                    <VerificationPanel />
-                    <DelegateManagement />
+                    <StatisticsPanel />
+                    <div style={{ marginTop: 20 }}>
+                        <VerificationPanel />
+                    </div>
                 </Col>
             </Row>
         </div>

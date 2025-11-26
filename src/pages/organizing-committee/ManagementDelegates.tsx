@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Layout, Select, message, Spin } from "antd";
+import { Card, Row, Col, Layout, Select, Spin } from "antd";
 import { useParams } from "react-router-dom";
 import DelegateTable from "@/components/organizing-committee/manage-delegates/DelegateTable";
 import DelegateSearch from "@/components/organizing-committee/manage-delegates/DelegateSearch";
@@ -8,8 +8,10 @@ import DelegateUpload from "@/components/organizing-committee/manage-delegates/D
 import ElectionService from "@/services/ElectionService";
 import { Election } from "@/types/Election.interface";
 import { BaseResponse } from "@/types/BaseResponse.interface";
+import { useNotification } from "@/contexts/NotificationContext";
 
 const ManagementDelegates: React.FC = () => {
+    const { notify } = useNotification();
     const { electionId: electionIdFromParams } = useParams<{ electionId?: string }>();
     // Lấy cuộc bầu cử từ localStorage (đã được chọn ở trang home)
     const currentElectionId = electionIdFromParams || localStorage.getItem("currentElectionId") || "";
@@ -24,7 +26,7 @@ const ManagementDelegates: React.FC = () => {
     useEffect(() => {
         const fetchElection = async () => {
             if (!currentElectionId) {
-                message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
+                notify("Vui lòng chọn cuộc bầu cử từ trang chủ", "warning");
                 return;
             }
 
@@ -35,7 +37,7 @@ const ManagementDelegates: React.FC = () => {
                 setSelectedElectionId(currentElectionId);
             } catch (error: any) {
                 console.error("Lỗi khi tải thông tin cuộc bầu cử:", error);
-                message.error(error?.response?.data?.message || "Không thể tải thông tin cuộc bầu cử");
+                notify(error?.response?.data?.message || "Không thể tải thông tin cuộc bầu cử", "error");
             } finally {
                 setLoadingElection(false);
             }
@@ -76,26 +78,26 @@ const ManagementDelegates: React.FC = () => {
                         <DelegateUpload />
                     </Col>
                     <Col xs={24} md={10}>
-                        <DelegateManualAdd 
+                        <DelegateManualAdd
                             electionId={selectedElectionId}
                             onAdd={() => {
                                 // Trigger reload bằng cách thay đổi key
                                 setRefreshKey(prev => prev + 1);
-                            }} 
+                            }}
                         />
                     </Col>
                 </Row>
 
                 <div style={{ marginTop: 32 }}>
-                    <DelegateSearch 
+                    <DelegateSearch
                         electionId={selectedElectionId}
                         onSearchResult={(results) => {
                             setSearchResults(results.length > 0 ? results : null);
                         }}
                     />
                     {selectedElectionId ? (
-                        <DelegateTable 
-                            key={`${selectedElectionId}-${refreshKey}`} 
+                        <DelegateTable
+                            key={`${selectedElectionId}-${refreshKey}`}
                             electionId={selectedElectionId}
                             searchResults={searchResults}
                         />

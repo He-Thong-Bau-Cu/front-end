@@ -125,7 +125,7 @@ export const privateRoutes = [
       {
         element: <SecretaryLayout />,
         children: [
-          { index: true, element: <DashboardSecretary /> },        
+          { index: true, element: <DashboardSecretary /> },
           { path: "drafting-documents", element: <DraftingDocuments /> },
           { path: "delegations", element: <AuthorizationTable /> },
           { path: "notifications", element: <NotificationCenterPage /> },

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Spin, message, Modal, Form, Input } from "antd";
+import { Table, Button, Space, Spin, Modal, Form, Input } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import VoterService from "@/services/VoterService";
 import UserService from "@/services/UserService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
+import { useNotification } from "@/contexts/NotificationContext";
 
 interface Delegate {
     id: string;
@@ -34,6 +35,7 @@ interface VoterData {
 }
 
 const DelegateTable: React.FC<Props> = ({ electionId, searchResults }) => {
+    const { notify } = useNotification();
     const [loading, setLoading] = useState<boolean>(true);
     const [data, setData] = useState<Delegate[]>([]);
     const [votersData, setVotersData] = useState<VoterData[]>([]);
@@ -59,7 +61,7 @@ const DelegateTable: React.FC<Props> = ({ electionId, searchResults }) => {
                 const activeVoters = structuredClone(response.data).filter(
                     (v) => v.status !== "INACTIVE"
                 );
-                
+
                 const voters: VoterData[] = activeVoters.map((v, i) => ({
                     _id: String(v._id || `temp-${i}`),
                     userId: v.userId
@@ -87,12 +89,12 @@ const DelegateTable: React.FC<Props> = ({ electionId, searchResults }) => {
                     }))
                 );
             } else {
-                message.error(response.message || "Không thể lấy danh sách cử tri");
+                notify(response.message || "Không thể lấy danh sách cử tri", "error");
                 setData([]);
             }
         } catch (error: any) {
             console.error("Lỗi khi lấy danh sách cử tri:", error);
-            message.error(error?.response?.data?.message || "Đã xảy ra lỗi khi tải dữ liệu");
+            notify(error?.response?.data?.message || "Đã xảy ra lỗi khi tải dữ liệu", "error");
             setData([]);
         } finally {
             setLoading(false);
@@ -184,17 +186,17 @@ const DelegateTable: React.FC<Props> = ({ electionId, searchResults }) => {
 
             const response: BaseResponse<any> = await (UserService as any).update(editingVoter.userId._id, updateData);
             if (response && (response.success || response.data)) {
-                message.success("✅ Cập nhật thông tin cử tri thành công");
+                notify("✅ Cập nhật thông tin cử tri thành công", "success");
                 setIsModalVisible(false);
                 setEditingVoter(null);
                 form.resetFields();
                 await fetchVoters(); // reload lại list chuẩn nhất
             } else {
-                message.error(response?.message || "Không thể cập nhật thông tin cử tri");
+                notify(response?.message || "Không thể cập nhật thông tin cử tri", "error");
             }
         } catch (error: any) {
             console.error("Lỗi khi cập nhật cử tri:", error);
-            message.error(error?.response?.data?.message || error?.message || "Đã xảy ra lỗi khi cập nhật");
+            notify(error?.response?.data?.message || error?.message || "Đã xảy ra lỗi khi cập nhật", "error");
         } finally {
             setUpdating(false);
         }
@@ -206,7 +208,7 @@ const DelegateTable: React.FC<Props> = ({ electionId, searchResults }) => {
 
         if (!record || !record.id) {
             console.error("Invalid record:", record);
-            message.error("Không tìm thấy thông tin đại biểu để xóa");
+            notify("Không tìm thấy thông tin đại biểu để xóa", "error");
             return;
         }
 
@@ -223,7 +225,7 @@ const DelegateTable: React.FC<Props> = ({ electionId, searchResults }) => {
             // ✅ Tìm voter thật từ dữ liệu đã load
             const voter = votersData.find(v => v.userId?.email === recordToDelete.email);
             if (!voter?._id) {
-                message.error("Không tìm thấy ID cử tri để xóa");
+                notify("Không tìm thấy ID cử tri để xóa", "error");
                 return;
             }
 
@@ -233,22 +235,22 @@ const DelegateTable: React.FC<Props> = ({ electionId, searchResults }) => {
             const response: BaseResponse<any> = await VoterService.delete(voter._id);
 
             if (response.success) {
-                message.success("✅ Xóa đại biểu thành công");
+                notify("✅ Xóa đại biểu thành công", "success");
                 setDeleteConfirmVisible(false);
                 setRecordToDelete(null);
-                
+
                 // Xóa khỏi state ngay lập tức (optimistic update)
                 setVotersData((prev) => prev.filter((v) => v._id !== voter._id));
                 setData((prev) => prev.filter((d) => d.id !== voter._id));
-                
+
                 // Reload lại danh sách để đảm bảo đồng bộ
                 await fetchVoters();
             } else {
-                message.error(response?.message || "Không thể xóa đại biểu");
+                notify(response?.message || "Không thể xóa đại biểu", "error");
             }
         } catch (error: any) {
             console.error("Lỗi khi xóa:", error);
-            message.error(error?.response?.data?.message || "Đã xảy ra lỗi khi xóa");
+            notify(error?.response?.data?.message || "Đã xảy ra lỗi khi xóa", "error");
         } finally {
             setDeleting(null);
         }

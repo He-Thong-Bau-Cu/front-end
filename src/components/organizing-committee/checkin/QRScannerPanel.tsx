@@ -1,31 +1,32 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Card, message, Button, Modal, Descriptions, Spin } from "antd";
+import { Card, Button, Modal, Descriptions, Spin } from "antd";
 import { ArrowLeftOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
 import DelegateCardService from "@/services/DelegateCardService";
-import MeetingService from "@/services/MeetingService";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
-import ElectionParticipantService from "@/services/ElectionParticipantsService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
+import { useNotification } from "@/contexts/NotificationContext";
 
 const QRScannerPanel: React.FC = () => {
   const navigate = useNavigate();
-
-  // 👉 State quản lý modal và dữ liệu đại biểu
+  const { notify } = useNotification();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [delegateData, setDelegateData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const isProcessingRef = useRef(false); // Flag để ngăn quét lại khi đang xử lý (dùng ref vì callback không cập nhật state)
+  const lastProcessedTokenRef = useRef<string | null>(null); // Lưu token đã xử lý để tránh xử lý lại
+  const scannerReadyRef = useRef(false); // Flag để đảm bảo scanner đã sẵn sàng trước khi xử lý QR code
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null); // Timer để debounce các lần quét
 
   useEffect(() => {
     const elementId = "qr-reader-element";
     const scanner = new Html5Qrcode(elementId, false); // verbose = false để tránh spam console với NotFoundException
-    
+
     // Override console.error/warn tạm thời để lọc bỏ lỗi "NotFoundException" từ html5-qrcode
     const originalConsoleError = console.error;
     const originalConsoleWarn = console.warn;
-    
+
     console.error = (...args: any[]) => {
       const message = args.join(' ');
       // Bỏ qua lỗi "NotFoundException" từ html5-qrcode vì đây là hành vi bình thường
@@ -34,10 +35,9 @@ const QRScannerPanel: React.FC = () => {
       }
       originalConsoleError.apply(console, args);
     };
-    
+
     console.warn = (...args: any[]) => {
       const message = args.join(' ');
-      // Bỏ qua cảnh báo "NotFoundException" từ html5-qrcode
       if (message.includes('NotFoundException') || message.includes('No MultiFormat Readers')) {
         return; // Không log cảnh báo này
       }
@@ -47,71 +47,91 @@ const QRScannerPanel: React.FC = () => {
     const startScanner = async () => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 400)); // đợi DOM render
-        
+
         console.log("🎥 Đang khởi động camera...");
-        
+
         // Tính toán kích thước qrbox động dựa trên viewport
         const getQRBoxSize = () => {
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
-          // Lấy 80% chiều rộng nhỏ hơn, tối đa 350px, tối thiểu 200px (giảm để dễ quét hơn)
-          const size = Math.min(Math.max(Math.min(viewportWidth, viewportHeight) * 0.8, 200), 350);
+          // Tăng kích thước qrbox để dễ quét hơn - lấy 90% chiều rộng nhỏ hơn, tối đa 500px, tối thiểu 250px
+          const size = Math.min(Math.max(Math.min(viewportWidth, viewportHeight) * 0.9, 250), 500);
           console.log("📐 QR Box size:", size);
           return { width: size, height: size };
         };
 
         await scanner.start(
-          { 
+          {
             facingMode: "environment",
           },
-          { 
-            fps: 15, // FPS tối ưu cho QR scanning: cân bằng giữa tốc độ và chất lượng
+          {
+            fps: 60,
             qrbox: getQRBoxSize(),
             aspectRatio: 1.0,
             disableFlip: false,
             videoConstraints: {
               facingMode: "environment",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-            },
+              width: { ideal: 1920, min: 1280 },
+              height: { ideal: 1080, min: 720 },
+              focusMode: "continuous", // Tự động lấy nét liên tục
+            } as MediaTrackConstraints,
           },
           async (decodedText: string) => {
             // decodedText là token từ QR code
             console.log("✅ QR Code detected! Raw token:", decodedText);
-            
+
+            // Kiểm tra xem scanner đã sẵn sàng chưa (tránh trigger ngay khi mở camera)
+            if (!scannerReadyRef.current) {
+              console.log("⏸️ Scanner chưa sẵn sàng, bỏ qua...");
+              return;
+            }
+
             // Ngăn quét lại nếu đang xử lý
             if (isProcessingRef.current) {
               console.log("⏸️ Đang xử lý request trước đó, bỏ qua...");
               return;
             }
 
-            isProcessingRef.current = true;
-            
             // Làm sạch token: trim khoảng trắng và ký tự đặc biệt
             const cleanedToken = decodedText.trim();
-            
+
+            // Kiểm tra token có hợp lệ không (ít nhất phải có độ dài tối thiểu)
+            if (!cleanedToken || cleanedToken.length < 10) {
+              console.log("⏸️ Token không hợp lệ, bỏ qua...");
+              return;
+            }
+
+            // Kiểm tra xem token này đã được xử lý chưa (tránh xử lý lại cùng một QR code)
+            if (lastProcessedTokenRef.current === cleanedToken) {
+              console.log("⏸️ Token này đã được xử lý trước đó, bỏ qua...");
+              return;
+            }
+
+            // Debounce: Xóa timer cũ nếu có
+            if (debounceTimerRef.current) {
+              clearTimeout(debounceTimerRef.current);
+            }
+
+            // Đợi 300ms để đảm bảo không có lần quét tiếp theo (debounce)
+            debounceTimerRef.current = setTimeout(async () => {
+              isProcessingRef.current = true;
+              lastProcessedTokenRef.current = cleanedToken; // Lưu token đã xử lý
+
             try {
               setLoading(true);
-              
-              console.log("📡 Step 1: Calling getByToken with cleaned token:", cleanedToken);
-              
-              // Bước 1: Lấy thông tin thẻ đại biểu từ token
+
               const tokenResponse: BaseResponse<any> = await DelegateCardService.getByToken(cleanedToken);
-              console.log("📥 Step 1 Response:", tokenResponse);
-              
-              // Kiểm tra response và data
+
               if (!tokenResponse || !tokenResponse.success) {
                 const errorMsg = tokenResponse?.message || "Không tìm thấy thông tin thẻ đại biểu";
-                console.error("❌ API Response Error:", errorMsg);
-                message.error(`❌ ${errorMsg}`);
+                notify(`❌ ${errorMsg}`, "error");
                 setLoading(false);
                 isProcessingRef.current = false;
                 return;
               }
-              
+
               if (!tokenResponse.data) {
-                console.error("❌ API Response data is null");
-                message.error("❌ Không tìm thấy thông tin thẻ đại biểu. Token có thể không hợp lệ hoặc đã hết hạn.");
+                notify("❌ Không tìm thấy thông tin thẻ đại biểu. Token có thể không hợp lệ hoặc đã hết hạn.", "error");
                 setLoading(false);
                 isProcessingRef.current = false;
                 return;
@@ -119,11 +139,11 @@ const QRScannerPanel: React.FC = () => {
 
               // Lấy thông tin đại biểu từ response
               const delegateCard = tokenResponse.data;
-              
+
               // Lấy thông tin voter từ delegateCard
               const voter = delegateCard.voterId;
               if (!voter || !voter.userId) {
-                message.error("Không tìm thấy thông tin cử tri");
+                notify("Không tìm thấy thông tin cử tri", "error");
                 setLoading(false);
                 return;
               }
@@ -132,7 +152,7 @@ const QRScannerPanel: React.FC = () => {
               // Backend populate voterId với userId, nên truy cập qua voter.userId
               const userId = voter.userId;
               const electionId = delegateCard.electionId?._id || delegateCard.electionId;
-              
+
               const delegateInfo = {
                 id: delegateCard._id,
                 fullName: userId.fullName || "",
@@ -150,94 +170,8 @@ const QRScannerPanel: React.FC = () => {
               setIsModalVisible(true);
               // Dừng camera sau khi đã lấy được thông tin
               await stopScanner();
-              message.success("✅ Đã quét mã thành công");
-
-              // Tự động cập nhật trạng thái tham gia (attended = true)
-              try {
-                // Lấy cuộc bầu cử từ localStorage (đã chọn ở trang home)
-                const currentElectionId = localStorage.getItem("currentElectionId") || electionId;
-                if (!currentElectionId) {
-                  console.warn("⚠️ Không tìm thấy currentElectionId trong localStorage");
-                  message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
-                  return;
-                }
-
-                // Lấy cuộc họp theo electionId (1 cuộc bầu cử chỉ có 1 cuộc họp)
-                const meetingsResponse: BaseResponse<any> = await MeetingService.getByElectionId(currentElectionId);
-                if (!meetingsResponse || !meetingsResponse.success || !meetingsResponse.data) {
-                  console.warn("⚠️ Không tìm thấy cuộc họp cho cuộc bầu cử này");
-                  message.warning("Không tìm thấy cuộc họp cho cuộc bầu cử này");
-                  return;
-                }
-
-                const meetings = Array.isArray(meetingsResponse.data) ? meetingsResponse.data : [meetingsResponse.data];
-                if (meetings.length === 0) {
-                  console.warn("⚠️ Chưa có cuộc họp nào được tạo cho cuộc bầu cử này");
-                  message.warning("Chưa có cuộc họp nào được tạo cho cuộc bầu cử này");
-                  return;
-                }
-
-                // Lấy meeting đầu tiên (vì 1 cuộc bầu cử chỉ có 1 cuộc họp)
-                const meeting = meetings[0];
-                const meetingId = meeting._id || meeting.id;
-                if (!meetingId) {
-                  console.warn("⚠️ Không tìm thấy ID cuộc họp");
-                  message.warning("Không tìm thấy ID cuộc họp");
-                  return;
-                }
-
-                if (electionId && userId._id) {
-                  // Tìm ElectionParticipant đã tồn tại trong cuộc bầu cử (không tạo mới)
-                  const participantResponse: BaseResponse<any> = await ElectionParticipantService.getByUserId(userId._id);
-                  const participantList = participantResponse?.data
-                    ? (Array.isArray(participantResponse.data) ? participantResponse.data : [participantResponse.data])
-                    : [];
-                  const participant = participantList.find(
-                    (p: any) => p.electionId?._id === electionId || p.electionId === electionId
-                  );
-                  
-                  if (participant && participant._id) {
-                    try {
-                      // Thử cập nhật trạng thái tham gia cuộc họp (nếu MeetingAttendee record đã tồn tại)
-                      const updateResult = await MeetingAttendeeService.updateStatusAttendance(
-                        meetingId,
-                        participant._id,
-                        true
-                      );
-                      // Kiểm tra xem response có data không - nếu null thì record chưa tồn tại, cần tạo mới
-                      if (!updateResult?.data || updateResult?.data === null) {
-                        throw new Error("Record not found");
-                      }
-                      console.log("✅ Đã cập nhật trạng thái tham gia cuộc họp thành công");
-                    } catch (updateError: any) {
-                      // Nếu MeetingAttendee record chưa tồn tại, tạo mới record ghi nhận tham gia cuộc họp
-                      const errorStatus = updateError?.response?.status;
-                      const errorMessage = updateError?.message || "";
-                      if (errorStatus === 404 || errorStatus === 500 || errorMessage === "Record not found") {
-                        console.log("📝 Tạo mới MeetingAttendee record (ghi nhận tham gia cuộc họp)...");
-                        await MeetingAttendeeService.create({
-                          meetingId: meetingId,
-                          participantId: participant._id, // Sử dụng participant đã tồn tại
-                          checkInTime: new Date(),
-                          attended: true,
-                        });
-                        console.log("✅ Đã tạo mới MeetingAttendee record và cập nhật trạng thái tham gia thành công");
-                      } else {
-                        throw updateError;
-                      }
-                    }
-                  } else {
-                    console.warn("⚠️ Không tìm thấy ElectionParticipant cho userId và electionId này");
-                    message.warning("Người này chưa được thêm vào danh sách tham gia cuộc bầu cử");
-                  }
-                } else {
-                  console.warn("⚠️ Thiếu electionId hoặc userId để cập nhật trạng thái tham gia");
-                }
-              } catch (attendanceError: any) {
-                console.error("❌ Lỗi khi cập nhật trạng thái tham gia:", attendanceError);
-                const errorMsg = attendanceError?.response?.data?.message || attendanceError?.message || "Không thể cập nhật trạng thái tham gia";
-                message.error(`❌ ${errorMsg}`);
-              }
+              notify("✅ Đã quét mã thành công", "success");
+              // KHÔNG tự động check-in nữa, chỉ hiển thị modal thông tin
             } catch (error: any) {
               console.error("❌ Lỗi khi lấy thông tin thẻ đại biểu:", error);
               console.error("❌ Error details:", {
@@ -247,10 +181,10 @@ const QRScannerPanel: React.FC = () => {
                 status: error?.response?.status,
                 token: cleanedToken,
               });
-              
+
               // Lấy thông báo lỗi từ response hoặc error message
               let errorMessage = "Không thể lấy thông tin thẻ đại biểu";
-              
+
               if (error?.response?.data?.message) {
                 // Lỗi từ backend (500, 404, etc.)
                 errorMessage = error.response.data.message;
@@ -261,14 +195,19 @@ const QRScannerPanel: React.FC = () => {
                 // Lỗi từ client
                 errorMessage = error.message;
               }
-              
+
               console.error("❌ Final error message:", errorMessage);
-              message.error(`❌ ${errorMessage}`);
+              notify(`❌ ${errorMessage}`, "error");
               // Không dừng camera nếu lỗi, để có thể quét lại
             } finally {
               setLoading(false);
-              isProcessingRef.current = false; // Cho phép quét lại
+              // Chỉ reset flag sau 2 giây để tránh quét lại ngay lập tức
+              setTimeout(() => {
+                isProcessingRef.current = false;
+                lastProcessedTokenRef.current = null; // Reset token sau 2 giây
+              }, 2000);
             }
+            }, 300); // Đóng setTimeout debounce - đợi 300ms trước khi xử lý
           },
           (errorMessage: string) => {
             // Callback này được gọi khi có lỗi trong quá trình quét (không phải lỗi API)
@@ -277,20 +216,24 @@ const QRScannerPanel: React.FC = () => {
               // Không log lỗi này vì đây là hành vi bình thường của scanner
               return;
             }
-            
+
             // Chỉ log các lỗi quan trọng
             console.warn("⚠️ QR Scanner error:", errorMessage);
-            
+
             // Chỉ hiển thị message cho lỗi quan trọng
             if (errorMessage.includes("NotAllowedError")) {
-              message.error("❌ Quyền camera bị chặn. Hãy cấp lại quyền trong trình duyệt.");
+              notify("❌ Quyền camera bị chặn. Hãy cấp lại quyền trong trình duyệt.", "error");
             } else if (errorMessage.includes("NotFoundError")) {
-              message.error("❌ Không tìm thấy camera. Vui lòng kiểm tra thiết bị.");
+              notify("❌ Không tìm thấy camera. Vui lòng kiểm tra thiết bị.", "error");
             }
           }
         );
-        
+
         console.log("✅ Camera đã khởi động thành công!");
+        // Đánh dấu scanner đã sẵn sàng sau 1 giây (để tránh trigger ngay khi mở camera)
+        setTimeout(() => {
+          scannerReadyRef.current = true;
+        }, 1000);
       } catch (err: any) {
         console.error("❌ Không thể bật camera:", err);
         console.error("❌ Error details:", {
@@ -298,16 +241,16 @@ const QRScannerPanel: React.FC = () => {
           message: err.message,
           stack: err.stack,
         });
-        
+
         if (err.name === "NotAllowedError" || err.message?.includes("NotAllowedError")) {
-          message.error("❌ Bạn chưa cấp quyền truy cập camera. Vui lòng cấp quyền và tải lại trang.");
+          notify("❌ Bạn chưa cấp quyền truy cập camera. Vui lòng cấp quyền và tải lại trang.", "error");
         } else if (err.name === "NotFoundError" || err.message?.includes("NotFoundError")) {
-          message.error("❌ Không tìm thấy thiết bị camera nào. Vui lòng kiểm tra thiết bị.");
+          notify("❌ Không tìm thấy thiết bị camera nào. Vui lòng kiểm tra thiết bị.", "error");
         } else if (err.name === "OverconstrainedError" || err.message?.includes("OverconstrainedError")) {
-          message.error("❌ Camera không hỗ trợ cấu hình yêu cầu. Đang thử cấu hình khác...");
+          notify("❌ Camera không hỗ trợ cấu hình yêu cầu. Đang thử cấu hình khác...", "error");
           // Có thể thử lại với cấu hình đơn giản hơn
         } else {
-          message.error(`❌ Không thể bật camera: ${err.message || "Lỗi không xác định"}`);
+          notify(`❌ Không thể bật camera: ${err.message || "Lỗi không xác định"}`, "error");
         }
       }
     };
@@ -333,6 +276,10 @@ const QRScannerPanel: React.FC = () => {
     // Cleanup khi rời trang
     return () => {
       stopScanner();
+      // Clear debounce timer nếu có
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
       // Khôi phục lại console.error và console.warn ban đầu
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
@@ -343,35 +290,14 @@ const QRScannerPanel: React.FC = () => {
   const handleSave = async () => {
     try {
       if (!delegateData) {
-        message.error("Không có thông tin đại biểu");
+        notify("Không có thông tin đại biểu", "error");
         return;
       }
 
       // Lấy cuộc bầu cử từ localStorage (đã chọn ở trang home)
       const currentElectionId = localStorage.getItem("currentElectionId");
       if (!currentElectionId) {
-        message.warning("Vui lòng chọn cuộc bầu cử từ trang chủ");
-        return;
-      }
-
-      // Lấy cuộc họp theo electionId (1 cuộc bầu cử chỉ có 1 cuộc họp)
-      const meetingsResponse: BaseResponse<any> = await MeetingService.getByElectionId(currentElectionId);
-      if (!meetingsResponse || !meetingsResponse.success || !meetingsResponse.data) {
-        message.error("Không tìm thấy cuộc họp cho cuộc bầu cử này");
-        return;
-      }
-
-      const meetings = Array.isArray(meetingsResponse.data) ? meetingsResponse.data : [meetingsResponse.data];
-      if (meetings.length === 0) {
-        message.error("Chưa có cuộc họp nào được tạo cho cuộc bầu cử này");
-        return;
-      }
-
-      // Lấy meeting đầu tiên (vì 1 cuộc bầu cử chỉ có 1 cuộc họp)
-      const meeting = meetings[0];
-      const meetingId = meeting._id || meeting.id;
-      if (!meetingId) {
-        message.error("Không tìm thấy ID cuộc họp");
+        notify("Vui lòng chọn cuộc bầu cử từ trang chủ", "warning");
         return;
       }
 
@@ -379,76 +305,29 @@ const QRScannerPanel: React.FC = () => {
       const userId = delegateData.userId;
 
       if (!electionId || !userId) {
-        message.error("Thiếu thông tin cuộc bầu cử hoặc người dùng");
+        notify("Thiếu thông tin cuộc bầu cử hoặc người dùng", "error");
         return;
       }
 
       setLoading(true);
 
-      // Tìm ElectionParticipant đã tồn tại trong cuộc bầu cử (giống VerificationPanel)
-      try {
-        const participantResponse: BaseResponse<any> = await ElectionParticipantService.getByUserId(userId);
-        const participantList = participantResponse?.data
-          ? (Array.isArray(participantResponse.data) ? participantResponse.data : [participantResponse.data])
-          : [];
-        const participant = participantList.find(
-          (p: any) => p.electionId?._id === electionId || p.electionId === electionId
-        );
+      // Gọi API check-in (backend sẽ tự xử lý tất cả logic)
+      const checkInResult = await MeetingAttendeeService.checkIn(electionId, userId);
 
-        if (!participant || !participant._id) {
-          message.warning("Người này chưa được thêm vào danh sách tham gia cuộc bầu cử");
-          setLoading(false);
-          return;
-        }
-
-        // Thử cập nhật trạng thái tham gia cuộc họp (nếu MeetingAttendee record đã tồn tại)
-        try {
-          const updateResult = await MeetingAttendeeService.updateStatusAttendance(
-            meetingId,
-            participant._id,
-            true
-          );
-          // Kiểm tra xem response có data không - nếu null thì record chưa tồn tại, cần tạo mới
-          if (!updateResult?.data || updateResult?.data === null) {
-            throw new Error("Record not found");
-          }
-          console.log("✅ Đã cập nhật trạng thái tham gia cuộc họp thành công");
-          message.success(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`);
-          setIsModalVisible(false);
-          setDelegateData(null);
-          // Quay lại màn tổng quan
-          navigate("/organizing-committee");
-        } catch (updateError: any) {
-          // Nếu MeetingAttendee record chưa tồn tại, tạo mới record ghi nhận tham gia cuộc họp
-          const errorStatus = updateError?.response?.status;
-          const errorMessage = updateError?.message || "";
-          if (errorStatus === 404 || errorStatus === 500 || errorMessage === "Record not found") {
-            console.log("📝 Tạo mới MeetingAttendee record (ghi nhận tham gia cuộc họp)...");
-            await MeetingAttendeeService.create({
-              meetingId: meetingId,
-              participantId: participant._id, // Sử dụng participant đã tồn tại
-              checkInTime: new Date(),
-              attended: true,
-            });
-            console.log("✅ Đã tạo mới MeetingAttendee record và cập nhật trạng thái tham gia thành công");
-            message.success(`✅ Đã xác thực đại biểu: ${delegateData?.fullName}`);
-            setIsModalVisible(false);
-            setDelegateData(null);
-            // Quay lại màn tổng quan
-            navigate("/organizing-committee");
-          } else {
-            throw updateError;
-          }
-        }
-      } catch (attendanceError: any) {
-        console.error("❌ Lỗi khi cập nhật trạng thái tham gia:", attendanceError);
-        const errorMsg = attendanceError?.response?.data?.message || attendanceError?.message || "Không thể cập nhật trạng thái tham gia";
-        message.error(`❌ ${errorMsg}`);
+      if (checkInResult?.success && checkInResult?.data) {
+        notify(`✅ Đã check-in đại biểu: ${delegateData?.fullName}`, "success");
+        setIsModalVisible(false);
+        setDelegateData(null);
+        // Bật lại camera để tiếp tục quét
+        await handleCancel();
+      } else {
+        const errorMsg = checkInResult?.message || "Không thể check-in";
+        notify(`❌ ${errorMsg}`, "error");
       }
     } catch (error: any) {
       console.error("❌ Lỗi khi check-in:", error);
       const errorMsg = error?.response?.data?.message || error?.message || "Không thể check-in";
-      message.error(`❌ ${errorMsg}`);
+      notify(`❌ ${errorMsg}`, "error");
     } finally {
       setLoading(false);
     }
@@ -458,8 +337,8 @@ const QRScannerPanel: React.FC = () => {
   const handleCancel = async () => {
     setIsModalVisible(false);
     setDelegateData(null);
-    message.info("❎ Đã hủy xác nhận.");
-    
+    notify("❎ Đã hủy xác nhận.", "info");
+
     // Bật lại camera sau khi đóng modal
     try {
       const elementId = "qr-reader-element";
@@ -472,57 +351,74 @@ const QRScannerPanel: React.FC = () => {
       };
 
       await scanner.start(
-        { 
+        {
           facingMode: "environment",
           aspectRatio: 1.0,
         },
-        { 
-          fps: 15, // FPS tối ưu cho QR scanning
+        {
+          fps: 30, // Tăng FPS lên 30 để quét nhanh hơn
           qrbox: getQRBoxSize(),
           aspectRatio: 1.0,
           disableFlip: false,
           videoConstraints: {
             facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
+            width: { ideal: 1920, min: 1280 },
+            height: { ideal: 1080, min: 720 },
+            focusMode: "continuous",
+          } as MediaTrackConstraints,
         },
         async (decodedText: string) => {
           console.log("🔍 Token từ QR code (retry):", decodedText);
+
+          // Ngăn quét lại nếu đang xử lý
+          if (isProcessingRef.current) {
+            console.log("⏸️ Đang xử lý request trước đó (retry), bỏ qua...");
+            return;
+          }
+
           // Làm sạch token: trim khoảng trắng và ký tự đặc biệt
           const cleanedToken = decodedText.trim();
-          
+
+          // Kiểm tra xem token này đã được xử lý chưa
+          if (lastProcessedTokenRef.current === cleanedToken) {
+            console.log("⏸️ Token này đã được xử lý trước đó (retry), bỏ qua...");
+            return;
+          }
+
+          isProcessingRef.current = true;
+          lastProcessedTokenRef.current = cleanedToken;
+
           try {
             setLoading(true);
-            
+
             console.log("📡 Step 1 (retry): Calling getByToken with cleaned token:", cleanedToken);
-            
+
             // Bước 1: Lấy thông tin thẻ đại biểu từ token
             const tokenResponse: BaseResponse<any> = await DelegateCardService.getByToken(cleanedToken);
             console.log("📥 Step 1 Response (retry):", tokenResponse);
-            
+
             // Kiểm tra response và data
             if (!tokenResponse || !tokenResponse.success) {
               const errorMsg = tokenResponse?.message || "Không tìm thấy thông tin thẻ đại biểu";
               console.error("❌ API Response Error (retry):", errorMsg);
-              message.error(`❌ ${errorMsg}`);
+              notify(`❌ ${errorMsg}`, "error");
               setLoading(false);
               return;
             }
-            
+
             if (!tokenResponse.data) {
               console.error("❌ API Response data is null (retry)");
-              message.error("❌ Không tìm thấy thông tin thẻ đại biểu. Token có thể không hợp lệ hoặc đã hết hạn.");
+              notify("❌ Không tìm thấy thông tin thẻ đại biểu. Token có thể không hợp lệ hoặc đã hết hạn.", "error");
               setLoading(false);
               return;
             }
 
             // Lấy thông tin đại biểu từ response
             const delegateCard = tokenResponse.data;
-            
+
             const voter = delegateCard.voterId;
             if (!voter || !voter.userId) {
-              message.error("Không tìm thấy thông tin cử tri");
+              notify("Không tìm thấy thông tin cử tri", "error");
               setLoading(false);
               return;
             }
@@ -530,7 +426,7 @@ const QRScannerPanel: React.FC = () => {
             // Backend populate voterId với userId, nên truy cập qua voter.userId
             const userId = voter.userId;
             const electionId = delegateCard.electionId?._id || delegateCard.electionId;
-            
+
             const delegateInfo = {
               id: delegateCard._id,
               fullName: userId.fullName || "",
@@ -548,69 +444,8 @@ const QRScannerPanel: React.FC = () => {
             setIsModalVisible(true);
             await scanner.stop();
             await scanner.clear();
-            message.success("✅ Đã quét mã thành công");
-
-            // Tự động cập nhật trạng thái tham gia (attended = true)
-            try {
-              const meetingId = localStorage.getItem("currentMeetingId");
-              if (!meetingId) {
-                console.warn("⚠️ Không tìm thấy meetingId trong localStorage (retry)");
-                message.warning("Vui lòng chọn cuộc họp trước khi check-in");
-                return;
-              }
-
-              if (electionId && userId._id) {
-                // Tìm ElectionParticipant đã tồn tại trong cuộc bầu cử (không tạo mới)
-                const participantResponse: BaseResponse<any> = await ElectionParticipantService.getByUserId(userId._id);
-                const participantList = participantResponse?.data
-                  ? (Array.isArray(participantResponse.data) ? participantResponse.data : [participantResponse.data])
-                  : [];
-                const participant = participantList.find(
-                  (p: any) => p.electionId?._id === electionId || p.electionId === electionId
-                );
-                
-                if (participant && participant._id) {
-                  try {
-                    // Thử cập nhật trạng thái tham gia cuộc họp (nếu MeetingAttendee record đã tồn tại)
-                    const updateResult = await MeetingAttendeeService.updateStatusAttendance(
-                      meetingId,
-                      participant._id,
-                      true
-                    );
-                    // Kiểm tra xem response có data không - nếu null thì record chưa tồn tại, cần tạo mới
-                    if (!updateResult?.data || updateResult?.data === null) {
-                      throw new Error("Record not found");
-                    }
-                    console.log("✅ Đã cập nhật trạng thái tham gia cuộc họp thành công (retry)");
-                  } catch (updateError: any) {
-                    // Nếu MeetingAttendee record chưa tồn tại, tạo mới record ghi nhận tham gia cuộc họp
-                    const errorStatus = updateError?.response?.status;
-                    const errorMessage = updateError?.message || "";
-                    if (errorStatus === 404 || errorStatus === 500 || errorMessage === "Record not found") {
-                      console.log("📝 Tạo mới MeetingAttendee record (ghi nhận tham gia cuộc họp)... (retry)");
-                      await MeetingAttendeeService.create({
-                        meetingId: meetingId,
-                        participantId: participant._id, // Sử dụng participant đã tồn tại
-                        checkInTime: new Date(),
-                        attended: true,
-                      });
-                      console.log("✅ Đã tạo mới MeetingAttendee record và cập nhật trạng thái tham gia thành công (retry)");
-                    } else {
-                      throw updateError;
-                    }
-                  }
-                } else {
-                  console.warn("⚠️ Không tìm thấy ElectionParticipant cho userId và electionId này (retry)");
-                  message.warning("Người này chưa được thêm vào danh sách tham gia cuộc bầu cử");
-                }
-              } else {
-                console.warn("⚠️ Thiếu electionId hoặc userId để cập nhật trạng thái tham gia (retry)");
-              }
-            } catch (attendanceError: any) {
-              console.error("❌ Lỗi khi cập nhật trạng thái tham gia (retry):", attendanceError);
-              const errorMsg = attendanceError?.response?.data?.message || attendanceError?.message || "Không thể cập nhật trạng thái tham gia";
-              message.error(`❌ ${errorMsg}`);
-            }
+            notify("✅ Đã quét mã thành công", "success");
+            // KHÔNG tự động check-in nữa, chỉ hiển thị modal thông tin
           } catch (error: any) {
             console.error("❌ Lỗi khi lấy thông tin thẻ đại biểu (retry):", error);
             console.error("❌ Error details (retry):", {
@@ -620,10 +455,10 @@ const QRScannerPanel: React.FC = () => {
               status: error?.response?.status,
               token: cleanedToken,
             });
-            
+
             // Lấy thông báo lỗi từ response hoặc error message
             let errorMessage = "Không thể lấy thông tin thẻ đại biểu";
-            
+
             if (error?.response?.data?.message) {
               // Lỗi từ backend (500, 404, etc.)
               errorMessage = error.response.data.message;
@@ -634,11 +469,16 @@ const QRScannerPanel: React.FC = () => {
               // Lỗi từ client
               errorMessage = error.message;
             }
-            
+
             console.error("❌ Final error message (retry):", errorMessage);
-            message.error(`❌ ${errorMessage}`);
+            notify(`❌ ${errorMessage}`, "error");
           } finally {
             setLoading(false);
+            // Chỉ reset flag sau 2 giây để tránh quét lại ngay lập tức
+            setTimeout(() => {
+              isProcessingRef.current = false;
+              lastProcessedTokenRef.current = null;
+            }, 2000);
           }
         },
         (error: unknown) => {
@@ -648,7 +488,7 @@ const QRScannerPanel: React.FC = () => {
               return; // Không log lỗi này
             }
             if (error.includes("NotAllowedError")) {
-              message.error("❌ Quyền camera bị chặn. Hãy cấp lại quyền trong trình duyệt.");
+              notify("❌ Quyền camera bị chặn. Hãy cấp lại quyền trong trình duyệt.", "error");
             }
           }
         }
@@ -702,12 +542,12 @@ const QRScannerPanel: React.FC = () => {
             <Button key="cancel" onClick={handleCancel}>
               Hủy
             </Button>,
-            <Button 
-              key="save" 
-              type="primary" 
+            <Button
+              key="save"
+              type="primary"
               onClick={handleSave}
-              style={{ 
-                backgroundColor: '#52c41a', 
+              style={{
+                backgroundColor: '#52c41a',
                 borderColor: '#52c41a',
               }}
               onMouseEnter={(e) => {

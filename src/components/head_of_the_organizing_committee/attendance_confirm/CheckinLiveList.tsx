@@ -1,77 +1,163 @@
-import { Card, List } from "antd";
+import React from "react";
+import { Card, Table, Tag, Empty } from "antd";
 import {
     CheckCircleFilled,
-    ExclamationCircleFilled,
-    ClockCircleFilled,
+    CloseCircleOutlined,
+    FileTextOutlined,
 } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
 
-const liveData = [
-    {
-        id: "NV0078",
-        name: "Nguyễn Thị Lan Anh",
-        time: "10:18:31 AM",
-        status: "success",
-        reason: "",
-    },
-    {
-        id: "NV0015",
-        name: "Trần Minh Hoàng",
-        time: "10:15:25 AM",
-        status: "error",
-        reason: "Mã QR không hợp lệ",
-    },
-    {
-        id: "NV0012",
-        name: "Lê Gia Bảo",
-        time: "10:15:10 AM",
-        status: "manual",
-        reason: "Check-in thủ công",
-    },
-    {
-        id: "NV0099",
-        name: "Phạm Đức Trung",
-        time: "10:14:58 AM",
-        status: "success",
-        reason: "",
-    },
-];
+interface AttendeeItem {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    checkInTime?: string;
+    checkInTimeFormatted?: string;
+    hasCheckedIn: boolean;
+    hasBallot: boolean;
+}
 
-const CheckinLiveList = () => (
-    <Card
-        title="Luồng Check-in Trực tiếp"
-        bordered={false}
-        className="checkin-live-card"
-    >
-        <List
-            dataSource={liveData}
-            renderItem={(item) => (
-                <List.Item className={`checkin-live-item ${item.status}`}>
-                    <div className="checkin-live-left">
-                        {item.status === "success" && (
-                            <CheckCircleFilled className="icon-success" />
-                        )}
-                        {item.status === "error" && (
-                            <ExclamationCircleFilled className="icon-error" />
-                        )}
-                        {item.status === "manual" && (
-                            <ClockCircleFilled className="icon-manual" />
-                        )}
+interface CheckinLiveListProps {
+    recentCheckins: AttendeeItem[];
+    onRefresh?: () => void;
+}
 
-                        <div className="checkin-info">
-                            <b>{item.name}</b>
-                            <p>
-                                Mã ĐB: {item.id}
-                                {item.reason && (
-                                    <span className="checkin-reason"> | {item.reason}</span>
-                                )}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="checkin-time">{item.time}</div>
-                </List.Item>
+const CheckinLiveList: React.FC<CheckinLiveListProps> = ({
+    recentCheckins,
+    onRefresh,
+}) => {
+    const columns: ColumnsType<AttendeeItem> = [
+        {
+            title: "STT",
+            key: "index",
+            width: 60,
+            align: "center",
+            render: (_: any, __: any, index: number) => index + 1,
+        },
+        {
+            title: "Họ và tên",
+            dataIndex: "name",
+            key: "name",
+            width: 200,
+            render: (text: string) => <strong>{text}</strong>,
+        },
+        {
+            title: "Email",
+            dataIndex: "email",
+            key: "email",
+            width: 200,
+            render: (text: string) => text || "-",
+        },
+        {
+            title: "Số điện thoại",
+            dataIndex: "phone",
+            key: "phone",
+            width: 150,
+            render: (text: string) => text || "-",
+        },
+        {
+            title: "Trạng thái Check-in",
+            key: "checkinStatus",
+            width: 180,
+            align: "center",
+            render: (_: any, record: AttendeeItem) => {
+                if (record.hasCheckedIn) {
+                    return (
+                        <Tag
+                            icon={<CheckCircleFilled />}
+                            color="success"
+                            style={{ padding: "4px 12px", fontSize: "13px" }}
+                        >
+                            Đã Check-in
+                        </Tag>
+                    );
+                }
+                return (
+                    <Tag
+                        icon={<CloseCircleOutlined />}
+                        color="default"
+                        style={{ padding: "4px 12px", fontSize: "13px" }}
+                    >
+                        Chưa Check-in
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: "Thời gian Check-in",
+            key: "checkInTime",
+            width: 150,
+            align: "center",
+            render: (_: any, record: AttendeeItem) => {
+                if (record.hasCheckedIn && record.checkInTimeFormatted) {
+                    return (
+                        <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                            {record.checkInTimeFormatted}
+                        </span>
+                    );
+                }
+                return <span style={{ color: "#999" }}>-</span>;
+            },
+        },
+        {
+            title: "Phiếu bầu cử",
+            key: "ballotStatus",
+            width: 150,
+            align: "center",
+            render: (_: any, record: AttendeeItem) => {
+                if (record.hasBallot) {
+                    return (
+                        <Tag
+                            icon={<FileTextOutlined />}
+                            color="blue"
+                            style={{ padding: "4px 12px", fontSize: "13px" }}
+                        >
+                            Đã có phiếu
+                        </Tag>
+                    );
+                }
+                return (
+                    <Tag color="default" style={{ padding: "4px 12px", fontSize: "13px" }}>
+                        Chưa có phiếu
+                    </Tag>
+                );
+            },
+        },
+    ];
+
+    return (
+        <Card
+            title="Danh sách Đại biểu"
+            bordered={false}
+            className="checkin-live-card"
+            extra={
+                <span style={{ fontSize: "12px", color: "#888" }}>
+                    Tổng: {recentCheckins.length} đại biểu
+                </span>
+            }
+        >
+            {recentCheckins.length === 0 ? (
+                <Empty
+                    description="Chưa có đại biểu nào"
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+            ) : (
+                <Table
+                    columns={columns}
+                    dataSource={recentCheckins}
+                    rowKey="id"
+                    pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showTotal: (total) => `Tổng ${total} đại biểu`,
+                    }}
+                    scroll={{ x: 1000 }}
+                    size="middle"
+                />
             )}
-        />
-    </Card>
-);
+        </Card>
+    );
+};
 
 export default CheckinLiveList;

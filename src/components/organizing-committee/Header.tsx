@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Badge, Dropdown, Layout, Space, Typography, message } from "antd";
+import { Avatar, Badge, Dropdown, Layout, Space, Typography } from "antd";
 import { BellFilled, IdcardOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { MenuProps } from "antd/lib";
 import { User } from "@/types/User.interface";
 import { getUserLogin } from "@/utils/auth";
 import ProfileModal from "@/components/homepage/ProfileModal"; // ✅ import modal hồ sơ cá nhân
+import { useNotification } from "@/contexts/NotificationContext";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -14,6 +15,7 @@ interface OrganizingCommitteeHeaderProps {
 }
 
 const OrganizingCommitteeHeader: React.FC<OrganizingCommitteeHeaderProps> = ({ title }) => {
+  const { notify } = useNotification();
   const [user, setUser] = useState<User | null>(null);
   const [isProfileOpen, setProfileOpen] = useState(false);
 
@@ -24,11 +26,11 @@ const OrganizingCommitteeHeader: React.FC<OrganizingCommitteeHeaderProps> = ({ t
         const userData = await getUserLogin();
         setUser(userData as User);
       } catch (error) {
-        message.error("Không thể tải thông tin người dùng!");
+        notify("Không thể tải thông tin người dùng!", "error");
       }
     };
     fetchUser();
-  }, []);
+  }, [notify]);
 
   // 🧩 Xử lý hành động người dùng
   const handleLogout = () => {
