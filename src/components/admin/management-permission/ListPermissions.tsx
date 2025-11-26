@@ -1,34 +1,28 @@
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import { STATUS_ROLE } from "@/enums/STATUS";
+import SystemService from "@/services/SystemService";
 import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
-  SearchOutlined,
-  SettingOutlined,
-  UserOutlined,
-  BarChartOutlined,
-  DownloadOutlined,
-  CheckSquareOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 import {
   Button,
   Card,
-  Switch,
-  Table,
-  Tag,
-  Typography,
   Input,
+  Modal,
   Pagination,
   Select,
-  Modal,
+  Table,
+  Tag,
+  Typography
 } from "antd";
 import { TableProps } from "antd/lib";
-import "../../../style/admin/ManagementPermission.model.css";
 import { useState } from "react";
+import "../../../style/admin/ManagementPermission.model.css";
 import AddPermissionModal from "./AddPermissionModal";
-import { STATUS_COLOR, STATUS_ELECTION, STATUS_ROLE } from "@/enums/STATUS";
-import { useLoading } from "@/contexts/LoadingContext";
-import { useNotification } from "@/contexts/NotificationContext";
-import SystemService from "@/services/SystemService";
 
 const { Text } = Typography;
 
@@ -178,15 +172,16 @@ const ListPermissions = ({
       title: "STT",
       dataIndex: "index",
       key: "index",
-      width: "5%",
+      width: "7%",
       align: "center",
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) =>
+        (values.page - 1) * values.limit + index + 1,
     },
     {
       title: "Quyền hạn",
       dataIndex: "permissionName",
       key: "permissionName",
-      width: "30%",
+      width: "25%",
       render: (_: string, record) => (
         <div className="permission-item">
           <div>
@@ -203,18 +198,39 @@ const ListPermissions = ({
       key: "group",
       width: "20%",
       render: (text: string) => (
-        <Tag color="processing">{getPermissionGroup(text)}</Tag>
+        <div
+          style={{
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            lineHeight: "20px",
+            maxWidth: "100%",
+          }}
+        >
+          <Tag
+            color="processing"
+            style={{
+              whiteSpace: "normal",      // cho Tag tự wrap
+              height: "auto",            // không ép chiều cao
+              padding: "3px 8px",
+              display: "inline-block",
+            }}
+          >
+            {getPermissionGroup(text)}
+          </Tag>
+        </div>
       ),
     },
+
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
-      width: "40%",
+      width: "25%",
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
+      width: "10%",
       key: "status",
       render: (status) => {
         const color =
@@ -240,6 +256,7 @@ const ListPermissions = ({
     {
       title: "Hành động",
       key: "action",
+      width: "13%",
       render: (record) => (
         <div className="permission-action">
           <Button
@@ -287,7 +304,6 @@ const ListPermissions = ({
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden",
         }}
       >
         {/* Header */}
