@@ -3,9 +3,10 @@ import DelegateCardService from "@/services/DelegateCardService";
 import { DelegateCard } from "@/types/DelegateCard.interface";
 import {
   StarFilled,
-  IdcardOutlined
+  IdcardOutlined,
+  UserOutlined
 } from "@ant-design/icons";
-import { Card, Col, Row, Tag, Typography } from "antd";
+import { Avatar, Card, Col, Row, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import "../../../style/voter/DelegateCard.model.css";
@@ -74,7 +75,8 @@ const DelegateCardPage = () => {
           decisionNumber: raw.electionId?.decisionNumber || "",
           voterId: raw.voterId?._id || "",
           title: raw.electionId?.title || "",
-          token: ""
+          token: "",
+          address: raw.voterId?.userId?.address || "",
         };
 
         setCard(mapped);
@@ -141,11 +143,13 @@ const DelegateCardPage = () => {
           {/* Avatar */}
           <Col xs={24} md={3}>
             <div className="delegate-avatar-wrapper">
-              <img
-                src={card.image}
-                alt={card.fullName}
-                className="delegate-avatar-img"
+              <Avatar
+                size={90}
+                src={card.image || undefined}
+                icon={!card.image ? <UserOutlined /> : undefined}
+                style={{ borderRadius: 50, backgroundColor: '#8DCC8F' }}
               />
+
             </div>
           </Col>
 
@@ -186,17 +190,17 @@ const DelegateCardPage = () => {
 
             <Col xs={24} md={12}>
               <div className="delegate-detail-item">
-                <Text strong>Số CCCD: </Text>
+                <Text strong>Số CMND/CCCD: </Text>
                 <span>{card.citizenId}</span>
               </div>
             </Col>
 
-            <Col xs={24} md={12}>
+            {/* <Col xs={24} md={12}>
               <div className="delegate-detail-item">
-                <Text strong>Ngày sinh: </Text>
-                <span>{dayjs(card.dateOfBirth).format("DD/MM/YYYY")}</span>
+                <Text strong>Ngày phát hành: </Text>
+                <span>{dayjs(card.issuedAt).format("DD/MM/YYYY")}</span>
               </div>
-            </Col>
+            </Col> */}
 
             <Col xs={24} md={12}>
               <div className="delegate-detail-item">
@@ -207,8 +211,8 @@ const DelegateCardPage = () => {
 
             <Col xs={24} md={12}>
               <div className="delegate-detail-item">
-                <Text strong>Chức vụ: </Text>
-                <span>{card.position}</span>
+                <Text strong>Địa chỉ: </Text>
+                <span>{card.address}</span>
               </div>
             </Col>
 
@@ -216,7 +220,7 @@ const DelegateCardPage = () => {
         </div>
 
         {/* QR Code */}
-        <div className="delegate-qr">
+        {/* <div className="delegate-qr">
           <img
             src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${card.token}`}
             alt="QR"
@@ -230,7 +234,7 @@ const DelegateCardPage = () => {
             <br />
             <Text type="success">ID: {card.id}</Text>
           </div>
-        </div>
+        </div> */}
 
         <Text type="secondary" className="delegate-issued">
           Ngày cấp: {dayjs(card.issuedAt).format("DD/MM/YYYY")}

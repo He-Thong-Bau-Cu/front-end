@@ -13,4 +13,5 @@ export interface DelegateCard {
     decisionNumber: string;
     image: string;
     token: string;
+    address: string;
 }
