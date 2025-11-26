@@ -62,6 +62,22 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
         navigate(e.key);
     };
 
+    const getSelectedKey = () => {
+        const currentPath = location.pathname;
+        const sortedItems = [...menuItems].sort((a, b) => b.key.length - a.key.length);
+
+        for (const item of sortedItems) {
+            if (currentPath === item.key) {
+                return item.key;
+            }
+            if (currentPath.startsWith(item.key + "/") || currentPath.startsWith(item.key + "-")) {
+                return item.key;
+            }
+        }
+
+        return currentPath;
+    };
+
     return (
         <Sider className="custom-sider" width={290}>
             {/* Header Logo */}
@@ -83,7 +99,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             {/* Menu */}
             <Menu
                 mode="inline"
-                selectedKeys={[location.pathname]}
+                selectedKeys={[getSelectedKey()]}
                 style={{
                     background: "transparent",
                     border: "none",

@@ -184,7 +184,6 @@
 .election-btn {
   border-radius: 8px;
   font-weight: 500;
-  transition: all 0.2s ease;
 }
 
 .election-btn.primary:hover {
@@ -261,7 +260,6 @@
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
   border: none !important;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .single-election-card:hover {
@@ -294,7 +292,6 @@
   border-radius: 20px !important;
   font-weight: 600 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.3s ease;
   flex-shrink: 0;
 }
 
@@ -361,7 +358,6 @@
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
 }
 
 .single-election-date-item:hover {
@@ -451,17 +447,8 @@
   position: relative;
 }
 
-.election-overview-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
-  transform: none !important;
-}
-
 .election-overview-card .ant-card-body {
   transition: none !important;
-}
-
-.election-overview-card .ant-card-body:hover {
-  transform: none !important;
 }
 
 @keyframes gradientShift {
@@ -551,7 +538,6 @@
   font-size: 13px;
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
   animation: tagGlow 2s ease-in-out infinite;
 }
 
@@ -632,7 +618,6 @@
   justify-content: center;
   font-size: 18px;
   color: #fff;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   border: 2px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
@@ -670,7 +655,6 @@
   font-weight: 600;
   color: #888;
   text-align: center;
-  transition: all 0.3s ease;
   white-space: nowrap;
 }
 
@@ -782,13 +766,8 @@
   border-radius: 12px;
   border-left: 4px solid #27ae60;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
 }
 
-.election-title-box:hover {
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
 
 .election-overview-name {
   margin: 0 !important;
@@ -820,7 +799,6 @@
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -834,7 +812,6 @@
   height: 100%;
   background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
   opacity: 0;
-  transition: all 0.3s ease;
 }
 
 .election-info-item:nth-child(2)::before {
@@ -845,16 +822,6 @@
   background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
 }
 
-.election-info-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.election-info-item:hover::before {
-  opacity: 1;
-  width: 4px;
-}
 
 .election-info-icon-wrapper {
   width: 48px;
@@ -865,7 +832,6 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
@@ -886,14 +852,6 @@
   transition: opacity 0.3s ease;
 }
 
-.election-info-item:hover .election-info-icon-wrapper {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-.election-info-item:hover .election-info-icon-wrapper::after {
-  opacity: 1;
-}
 
 .election-info-icon {
   font-size: 24px;
@@ -927,18 +885,6 @@
   word-wrap: break-word;
 }
 
-.election-info-item:hover .election-info-value {
-  color: #667eea;
-  transition: color 0.3s ease;
-}
-
-.election-info-item:nth-child(2):hover .election-info-value {
-  color: #f5576c;
-}
-
-.election-info-item:nth-child(3):hover .election-info-value {
-  color: #00f2fe;
-}
 
 .election-overview-description {
   color: #555;
@@ -993,7 +939,6 @@
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -1005,7 +950,6 @@
   left: 0;
   width: 4px;
   height: 100%;
-  transition: all 0.3s ease;
 }
 
 .election-time-start::before {
@@ -1016,15 +960,6 @@
   background: linear-gradient(180deg, #e74c3c, #c0392b);
 }
 
-.election-time-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.election-time-item:hover::before {
-  width: 6px;
-}
 
 .time-icon-wrapper {
   width: 48px;
@@ -1035,7 +970,6 @@
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
-  transition: all 0.3s ease;
 }
 
 .start-icon {
@@ -1048,9 +982,6 @@
   color: #e74c3c;
 }
 
-.election-time-item:hover .time-icon-wrapper {
-  transform: scale(1.1) rotate(5deg);
-}
 
 .time-content {
   display: flex;
@@ -1088,7 +1019,6 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   border: none;
@@ -1116,15 +1046,6 @@
   transition: left 0.5s ease;
 }
 
-.election-vote-button:hover::before {
-  left: 100%;
-}
-
-.election-vote-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(39, 174, 96, 0.5);
-  background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
-}
 
 .election-vote-button:active {
   transform: translateY(-1px);
@@ -1138,13 +1059,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.election-view-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  border-color: #27ae60;
-  color: #27ae60;
-  background: #f8fff9;
-}
 
 .election-view-upcoming {
   background: linear-gradient(135deg, #fff7e6 0%, #fffbf0 100%);
@@ -1152,10 +1066,6 @@
   color: #ff9800;
 }
 
-.election-view-upcoming:hover {
-  background: linear-gradient(135deg, #ffe5b3 0%, #fff7e6 100%);
-  border-color: #ff9800;
-}
 
 .election-view-voted {
   background: linear-gradient(135deg, #e6f4ff 0%, #f0f8ff 100%);
@@ -1163,19 +1073,10 @@
   color: #1677ff;
 }
 
-.election-view-voted:hover {
-  background: linear-gradient(135deg, #cce6ff 0%, #e6f4ff 100%);
-  border-color: #1677ff;
-}
 
 .button-arrow {
-  transition: transform 0.3s ease;
 }
 
-.election-vote-button:hover .button-arrow,
-.election-view-button:hover .button-arrow {
-  transform: translateX(4px);
-}
 
 @media (max-width: 768px) {
   .election-overview-card {
@@ -1258,7 +1159,6 @@
   border-radius: 12px;
   text-align: center;
   padding: 18px 0;
-  transition: all 0.2s ease;
   box-shadow: 0 0 0 1px #eaeaea;
   cursor: pointer;
 }
