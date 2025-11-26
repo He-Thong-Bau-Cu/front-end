@@ -16,20 +16,24 @@ import {
   PlusOutlined,
   EditOutlined,
   EyeOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect, useMemo } from "react";
 import type { Decision } from "@/types/Decision.interface";
 import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal";
 import ViewDecisionModal from "@/components/preside/management-decision/ViewDecisionModal";
 import DecisionService from "@/services/DecisionService";
-import * as XLSX from "xlsx";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
-import { useNotification } from "@/contexts/NotificationContext";
 import ElectionParticipantsService from "@/services/ElectionParticipantsService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import MeetingService from "@/services/MeetingService";
-const { Text } = Typography;
+import ResultService from "@/services/ResultService";
+import ViewDecisionResultModal from "./ViewDecisionResultModal";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
+import FileService from "@/services/FileService";
 const { Option } = Select;
 const { confirm } = Modal;
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
@@ -52,14 +56,14 @@ const formatDate = (dateString: string | Date | null | undefined): string => {
 const statusMap: { [key: string]: string } = {
   "APPROVED_SIGNED": "Đã phê duyệt",
   "WAIT_APPROVAL": "Chờ duyệt",
-  "REQUEST_EDIT": "Từ chối",
+  "REJECTED": "Từ chối",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
   "DRAFT": "Lưu nháp"
 };
 const DecisionTable = () => {
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [document, setDocument] = useState<any[]>([]);
+  const [documents, setDocument] = useState<any[]>([]);
   const [voters, setVoters] = useState<any[]>([]);
   const [organize, setOrganize] = useState<any[]>([]);
   const [entities, setEntities] = useState<any[]>([]);
@@ -73,11 +77,22 @@ const DecisionTable = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [meeting, setMeeting] = useState<any | null>(null);
+  const [openResultModal, setOpenResultModal] = useState(false);
+  const [resultData, setResultData] = useState<any[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [recordId, setRecordId] = useState<string | null>(null);
+  const { showLoading, hideLoading } = useLoading();
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
+  const [rejectModal, setRejectModal] = useState({
+    open: false,
+    record: null,
+  });
+  const [rejectReason, setRejectReason] = useState("");
+
   const [openConfirm, setOpenConfirm] = useState(false);
   const [secretary, setSecrytary] = useState<any | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<Decision | null>(null);
@@ -116,6 +131,19 @@ const DecisionTable = () => {
       message.error("Không thể tải danh sách nghị quyết.");
     } finally {
       setLoading(false);
+    }
+  };
+  const handleOpenSign = (data: any) => {
+    setRecordId(data._id);
+    setModalOpen(true);
+  };
+  const handleViewResult = async (record: any) => {
+    try {
+      const res = await ResultService.getResultByElectionId(record._id); // API lấy kết quả
+      setResultData(res);
+      setOpenResultModal(true);
+    } catch (err) {
+      message.error("Không lấy được kết quả");
     }
   };
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
@@ -180,6 +208,81 @@ const DecisionTable = () => {
     }
   };
 
+  const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
+    try {
+      showLoading();
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("password", password);
+      formData.append("electionId", recordId || "");
+      const res = await DecisionService.SignedDecision(formData);
+      if (res.success) {
+        notify(res.message, "success");
+        loadDecisions(1, pagination.pageSize);
+        setModalOpen(false);
+        showLoading();
+      } else {
+        notify(res.message, "error");
+      }
+    } catch {
+      message.error("Ký số thất bại!");
+    } finally {
+      hideLoading();
+    }
+  };
+  const openRejectModal = (record: any) => {
+    setRejectModal({
+      open: true,
+      record: record._id,
+    });
+    setRejectReason("");
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) {
+      return message.error("Vui lòng nhập lý do từ chối!");
+    }
+    try {
+      // Gọi API
+      const reject = await DecisionService.RejectDecision({ electionId: rejectModal.record, rejectReason: rejectReason.trim() });
+      if (reject.status === 200 && reject.success) {
+        notify(reject.message, "success");
+        loadDecisions(pagination.current, pagination.pageSize);
+      } else {
+        notify(reject.message, "error");
+      }
+      setRejectModal({ open: false, record: null });
+    } catch (err) {
+      message.error("Từ chối thất bại!");
+    }
+  };
+
+
+  const downloadUrlFileSign = async (data: any) => {
+    try {
+      const data1 = await ElectionDocumentService.getDocumentByElectionId(
+        data?._id
+      );
+      const signedDocuments = data1.filter((item: any) => item?.type === "signed-documents");
+      const response = await FileService.getSignedFile(signedDocuments[0]?.fileUrl);
+
+      const blob = new Blob([response], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải file!");
+    }
+  };
+
+
+
+
   const handleViewDecision = async (record: Decision) => {
     try {
       setViewLoading(true);
@@ -194,8 +297,8 @@ const DecisionTable = () => {
       const roleId1List: any = data4.filter((p: any) => p.roleId.roleCode === "VOTER");
       // MẢNG 2: roleId != 1
       const otherRolesList: any = data4.filter((p: any) => p.roleId.roleCode !== "VOTER");
-      setVoters(roleId1List? roleId1List : []);
-      setOrganize(otherRolesList? otherRolesList : []);
+      setVoters(roleId1List ? roleId1List : []);
+      setOrganize(otherRolesList ? otherRolesList : []);
       const data5 = await MeetingService.getByElectionId(record._id);
       setMeeting(data5)
       // Gọi API để lấy chi tiết decision
@@ -243,11 +346,11 @@ const DecisionTable = () => {
 
   // Định nghĩa columns bên trong component để có thể sử dụng các hàm xử lý
   const columns = [
-     {
-        title: "STT",
-        width: 70,
-        align: "center" as const,
-        render: (_: any, __: any, index: number) => index + 1,
+    {
+      title: "STT",
+      width: 70,
+      align: "center" as const,
+      render: (_: any, __: any, index: number) => index + 1,
     },
     {
       title: "SỐ QUYẾT ĐỊNH",
@@ -271,7 +374,7 @@ const DecisionTable = () => {
               ? "orange"
               : statusData === "WAIT_APPROVAL"
                 ? "yellow"
-                : statusData === "REQUEST_EDIT"
+                : statusData === "REJECTED"
                   ? "pink"
                   : statusData === "DRAFT"
                     ? "red"
@@ -300,6 +403,52 @@ const DecisionTable = () => {
               onClick={() => handleEditDecision(record)}
             />
           )}
+
+          {record.statusData === "APPROVED_SIGNED" ? (
+            <Button
+            style={{color:"blue"}}
+              icon={<DownloadOutlined />}
+              onClick={() => downloadUrlFileSign(record)}
+            >
+              Tải tài liệu có chữ ký số
+            </Button>
+          ) : null}
+
+          {
+            record.statusData === "WAIT_APPROVAL" && (
+              <>
+                <Button
+                  size="small"
+                  icon={<EditOutlined />}
+                  style={{ color: "green" }}
+                  onClick={() => handleOpenSign(record)}
+                >
+                  Ký số
+                </Button>
+                <Button
+                  size="small"
+                  style={{ color: "red" }}
+                  onClick={() => openRejectModal(record)}
+                >
+                  Từ chối
+                </Button>
+
+              </>
+            )
+          }
+
+          {
+            record.status === "CLOSED" && (
+              <Button
+                size="small"
+                icon={<EyeOutlined />}
+                style={{ color: "green" }}
+                onClick={() => handleViewResult(record)}
+              >
+                Xem kết quả
+              </Button>
+            )
+          }
         </Space>
       ),
     },
@@ -327,7 +476,7 @@ const DecisionTable = () => {
             <Option value="APPROVED_SIGNED">Đã phê duyệt</Option>
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
-            <Option value="REQUEST_EDIT">Yêu cầu chỉnh sửa</Option>
+            <Option value="REJECTED">Yêu cầu chỉnh sửa</Option>
             <Option value="DRAFT">Lưu nháp</Option>
           </Select>
           <Button
@@ -393,10 +542,18 @@ const DecisionTable = () => {
         loading={viewLoading}
         voters={voters}
         organize={organize}
-        document={document}
+        document={documents}
         electionentities={entities}
         meeting={meeting}
       />
+
+      <ViewDecisionResultModal
+        open={openResultModal}
+        onClose={() => setOpenResultModal(false)}
+        data={resultData}
+      />
+
+
 
       <ConfirmDeleteModal
         open={openConfirm}
@@ -423,6 +580,43 @@ const DecisionTable = () => {
           }
         }}
       />
+      {/* MODAL KÝ SỐ */}
+      <DigitalSignModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleDigitalSign}
+      />
+
+      <Modal
+        title="Xác nhận từ chối"
+        open={rejectModal.open}
+        onCancel={() => setRejectModal({ open: false, record: null })}
+        footer={null}
+        centered
+      >
+        <p>Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> ủy quyền này không?</p>
+
+        <Input.TextArea
+          rows={4}
+          placeholder="Nhập lý do từ chối..."
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+        />
+
+        <div style={{ textAlign: "right", marginTop: 16 }}>
+          <Button
+            style={{ marginRight: 8 }}
+            onClick={() => setRejectModal({ open: false, record: null })}
+          >
+            Hủy
+          </Button>
+
+          <Button danger type="primary" onClick={handleRejectSubmit}>
+            Xác nhận từ chối
+          </Button>
+        </div>
+      </Modal>
+
 
     </Card>
   );

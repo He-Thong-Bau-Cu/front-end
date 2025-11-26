@@ -280,12 +280,6 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
           <div style={{ marginTop: 20, textAlign: "right" }}>
             <Space>
               <Button onClick={onClose}>Đóng</Button>
-
-              {data?.statusData === "WAIT_APPROVAL" && (
-                <Button type="primary" onClick={onSign}>
-                  Ký số
-                </Button>
-              )}
             </Space>
           </div>
         </div>

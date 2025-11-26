@@ -6,7 +6,7 @@ class DecisionService extends BaseService {
     super("elections"); // Sử dụng endpoint meetings vì decisions có thể là meetings
   }
 
-  async getAllDecisions(params?: { page?: number; limit?: number; textSearch?: string;  statusData?: string; decisionName?: string; decisionNumber?: string }): Promise<{
+  async getAllDecisions(params?: { page?: number; limit?: number; textSearch?: string; statusData?: string; decisionName?: string; decisionNumber?: string }): Promise<{
     content: Decision[];
     page: number;
     limit: number;
@@ -25,9 +25,9 @@ class DecisionService extends BaseService {
 
       const response = await this.api.post<any>(
         `${this.endpoint}/search`,
-        searchParams 
+        searchParams
       );
-      
+
       if (response && response.data) {
         const result = response.data;
         return {
@@ -38,7 +38,7 @@ class DecisionService extends BaseService {
           totalPages: result.totalPages || 1,
         };
       }
-      
+
       return {
         content: [],
         page: 1,
@@ -53,47 +53,67 @@ class DecisionService extends BaseService {
   }
 
   async getElectionById(id: string): Promise<any> {
-     try {
-            const response = await this.api.get(
-                `${this.endpoint}/get/${id}`);
-            return response;
+    try {
+      const response = await this.api.get(
+        `${this.endpoint}/get/${id}`);
+      return response;
 
-        } catch (error) {
-            console.error("Error fetching decisions:", error);
-            throw error;
-        }
+    } catch (error) {
+      console.error("Error fetching decisions:", error);
+      throw error;
+    }
   }
 
-  
+
 
   async createDecision(body: any): Promise<any> {
-        try {
-            const response = await this.api.post<any>(
-                `${this.endpoint}`, body);
-            return response;
+    try {
+      const response = await this.api.post<any>(
+        `${this.endpoint}`, body);
+      return response;
 
-        } catch (error) {
-            console.error("Error fetching decisions:", error);
-            throw error;
-        }
-
+    } catch (error) {
+      console.error("Error fetching decisions:", error);
+      throw error;
     }
 
-  async updateDecision(id: string, body: any): Promise<any> {
-   try {
-            const response = await this.api.put<any>(`${this.endpoint}/update/${id}`, body);
-            return response;
+  }
 
-        } catch (error) {
-            console.error("Error fetching decisions:", error);
-            throw error;
-        }
+  async updateDecision(id: string, body: any): Promise<any> {
+    try {
+      const response = await this.api.put<any>(`${this.endpoint}/update/${id}`, body);
+      return response;
+
+    } catch (error) {
+      console.error("Error fetching decisions:", error);
+      throw error;
+    }
 
   }
 
   async deleteDecision(id: string): Promise<any> {
     try {
       const response = await this.api.delete(`${this.endpoint}/delete/${id}`);
+      return response;
+    } catch (error) {
+      console.error("Error deleting decision:", error);
+      throw error;
+    }
+  }
+
+  async SignedDecision(body: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/approve`, body);
+      return response;
+    } catch (error) {
+      console.error("Error deleting decision:", error);
+      throw error;
+    }
+  }
+
+  async RejectDecision(body: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/reject`, body);
       return response;
     } catch (error) {
       console.error("Error deleting decision:", error);

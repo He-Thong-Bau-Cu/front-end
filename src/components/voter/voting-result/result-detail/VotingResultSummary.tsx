@@ -1,75 +1,106 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Row, Typography } from "antd";
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import BallotService from "@/services/BallotService";
+import ElectionService from "@/services/ElectionService";
+import { Election } from "@/types/Election.interface";
+import { Card, Col, Row, Spin, Typography } from "antd";
+import React, { useEffect, useState } from "react";
 
 const { Title, Text } = Typography;
 
-
 const VotingResultSummary: React.FC = () => {
-    const navigate = useNavigate();
+    const [election, setElection] = useState<Election | null>(null);
+    const [stats, setStats] = useState({
+        total: 0,
+        cast: 0,
+        notCast: 0,
+    });
 
-    const summary = {
-        title: "Kết quả Bầu cử Đại biểu Quốc hội Khóa XVI",
-        location: "Khu vực bầu cử số 1 - Quận 1, TP. Hồ Chí Minh",
-        date: "15/12/2024 - 17:00",
-        totalVotes: 15234,
-        validVotes: 14856,
-        invalidVotes: 378,
-        participation: "89.2%",
-    };
+    const electionId = localStorage.getItem("currentElectionId");
+    const { showLoading, hideLoading } = useLoading();
+    const { notify } = useNotification();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                showLoading();
+
+                if (!electionId) {
+                    notify("Không tìm thấy electionId!", "error");
+                    return;
+                }
+                const resElection = await ElectionService.getElectionId(electionId);
+                setElection(resElection);
+
+                const data = await BallotService.getBallotStatisticsByElectionId(electionId);
+                const cast = data.ballotStatus.find((s) => s._id === "CAST")?.totalBallots || 0;
+
+                setStats({
+                    total: data.total,
+                    cast,
+                    notCast: data.total - cast,
+                });
+
+            } catch {
+                notify("Lỗi tải dữ liệu kết quả bầu cử!", "error");
+            } finally {
+                hideLoading();
+            }
+        };
+
+        fetchData();
+    }, []);
+
+
+    if (!election) {
+        return (
+            <div className="voting-wrapper" style={{ textAlign: "center", padding: 40 }}>
+                <Spin size="large" />
+            </div>
+        );
+    }
 
     return (
         <div className="voting-wrapper">
             <Card className="summary-card">
                 <div className="summary-header">
-                    <Title level={4}>{summary.title}</Title>
-                    <Button
-                        icon={<ArrowLeftOutlined />}
-                        className="voting-result-back-btn"
-                        onClick={() => navigate(`/voter/results`)}
-                    >
-                        Quay lại
-                    </Button>
+                    <Title level={4}>{election?.title}</Title>
                 </div>
 
-                <Text type="secondary">{summary.location}</Text>
                 <div className="summary-meta">
-                    <span>📅 Kết thúc: {summary.date}</span>
-                    <span>📍 Quận 1, TP.HCM</span>
-                    <span>🧑‍💼 5 Ứng cử viên</span>
+                    <span>
+                        📅 Kết thúc:{" "}
+                        {new Date(election?.endDate).toLocaleString("vi-VN", { hour12: false })}
+                    </span>
                 </div>
 
+
+                {/* 🔥 Thống kê phiếu bầu */}
                 <Row gutter={24} className="summary-stats">
                     <Col span={6} className="stat-item">
-                        <Title level={4} className="stat-value">
-                            {summary.totalVotes}
-                        </Title>
-                        <Text>Tổng phiếu</Text>
+                        <Title style={{ color: "#27ae60" }} level={3}>{stats.total}</Title>
+                        <Text>Tổng số phiếu</Text>
                     </Col>
+
                     <Col span={6} className="stat-item">
-                        <Title level={4} className="stat-value">
-                            {summary.validVotes}
-                        </Title>
-                        <Text>Phiếu hợp lệ</Text>
+                        <Title style={{ color: "#27ae60" }} level={3}>{stats.cast}</Title>
+                        <Text>Phiếu đã bỏ</Text>
                     </Col>
+
                     <Col span={6} className="stat-item">
-                        <Title level={4} className="stat-value">
-                            {summary.invalidVotes}
-                        </Title>
-                        <Text>Phiếu không hợp lệ</Text>
+                        <Title style={{ color: "#27ae60" }} level={3}>{stats.notCast}</Title>
+                        <Text>Phiếu chưa bỏ</Text>
                     </Col>
+
                     <Col span={6} className="stat-item">
-                        <Title level={4} className="stat-value">
-                            {summary.participation}
+                        <Title style={{ color: "#27ae60" }} level={3}>
+                            {stats.total === 0 ? "0%" : ((stats.cast / stats.total) * 100) + "%"}
                         </Title>
                         <Text>Tỷ lệ tham gia</Text>
                     </Col>
                 </Row>
             </Card>
-
-
-        </div>
+        </div >
     );
 };
 

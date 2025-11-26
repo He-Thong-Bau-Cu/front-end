@@ -26,6 +26,7 @@ const VoterStats = () => {
 
 
     useEffect(() => {
+
         async function fetchStats() {
             try {
                 showLoading();
@@ -73,7 +74,7 @@ const VoterStats = () => {
         {
             icon: <BarChartOutlined />,
             title: "Tỷ lệ tham gia",
-            value: `${statsData.participationPercentage}%`,
+            value: `${Math.round(statsData.participationPercentage)}%`,
             color: "#F39C12",
             bg: "#FFF6E5",
         },

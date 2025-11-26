@@ -1,4 +1,8 @@
 import PrivateRoute from "@/components/auth/PrivateRoute";
+import AuthorizationHistory from "@/components/homepage/AuthorizationHistory";
+import AuthorizationTable from "@/components/secretary/management-delegations/AuthorizationTable";
+import AuthorizationDetail from "@/components/voter/authorization/AuthorizationDetail";
+import AuthorizationForm from "@/components/voter/authorization/AuthorizationForm";
 import AuthorizationRequestForm from "@/components/voter/authorization/AuthorizationRequestForm";
 import UserSelection from "@/components/voter/authorization/UserSelection";
 import VotingResultDetail from "@/components/voter/voting-result/VotingResultDetail";
@@ -29,9 +33,9 @@ import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/Orga
 import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
 import HomePage from "@/pages/HomePage";
 import Checkin from "@/pages/organizing-committee/Checkin";
+import CreateMeetingAttendee from "@/pages/organizing-committee/CreateMeetingAttendee";
 import DashboardOrganizingCommittee from "@/pages/organizing-committee/Dashboard";
 import ManagementDelegates from "@/pages/organizing-committee/ManagementDelegates";
-import CreateMeetingAttendee from "@/pages/organizing-committee/CreateMeetingAttendee";
 import AuthorizationPreside from "@/pages/preside/Authorization";
 import DashboardPreside from "@/pages/preside/Dashboard";
 import ReportsPage from "@/pages/preside/manage_report/ReportsPage";
@@ -39,7 +43,6 @@ import ManagementDecision from "@/pages/preside/ManagementDecision";
 import ElectionResultsPage from "@/pages/preside/voting_process/ElectionResultsPage";
 import DashboardSecretary from "@/pages/secretary/Dashboard";
 import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
-import ManagementDocument from "@/pages/secretary/ManagementDocument";
 import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
 import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
 import FirstTimeChangePasswordScreen from "@/pages/user/ChangePasswordFirstTime";
@@ -51,10 +54,6 @@ import DelegateCardPage from "@/pages/voter/DelegateCardPage";
 import ResolutionVoting from "@/pages/voter/ResolutionVoting";
 import VoteSuccess from "@/pages/voter/VoteSuccess";
 import VotingHistory from "@/pages/voter/VotingHistory";
-import AuthorizationDetail from "@/components/voter/authorization/AuthorizationDetail";
-import AuthorizationForm from "@/components/voter/authorization/AuthorizationForm";
-import AuthorizationHistory from "@/components/homepage/AuthorizationHistory";
-import AuthorizationTable from "@/components/secretary/management-delegations/AuthorizationTable";
 
 export const privateRoutes = [
   {

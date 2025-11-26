@@ -47,7 +47,7 @@ class ElectionService extends BaseService {
     }
   }
 
-  async getElectionUser( body: any): Promise<any> {
+  async getElectionUser(body: any): Promise<any> {
     try {
       const response = await this.api.post<any>(`${this.endpoint}/user-organizer`, body);
       return response.data;
@@ -57,7 +57,7 @@ class ElectionService extends BaseService {
     }
   }
 
-  async getElectionVoter( body: any): Promise<any> {
+  async getElectionVoter(body: any): Promise<any> {
     try {
       const response = await this.api.post<any>(`${this.endpoint}/user-voter/valid`, body);
       return response.data;

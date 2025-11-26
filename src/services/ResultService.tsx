@@ -14,7 +14,6 @@ class ResultService extends BaseService {
             throw error;
         }
     }
-
     async getResultById(id: string, body: any): Promise<any> {
         try {
             const response = await this.api.post<any>(`${this.endpoint}/${id}`, body);
@@ -47,6 +46,7 @@ class ResultService extends BaseService {
         }
     }
 
+
     // Lấy kết quả Yes/No
     async getYesNoResultsByElectionId(electionId: string): Promise<any> {
         try {
@@ -57,6 +57,35 @@ class ResultService extends BaseService {
             throw error;
         }
     }
+
+    async getResultByElectionId(id: string): Promise<any> {
+        try {
+            const response = await this.api.get<any>(
+                `${this.endpoint}/elections/${id}`);
+            return response.data;
+
+        } catch (error) {
+            console.error("Error fetching decisions:", error);
+            throw error;
+        }
+
+    }
+
+
+    async getCumulativeResult(id: string): Promise<any> {
+        const response = await this.api.get<any>(
+            `${this.endpoint}/election-cumulative/${id}`);
+        return response.data;
+
+    }
+
+    async getYesNoResult(id: string): Promise<any> {
+        const response = await this.api.get<any>(
+            `${this.endpoint}/election-yes-no/${id}`);
+        return response.data;
+
+    }
+
 }
 
 export default new ResultService();
