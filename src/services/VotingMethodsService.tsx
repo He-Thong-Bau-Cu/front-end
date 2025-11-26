@@ -23,7 +23,7 @@ class VotingMethodsService extends BaseService {
             throw error;
         }
     }
-    
+
 
     async getVotingMethodById(code: string): Promise<any> {
         try {
@@ -37,7 +37,7 @@ class VotingMethodsService extends BaseService {
 
     async updateVotingMethod(code: string, body: string): Promise<any> {
         try {
-            const response = await this.api.post<any>(`${this.endpoint}/${code}`,body);
+            const response = await this.api.post<any>(`${this.endpoint}/${code}`, body);
             return response;
         } catch (error) {
             console.error("Error update voting method by code:", error);
@@ -45,9 +45,9 @@ class VotingMethodsService extends BaseService {
         }
     }
 
-     async createVotingMethod( body: string): Promise<any> {
+    async createVotingMethod(body: string): Promise<any> {
         try {
-            const response = await this.api.post<any>(`${this.endpoint}`,body);
+            const response = await this.api.post<any>(`${this.endpoint}`, body);
             return response;
         } catch (error) {
             console.error("Error update voting method by code:", error);

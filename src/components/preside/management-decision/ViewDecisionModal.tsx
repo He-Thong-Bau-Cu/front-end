@@ -73,7 +73,9 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
     { title: "Vai trò", dataIndex: ["roleId", "roleName"] },
-    { title: "Số cổ phần", dataIndex: "shares" },
+    { title: "Cổ phần", dataIndex: "percent",
+      render: (percent: number) => (percent !== undefined ? `${percent}%` : `${0}%`),
+     },
   ];
 
   const organizerColumns = [

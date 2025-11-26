@@ -55,8 +55,8 @@ const renderStatusTag = (status: string) => {
         REVOKED: { color: "#cf1322", label: "Đã thu hồi" },
         INVALID: { color: "#fa8c16", label: "Không hợp lệ" },
     };
-
     const st = map[status] || { color: "#d9d9d9", label: status };
+
 
     return (
         <span
@@ -80,16 +80,10 @@ const AuthorizationTable = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const { notify } = useNotification();
     const electionId = localStorage.getItem("currentElectionId") || "";
-
-    // ===== Modal chi tiết =====
     const [openDetail, setOpenDetail] = useState(false);
     const [detail, setDetail] = useState<any>(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
-
-    // ===== Modal xác nhận PHÊ DUYỆT =====
     const [confirmApproveOpen, setConfirmApproveOpen] = useState(false);
-
-    // ===== Modal nhập lý do TỪ CHỐI =====
     const [rejectReasonModal, setRejectReasonModal] = useState<{
         open: boolean;
         reason: string;
@@ -97,40 +91,31 @@ const AuthorizationTable = () => {
         open: false,
         reason: "",
     });
-
-    // ===== Pagination state =====
     const [pagination, setPagination] = useState({
         current: 1,
         pageSize: 10,
     });
-
-    // ========================== LOAD LIST ==========================
     const loadDelegation = async () => {
         setLoading(true);
         try {
             const res = await DelegationService.getDelegationByElectionId(
                 electionId
             );
-
-            // ================== FILTER BY SEARCH (remove accents) =============
             const filtered = res.filter((item: any) => {
                 const searchText = removeVietnameseTones(
                     search.trim().toLowerCase()
                 );
-
                 const delegatorName = removeVietnameseTones(
                     item.delegatorId?.fullName || ""
                 );
                 const delegateName = removeVietnameseTones(
                     item.delegateId?.fullName || ""
                 );
-
                 return (
                     delegatorName.includes(searchText) ||
                     delegateName.includes(searchText)
                 );
             });
-
             setData(filtered);
         } catch (err) {
             console.error("Không thể load dữ liệu", err);
@@ -138,13 +123,11 @@ const AuthorizationTable = () => {
             setLoading(false);
         }
     };
-
     // ====== HANDLE APPROVE ======
     const handleApprove = async () => {
         if (!detail?._id) return;
         try {
             message.loading("Đang duyệt ủy quyền...", 0);
-
             const res = await DelegationService.delegationConfirmed({
                 delegationId: detail._id,
                 status: "CONFIRMED",
@@ -156,7 +139,6 @@ const AuthorizationTable = () => {
             }
             message.destroy();
             message.success("Đã duyệt ủy quyền!");
-
             setConfirmApproveOpen(false);
             setOpenDetail(false);
             loadDelegation();
@@ -166,14 +148,12 @@ const AuthorizationTable = () => {
         }
     };
 
-    // ====== HANDLE REJECT (dùng API rejectDelegation) ======
     const handleReject = async () => {
         if (!detail?._id) return;
 
         if (!rejectReasonModal.reason.trim()) {
             return message.warning("Vui lòng nhập lý do từ chối!");
         }
-
         try {
             message.loading("Đang từ chối ủy quyền...", 0);
             const payload = {
@@ -181,7 +161,6 @@ const AuthorizationTable = () => {
                 status: "REJECTED",
                 rejectReason: rejectReasonModal.reason,
             }
-
             // Gọi API rejectDelegation (mảng delegationIds + electionId)
             const res = await DelegationService.delegationConfirmed(payload);
             if (res.success) {
@@ -191,7 +170,6 @@ const AuthorizationTable = () => {
             }
             message.destroy();
             message.success("Đã từ chối ủy quyền!");
-
             setRejectReasonModal({ open: false, reason: "" });
             setOpenDetail(false);
             loadDelegation();
@@ -203,19 +181,16 @@ const AuthorizationTable = () => {
             );
         }
     };
-
     useEffect(() => {
         loadDelegation();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
     useEffect(() => {
         const t = setTimeout(() => loadDelegation(), 350);
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
-    // ========================== LOAD DETAIL ==========================
     const handleOpenDetail = async (record: any) => {
         setOpenDetail(true);
         setLoadingDetail(true);
@@ -227,7 +202,6 @@ const AuthorizationTable = () => {
             setLoadingDetail(false);
         }
     };
-
     // ================== COLUMNS ==================
     const columns = [
         {
@@ -240,13 +214,13 @@ const AuthorizationTable = () => {
         {
             title: "Người ủy quyền",
             render: (r: any) => (
-                <Text strong>{r.delegatorId?.fullName || "—"}</Text>
+                <Text strong>{r.delegatorId?.fullName || "-"}</Text>
             ),
         },
         {
             title: "Người được ủy quyền",
             render: (r: any) => (
-                <span style={{ fontWeight: 500 }}>{r.delegateId?.fullName}</span>
+                <span style={{ fontWeight: 500 }}>{r.delegateId ? r.delegateId?.fullName : r.delegateInfo?.fullName}</span>
             ),
         },
         {
@@ -500,9 +474,7 @@ const AuthorizationTable = () => {
                                                 fontSize: 20,
                                             }}
                                         >
-                                            {detail.delegatorId.fullName?.charAt(
-                                                0
-                                            )}
+                                            {detail.delegatorId.fullName?.charAt(0)}
                                         </div>
                                         <div>
                                             <Text
@@ -522,15 +494,23 @@ const AuthorizationTable = () => {
                                     <div style={{ lineHeight: "1.9" }}>
                                         <p>
                                             <strong>Họ và tên:</strong>{" "}
-                                            {detail.delegatorId.fullName}
+                                            {detail?.delegatorId?.fullName}
                                         </p>
                                         <p>
                                             <strong>Email:</strong>{" "}
-                                            {detail.delegatorId.email}
+                                            {detail?.delegatorId?.email}
+                                        </p>
+                                        <p>
+                                            <strong>Số điện thoại:</strong>{" "}
+                                            {detail?.delegatorId?detail?.delegatorId?.phone:"-"}
+                                        </p>
+                                        <p>
+                                            <strong>Địa chỉ:</strong>{" "}
+                                            {detail?.delegatorId? detail?.delegatorId?.address:"-"}
                                         </p>
                                         <p>
                                             <strong>Vị trí:</strong>{" "}
-                                            {detail.delegatorId.position}
+                                            {detail?.delegatorId?.position}
                                         </p>
                                     </div>
                                 </Card>
@@ -566,7 +546,7 @@ const AuthorizationTable = () => {
                                                 fontSize: 20,
                                             }}
                                         >
-                                            {detail.delegateId.fullName?.charAt(
+                                            {detail?.delegateId?.fullName?.charAt(
                                                 0
                                             )}
                                         </div>
@@ -588,15 +568,23 @@ const AuthorizationTable = () => {
                                     <div style={{ lineHeight: "1.9" }}>
                                         <p>
                                             <strong>Họ và tên:</strong>{" "}
-                                            {detail.delegateId.fullName}
+                                            {detail?.delegateId ? detail?.delegateId?.fullName : detail?.delegateInfo?.fullName}
                                         </p>
                                         <p>
                                             <strong>Email:</strong>{" "}
-                                            {detail.delegateId.email}
+                                            {detail?.delegateId ? detail?.delegateId?.email : detail?.delegateInfo?.email}
+                                        </p>
+                                        <p>
+                                            <strong>Số điện thoại:</strong>{" "}
+                                            {detail?.delegateId ? detail?.delegateId?.phone : detail?.delegateInfo?.phone}
+                                        </p>
+                                        <p>
+                                            <strong>Địa chỉ:</strong>{" "}
+                                            {detail?.delegateId ? detail?.delegateId?.address : detail?.delegateInfo?.address}
                                         </p>
                                         <p>
                                             <strong>Vị trí:</strong>{" "}
-                                            {detail.delegateId.position}
+                                            {detail?.delegateId ? detail?.delegateId?.position : detail?.delegateInfo?.position}
                                         </p>
                                     </div>
                                 </Card>
@@ -630,7 +618,7 @@ const AuthorizationTable = () => {
                                     marginTop: 4,
                                 }}
                             >
-                                {detail.delegateReason}
+                                {detail?.delegateReason}
                             </div>
                         </div>
 

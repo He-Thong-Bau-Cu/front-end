@@ -34,6 +34,9 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import FileService from "@/services/FileService";
+import VotingMethodsService from "@/services/VotingMethodsService";
+import VotingRightService from "@/services/VotingRightService";
+import { set } from "react-hook-form";
 const { Option } = Select;
 const { confirm } = Modal;
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
@@ -297,10 +300,23 @@ const DecisionTable = () => {
       const roleId1List: any = data4.filter((p: any) => p.roleId.roleCode === "VOTER");
       // MẢNG 2: roleId != 1
       const otherRolesList: any = data4.filter((p: any) => p.roleId.roleCode !== "VOTER");
-      setVoters(roleId1List ? roleId1List : []);
       setOrganize(otherRolesList ? otherRolesList : []);
       const data5 = await MeetingService.getByElectionId(record._id);
-      setMeeting(data5)
+      setMeeting(data5.data);
+      const v = await VotingRightService.getVotingRightByElectionId(record._id);
+
+      roleId1List.forEach((voter: any) => {
+        const votingRight = v.find(
+          (vr: any) => vr.voterId.userId === voter.userId._id
+        );
+        if (votingRight) {
+          voter.percent = votingRight.shares;   // <-- Thêm dòng này
+        } else {
+          voter.percent = 0;                     // <-- hoặc null tuỳ ý bạn
+        }
+      });
+      setVoters(roleId1List);
+
       // Gọi API để lấy chi tiết decision
       const decisionDetail = await DecisionService.getElectionById(record._id);
 
@@ -406,7 +422,7 @@ const DecisionTable = () => {
 
           {record.statusData === "APPROVED_SIGNED" ? (
             <Button
-            style={{color:"blue"}}
+              style={{ color: "blue" }}
               icon={<DownloadOutlined />}
               onClick={() => downloadUrlFileSign(record)}
             >

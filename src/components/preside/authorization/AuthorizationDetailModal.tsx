@@ -150,10 +150,9 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 rejectReason: rejectReasons[id] || "",
             }));
 
-
             const payload = {
                 electionId: data?.election?._id,
-                delegationIds: delegationList
+                delegationIds: delegationList,
             };
             const reject = await DelegationService.delegationReject(payload);
             if (!reject.success) {
@@ -209,7 +208,6 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 notify(res.message, "success");
                 loadDetail();
                 setModalOpen(false);
-                onClose();
             } else {
                 notify(res.message, "error");
             }
@@ -755,8 +753,8 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                     }}>
                         Các ủy quyền <strong>không được chọn</strong> sẽ bị
                         <strong> bắt buộc từ chối</strong>.<br />
-                        Bạn phải nhập <strong>lý do từ chối cho từng ủy quyền</strong>
-                        trước khi hệ thống có thể tiến hành ký số.
+                        Bạn phải nhập <strong>lý do từ chối cho từng ủy quyền </strong>
+                        trước khi thực hiện ký số.
                     </p>
                 </div>
             </Modal>

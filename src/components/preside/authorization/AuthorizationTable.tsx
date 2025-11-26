@@ -21,6 +21,7 @@ import DelegationService from "@/services/DelegationService";
 import AuthorizationDetailModal from "./AuthorizationDetailModal";
 import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
 import FileService from "@/services/FileService";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -135,16 +136,13 @@ const AuthorizationTable = () => {
 
     const downloadUrlFileSign = async (data: any) => {
         try {
-            const data1 = await DelegationService.getDelegationPresideByElectionId(
+            const data1 = await ElectionDocumentService.getDocumentByElectionId(
                 data?.election?._id
             );
-            const response = await FileService.getSignedFile(
-                data1[0]?.documents[0]?.fileUrl
-            );
-
+            const signedDocuments = data1.filter((item: any) => item?.type === "delegation-summary-signed");
+            const response = await FileService.getSignedFile(signedDocuments[0]?.fileUrl);
             const blob = new Blob([response], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement("a");
             a.href = url;
             a.download = "Danh_sach_uy_quyen_da_ky.pdf";
@@ -161,15 +159,12 @@ const AuthorizationTable = () => {
     const filteredData = data.filter((item) => {
         const text = search.trim().toLowerCase();
         const noAccentText = removeVietnameseTones(text);
-
         const decisionNumber = item?.election?.decisionNumber || "";
         const decisionName = item?.election?.decisionName || "";
         const delegationEnd = item?.election?.delegationEnd;
-
         if (text) {
             const d1 = decisionNumber.toLowerCase();
             const d2 = decisionName.toLowerCase();
-
             const nd1 = removeVietnameseTones(decisionNumber);
             const nd2 = removeVietnameseTones(decisionName);
 
@@ -243,7 +238,7 @@ const AuthorizationTable = () => {
                         Xem chi tiết hoặc ký
                     </Button>
 
-                    {record.status !== "SIGNED"? (
+                    {record.status !== "SIGNED" ? (
                         <Button
                             icon={<DownloadOutlined />}
                             onClick={() => downloadUrlFile(record)}
