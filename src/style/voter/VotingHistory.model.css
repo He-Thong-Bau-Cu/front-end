@@ -12,17 +12,10 @@
   border-radius: 12px;
   background: #f9fff9;
   border: 1px solid #d4eac8;
-  transition: all 0.25s ease-in-out;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   cursor: pointer;
 }
 
-.voting-stat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-  border-color: #a8e678;
-  background: linear-gradient(90deg, #f5fff0 0%, #eaffd6 100%);
-}
 .voting-header-top {
   display: flex;
   justify-content: space-between;
@@ -66,14 +59,9 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   border: none;
   padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f9fff9 100%);
-  transition: all 0.3s ease;
+  background: #ffffff;
 }
 
-.voting-single-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
 
 /* --- Nội dung --- */
 .voting-title {
@@ -93,20 +81,13 @@
 .voting-info-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
+  gap: 0px;
   background: #ffffff;
   border-radius: 12px;
   border: none;
-  transition: all 0.25s ease;
   height: 100%;
 }
 
-.voting-info-item:hover {
-  box-shadow: 0 2px 8px rgba(168, 230, 120, 0.15);
-  transform: translateY(-2px);
-  background: #f9fff9;
-}
 
 .voting-info-item .ant-typography {
   color: #999999 !important;
@@ -116,11 +97,9 @@
   height: 48px;
   width: 48px;
   min-width: 48px;
-  background-color: #f1f8ed;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 12px;
   flex-shrink: 0;
 }
 
@@ -140,15 +119,9 @@
   border: none;
   background: #f0f0f0;
   font-weight: 500;
-  transition: all 0.25s ease;
   font-size: 14px;
 }
 
-.voting-buttons button:hover {
-  background: #e6f7d9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.2);
-}
 
 /* --- Thông báo chưa bỏ phiếu --- */
 .no-voting-card {
@@ -156,7 +129,7 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  background: linear-gradient(135deg, #ffffff 0%, #f9fff9 100%);
+  background: #ffffff;
 }
 
 .no-voting-container {
@@ -208,15 +181,30 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s ease;
 }
 
-.no-voting-button:hover {
-  background: #558b2f !important;
-  border-color: #558b2f !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(124, 179, 66, 0.3);
+
+/* Lựa chọn đã bỏ phiếu */
+.voting-choice-card {
+  position: sticky;
+  top: 20px;
 }
+
+.voting-choice-card .ant-card {
+  box-shadow: none;
+  padding: 16px;
+}
+
+.voting-choice-card .ant-descriptions-item-label {
+  font-weight: 500;
+  color: #666;
+  font-size: 13px;
+}
+
+.voting-choice-card .ant-descriptions-item-content {
+  font-size: 14px;
+}
+
 
 /* Responsive cho no-voting */
 @media (max-width: 768px) {
@@ -235,5 +223,9 @@
 
   .no-voting-description {
     font-size: 14px;
+  }
+
+  .voting-choice-card {
+    position: static;
   }
 }

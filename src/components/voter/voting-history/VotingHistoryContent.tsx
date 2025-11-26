@@ -7,10 +7,8 @@ import {
     CalendarOutlined,
     CheckCircleOutlined,
     ClockCircleOutlined,
-    CopyOutlined,
     FileTextOutlined,
     InboxOutlined,
-    PrinterOutlined,
     RightOutlined,
     UserOutlined
 } from "@ant-design/icons";
@@ -49,14 +47,6 @@ const VotingHistoryContent = () => {
         fetchBallot();
     }, []);
 
-    const handleCopy = async (text: string, label: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            notify(`Đã sao chép ${label}!`, "success");
-        } catch {
-            notify(`Không thể sao chép ${label}`, "error");
-        }
-    };
 
 
     // Hiển thị thông báo khi chưa có dữ liệu (chưa bỏ phiếu)
@@ -128,186 +118,154 @@ const VotingHistoryContent = () => {
                     </Col>
                 </Row>
 
-                <Divider style={{ margin: "16px 0", borderColor: "#f0f0f0" }} />
+                <Divider style={{ margin: "12px 0", borderColor: "#f0f0f0" }} />
 
-                {/* Thông tin phiếu bầu */}
-                <div style={{ marginBottom: 20 }}>
-                    <Title level={5} style={{ marginBottom: 12, color: "#124d2d" }}>
-                        Thông tin phiếu bầu
-                    </Title>
-                    <Row gutter={[16, 16]}>
-                        <Col xs={24} sm={12} md={12}>
-                            <div className="voting-info-item">
-                                <div className="voting-info-item-icon">
-                                    <FileTextOutlined style={{ color: "#A8E678", fontSize: 20 }} />
-                                </div>
-                                <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Mã phiếu
-                                    </Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{ballot._id}</strong>
-                                </div>
-                            </div>
-                        </Col>
-                        {/* <Col xs={24} sm={12} md={8}>
-                            <div className="voting-info-item">
-                                <div className="voting-info-item-icon">
-                                    <SafetyOutlined style={{ color: "#A8E678", fontSize: 20 }} />
-                                </div>
-                                <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Mã OTP
-                                    </Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>{otpCode}</strong>
-                                </div>
-                            </div>
-                        </Col> */}
-                        <Col xs={24} sm={12} md={12}>
-                            <div className="voting-info-item">
-                                <div className="voting-info-item-icon">
-                                    <UserOutlined style={{ color: "#A8E678", fontSize: 20 }} />
-                                </div>
-                                <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Người bỏ phiếu
-                                    </Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
-                                        {ballot.voterId.userId.fullName}
-                                    </strong>
-                                </div>
-                            </div>
-                        </Col>
-                    </Row>
-                </div>
+                <Row gutter={[24, 12]}>
+                    {/* Cột trái - Thông tin */}
+                    <Col xs={24} lg={14}>
+                        {/* Thông tin phiếu bầu */}
+                        <div style={{ marginBottom: 8 }}>
+                            <Title level={5} style={{ marginBottom: 6, color: "#124d2d" }}>
+                                Thông tin phiếu bầu
+                            </Title>
+                            <Row gutter={[0, 4]}>
+                                <Col xs={24}>
+                                    <div className="voting-info-item">
+                                        <div className="voting-info-item-icon">
+                                            <FileTextOutlined style={{ color: "#A8E678", fontSize: 20 }} />
+                                        </div>
+                                        <div>
+                                            <Text type="secondary" style={{ fontSize: 13, marginRight: 8 }}>
+                                                Mã phiếu:
+                                            </Text>
+                                            <strong style={{ fontSize: 15 }}>{ballot._id}</strong>
+                                        </div>
+                                    </div>
+                                </Col>
+                                <Col xs={24}>
+                                    <div className="voting-info-item">
+                                        <div className="voting-info-item-icon">
+                                            <UserOutlined style={{ color: "#A8E678", fontSize: 20 }} />
+                                        </div>
+                                        <div>
+                                            <Text type="secondary" style={{ fontSize: 13, marginRight: 8 }}>
+                                                Người bỏ phiếu:
+                                            </Text>
+                                            <strong style={{ fontSize: 15 }}>
+                                                {ballot.voterId.userId.fullName}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </div>
 
+                        {/* Thông tin bầu cử */}
+                        <div style={{ marginBottom: 8 }}>
+                            <Row gutter={[0, 4]}>
+                                <Col xs={24}>
+                                    <div className="voting-info-item">
+                                        <div className="voting-info-item-icon">
+                                            <AuditOutlined style={{ color: "#A8E678", fontSize: 20 }} />
+                                        </div>
+                                        <div>
+                                            <Text type="secondary" style={{ fontSize: 13, marginRight: 8 }}>
+                                                Tên cuộc bầu cử:
+                                            </Text>
+                                            <strong style={{ fontSize: 15 }}>
+                                                {ballot.electionId.title}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </div>
 
-                {/* Thông tin thời gian */}
-                <div style={{ marginBottom: 20 }}>
-                    <Title level={5} style={{ marginBottom: 12, color: "#124d2d" }}>
-                        Thông tin bầu cử
-                    </Title>
-                    <Row gutter={[16, 16]}>
-                        <Col xs={24} sm={12}>
-                            <div className="voting-info-item">
-                                <div className="voting-info-item-icon">
-                                    <AuditOutlined style={{ color: "#A8E678", fontSize: 20 }} />
-                                </div>
-                                <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Tên cuộc bầu cử                                    </Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
-                                        {ballot.electionId.title}
-                                    </strong>
-                                </div>
-                            </div>
-                        </Col>
-                        {/* <Col xs={24} sm={12}>
-                            <div className="voting-info-item">
-                                <div className="voting-info-item-icon">
-                                    <CalendarOutlined style={{ color: "#A8E678", fontSize: 20 }} />
-                                </div>
-                                <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Địa điểm                                    </Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
-                                        {ballot.electionId.decisionName}
-                                    </strong>
-                                </div>
-                            </div>
-                        </Col> */}
-                    </Row>
-                </div>
+                        {/* Thông tin thời gian */}
+                        <div style={{ marginBottom: 8 }}>
+                            <Row gutter={[0, 4]}>
+                                <Col xs={24}>
+                                    <div className="voting-info-item">
+                                        <div className="voting-info-item-icon">
+                                            <ClockCircleOutlined style={{ color: "#A8E678", fontSize: 20 }} />
+                                        </div>
+                                        <div>
+                                            <Text type="secondary" style={{ fontSize: 13, marginRight: 8 }}>
+                                                Phát hành:
+                                            </Text>
+                                            <strong style={{ fontSize: 15 }}>
+                                                {ballot.issuedAt ? dayjs(ballot.issuedAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa có"}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </Col>
+                                <Col xs={24}>
+                                    <div className="voting-info-item">
+                                        <div className="voting-info-item-icon">
+                                            <CalendarOutlined style={{ color: "#A8E678", fontSize: 20 }} />
+                                        </div>
+                                        <div>
+                                            <Text type="secondary" style={{ fontSize: 13, marginRight: 8 }}>
+                                                Bỏ phiếu:
+                                            </Text>
+                                            <strong style={{ fontSize: 15 }}>
+                                                {ballot.castAt ? dayjs(ballot.castAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa bỏ"}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </div>
+                    </Col>
 
-                {/* Thông tin thời gian */}
-                <div style={{ marginBottom: 20 }}>
-                    <Title level={5} style={{ marginBottom: 12, color: "#124d2d" }}>
-                        Thời gian
-                    </Title>
-                    <Row gutter={[16, 16]}>
-                        <Col xs={24} sm={12}>
-                            <div className="voting-info-item">
-                                <div className="voting-info-item-icon">
-                                    <ClockCircleOutlined style={{ color: "#A8E678", fontSize: 20 }} />
-                                </div>
-                                <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Phát hành
-                                    </Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
-                                        {ballot.issuedAt ? dayjs(ballot.issuedAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa có"}
-                                    </strong>
+                    {/* Cột phải - Lựa chọn đã bỏ phiếu */}
+                    <Col xs={24} lg={10}>
+                        <div className="voting-choice-card">
+                            <Title level={5} style={{ marginBottom: 8, color: "#124d2d" }}>
+                                Lựa chọn đã bỏ phiếu
+                            </Title>
+                            <Card
+                                size="small"
+                                style={{
+                                    border: "none",
+                                    borderRadius: 12,
+                                    backgroundColor: "transparent",
+                                    boxShadow: "none",
+                                    padding: 0,
+                                }}
+                            >
+                                <Descriptions column={1} size="small">
+                                    {/* 👉 CUMULATIVE: hiển thị nguyên như cũ */}
+                                    {methodCode === "CUMULATIVE" &&
+                                        ballot.allocations.map((a, i) => (
+                                            <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
+                                                <Text strong style={{ color: "#52c41a" }}>
+                                                    {a.entityId?.title} - Số phiếu: {a.voteValue}
+                                                </Text>
+                                            </Descriptions.Item>
+                                        ))
+                                    }
 
-                                </div>
-                            </div>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <div className="voting-info-item">
-                                <div className="voting-info-item-icon">
-                                    <CalendarOutlined style={{ color: "#A8E678", fontSize: 20 }} />
-                                </div>
-                                <div>
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Bỏ phiếu
-                                    </Text>
-                                    <strong style={{ display: "block", fontSize: 15, marginTop: 2 }}>
-                                        {ballot.castAt ? dayjs(ballot.castAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa bỏ"}
-                                    </strong>
-
-                                </div>
-                            </div>
-                        </Col>
-                    </Row>
-                </div>
-
-                {/* Lựa chọn */}
-                <div style={{ marginBottom: 20 }}>
-                    <Title level={5} style={{ marginBottom: 12, color: "#124d2d" }}>
-                        Lựa chọn đã bỏ phiếu
-                    </Title>
-                    <Card
-                        size="small"
-                        style={{
-                            border: "none",
-                            borderRadius: 12,
-                            boxShadow: "none",
-                        }}
-                    >
-                        <Descriptions column={1} size="small">
-
-                            {/* 👉 CUMULATIVE: hiển thị nguyên như cũ */}
-                            {methodCode === "CUMULATIVE" &&
-                                ballot.allocations.map((a, i) => (
-                                    <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
-                                        <Text strong style={{ color: "#52c41a" }}>
-                                            {a.entityId?.title} - Số phiếu: {a.voteValue}
-                                        </Text>
-                                    </Descriptions.Item>
-                                ))
-                            }
-
-                            {/* 👉 YES_NO_ABSTAIN: chỉ hiển thị 1 kết quả */}
-                            {methodCode === "YES_NO_ABSTAIN" && ballot.allocations.length > 0 && (
-                                <Descriptions.Item>
-                                    <Text strong style={{ color: "#52c41a" }}>
-                                        {ballot.allocations[0].entityId.title} - {convertYesNo(ballot.allocations[0].voteValue)}
-                                    </Text>
-                                </Descriptions.Item>
-                            )}
-
-                        </Descriptions>
-
-
-
-
-                    </Card>
-                </div>
+                                    {/* 👉 YES_NO_ABSTAIN: chỉ hiển thị 1 kết quả */}
+                                    {methodCode === "YES_NO_ABSTAIN" && ballot.allocations.length > 0 && (
+                                        <Descriptions.Item>
+                                            <Text strong style={{ color: "#52c41a" }}>
+                                                {ballot.allocations[0].entityId.title} - {convertYesNo(ballot.allocations[0].voteValue)}
+                                            </Text>
+                                        </Descriptions.Item>
+                                    )}
+                                </Descriptions>
+                            </Card>
+                        </div>
+                    </Col>
+                </Row>
 
 
 
 
 
                 {/* Nút hành động */}
-                <Row gutter={12} className="voting-buttons" style={{ marginTop: 20 }}>
+                {/* <Row gutter={12} className="voting-buttons" style={{ marginTop: 12 }}>
                     <Col xs={24} sm={12}>
                         <Button block icon={<CopyOutlined />} size="large" onClick={() => handleCopy(ballot._id, "mã phiếu")}>
                             Sao chép mã phiếu
@@ -319,7 +277,7 @@ const VotingHistoryContent = () => {
                             In xác nhận
                         </Button>
                     </Col>
-                </Row>
+                </Row> */}
             </Card>
 
 

@@ -85,9 +85,7 @@ export default function AuthorizationRequestForm() {
         };
     }
 
-
-
-
+    // ------------------- HANDLE DIGITAL SIGN ----------------
     const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
         try {
             showLoading();
@@ -141,9 +139,7 @@ export default function AuthorizationRequestForm() {
         }
     };
 
-
-
-
+    // --------------------- RENDER ---------------------------
     return (
         <Card
             className="delegation-form-card"
@@ -168,7 +164,7 @@ export default function AuthorizationRequestForm() {
             {/* ===== Thông tin người được ủy quyền ===== */}
             <Card
                 style={{ marginBottom: 24, backgroundColor: "#f8f9fa", border: "1px solid #e9ecef" }}
-                title={<Text strong style={{ paddingLeft: 10 }}>Thông tin người được ủy quyền a</Text>}
+                title={<Text strong style={{ paddingLeft: 10 }}>Thông tin người được ủy quyền</Text>}
             >
                 <Space direction="vertical" style={{ width: "100%" }} size="middle">
                     <Space>
@@ -199,19 +195,17 @@ export default function AuthorizationRequestForm() {
                 <Form.Item
                     label="Loại ủy quyền *"
                     name="delegationType"
+                    initialValue="ELECTION"
                     rules={[{ required: true, message: "Vui lòng chọn loại ủy quyền!" }]}
                 >
                     <select
-                        className="ant-input"
+                        className="ant-input delegation-type-select"
                         value={delegationType}
-                        style={{ height: 30, borderRadius: 5, borderColor: "#d9d9d9" }}
                         onChange={(e) => {
-                            const value = e.target.value as "ELECTION" | "LONG_TERM";
-                            setDelegationType(value);
-                            form.setFieldValue("delegationType", value);
+                            setDelegationType(e.target.value as any);
+                            form.setFieldValue("delegationType", e.target.value);
                         }}
                     >
-                        <option style={{ color: "#d9d9d9" }} value="">-- Chọn loại ủy quyền --</option>
                         <option value="ELECTION">Ủy quyền trong CUỘC BẦU CỬ</option>
                         <option value="LONG_TERM">Ủy quyền DÀI HẠN</option>
                     </select>

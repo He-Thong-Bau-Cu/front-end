@@ -284,6 +284,22 @@ const AuthorizationDetail = () => {
                             <Descriptions.Item label="Lí do ủy quyền">
                                 {delegateReason || "-"}
                             </Descriptions.Item>
+                            {fileUrl && (
+                                <Descriptions.Item label="File đã ký">
+                                    <Button
+                                        size="small"
+                                        className={styles.downloadFileButton}
+                                        onClick={() => {
+                                            const a = document.createElement("a");
+                                            a.href = fileUrl;
+                                            a.download = "file_uy_quyen_da_ky.pdf";
+                                            a.click();
+                                        }}
+                                    >
+                                        Tải xuống file
+                                    </Button>
+                                </Descriptions.Item>
+                            )}
                             {/* {confirmedAt && (
                             <Descriptions.Item label="Ngày xác nhận">
                                 {formatDateWithTime(confirmedAt)}
@@ -298,25 +314,6 @@ const AuthorizationDetail = () => {
 
                         </Descriptions>
                     </Card>
-                    {fileUrl ? (
-                        <Card size="small" title="📄 File đã ký" style={{ marginTop: 16 }}>
-                            <Button
-                                type="primary"
-                                onClick={() => {
-                                    const a = document.createElement("a");
-                                    a.href = fileUrl;
-                                    a.download = "file_uy_quyen_da_ky.pdf";
-                                    a.click();
-                                }}
-                            >
-                                Tải xuống file
-                            </Button>
-                        </Card>
-                    ) : (
-                        <Card size="small" title="📄 File đã ký" style={{ marginTop: 16 }}>
-                            <Text type="secondary">Không có file ký</Text>
-                        </Card>
-                    )}
 
 
                 </Space>
