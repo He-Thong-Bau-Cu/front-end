@@ -30,6 +30,7 @@ interface Props {
   onChange: (data: Member[]) => void;
   data?: any;
   disabled?: boolean;
+  attendeesList?: any[]; // Danh sách cử tri để lọc
 }
 
 const statusColor = (status: string) => {
@@ -45,13 +46,14 @@ const statusColor = (status: string) => {
   }
 };
 
-const Organization: React.FC<Props> = ({ onChange, data, disabled = false }) => {
+const Organization: React.FC<Props> = ({ onChange, data, disabled = false, attendeesList = [] }) => {
   const [members, setMembers] = useState<Member[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const prevDataRef = useRef<any>(null);
+  const idCounterRef = useRef<number>(0);
 
   // Chỉ gọi getUsers() 1 lần khi component mount
   useEffect(() => {
@@ -99,15 +101,22 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false }) => 
         }
         // Nếu không có roleCode, giữ lại (có thể là roleId string chưa được populate)
         return true;
-      }).map((item: any) => ({
-        _id: item._id,
-        id: item._id || Date.now(),
-        userId: item.userId || item.user?._id,
-        fullName: item.fullName || item.user?.fullName,
-        roleId: item.roleId?._id || item.roleId || item.role?._id,
-        roleName: item.roleName || item.role?.roleName,
-        status: item.status,
-      }));
+      }).map((item: any, index: number) => {
+        // Tạo unique ID: ưu tiên _id, nếu không có thì dùng userId + roleId, cuối cùng dùng index + timestamp
+        const uniqueId = item._id ||
+          `${item.userId || item.user?._id || 'user'}_${item.roleId?._id || item.roleId || item.role?._id || 'role'}_${index}` ||
+          `temp_${Date.now()}_${index}`;
+
+        return {
+          _id: item._id,
+          id: uniqueId,
+          userId: item.userId || item.user?._id,
+          fullName: item.fullName || item.user?.fullName,
+          roleId: item.roleId?._id || item.roleId || item.role?._id,
+          roleName: item.roleName || item.role?.roleName,
+          status: item.status,
+        };
+      });
 
       setMembers(filteredData);
       onChange(filteredData);
@@ -147,8 +156,12 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false }) => 
       return message.error(`Vai trò "${roleName}" đã được chọn! Mỗi vai trò chỉ được chọn 1 lần.`);
     }
 
+    // Tạo unique ID cho member mới: userId_roleId_timestamp_counter
+    idCounterRef.current += 1;
+    const uniqueId = `${values.userId}_${values.roleId}_${Date.now()}_${idCounterRef.current}`;
+
     const newMember: Member = {
-      id: Date.now(),
+      id: uniqueId,
       userId: values.userId,
       fullName: userInfo.fullName,
       roleId: values.roleId,
@@ -263,15 +276,19 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false }) => 
               allowClear
               showSearch
             >
-              {users.map((u) => {
-                const isSelected = members.some((m) => m.userId === u._id);
-
-                return (
-                  <Option key={u._id} value={u._id} disabled={isSelected}>
-                    {u.fullName} {isSelected ? " (đã chọn)" : ""}
+              {users
+                .filter((u) => {
+                  // Lọc bỏ user đã được chọn trong danh sách thành viên tổ chức
+                  const isInMembers = members.some((m) => m.userId === u._id);
+                  // Lọc bỏ user đã được chọn trong danh sách cử tri
+                  const isInAttendees = attendeesList.some((a) => a.userId === u._id);
+                  return !isInMembers && !isInAttendees;
+                })
+                .map((u) => (
+                  <Option key={u._id} value={u._id}>
+                    {u.fullName}
                   </Option>
-                );
-              })}
+                ))}
             </Select>
           </Form.Item>
 

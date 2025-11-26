@@ -77,6 +77,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
             if (!votingActive || votingCompleted || !timeline.votingAt) {
                 setVotingTimeLeft("--:--:--");
                 setVotingTimeLeftSeconds(0);
+                setAutoEndTriggered(false);
                 return;
             }
 
@@ -85,27 +86,70 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                 const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
                 const config = configResponse?.data || configResponse;
                 const timeVoteElection = config?.configValue?.value || config?.configValue || 0;
-                const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(timeVoteElection) || 0;
+                const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(String(timeVoteElection)) || 0;
                 const voteDurationSeconds = voteDurationMinutes * 60; // Chuyển đổi từ phút sang giây
 
-                if (voteDurationSeconds > 0) {
-                    const votingStartTime = new Date(timeline.votingAt).getTime();
-                    const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
-                    const now = new Date().getTime();
+                console.log("Voting timer calculation:", {
+                    timeVoteElection,
+                    voteDurationMinutes,
+                    voteDurationSeconds,
+                    votingAt: timeline.votingAt
+                });
 
-                    if (votingEndTime > now) {
-                        const seconds = Math.floor((votingEndTime - now) / 1000);
-                        setVotingTimeLeftSeconds(seconds);
-                        setVotingTimeLeft(formatSecondsToClock(seconds));
-                    } else {
-                        setVotingTimeLeftSeconds(0);
-                        setVotingTimeLeft("00:00:00");
-                    }
+                if (voteDurationSeconds <= 0) {
+                    console.warn("TIME_VOTE_ELECTION config is invalid or zero:", voteDurationMinutes);
+                    setVotingTimeLeft("--:--:--");
+                    setVotingTimeLeftSeconds(0);
+                    setAutoEndTriggered(false);
+                    return;
+                }
+
+                const votingStartTime = new Date(timeline.votingAt).getTime();
+                const now = new Date().getTime();
+                const timeSinceStart = now - votingStartTime;
+
+                console.log("Time calculation:", {
+                    votingStartTime: new Date(votingStartTime).toISOString(),
+                    now: new Date(now).toISOString(),
+                    timeSinceStart: Math.floor(timeSinceStart / 1000) + " seconds",
+                    voteDurationSeconds
+                });
+
+                // Nếu thời điểm bắt đầu trong tương lai (không hợp lệ), tính từ bây giờ
+                if (votingStartTime > now) {
+                    console.warn("votingStartTime is in the future, using current time");
+                    const seconds = voteDurationSeconds;
+                    setVotingTimeLeftSeconds(seconds);
+                    setVotingTimeLeft(formatSecondsToClock(seconds));
+                    setAutoEndTriggered(false);
+                    return;
+                }
+
+                // Tính thời gian còn lại
+                const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
+                const timeRemaining = votingEndTime - now;
+
+                console.log("Remaining time:", {
+                    votingEndTime: new Date(votingEndTime).toISOString(),
+                    timeRemaining: Math.floor(timeRemaining / 1000) + " seconds"
+                });
+
+                if (timeRemaining > 0) {
+                    const seconds = Math.floor(timeRemaining / 1000);
+                    setVotingTimeLeftSeconds(seconds);
+                    setVotingTimeLeft(formatSecondsToClock(seconds));
+                    setAutoEndTriggered(false); // Reset khi có thời gian còn lại
+                } else {
+                    // Thời gian đã hết
+                    console.warn("Voting time has expired");
+                    setVotingTimeLeftSeconds(0);
+                    setVotingTimeLeft("00:00:00");
                 }
             } catch (error: any) {
                 console.error("Error loading TIME_VOTE_ELECTION config:", error);
                 setVotingTimeLeft("--:--:--");
                 setVotingTimeLeftSeconds(0);
+                setAutoEndTriggered(false);
             }
         };
 
@@ -120,6 +164,17 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
             }
 
             if (!electionId) {
+                return;
+            }
+
+            // Chỉ tự động kết thúc nếu thời gian đã thực sự hết (đợi ít nhất 2 giây sau khi bắt đầu để tránh race condition)
+            const votingStartTime = timeline.votingAt ? new Date(timeline.votingAt).getTime() : 0;
+            const now = new Date().getTime();
+            const timeSinceStart = (now - votingStartTime) / 1000; // seconds
+
+            // Nếu mới bắt đầu (< 2 giây), không tự động kết thúc (có thể do tính toán sai)
+            if (timeSinceStart < 2) {
+                console.warn("Voting just started, skipping auto-end to avoid race condition");
                 return;
             }
 
@@ -140,7 +195,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
         if (votingTimeLeftSeconds === 0 && votingActive && !votingCompleted && !autoEndTriggered) {
             autoEndVoting();
         }
-    }, [votingTimeLeftSeconds, votingActive, votingCompleted, autoEndTriggered, electionId, onRefresh]);
+    }, [votingTimeLeftSeconds, votingActive, votingCompleted, autoEndTriggered, electionId, onRefresh, timeline.votingAt]);
 
     // Timer đếm ngược mỗi giây
     useEffect(() => {
