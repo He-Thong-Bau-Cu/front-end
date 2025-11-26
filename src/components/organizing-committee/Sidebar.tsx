@@ -24,8 +24,8 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
   );
 
   // Kiểm tra xem user có quyền truy cập organizing-committee không
-  const hasOrganizingCommitteeAccess = 
-    permissions.includes("/organizing-committee") || 
+  const hasOrganizingCommitteeAccess =
+    permissions.includes("/organizing-committee") ||
     permissionsElections.includes("/organizing-committee") ||
     permissions.some((p: string) => p.startsWith("/organizing-committee")) ||
     permissionsElections.some((p: string) => p.startsWith("/organizing-committee")) ||
@@ -47,11 +47,11 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
       icon: <UserAddOutlined />,
       label: "Danh sách người tham dự cuộc họp",
     },
-    {
-      key: "/organizing-committee/manage-delegates",
-      icon: <FileTextOutlined />,
-      label: "Quản lý danh sách đại biểu và cổ đông",
-    },
+    // {
+    //   key: "/organizing-committee/manage-delegates",
+    //   icon: <FileTextOutlined />,
+    //   label: "Quản lý danh sách đại biểu và cổ đông",
+    // },
   ].filter((item) => {
     // Menu "Tổng quan" luôn hiển thị
     if (item.key === "/organizing-committee") {

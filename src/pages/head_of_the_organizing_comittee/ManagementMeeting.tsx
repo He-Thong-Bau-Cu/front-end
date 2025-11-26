@@ -1,12 +1,122 @@
-import React from "react";
-import { Layout, Row, Col } from "antd";
+import React, { useEffect, useState } from "react";
+import { Layout, Row, Col, Spin, message } from "antd";
 import EventStatusCard from "@/components/head_of_the_organizing_committee/management-meeting/EventStatusCard";
 import EventStageControl from "@/components/head_of_the_organizing_committee/management-meeting/EventStageControl";
 import AnnouncementCard from "@/components/head_of_the_organizing_committee/management-meeting/AnnouncementCard";
+import MeetingService from "@/services/MeetingService";
 import '../../style/head-of-the-organizing-committee/ManagementMeeting.model.css'
 
+interface EventManagementStats {
+    meeting: {
+        _id: string;
+        title: string;
+        meetingDate: string;
+        location: string;
+        status: string;
+    };
+    election: {
+        _id: string;
+        title: string;
+        startDate: string;
+        endDate: string;
+        status: string;
+        statusData?: any;
+        timeline?: {
+            checkinAt?: string;
+            reportAt?: string;
+            votingAt?: string;
+            resultAnnouncedAt?: string;
+            closingAt?: string;
+        };
+        stages?: {
+            checkin?: string;
+            report?: string;
+            voting?: string;
+            result?: string;
+            closing?: string;
+        };
+    };
+    stats: {
+        totalAttendees: number;
+        checkedInCount: number;
+        votedCount: number;
+        checkinPercent: number;
+        votePercent: number;
+        timeLeft: number;
+        isRunning: boolean;
+    };
+}
 
 const ManagementMeeting: React.FC = () => {
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState<EventManagementStats | null>(null);
+    const [electionId, setElectionId] = useState<string>("");
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        try {
+            // Lấy electionId từ localStorage
+            const currentElectionId = localStorage.getItem("currentElectionId");
+            if (!currentElectionId) {
+                message.error("Vui lòng chọn cuộc bầu cử từ trang chủ");
+                return;
+            }
+
+            setElectionId(currentElectionId);
+            // Chỉ set loading = true nếu chưa có data (lần đầu load)
+            if (!stats) {
+                setLoading(true);
+            }
+
+            const response = await MeetingService.getEventManagementStats(currentElectionId);
+            const data = response?.data || response;
+            setStats(data);
+        } catch (error: any) {
+            console.error("Error loading event management stats:", error);
+            message.error(error?.response?.data?.message || "Không thể tải thống kê điều hành sự kiện");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <Layout
+                style={{
+                    background: "#F3F8F3",
+                    minHeight: "100vh",
+                    padding: "24px 40px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Spin size="large" />
+            </Layout>
+        );
+    }
+
+    if (!stats) {
+        return (
+            <Layout
+                style={{
+                    background: "#F3F8F3",
+                    minHeight: "100vh",
+                    padding: "24px 40px",
+                }}
+            >
+                <div style={{ textAlign: "center", padding: "50px 0" }}>
+                    <p>Không có dữ liệu để hiển thị</p>
+                </div>
+            </Layout>
+        );
+    }
+
+    const eventTitle = stats.election?.title || stats.meeting?.title || "Cuộc họp";
+
     return (
         <Layout
             style={{
@@ -17,21 +127,37 @@ const ManagementMeeting: React.FC = () => {
         >
             {/* HEADER */}
             <div style={{ marginBottom: 16 }}>
-                <h2 style={{ color: "#124D2D", marginBottom: 4 }}>Điều hành Sự kiện: Bầu cử Hội đồng Quản trị 2025</h2>
-
+                <h2 style={{ color: "#124D2D", marginBottom: 4 }}>
+                    Điều hành Sự kiện: {eventTitle}
+                </h2>
             </div>
 
             <Row gutter={[24, 24]}>
                 <Col xs={24} md={7}>
-                    <EventStatusCard />
+                    <EventStatusCard
+                        electionId={electionId}
+                        stats={stats.stats}
+                        meeting={stats.meeting}
+                        election={stats.election}
+                        onRefresh={loadData}
+                    />
                 </Col>
 
                 <Col xs={24} md={10}>
-                    <EventStageControl />
+                    <EventStageControl
+                        electionId={electionId}
+                        meeting={stats.meeting}
+                        election={stats.election}
+                        stats={stats.stats}
+                        onRefresh={loadData}
+                    />
                 </Col>
 
                 <Col xs={24} md={7}>
-                    <AnnouncementCard />
+                    <AnnouncementCard
+                        electionId={electionId}
+                        meeting={stats.meeting}
+                    />
                 </Col>
             </Row>
         </Layout>

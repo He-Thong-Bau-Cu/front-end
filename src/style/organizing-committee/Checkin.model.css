@@ -4,6 +4,8 @@
 
 .checkin-container {
   padding: 24px 32px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
 }
 
 /* QR Panel */
@@ -39,12 +41,14 @@
 /* Vùng đen chứa camera */
 .qr-dark-frame {
   width: 100%;
-  max-width: 1050px; /* bằng đúng khung đen trong ảnh */
-  height: 620px; /* đúng chiều cao khung đỏ bạn khoanh */
-  background: #1e1e1e;
-  border-radius: 12px;
+  max-width: 1050px;
+  height: 620px;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Camera tràn full */
@@ -61,6 +65,7 @@
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+  transform: scaleX(-1); /* Lật ngang video để không bị ngược */
 }
 
 /* Nút quay lại */
@@ -69,30 +74,44 @@
   top: 20px;
   left: 20px;
   z-index: 15;
-  background: rgba(255,255,255,0.9) !important;
+  background: rgba(255,255,255,0.95) !important;
   border: none !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.3s ease !important;
+  padding: 8px 16px !important;
+}
+
+.qr-back-btn:hover {
+  background: rgba(255,255,255,1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Text hướng dẫn */
 .qr-text-inline {
   position: absolute;
-  bottom: 24px;
+  bottom: 32px;
   width: 100%;
   text-align: center;
   color: #fff;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  padding: 20px 0 10px;
 }
 
 .qr-text-inline h4 {
-  margin-bottom: 6px;
-  font-size: 16px;
-  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
 }
 
 .qr-text-inline p {
   font-size: 14px;
-  opacity: 0.8;
+  opacity: 0.95;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .qr-back-button:hover {
@@ -187,6 +206,7 @@
   object-fit: cover !important;
   max-width: 100% !important;
   max-height: 100% !important;
+  transform: scaleX(-1); /* Lật ngang video để không bị ngược */
 }
 
 #qr-reader-element__camera_selection {
@@ -246,8 +266,15 @@
 }
 
 .checkin-card {
-  border-radius: 12px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 16px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.checkin-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-2px);
 }
 
 .checkin-card .ant-card-body {

@@ -1,9 +1,10 @@
-import { Button, Form, Input, Modal, message } from "antd";
+import { Button, Form, Input, Modal } from "antd";
 import React, { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import VoterService from "@/services/VoterService";
 import UserService from "@/services/UserService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
+import { useNotification } from "@/contexts/NotificationContext";
 
 interface Delegate {
     id: string;
@@ -20,18 +21,19 @@ interface Props {
 }
 
 const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
+    const { notify } = useNotification();
     const [form] = Form.useForm();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const openModal = () => {
         if (!electionId) {
-            message.warning("Vui lòng chọn cuộc bầu cử trước");
+            notify("Vui lòng chọn cuộc bầu cử trước", "warning");
             return;
         }
         setIsModalOpen(true);
     };
-    
+
     const closeModal = () => {
         form.resetFields();
         setIsModalOpen(false);
@@ -39,7 +41,7 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
 
     const handleSubmit = async (values: any) => {
         if (!electionId) {
-            message.error("Vui lòng chọn cuộc bầu cử");
+            notify("Vui lòng chọn cuộc bầu cử", "error");
             return;
         }
 
@@ -49,8 +51,8 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
 
             // Tìm user theo email
             if (values.email) {
-                const userSearchResponse: BaseResponse<any> = await UserService.search({ 
-                    email: values.email 
+                const userSearchResponse: BaseResponse<any> = await UserService.search({
+                    email: values.email
                 });
                 if (userSearchResponse.success && userSearchResponse.data?.content?.length > 0) {
                     const foundUser = userSearchResponse.data.content.find(
@@ -65,7 +67,7 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
             // Nếu không tìm thấy user, tạo user mới
             if (!userId) {
                 if (!values.email) {
-                    message.error("Email là bắt buộc để tạo người dùng mới");
+                    notify("Email là bắt buộc để tạo người dùng mới", "error");
                     setLoading(false);
                     return;
                 }
@@ -83,7 +85,7 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
 
                 const createUserResponse: BaseResponse<any> = await UserService.create(createUserData);
                 if (!createUserResponse.success) {
-                    message.error(createUserResponse.message || "Không thể tạo người dùng");
+                    notify(createUserResponse.message || "Không thể tạo người dùng", "error");
                     setLoading(false);
                     return;
                 }
@@ -92,7 +94,7 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
 
             // Kiểm tra userId trước khi tạo voter
             if (!userId) {
-                message.error("Không thể xác định người dùng");
+                notify("Không thể xác định người dùng", "error");
                 setLoading(false);
                 return;
             }
@@ -106,18 +108,18 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
             });
 
             if (createVoterResponse.success) {
-                message.success("✅ Tạo cử tri thành công");
+                notify("✅ Tạo cử tri thành công", "success");
                 form.resetFields();
                 setIsModalOpen(false);
                 if (onAdd) {
                     onAdd();
                 }
             } else {
-                message.error(createVoterResponse.message || "Không thể tạo cử tri");
+                notify(createVoterResponse.message || "Không thể tạo cử tri", "error");
             }
         } catch (error: any) {
             console.error("Lỗi khi tạo cử tri:", error);
-            message.error(error?.response?.data?.message || error?.message || "Đã xảy ra lỗi khi tạo cử tri");
+            notify(error?.response?.data?.message || error?.message || "Đã xảy ra lỗi khi tạo cử tri", "error");
         } finally {
             setLoading(false);
         }
@@ -174,30 +176,30 @@ const DelegateManualAdd: React.FC<Props> = ({ electionId, onAdd }) => {
                         <Input placeholder="VD: NV0015" />
                     </Form.Item>
 
-                    <Form.Item 
-                        name="email" 
+                    <Form.Item
+                        name="email"
                         label="Email"
                         rules={[{ type: "email", message: "Email không hợp lệ" }]}
                     >
                         <Input placeholder="example@email.com" />
                     </Form.Item>
 
-                    <Form.Item 
-                        name="phone" 
+                    <Form.Item
+                        name="phone"
                         label="Số điện thoại"
                     >
                         <Input placeholder="VD: 0123456789" />
                     </Form.Item>
 
-                    <Form.Item 
-                        name="citizenId" 
+                    <Form.Item
+                        name="citizenId"
                         label="Số căn cước công dân"
                     >
                         <Input placeholder="VD: 001234567890" />
                     </Form.Item>
 
-                    <Form.Item 
-                        name="address" 
+                    <Form.Item
+                        name="address"
                         label="Địa chỉ"
                     >
                         <Input placeholder="VD: 123 Đường ABC, Quận 1, TP.HCM" />

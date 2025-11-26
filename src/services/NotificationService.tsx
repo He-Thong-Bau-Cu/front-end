@@ -20,6 +20,14 @@ class NotificationService extends BaseService {
   async deleteAllNotifications(body: any): Promise<any> {
     return this.api.post(`${this.endpoint}/delete-all`, body);
   }
+
+  // Gửi thông báo broadcast đến tất cả participants trong election
+  async broadcastAnnouncement(electionId: string, message: string): Promise<any> {
+    return this.api.post(`${this.endpoint}/broadcast`, {
+      electionId,
+      message,
+    });
+  }
 }
 
 export default new NotificationService();

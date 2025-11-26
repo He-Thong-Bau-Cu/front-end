@@ -44,6 +44,16 @@ class StatisticsService extends BaseService {
         }
     }
 
+    async getOrganizerDashboard(): Promise<any> {
+        try {
+            const response = await this.api.get(`${this.endpoint}/organizer/dashboard`);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching organizer dashboard:", error);
+            throw error;
+        }
+    }
+
 }
 
 export default new StatisticsService();

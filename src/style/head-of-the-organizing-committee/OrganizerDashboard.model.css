@@ -8,6 +8,120 @@
   margin: 0 auto;
 }
 
+/* ======= DASHBOARD WRAPPER ======= */
+.organizer-dashboard-wrap {
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dashboard-header {
+  margin: 0 0 24px 0;
+  padding: 0 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Row với gutter={[20, 20]} tạo negative margin -10px mỗi bên */
+/* Để content bắt đầu từ cùng vị trí với Info card (padding 32px), */
+/* cần padding = 32px + 10px (bù negative margin) = 42px */
+.stats-row {
+  margin-left: -10px !important;
+  margin-right: -10px !important;
+  margin-bottom: 24px;
+  padding-left: 42px !important;
+  padding-right: 42px !important;
+  width: calc(100% + 20px) !important;
+  box-sizing: border-box;
+}
+
+.charts-row {
+  margin-left: -10px !important;
+  margin-right: -10px !important;
+  padding-left: 42px !important;
+  padding-right: 42px !important;
+  width: calc(100% + 20px) !important;
+  box-sizing: border-box;
+}
+
+.stat-card-item {
+  height: 100%;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ======= ORGANIZER INFO HEADER ======= */
+.dashboard-header-card {
+  background: linear-gradient(90deg, #a8e678 0%, #7ecb50 100%);
+  border-radius: 16px !important;
+  margin: 0 0 20px 0;
+  padding: 10px 32px;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border: none !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.dashboard-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard-header-title {
+  font-size: 22px !important;
+  color: #fff !important;
+}
+
+.dashboard-header-subtitle {
+  color: #eef6eb;
+  font-size: 14px;
+  margin: 0;
+}
+
+.dashboard-header-user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.dashboard-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dashboard-user-name {
+  font-size: 17px !important;
+  color: #fff !important;
+}
+
+.dashboard-user-role {
+  margin: 0;
+  font-size: 13px;
+  color: #f1f1f1;
+}
+
+.dashboard-avatar {
+  background: #fff;
+  color: #52c41a;
+}
+
 /* ================================
    FIX: CARD WIDTH MATCH HEADER
 =================================*/

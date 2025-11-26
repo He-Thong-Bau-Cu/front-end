@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Input, AutoComplete, message } from "antd";
+import { Input, AutoComplete } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import VoterService from "@/services/VoterService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
+import { useNotification } from "@/contexts/NotificationContext";
 
 interface DelegateSearchProps {
   electionId: string;
@@ -10,6 +11,7 @@ interface DelegateSearchProps {
 }
 
 const DelegateSearch: React.FC<DelegateSearchProps> = ({ electionId, onSearchResult }) => {
+  const { notify } = useNotification();
   const [keyword, setKeyword] = useState("");
   const [options, setOptions] = useState<{ value: string; label: React.ReactNode }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +46,7 @@ const DelegateSearch: React.FC<DelegateSearchProps> = ({ electionId, onSearchRes
           const filteredVoters = votersArray.filter((voter: any) => {
             // Lọc bỏ những người đã xóa
             if (voter.status === "INACTIVE") return false;
-            
+
             // Filter theo electionId nếu có
             if (electionId && voter.electionId) {
               const voterElectionId = String(voter.electionId._id || voter.electionId);
@@ -53,24 +55,24 @@ const DelegateSearch: React.FC<DelegateSearchProps> = ({ electionId, onSearchRes
                 return false;
               }
             }
-            
+
             // Filter theo keyword
             const fullName = (voter.userId?.fullName || "").toLowerCase();
             const email = (voter.userId?.email || "").toLowerCase();
             const username = (voter.userId?.username || "").toLowerCase();
-            
-            const matches = fullName.includes(keywordLower) || 
-                   email.includes(keywordLower) || 
+
+            const matches = fullName.includes(keywordLower) ||
+                   email.includes(keywordLower) ||
                    username.includes(keywordLower);
-            
+
             if (!matches && fullName) {
               console.log("❌ Keyword mismatch:", keywordLower, "not in", fullName, email, username);
             }
-            
+
             // Chỉ hiển thị nếu keyword có trong fullName, email hoặc username
             return matches;
           });
-          
+
           console.log("✅ Filtered voters:", filteredVoters.length);
 
           setOptions(
@@ -116,7 +118,7 @@ const DelegateSearch: React.FC<DelegateSearchProps> = ({ electionId, onSearchRes
       return;
     }
     if (!electionId) {
-      message.warning("Vui lòng chọn cuộc bầu cử trước");
+      notify("Vui lòng chọn cuộc bầu cử trước", "warning");
       return;
     }
     try {
@@ -124,19 +126,19 @@ const DelegateSearch: React.FC<DelegateSearchProps> = ({ electionId, onSearchRes
       const res: BaseResponse<any> = await VoterService.search({ keyword, electionId });
       console.log("🔍 Search button request:", { keyword, electionId });
       console.log("📥 Search button response:", res);
-      
+
       if (res.success && res.data) {
         // API trả về dạng paginated: { content, page, limit, totalItems, totalPages }
         const voters = res.data.content || res.data;
         const votersArray = Array.isArray(voters) ? voters : [];
         console.log("📋 Voters before filter (button):", votersArray.length);
-        
+
         // Filter lại theo electionId và keyword
         const keywordLower = keyword.toLowerCase().trim();
         const activeVoters = votersArray.filter((v: any) => {
           // Lọc bỏ những người đã xóa
           if (v.status === "INACTIVE") return false;
-          
+
           // Filter theo electionId nếu có
           if (electionId && v.electionId) {
             const voterElectionId = String(v.electionId._id || v.electionId);
@@ -145,37 +147,37 @@ const DelegateSearch: React.FC<DelegateSearchProps> = ({ electionId, onSearchRes
               return false;
             }
           }
-          
+
           // Filter theo keyword
           const fullName = (v.userId?.fullName || "").toLowerCase();
           const email = (v.userId?.email || "").toLowerCase();
           const username = (v.userId?.username || "").toLowerCase();
-          
-          const matches = fullName.includes(keywordLower) || 
-                 email.includes(keywordLower) || 
+
+          const matches = fullName.includes(keywordLower) ||
+                 email.includes(keywordLower) ||
                  username.includes(keywordLower);
-          
+
           if (!matches && fullName) {
             console.log("❌ Keyword mismatch (button):", keywordLower, "not in", fullName, email, username);
           }
-          
+
           // Chỉ hiển thị nếu keyword có trong fullName, email hoặc username
           return matches;
         });
-        
+
         console.log("✅ Filtered voters (button):", activeVoters.length);
-        
+
         onSearchResult(activeVoters);
         if (activeVoters.length === 0) {
-          message.info("Không tìm thấy đại biểu nào");
+          notify("Không tìm thấy đại biểu nào", "info");
         }
       } else {
-        message.error(res.message || "Không tìm thấy đại biểu");
+        notify(res.message || "Không tìm thấy đại biểu", "error");
         onSearchResult([]);
       }
     } catch (err: any) {
       console.error("Lỗi khi tìm kiếm:", err);
-      message.error(err?.response?.data?.message || "Đã xảy ra lỗi khi tìm kiếm đại biểu");
+      notify(err?.response?.data?.message || "Đã xảy ra lỗi khi tìm kiếm đại biểu", "error");
       onSearchResult([]);
     } finally {
       setLoading(false);
