@@ -9,6 +9,7 @@ import {
   Table,
   Button,
   Space,
+  message,
 } from "antd";
 
 import {
@@ -20,6 +21,8 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import CandidateDetailModal from "./CandidateDetailModal";
+import FileService from "@/services/FileService";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
 const { Title } = Typography;
 
 interface ViewDecisionModalProps {
@@ -31,7 +34,7 @@ interface ViewDecisionModalProps {
   voters?: any[];
   organize?: any[];
   electionentities?: any[];
-  document?: any[];
+  documents?: any[];
   meeting?: any;
 }
 
@@ -45,7 +48,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   voters = [],
   organize = [],
   electionentities = [],
-  document = [],
+  documents = [],
   meeting = {},
 }) => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
@@ -55,6 +58,44 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     setSelectedCandidate(record);
     setOpenCandidateModal(true);
   };
+
+  const downloadUrlFile = async (data: any) => {
+    try {
+
+      const blob = new Blob([data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Danh_sach_uy_quyen.pdf";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải file!");
+    }
+  };
+
+
+
+  const downloadUrlFileSign = async (data: any) => {
+    try {
+      const response = await FileService.getSignedFile(data.fileUrl);
+      const blob = new Blob([response], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải file!");
+    }
+  };
+
 
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return "-";
@@ -73,9 +114,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
     { title: "Vai trò", dataIndex: ["roleId", "roleName"] },
-    { title: "Cổ phần", dataIndex: "percent",
+    {
+      title: "Cổ phần", dataIndex: "percent",
       render: (percent: number) => (percent !== undefined ? `${percent}%` : `${0}%`),
-     },
+    },
   ];
 
   const organizerColumns = [
@@ -91,17 +133,37 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     DRAFT: { label: "Bản nháp", color: "default" },
     REQUEST_EDIT: { label: "Yêu cầu chỉnh sửa", color: "red" },
   };
+  const TYPE_LABELS: Record<string, string> = {
+    "signed-documents": "Tài liệu nghị quyết đã ký",
+    "delegation-delegator-signed": "Tài liệu ủy quyền cử tri đã ký",
+    "delegation-summary-signed": "Tài liệu tóm tắt ủy quyền chủ tọa đã ký",
+    "voter-signed-ballots": "Tài liệu phiếu bầu cử đã ký của cử tri",
+    default: "Tài liệu đính kèm",
+    // Thêm bao nhiêu loại cũng được
+  };
+
+
 
   const attachmentColumns = [
-    { title: "Tên tài liệu", dataIndex: "name" },
+    { title: "Tên tài liệu", dataIndex: "title" },
+    {
+      title: "Loại tài liệu", dataIndex: "type",
+      render: (type: string) => TYPE_LABELS[type] || "Không xác định",
+    },
+
     {
       title: "Tải xuống",
-      dataIndex: "url",
-      render: (url: string, record: any) => (
-        <a href={url} target="_blank" rel="noreferrer">
-          📄 {record.name}
+      dataIndex: "fileUrl",
+      render: (_: string, record: any) => (
+        <a
+          onClick={() => downloadUrlFileSign(record)}
+          style={{ cursor: "pointer" }}
+        >
+          📄 {record.title}
         </a>
-      ),
+
+
+      )
     },
   ];
 
@@ -269,7 +331,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                 ),
                 children: (
                   <Table
-                    dataSource={document}
+                    dataSource={documents}
                     columns={attachmentColumns}
                     rowKey={(r) => r._id || r.id || r.url}
                   />
