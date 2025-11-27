@@ -38,6 +38,8 @@ interface ViewDecisionModalProps {
   meeting?: any;
 }
 
+
+
 const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   open,
   onClose,
@@ -129,7 +131,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   const STATUS_MAP: any = {
     WAIT_ENTER_DATA: { label: "Chờ nhập dữ liệu", color: "gold" },
     WAIT_APPROVAL: { label: "Chờ duyệt", color: "blue" },
-    SIGNED_APPROVED: { label: "Đã duyệt", color: "green" },
+    APPROVED_SIGNED: { label: "Đã duyệt", color: "green" },
     DRAFT: { label: "Bản nháp", color: "default" },
     REQUEST_EDIT: { label: "Yêu cầu chỉnh sửa", color: "red" },
   };
