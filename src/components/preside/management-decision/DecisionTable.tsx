@@ -558,7 +558,7 @@ const DecisionTable = () => {
         loading={viewLoading}
         voters={voters}
         organize={organize}
-        document={documents}
+        documents={documents}
         electionentities={entities}
         meeting={meeting}
       />
