@@ -139,21 +139,46 @@ const MeetingInfo: React.FC<Props> = ({
 
     if (electionentities && Array.isArray(electionentities) && electionentities.length > 0 && isMounted) {
       try {
-        const loadedCandidates = electionentities.map((c: any) => ({
-          _id: c._id,
-          title: c.title || "",
-          description: c.description || "",
-          metaData: {
-            fullName: c.metaData?.fullName || "",
-            age: c.metaData?.age || "",
-            department: c.metaData?.department || "",
-            position: c.metaData?.position || "",
-            experience: c.metaData?.experience || "",
-            achievements: c.metaData?.achievements || "",
-            image: c.metaData?.image || c.metaData?.imageUrl || "",
-          },
-          fileUrl: c.fileUrl || c.file || "",
-        }));
+        const loadedCandidates = electionentities.map((c: any) => {
+          // Xác định formType từ metaData.type hoặc formType ở root, nếu không có thì tự động xác định
+          let formType = c.formType || c.metaData?.type;
+          if (!formType) {
+            // Tự động xác định dựa trên dữ liệu
+            if (c.metaData?.projectName || c.metaData?.projectDescription) {
+              formType = "project";
+            } else if (c.metaData?.fullName) {
+              formType = "person";
+            } else {
+              formType = "other";
+            }
+          }
+
+          return {
+            _id: c._id,
+            title: c.title || "",
+            description: c.description || "",
+            formType: formType, // Map formType từ dữ liệu backend
+            metaData: {
+              type: formType, // Đảm bảo type có trong metaData
+              fullName: c.metaData?.fullName || "",
+              age: c.metaData?.age || "",
+              department: c.metaData?.department || "",
+              position: c.metaData?.position || "",
+              experience: c.metaData?.experience || "",
+              achievements: c.metaData?.achievements || "",
+              image: c.metaData?.image || c.metaData?.imageUrl || "",
+              // Dữ liệu cho dự án
+              projectName: c.metaData?.projectName || "",
+              projectDescription: c.metaData?.projectDescription || "",
+              budget: c.metaData?.budget || "",
+              duration: c.metaData?.duration || "",
+              location: c.metaData?.location || "",
+              objectives: c.metaData?.objectives || "",
+              benefits: c.metaData?.benefits || "",
+            },
+            fileUrl: c.fileUrl || c.file || "", // Lưu fileUrl từ backend
+          };
+        });
 
         if (isMounted) {
           setCandidates(loadedCandidates);
@@ -308,35 +333,29 @@ const MeetingInfo: React.FC<Props> = ({
     if (editCandidateIndex !== null && editCandidateIndex >= 0) {
       updatedCandidates = [...candidates];
       const existingCandidate = updatedCandidates[editCandidateIndex];
-      // Giữ lại _id từ candidate cũ nếu có
       updatedCandidates[editCandidateIndex] = {
-        ...newCandidates[0], // Lấy candidate đầu tiên từ modal (vì edit chỉ edit 1 candidate)
-        _id: existingCandidate?._id, // Giữ lại _id nếu có
+        ...newCandidates[0],
+        _id: existingCandidate?._id,
       };
       setEditCandidateIndex(null);
     } else {
-      // Thêm mới: merge với candidates hiện có, giữ lại _id của candidates cũ
       updatedCandidates = newCandidates.map((newCandidate, index) => {
-        // Tìm candidate cũ tại cùng index (nếu có)
         const existingCandidate = candidates[index];
         if (existingCandidate && existingCandidate._id) {
-          // Nếu candidate cũ có _id, giữ lại _id và merge data
           return {
             ...newCandidate,
             _id: existingCandidate._id,
           };
         }
-        // Candidate mới, không có _id
-        return newCandidate;
+        return {
+          ...newCandidate,
+        };
       });
     }
 
-    console.log("Before setCandidates:", candidates);
-    console.log("New candidates to set:", updatedCandidates);
     setCandidates(updatedCandidates);
 
-    // Emit ngay với updatedCandidates để tránh dùng state cũ
-    emitChange(updatedCandidates); // Emit về parent để lưu vào meetingInfo.candidates
+    emitChange(updatedCandidates);
   };
 
   const selectedMethodName =
@@ -429,14 +448,14 @@ const MeetingInfo: React.FC<Props> = ({
       {/* Form KHÔNG submit, chỉ emitChange */}
       <Form form={form} layout="vertical">
         <Row gutter={16}>
-          {/* ĐỊA ĐIỂM */}
+          {/* SỐ NGHỊ QUYẾT VÀ TÊN NGHỊ QUYẾT - LUÔN DISABLED */}
           <Col span={12}>
             <Form.Item
               label="Số nghị quyết"
               name="decisionNumber"
               rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
             >
-              <Input disabled={disabled} placeholder="Nhập số nghị quyết" />
+              <Input disabled={true} placeholder="Nhập số nghị quyết" />
             </Form.Item>
           </Col>
 
@@ -446,7 +465,7 @@ const MeetingInfo: React.FC<Props> = ({
               name="decisionName"
               rules={[{ required: true, message: "Vui lòng nhập địa điểm" }]}
             >
-              <Input disabled={disabled} placeholder="Nhập tên nghị quyết" />
+              <Input disabled={true} placeholder="Nhập tên nghị quyết" />
             </Form.Item>
           </Col>
 
@@ -755,7 +774,7 @@ const MeetingInfo: React.FC<Props> = ({
                     const hasDetails = filteredCandidates.some(
                       (c) => c.metaData?.experience || c.metaData?.achievements
                     );
-                    const hasFile = filteredCandidates.some((c) => c.file);
+                    const hasFile = filteredCandidates.some((c) => c.fileUrl && c.fileUrl.trim() !== "");
 
                     const columns: any[] = [
                       {
@@ -970,7 +989,7 @@ const MeetingInfo: React.FC<Props> = ({
                         width: 100,
                         align: "center" as const,
                         render: (_: any, record: any) =>
-                          record.file ? (
+                          record.fileUrl && record.fileUrl.trim() !== "" ? (
                             <Tooltip title="Có tài liệu đính kèm">
                               <Tag
                                 icon={<FileTextOutlined />}

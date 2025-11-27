@@ -77,7 +77,7 @@ export class FileService extends BaseService {
    */
   async deleteFile(fileType: string, userId: string, fileName: string) {
     const response = await this.api.delete(
-      `${this.endpoint}/delete/${fileType}/${userId}/${fileName}`
+      `${this.endpoint}/file/${fileType}/${userId}/${fileName}`
     );
     return response.data;
   }
@@ -120,6 +120,25 @@ export class FileService extends BaseService {
       throw error;
     }
 
+  }
+
+  /**
+   * Upload profile image cho election entities (giống UserService.uploadAvatar)
+   * @param file - File object từ input
+   * @returns { key: string, url: string }
+   */
+  async uploadProfileImage(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileType", "election-entities-profile");
+    const userId = localStorage.getItem("userId") || "";
+    formData.append("userId", userId);
+
+    const response = await this.api.post(`${this.endpoint}/upload`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response.data; // { key: string, url: string }
   }
 
 

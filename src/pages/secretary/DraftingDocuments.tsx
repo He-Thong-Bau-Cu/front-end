@@ -327,7 +327,28 @@ const DraftingDocuments: React.FC = () => {
           authorizationStart: meetingInfo.authorizationStart?.toISOString(),
           authorizationEnd: meetingInfo.authorizationEnd?.toISOString(),
         },
-        electionEntities: candidatesList,
+        electionEntities: candidatesList.map((candidate: any) => {
+          const result = {
+            _id: candidate._id,
+            title: candidate.title,
+            description: candidate.description || "",
+            metaData: {
+              ...candidate.metaData,
+              type: candidate.formType || candidate.metaData?.type || "person", // Đảm bảo type có trong metaData
+            },
+            fileUrl: candidate.fileUrl || "", // Lưu fileUrl vào electionEntities (giống AttachedDocuments)
+          };
+
+          // Debug: Log để kiểm tra fileUrl
+          if (result.fileUrl) {
+            console.log(`Sending candidate with fileUrl:`, {
+              title: result.title,
+              fileUrl: result.fileUrl
+            });
+          }
+
+          return result;
+        }),
         electionDocuments: documentsList.map((doc: any) => ({
           _id: doc._id, // Có _id nếu edit
           title: doc.title,
