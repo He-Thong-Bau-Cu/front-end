@@ -626,15 +626,14 @@ const QRScannerPanel: React.FC = () => {
   };
 
   return (
-      <div
+      <Card
         style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column"
+          borderRadius: "16px",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+          border: "none",
+          background: "#fff",
         }}
+        bodyStyle={{ padding: "24px" }}
       >
         {/* Hiển thị thông báo trạng thái */}
         {getStageMessage()}
@@ -643,7 +642,9 @@ const QRScannerPanel: React.FC = () => {
           className="qr-dark-frame"
           style={{
             opacity: canCheckin ? 1 : 0.5,
-            pointerEvents: canCheckin ? 'auto' : 'none'
+            pointerEvents: canCheckin ? 'auto' : 'none',
+            width: "100%",
+            marginTop: getStageMessage() ? "16px" : "0",
           }}
         >
           {/* Nút quay lại */}
@@ -726,7 +727,7 @@ const QRScannerPanel: React.FC = () => {
             <p>Không có dữ liệu đại biểu.</p>
           )}
         </Modal>
-      </div>
+      </Card>
       );
 };
 

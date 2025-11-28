@@ -37,12 +37,14 @@
   padding: 12px 8px;
   font-size: 12px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .permission-table .ant-table-tbody > tr > td {
   padding: 12px 8px;
   border-bottom: 1px solid #f5f5f5;
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .permission-table .ant-table-tbody > tr:hover > td {
@@ -247,11 +249,11 @@
     gap: 12px;
     align-items: stretch;
   }
-  
+
   .permission-list-actions {
     justify-content: center;
   }
-  
+
   .permission-list-actions .ant-input {
     width: 100% !important;
     margin-right: 0 !important;

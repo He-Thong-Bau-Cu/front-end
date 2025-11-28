@@ -370,7 +370,15 @@ const CheckinSidebar: React.FC = () => {
     return (
         <div className="checkin-sidebar">
             {/* Sự kiện */}
-            <Card className="checkin-card">
+            <Card
+                className="checkin-card"
+                style={{
+                    borderRadius: "16px",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                    border: "none",
+                    background: "#fff",
+                }}
+            >
                 <h3 className="sidebar-title-qr">
                     <CalendarOutlined /> Sự kiện
                 </h3>
@@ -394,7 +402,15 @@ const CheckinSidebar: React.FC = () => {
             </Card>
 
             {/* Thống kê */}
-            <Card className="checkin-card" bordered={false}>
+            <Card
+                className="checkin-card"
+                style={{
+                    borderRadius: "16px",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                    border: "none",
+                    background: "#fff",
+                }}
+            >
                 <h3 className="sidebar-title-qr">
                     <BarChartOutlined /> Thống kê
                 </h3>
@@ -404,7 +420,15 @@ const CheckinSidebar: React.FC = () => {
             </Card>
 
             {/* Check-in thủ công */}
-            <Card className="checkin-card" bordered={false}>
+            <Card
+                className="checkin-card"
+                style={{
+                    borderRadius: "16px",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                    border: "none",
+                    background: "#fff",
+                }}
+            >
                 <h3 className="sidebar-title-qr">
                     <UserOutlined /> Check-in Thủ công
                 </h3>
@@ -428,8 +452,16 @@ const CheckinSidebar: React.FC = () => {
             </Card>
 
             {/* Hoạt động gần nhất */}
-            <Card className="checkin-card" bordered={false}>
-                <h3 className="sidebar-title-pr">
+            <Card
+                className="checkin-card"
+                style={{
+                    borderRadius: "16px",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                    border: "none",
+                    background: "#fff",
+                }}
+            >
+                <h3 className="sidebar-title-qr">
                     <HistoryOutlined /> Hoạt động gần nhất
                 </h3>
                 {recentActivities.length > 0 ? (

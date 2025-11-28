@@ -50,31 +50,34 @@ const PrivateRoute: React.FC = () => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // const isDashboard =
-  //   (userRole === "admin" && currentPath === "/admin/dashboard") ||
-  //   (userRole !== "admin" && currentPath === "/employee/dashboard");
+  // Các route chính dựa trên role - không cần check permissions
+  const roleBasedRoutes: Record<string, string[]> = {
+    [USER_ROLE.ADMIN]: ["/admin", "/change-password-first-time"],
+    [USER_ROLE.PRESIDE]: ["/preside", "/change-password-first-time"],
+    [USER_ROLE.ORGANIZING_COMMITTEE]: ["/organizing-committee", "/change-password-first-time"],
+    [USER_ROLE.HEAD_OF_ORGANIZING_COMMITTEE]: ["/head_of_the_Organizing_committee", "/change-password-first-time"],
+    [USER_ROLE.BOARD_OF_CONTROL]: ["/board-of-control", "/change-password-first-time"],
+    [USER_ROLE.SECRETARY]: ["/secretary", "/change-password-first-time"],
+    [USER_ROLE.VOTER]: ["/voter", "/home", "/change-password-first-time"],
+  };
+
+  // Nếu route thuộc role-based routes, cho phép truy cập (bao gồm cả sub-routes)
+  const allowedRoutesForRole = roleBasedRoutes[userRole || ""] || [];
+  const isRoleBasedRoute = allowedRoutesForRole.some(route =>
+    currentPath === route || currentPath.startsWith(route + "/")
+  );
+
+  if (isRoleBasedRoute) {
+    return <Outlet />;
+  }
+
+  // Check permissions cho các route khác
   const allPermissions = [...permissions, ...permissionsElections];
 
-  // Check exact path match
-  const hasExactPermission = allPermissions.includes(currentPath);
-  
-  // Check if any permission is a parent path of current path
-  // Ví dụ: permission = "/organizing-committee" và currentPath = "/organizing-committee/create-participants"
-  const hasParentPermission = allPermissions.some((perm: string) => {
-    // Chỉ match khi permission là prefix đầy đủ và theo sau là "/" hoặc kết thúc path
-    // Tránh match sai như "/organ" với "/organizing-committee"
-    if (currentPath === perm) {
-      return true; // Exact match
+  if (!permissions.includes(currentPath)) {
+    if (!allPermissions.includes(currentPath)) {
+      return <Navigate to="/403" replace state={{unauthorized: true}}/>;
     }
-    // Check parent path: currentPath phải bắt đầu bằng perm + "/"
-    if (currentPath.startsWith(perm + "/")) {
-      return true;
-    }
-    return false;
-  });
-
-  if (!hasExactPermission && !hasParentPermission) {
-    return <Navigate to="/403" replace state={{ unauthorized: true }} />;
   }
 
   return <Outlet />;

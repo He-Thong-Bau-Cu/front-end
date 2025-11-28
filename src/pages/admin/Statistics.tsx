@@ -20,6 +20,7 @@ const Statistics = () => {
   const [totalSystemLog, setTotalSystemLog] = useState(0);
   const [auditLogData, setAuditLogData] = useState<AuditLog[]>([]);
   const [totalAuditLog, setTotalAuditLog] = useState(0);
+  const [systemLogFilters, setSystemLogFilters] = useState<any>({});
 
   useEffect(() => {
     fetchDataChart(timeRange);
@@ -57,7 +58,9 @@ const Statistics = () => {
       let body = {
         page: values.page,
         limit: values.limit,
+        ...values, // Include all filter values
       };
+      setSystemLogFilters(body); // Lưu filter để dùng cho export
       const response = await SystemService.searchSystemLog(body);
       if (response.success) {
         setSystemLogData(response.data.content as SystemLog[]);
@@ -96,7 +99,11 @@ const Statistics = () => {
   return (
     <div>
       {/* <StatisticsStats /> */}
-      <StatisticsReportSection />
+      <StatisticsReportSection
+        systemLogData={systemLogData}
+        totalSystemLog={totalSystemLog}
+        systemLogFilters={systemLogFilters}
+      />
       {dataChart && (
         <RealTimeData
           dataMap={dataChart}
@@ -108,6 +115,7 @@ const Statistics = () => {
           data={systemLogData}
           onSearch={fetchDataSystemLog}
           totalRecords={totalSystemLog}
+          filters={systemLogFilters}
         />
       )}
       {auditLogData && (

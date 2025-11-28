@@ -67,6 +67,16 @@ class SystemService extends BaseService {
     return await this.api.get(`${this.endpoint}/permissions/all`);
   }
 
+  async exportSystemLog(body: any): Promise<any> {
+    return await this.api.post(
+      `${this.endpoint}/system-logs/export`,
+      body,
+      {
+        responseType: 'blob',
+      }
+    );
+  }
+
   async addRole(body: any): Promise<any> {
     return await this.api.post(`${this.endpoint}/roles/create`, body);
   }

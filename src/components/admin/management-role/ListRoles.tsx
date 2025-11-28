@@ -38,6 +38,9 @@ interface ListRolesProps {
   total?: number;
 }
 
+const RIGHTS_PANEL_MIN_HEIGHT = "calc(100vh - 200px)";
+const PERMISSION_SCROLL_MAX_HEIGHT = "calc(100vh - 320px)";
+
 const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
   const [values, setValues] = useState({
     roleName: "",
@@ -280,17 +283,21 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
     }
   };
 
-  const handleTableChange = (newPagination: any) => {
-    try {
-      setValues(newPagination);
-      let values = {
-        page: newPagination.page,
-        limit: newPagination.limit,
+  const handlePaginationChange = (page: number, pageSize?: number) => {
+    setValues((prev) => {
+      const next = {
+        ...prev,
+        page,
+        limit: pageSize || prev.limit,
       };
-      if (onSearch) onSearch(values);
-    } catch (error) {
-      console.log(error);
-    }
+      onSearch?.({
+        roleName: next.roleName,
+        status: next.status,
+        page: next.page,
+        limit: next.limit,
+      });
+      return next;
+    });
   };
 
   const handleDelete = async (record: any) => {
@@ -327,8 +334,8 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
   };
 
   return (
-    <div className="role-section" style={{ height: "calc(100vh - 160px)" }}>
-      <Row gutter={24} style={{ height: "100%" }}>
+    <div className="role-section" style={{ minHeight: "calc(100vh - 160px)" }}>
+      <Row gutter={24} style={{ height: "100%" }} align="stretch">
         {/* LEFT TABLE */}
         <Col
           xs={24}
@@ -344,6 +351,7 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
               flexDirection: "column",
               overflow: "hidden",
               flex: 1,
+              height: "100%",
             }}
           >
             <div
@@ -384,9 +392,9 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
             </div>
             <div style={{ flex: 1, overflowY: "auto" }}>
               <Table
-                rowKey="key"
+                rowKey={(record) => record?.roleId || record?._id || record?.id}
                 columns={columns}
-                dataSource={dataRolePermission}
+                dataSource={dataRolePermission || []}
                 pagination={false}
                 className="role-table"
                 onRow={(record) => ({
@@ -408,9 +416,7 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
                 total={total}
                 pageSize={values.limit}
                 showSizeChanger
-                onChange={(page, pageSize) =>
-                  handleTableChange({ page, limit: pageSize || values.limit })
-                }
+                onChange={handlePaginationChange}
               />
             </div>
           </div>
@@ -419,7 +425,7 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
         <Col
           xs={24}
           lg={10}
-          style={{ display: "flex", flexDirection: "column" }}
+          style={{ display: "flex", flexDirection: "column", height: "100%" }}
         >
           <div
             style={{
@@ -430,6 +436,8 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
               flexDirection: "column",
               overflow: "hidden",
               flex: 1,
+              height: "100%",
+              minHeight: RIGHTS_PANEL_MIN_HEIGHT,
             }}
           >
             <div
@@ -458,7 +466,9 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
                 background: "#fff",
                 padding: "24px 28px",
                 boxSizing: "border-box",
-                overflowY: "auto",
+                overflow: "hidden",
+                height: "100%",
+                minHeight: 0,
               }}
             >
               {selectedRole ? (
@@ -470,6 +480,10 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
                       gap: 18,
                       flex: 1,
                       overflowY: "auto",
+                      paddingRight: 12,
+                      marginRight: -12,
+                      minHeight: 0,
+                      maxHeight: PERMISSION_SCROLL_MAX_HEIGHT,
                     }}
                   >
                     {groupedPermissions.map((group) => (

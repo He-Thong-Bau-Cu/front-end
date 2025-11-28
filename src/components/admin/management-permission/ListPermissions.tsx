@@ -118,26 +118,36 @@ const ListPermissions = ({
     }
   };
 
-  const handleTableChange = (newPagination: any) => {
-    try {
-      setValues(newPagination);
-      let values = {
-        page: newPagination.page,
-        limit: newPagination.limit,
+  const handlePaginationChange = (page: number, pageSize?: number) => {
+    setValues((prev) => {
+      const next = {
+        ...prev,
+        page,
+        limit: pageSize || prev.limit,
       };
-      if (onSearch) onSearch(values);
-    } catch (error) {
-      console.log(error);
-    }
+      onSearch?.({
+        permissionName: next.permissionName,
+        page: next.page,
+        limit: next.limit,
+      });
+      return next;
+    });
   };
 
   const handleSearch = () => {
-    let body = {
-      permissionName: searchValue,
-      page: values.page,
-      limit: values.limit,
-    };
-    if (onSearch) onSearch(body);
+    setValues((prev) => {
+      const next = {
+        ...prev,
+        permissionName: searchValue?.trim(),
+        page: 1,
+      };
+      onSearch?.({
+        permissionName: next.permissionName,
+        page: next.page,
+        limit: next.limit,
+      });
+      return next;
+    });
   };
 
   const handleDelete = async (record: any) => {
@@ -187,6 +197,7 @@ const ListPermissions = ({
       dataIndex: "permissionName",
       key: "permissionName",
       width: "30%",
+      ellipsis: true,
       render: (_: string, record) => (
         <div className="permission-item">
           <div>
@@ -202,6 +213,7 @@ const ListPermissions = ({
       dataIndex: "permissionName",
       key: "group",
       width: "20%",
+      ellipsis: true,
       render: (text: string) => (
         <Tag color="processing">{getPermissionGroup(text)}</Tag>
       ),
@@ -211,11 +223,14 @@ const ListPermissions = ({
       dataIndex: "description",
       key: "description",
       width: "40%",
+      ellipsis: true,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      width: 120,
+      align: "center",
       render: (status) => {
         const color =
           status === STATUS_ROLE.ACTIVE
@@ -240,6 +255,8 @@ const ListPermissions = ({
     {
       title: "Hành động",
       key: "action",
+      width: 120,
+      align: "center",
       render: (record) => (
         <div className="permission-action">
           <Button
@@ -276,7 +293,7 @@ const ListPermissions = ({
         marginTop: "12px",
         paddingRight: "8px",
         boxSizing: "border-box",
-        height: "calc(100vh - 180px)",
+        height: "100%",
       }}
     >
       {/* DANH SÁCH QUYỀN HẠN */}
@@ -288,6 +305,7 @@ const ListPermissions = ({
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
+          height: "100%",
         }}
       >
         {/* Header */}
@@ -361,13 +379,15 @@ const ListPermissions = ({
           }}
         >
           {/* Table có scroll riêng */}
-          <div style={{ flex: 1, overflowY: "auto" }}>
+          <div style={{ flex: 1, overflowY: "auto", overflowX: "auto" }}>
             <Table
-              rowKey="key"
+              rowKey={(record) => record?._id || record?.permissionId || record?.id}
               columns={columns}
-              dataSource={permissions}
+              dataSource={permissions || []}
               pagination={false}
               size="small"
+              className="permission-table"
+              scroll={{ x: 1000 }}
               onRow={(record) => ({
                 onClick: () => handleSelectPermission(record),
               })}
@@ -390,9 +410,7 @@ const ListPermissions = ({
               total={total}
               pageSize={values.limit}
               showSizeChanger
-              onChange={(page, pageSize) =>
-                handleTableChange({ page, limit: pageSize || values.limit })
-              }
+              onChange={handlePaginationChange}
             />
           </div>
         </Card>
@@ -407,6 +425,7 @@ const ListPermissions = ({
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
+          height: "100%",
         }}
       >
         <div

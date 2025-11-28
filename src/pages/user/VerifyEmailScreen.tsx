@@ -93,25 +93,46 @@ export default function VerifyEmailScreen() {
         notify("Đăng nhập thành công!!!", "success");
         const data = response.data.data;
         const decoded = jwtDecode(data.accessToken) as any;
+        // Map permissions từ array of objects {path: string}[] thành string[]
+        const permissionPaths = decoded.permissions
+          ? decoded.permissions.map((p: any) => p.path || p).filter(Boolean)
+          : [];
+        // Extract role code nếu role là object, nếu không thì dùng trực tiếp
+        const roleCode = typeof decoded.role === 'object' && decoded.role?.code
+          ? decoded.role.code
+          : decoded.role || '';
         setLocalStorage(
           data.accessToken,
           decoded.sub,
-          decoded.role,
+          roleCode,
           decoded.fullname,
-          decoded.permissions || []
+          permissionPaths
         );
-        if (decoded.role === USER_ROLE.ADMIN) {
-          navigate(PATH.ADMIN);
-        } else if (decoded.role === USER_ROLE.PRESIDE) {
-          navigate(PATH.PRESIDE);
-        } else {
-          const user = await getUserLogin();
-          if (user && user.isTempPassword) {
-            navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+
+        const user = await getUserLogin();
+
+        // Đảm bảo localStorage đã được cập nhật trước khi navigate
+        setTimeout(() => {
+          if (roleCode === USER_ROLE.ADMIN) {
+            if (user && user.isTempPassword) {
+              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+            } else {
+              navigate(PATH.ADMIN);
+            }
+          } else if (roleCode === USER_ROLE.PRESIDE) {
+            if (user && user.isTempPassword) {
+              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+            } else {
+              navigate(PATH.PRESIDE);
+            }
           } else {
-            navigate(PATH.HOME);
+            if (user && user.isTempPassword) {
+              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+            } else {
+              navigate(PATH.HOME);
+            }
           }
-        }
+        }, 100);
       } else {
         notify(response.data.message, "error");
       }

@@ -34,12 +34,14 @@ interface SystemLogTableProps {
   data?: SystemLog[];
   totalRecords?: number;
   onSearch: (values: any) => void;
+  filters?: any;
 }
 
 const SystemLogTable: React.FC<SystemLogTableProps> = ({
   data,
   totalRecords,
   onSearch,
+  filters,
 }) => {
   const [selectedLog, setSelectedLog] = useState<SystemLog | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -61,6 +63,7 @@ const SystemLogTable: React.FC<SystemLogTableProps> = ({
       total: totalRecords,
     }));
   }, [totalRecords]);
+
 
   const getMethodColor = (method: string) => {
     const colors: { [key: string]: string } = {
@@ -205,6 +208,7 @@ const SystemLogTable: React.FC<SystemLogTableProps> = ({
       let values = {
         page: newPagination.current,
         limit: newPagination.pageSize,
+        ...filters,
       };
       if (onSearch) onSearch(values);
     } catch (error) {

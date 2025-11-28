@@ -24,7 +24,7 @@ import React, { useState } from "react";
 import type { UserRecord } from "@/types/User.interface";
 import { TableProps } from "antd/lib";
 import { COLOR_ROLE, STATUS_ROLE } from "@/enums/STATUS";
-import { formatDate } from "@/utils/format";
+import { formatDate, highlightKeyword } from "@/utils/format";
 import UserFormModal from "./UserFormModal";
 import UserDetailModal from "./UserDetailModal";
 import { useLoading } from "@/contexts/LoadingContext";
@@ -66,7 +66,7 @@ const UserList = ({
 
   // Khi input thay đổi
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValues((prev) => ({ ...prev, fullName: e.target.value }));
+    setValues((prev) => ({ ...prev, fullName: e.target.value, page: 1 }));
   };
 
   const handleSelectChange = (value: string) => {
@@ -238,7 +238,7 @@ const UserList = ({
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>
-              {record.fullName}
+              {highlightKeyword(record.fullName, values.fullName)}
             </div>
             <div style={{ color: "#666", fontSize: 14 }}>{record.email}</div>
           </div>

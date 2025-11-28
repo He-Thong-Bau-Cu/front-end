@@ -54,9 +54,11 @@ const ManagementPermission = () => {
     }
   }
   return (
-    <div style={{ padding: "20px 32px" }}>
+    <div style={{ padding: "20px 32px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <PermissionStats data={stats}/>
-      <ListPermissions permissions={permissionData} total={total} onSearch={fetchPermission} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <ListPermissions permissions={permissionData} total={total} onSearch={fetchPermission} />
+      </div>
     </div>
   );
 };

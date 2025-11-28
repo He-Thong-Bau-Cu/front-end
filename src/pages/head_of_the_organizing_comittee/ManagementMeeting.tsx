@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Layout, Row, Col, Spin, message } from "antd";
 import EventStatusCard from "@/components/head_of_the_organizing_committee/management-meeting/EventStatusCard";
 import EventStageControl from "@/components/head_of_the_organizing_committee/management-meeting/EventStageControl";
 import AnnouncementCard from "@/components/head_of_the_organizing_committee/management-meeting/AnnouncementCard";
 import MeetingService from "@/services/MeetingService";
 import '../../style/head-of-the-organizing-committee/ManagementMeeting.model.css'
+import { io, Socket } from "socket.io-client";
 
 interface EventManagementStats {
     meeting: {
@@ -52,24 +53,24 @@ const ManagementMeeting: React.FC = () => {
     const [stats, setStats] = useState<EventManagementStats | null>(null);
     const [electionId, setElectionId] = useState<string>("");
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    const loadData = useCallback(async (options?: { showLoader?: boolean }) => {
+        const shouldShowLoader = options?.showLoader ?? false;
+        if (shouldShowLoader) {
+            setLoading(true);
+        }
 
-    const loadData = async () => {
         try {
             // Lấy electionId từ localStorage
             const currentElectionId = localStorage.getItem("currentElectionId");
             if (!currentElectionId) {
                 message.error("Vui lòng chọn cuộc bầu cử từ trang chủ");
+                if (shouldShowLoader) {
+                    setLoading(false);
+                }
                 return;
             }
 
             setElectionId(currentElectionId);
-            // Chỉ set loading = true nếu chưa có data (lần đầu load)
-            if (!stats) {
-                setLoading(true);
-            }
 
             const response = await MeetingService.getEventManagementStats(currentElectionId);
             const data = response?.data || response;
@@ -78,9 +79,69 @@ const ManagementMeeting: React.FC = () => {
             console.error("Error loading event management stats:", error);
             message.error(error?.response?.data?.message || "Không thể tải thống kê điều hành sự kiện");
         } finally {
-            setLoading(false);
+            if (shouldShowLoader) {
+                setLoading(false);
+            }
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadData({ showLoader: true });
+    }, [loadData]);
+
+    const currentMeetingId = stats?.meeting?._id || (stats?.meeting as any)?.id || "";
+
+    useEffect(() => {
+        if (!electionId) {
+            return;
+        }
+
+        const socket: Socket = io("http://54.253.192.210:80/notification", {
+            transports: ["websocket"],
+        });
+
+        socket.on("connect", () => {
+            socket.emit("join", electionId);
+            socket.emit("join-election-room", electionId);
+        });
+
+        socket.on("connect_error", (err) => {
+            console.error("Socket connection error on organizer screen:", err.message);
+        });
+
+        socket.on("transferData", (data: any) => {
+            if (!data?.type) {
+                return;
+            }
+
+            if (data.electionId && data.electionId !== electionId) {
+                return;
+            }
+
+            if (data.type === "checkin-update") {
+                if (currentMeetingId && data.meetingId !== currentMeetingId) {
+                    return;
+                }
+                loadData();
+                return;
+            }
+
+            const realtimeTriggers = [
+                "stage-started",
+                "stage-ended",
+                "meeting-status-updated",
+                "event-management-update",
+            ];
+
+            if (realtimeTriggers.includes(data.type)) {
+                loadData();
+            }
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [electionId, loadData, currentMeetingId]);
 
     if (loading) {
         return (

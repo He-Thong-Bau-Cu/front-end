@@ -40,12 +40,20 @@ export default function LoginScreen() {
         } else {
           const data = response.data.data;
           const decoded = jwtDecode(data.accessToken) as any;
+          // Map permissions từ array of objects {path: string}[] thành string[]
+          const permissionPaths = decoded.permissions
+            ? decoded.permissions.map((p: any) => p.path || p).filter(Boolean)
+            : [];
+          // Extract role code nếu role là object, nếu không thì dùng trực tiếp
+          const roleCode = typeof decoded.role === 'object' && decoded.role?.code
+            ? decoded.role.code
+            : decoded.role || '';
           setLocalStorage(
             data.accessToken,
             decoded.sub,
-            decoded.role,
+            roleCode,
             decoded.fullname,
-            decoded.permissions || []
+            permissionPaths
           );
 
           const user = await getUserLogin();
@@ -54,28 +62,31 @@ export default function LoginScreen() {
           }
 
           notify("Đăng nhập thành công!!!", "success");
-          if (decoded.role === USER_ROLE.ADMIN) {
-            const user = await getUserLogin();
-            if (user && user.isTempPassword) {
-              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+
+          // Đảm bảo localStorage đã được cập nhật trước khi navigate
+          // Sử dụng setTimeout để đảm bảo state đã được cập nhật
+          setTimeout(() => {
+            // Sử dụng roleCode đã extract ở trên
+            if (roleCode === USER_ROLE.ADMIN) {
+              if (user && user.isTempPassword) {
+                navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+              } else {
+                navigate(PATH.ADMIN);
+              }
+            } else if (roleCode === USER_ROLE.PRESIDE) {
+              if (user && user.isTempPassword) {
+                navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+              } else {
+                navigate(PATH.PRESIDE);
+              }
             } else {
-              navigate(PATH.ADMIN);
+              if (user && user.isTempPassword) {
+                navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
+              } else {
+                navigate(PATH.HOME);
+              }
             }
-          } else if (decoded.role === USER_ROLE.PRESIDE) {
-            const user = await getUserLogin();
-            if (user && user.isTempPassword) {
-              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
-            } else {
-              navigate(PATH.PRESIDE);
-            }
-          } else {
-            const user = await getUserLogin();
-            if (user && user.isTempPassword) {
-              navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
-            } else {
-              navigate(PATH.HOME);
-            }
-          }
+          }, 100);
         }
       } else {
         notify(response.data.message, "error");
