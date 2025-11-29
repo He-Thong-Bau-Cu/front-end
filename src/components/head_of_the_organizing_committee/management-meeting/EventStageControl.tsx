@@ -84,8 +84,14 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
             try {
                 // Lấy config TIME_VOTE_ELECTION (thời gian bầu cử tính bằng phút)
                 const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
-                const config = configResponse?.data || configResponse;
-                const timeVoteElection = config?.configValue?.value || config?.configValue || 0;
+                const config: any = configResponse?.data || configResponse;
+                // Xử lý cả 2 trường hợp: config có thể là SystemConfig hoặc BaseResponse<SystemConfig>
+                const configValue = (config?.data?.configValue !== undefined)
+                    ? config.data.configValue
+                    : config?.configValue;
+                const timeVoteElection = (typeof configValue === 'object' && configValue?.value !== undefined)
+                    ? configValue.value
+                    : (typeof configValue === 'number' ? configValue : 0);
                 const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(String(timeVoteElection)) || 0;
                 const voteDurationSeconds = voteDurationMinutes * 60; // Chuyển đổi từ phút sang giây
 

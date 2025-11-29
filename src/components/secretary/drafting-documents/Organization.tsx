@@ -19,7 +19,7 @@ const { Text } = Typography;
 const { Option } = Select;
 interface Member {
   _id?: string; // ID từ backend (nếu có = edit, không có = mới)
-  id: number; // ID tạm cho UI
+  id: number | string; // ID tạm cho UI (có thể là number hoặc string)
   userId: string;
   fullName: string;
   roleId: string;

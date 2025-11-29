@@ -175,7 +175,7 @@ const DecisionList: React.FC = () => {
         loading={viewLoading}
         voters={voters}
         organize={organize}
-        document={document}
+        documents={document}
         electionentities={entities}
         meeting={meeting}
       />

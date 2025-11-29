@@ -77,9 +77,15 @@ export default function VotingDashboardPage() {
         try {
           // Lấy config TIME_VOTE_ELECTION (thời gian bầu cử tính bằng phút)
           const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
-          const config = configResponse?.data || configResponse;
-          const timeVoteElection = config?.configValue?.value || config?.configValue || 0; // Có thể là số hoặc object có value
-          const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(timeVoteElection) || 0;
+          const config: any = configResponse?.data || configResponse;
+          // Xử lý cả 2 trường hợp: config có thể là SystemConfig hoặc BaseResponse<SystemConfig>
+          const configValue = (config?.data?.configValue !== undefined)
+              ? config.data.configValue
+              : config?.configValue;
+          const timeVoteElection = (typeof configValue === 'object' && configValue?.value !== undefined)
+              ? configValue.value
+              : (typeof configValue === 'number' ? configValue : 0);
+          const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(String(timeVoteElection)) || 0;
           const voteDurationSeconds = voteDurationMinutes * 60; // Chuyển đổi từ phút sang giây
 
           if (voteDurationSeconds > 0) {
@@ -108,17 +114,20 @@ export default function VotingDashboardPage() {
       }
 
       // Lấy voting overview
-      const overviewResponse = await BoardControlService.getVotingOverview(electionId);
+      const overviewResponse: any = await BoardControlService.getVotingOverview(electionId);
+      // Xử lý cả 2 trường hợp: overviewResponse có thể là BoardVotingOverview hoặc BaseResponse<BoardVotingOverview>
       const overview = overviewResponse?.data || overviewResponse;
 
       if (overview) {
+        // Xử lý summary: có thể là overview.summary hoặc overview trực tiếp có các properties
+        const summary = overview.summary || overview;
         // Cập nhật stats
         setStats({
-          percent: overview.summary?.percent || 0,
-          voted: overview.summary?.voted || 0,
-          total: overview.summary?.total || 0,
-          validVotes: overview.summary?.validVotes || 0,
-          speed: overview.summary?.speed || 0,
+          percent: summary?.percent || 0,
+          voted: summary?.voted || 0,
+          total: summary?.total || 0,
+          validVotes: summary?.validVotes || 0,
+          speed: summary?.speed || 0,
         });
 
         // Cập nhật timer (chỉ nếu chưa completed)
@@ -164,8 +173,11 @@ export default function VotingDashboardPage() {
 
       // Lấy danh sách ballots đã cast để tạo vote logs
       try {
-        const ballotsResponse = await BallotService.getAllBallotsByElectionId(electionId);
-        const ballotsData = ballotsResponse?.data || ballotsResponse || [];
+        const ballotsResponse: any = await BallotService.getAllBallotsByElectionId(electionId);
+        // Xử lý cả 2 trường hợp: ballotsResponse có thể là Ballot[] hoặc BaseResponse<Ballot[]>
+        const ballotsData = Array.isArray(ballotsResponse)
+            ? ballotsResponse
+            : (ballotsResponse?.data || ballotsResponse || []);
         const ballotsList = Array.isArray(ballotsData) ? ballotsData : [];
 
         // Filter chỉ lấy ballots đã cast và có castAt
@@ -248,8 +260,14 @@ export default function VotingDashboardPage() {
 
         // Lấy lại config để tính toán lại thời gian còn lại
         const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
-        const config = configResponse?.data || configResponse;
-        const timeVoteElection = config?.configValue?.value || config?.configValue || 0;
+        const config: any = configResponse?.data || configResponse;
+        // Xử lý cả 2 trường hợp: config có thể là SystemConfig hoặc BaseResponse<SystemConfig>
+        const configValue = (config?.data?.configValue !== undefined)
+            ? config.data.configValue
+            : config?.configValue;
+        const timeVoteElection = (typeof configValue === 'object' && configValue?.value !== undefined)
+            ? configValue.value
+            : (typeof configValue === 'number' ? configValue : 0);
         const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(String(timeVoteElection)) || 0;
         const voteDurationSeconds = voteDurationMinutes * 60;
 

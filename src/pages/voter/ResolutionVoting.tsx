@@ -63,7 +63,7 @@ export default function ResolutionVoting() {
         data={data}
         options={options}
         countdown={{ minutes: 45, seconds: "30" }}
-        onSubmit={(choice, comment) => {
+        onSubmit={(choice: string | null, comment: string) => {
           console.log("Lựa chọn:", choice, "Ghi chú:", comment);
           setOpenSignModal(true);
         }}
@@ -72,8 +72,8 @@ export default function ResolutionVoting() {
       <DigitalSignModal
         open={openSignModal}
         onClose={() => setOpenSignModal(false)}
-        onConfirm={() => {
-          console.log("Đã ký số & gửi!");
+        onSubmit={(payload: { file: File; password: string }) => {
+          console.log("Đã ký số & gửi!", payload);
           setOpenSignModal(false);
         }}
       />

@@ -55,8 +55,11 @@ const AttendanceConfirm = () => {
             const attendeesList = Array.isArray(attendeesData) ? attendeesData : (attendeesData?.data || []);
 
             // Lấy danh sách tất cả ballots để check xem ai đã có phiếu bầu cử
-            const ballotsResponse = await BallotService.getAllBallotsByElectionId(electionId);
-            const ballotsData = ballotsResponse?.data || ballotsResponse || [];
+            const ballotsResponse: any = await BallotService.getAllBallotsByElectionId(electionId);
+            // Xử lý cả 2 trường hợp: ballotsResponse có thể là Ballot[] hoặc BaseResponse<Ballot[]>
+            const ballotsData = Array.isArray(ballotsResponse)
+                ? ballotsResponse
+                : (ballotsResponse?.data || ballotsResponse || []);
             const ballotsList = Array.isArray(ballotsData) ? ballotsData : [];
 
             // Tạo map userId -> hasBallot để check nhanh
