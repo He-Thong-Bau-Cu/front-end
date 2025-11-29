@@ -1,6 +1,4 @@
-import { User } from "@/types/User.interface";
 import BaseService from "./BaseService";
-import { number } from "framer-motion";
 
 
 

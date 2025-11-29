@@ -54,7 +54,11 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <IdcardOutlined />,
             label: "Thẻ đại biểu",
         },
-    ].filter((item) => permissions.includes(item.key) || permissionsElections.includes(item.key));
+    ].filter((item) =>
+        permissions.some(p => p.startsWith(item.key)) ||
+        permissionsElections.some(p => p.startsWith(item.key))
+    );
+
 
     const handleClick = (e: { key: string }) => {
         const selected = menuItems.find((item) => item.key === e.key);
@@ -64,19 +68,43 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
 
     const getSelectedKey = () => {
         const currentPath = location.pathname;
-        const sortedItems = [...menuItems].sort((a, b) => b.key.length - a.key.length);
 
-        for (const item of sortedItems) {
-            if (currentPath === item.key) {
-                return item.key;
-            }
-            if (currentPath.startsWith(item.key + "/") || currentPath.startsWith(item.key + "-")) {
-                return item.key;
-            }
+        if (
+            currentPath === "/voter/ballots" ||
+            currentPath.startsWith("/voter/ballots") ||
+            currentPath.startsWith("/voter/ballot_")
+        ) {
+            return "/voter/ballots";
         }
 
-        return currentPath;
+        if (
+            currentPath === "/voter/authorization" ||
+            currentPath.startsWith("/voter/authorization") ||
+            currentPath.startsWith("/voter/create-authorization") ||
+            currentPath.startsWith("/voter/request-authorization") ||
+            currentPath.startsWith("/voter/authorization-detail") ||
+            currentPath.startsWith("/voter/authorization-form")
+        ) {
+            return "/voter/authorization";
+        }
+
+        if (currentPath.startsWith("/voter/voting-history")) {
+            return "/voter/voting-history";
+        }
+
+        if (currentPath.startsWith("/voter/results")) {
+            return "/voter/results";
+        }
+
+        if (currentPath.startsWith("/voter/delegate-card")) {
+            return "/voter/delegate-card";
+        }
+
+        return "/voter";
     };
+
+
+
 
     return (
         <Sider className="custom-sider" width={290}>
