@@ -96,7 +96,6 @@ const VotingResultDetailList: React.FC = () => {
         loadResult();
     }, [methodCode]);
 
-    if (!methodCode) return <p>Đang tải phương thức bầu cử...</p>;
 
     const yesNoItem = candidates[0] as YesNoResult;
 
