@@ -34,6 +34,7 @@ const statusConfig: Record<
     REVOKED: { label: "Đã thu hồi", color: "red", icon: <CloseCircleOutlined /> },
     INVALID: { label: "Không hợp lệ", color: "magenta", icon: <StopOutlined /> },
     SIGNED: { label: "Đã ký", color: "green", icon: <EditOutlined /> },
+    REJECTED: { label: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
 
 };
 

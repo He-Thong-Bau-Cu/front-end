@@ -231,8 +231,7 @@ const DelegateCardPage = () => {
 
           <div className="delegate-qr-text">
             <Text type="secondary">Quét mã QR để xác thực thông tin</Text>
-            <br />
-            <Text type="success">ID: {card.id}</Text>
+
           </div>
         </div>
 
