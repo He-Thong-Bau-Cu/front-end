@@ -249,17 +249,59 @@ const DraftingDocuments: React.FC = () => {
   const handlePreviewPdf = async () => {
     try {
       showLoading();
-      const blob = await ElectionService.previewPdf(electionId);
-      const url = window.URL.createObjectURL(blob);
+      const response = await ElectionService.previewPdf(electionId);
+
+      // Interceptor đã unwrap response, nên response chính là response.data
+      // Nếu responseType là 'blob', response.data sẽ là Blob
+      // Nhưng interceptor trả về response.data, nên response chính là Blob
+      let actualBlob: Blob;
+
+      if (response instanceof Blob) {
+        actualBlob = response;
+      } else {
+        // Nếu không phải Blob, có thể là error response dạng JSON
+        // Thử parse để lấy error message
+        console.error("Response is not a Blob:", response);
+
+        if (response && typeof response === 'object') {
+          // Nếu là object, có thể là error response
+          const errorMsg = (response as any).message || "Không thể tạo preview PDF";
+          throw new Error(errorMsg);
+        }
+
+        throw new Error("Response is not a valid Blob");
+      }
+
+      const url = window.URL.createObjectURL(actualBlob);
       const link = document.createElement('a');
       link.href = url;
       link.target = '_blank';
       link.click();
-      window.URL.revokeObjectURL(url);
+
+      // Revoke URL sau một chút để đảm bảo link đã được click
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+
       notify("Đang mở preview PDF", "success");
     } catch (err: any) {
-      console.error(err);
-      const errorMessage = err?.response?.data?.message || err?.message || "Có lỗi xảy ra khi xem preview";
+      console.error("Error in handlePreviewPdf:", err);
+
+      // Xử lý error message
+      let errorMessage = "Có lỗi xảy ra khi xem preview";
+
+      if (err?.message) {
+        errorMessage = err.message;
+      } else if (err?.response?.data) {
+        // Nếu error có response.data
+        if (err.response.data instanceof Blob) {
+          // Nếu là Blob, có thể là error PDF, thử parse
+          errorMessage = "Không thể tạo preview PDF";
+        } else if (typeof err.response.data === 'object' && err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      }
+
       notify(errorMessage, "error");
     } finally {
       hideLoading();

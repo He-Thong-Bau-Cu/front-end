@@ -26,8 +26,16 @@ class AuthService {
     return await this.api.post(`${this.endpoint}/2fa/login`, body);
   }
 
-  async sendOtp(body: any): Promise<any> {
+  async sendOtp(body: { email: string }): Promise<any> {
     return await this.api.post(`${this.endpoint}/send-otp`, body);
+  }
+
+  async verifyOtp(body: { email: string; otp: string }): Promise<any> {
+    return await this.api.post(`${this.endpoint}/verify-otp`, body);
+  }
+
+  async forwardPassword(body: { email: string }): Promise<any> {
+    return await this.api.post(`${this.endpoint}/forward-password`, body);
   }
 }
 

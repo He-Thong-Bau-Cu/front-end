@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import {
   Card,
   Button,
-  Col,
   Modal,
   Form,
   Upload,
@@ -69,16 +68,22 @@ const AttachedDocuments: React.FC<Props> = ({
     }
   };
 
-  // Load existing documents
+  // Load existing documents - chỉ lọc những document có type là 'election-documents-important'
   useEffect(() => {
     if (initialDocuments && Array.isArray(initialDocuments)) {
-      const mapped = initialDocuments.map((doc: any) => ({
+      // Lọc chỉ lấy những document có type là 'election-documents-important'
+      const filteredDocs = initialDocuments.filter(
+        (doc: any) => doc.type === 'election-documents-important'
+      );
+
+      const mapped = filteredDocs.map((doc: any) => ({
         _id: doc._id,
         title: doc.title || "",
         content: doc.content || "",
         remarks: doc.remarks || "",
         fileUrl: doc.fileUrl || "",
         fileName: doc.fileUrl ? doc.fileUrl.split("/").pop() : "",
+        type: doc.type || 'election-documents-important', // Đảm bảo có type
         isNew: false, // File đã load từ server nên không phải new
       }));
       setDocuments(mapped);
@@ -180,6 +185,7 @@ const AttachedDocuments: React.FC<Props> = ({
         remarks: values.remarks || "",
         fileUrl: fileUrl,
         fileName: fileObj ? fileObj.name : editingDoc?.fileName || "",
+        type: 'election-documents-important', // Đảm bảo type luôn là election-documents-important
         isNew: false, // Đã save rồi nên không còn là new
       };
 
@@ -302,7 +308,7 @@ const AttachedDocuments: React.FC<Props> = ({
               <PaperClipOutlined style={{ marginRight: 8 }} />
               Tài liệu đính kèm
             </span>
-            <Col>
+            <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
               <Button
                 icon={<UploadOutlined />}
                 type="link"
@@ -311,7 +317,7 @@ const AttachedDocuments: React.FC<Props> = ({
               >
                 Tải tài liệu lên
               </Button>
-            </Col>
+            </div>
           </div>
         }
       >

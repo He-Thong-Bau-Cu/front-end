@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Avatar,
   Badge,
+  Button,
   Dropdown,
   Layout,
   Popover,
@@ -123,8 +124,23 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ title, user }) => {
               >
                 <Badge count={notifications.length} size="small">
                   <BellFilled
-                    className="header-icon"
-                    style={{ cursor: "pointer" }}
+                    style={{
+                      fontSize: '20px',
+                      color: '#7cb342',
+                      cursor: 'pointer',
+                      width: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
                   />
                 </Badge>
               </Popover>

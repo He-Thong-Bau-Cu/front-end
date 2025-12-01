@@ -40,6 +40,33 @@ class DelegateCardService extends BaseService {
     async generateQRCode(id: string): Promise<any> {
         return await this.api.get(`${this.endpoint}/qrcode/${id}`);
     }
+
+    async checkExists(electionId: string, voterId: string, delegationId?: string): Promise<{ exists: boolean }> {
+        try {
+            const params = new URLSearchParams({
+                electionId,
+                voterId,
+            });
+            if (delegationId) {
+                params.append('delegationId', delegationId);
+            }
+            const response = await this.api.get(`${this.endpoint}/check/exists?${params.toString()}`) as { exists: boolean };
+            return response;
+        } catch (error: any) {
+            console.error("Error checking delegate card exists:", error);
+            throw error;
+        }
+    }
+
+    async autoCreate(electionId: string): Promise<BaseResponse<any>> {
+        try {
+            const response = await this.api.post(`${this.endpoint}/auto-create/${electionId}`, {}) as BaseResponse<any>;
+            return response;
+        } catch (error: any) {
+            console.error("Error auto-creating delegate card:", error);
+            throw error;
+        }
+    }
 }
 
 export default new DelegateCardService();

@@ -152,22 +152,23 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false,
                             <TeamOutlined style={{ marginRight: 8 }} />
                             Danh sách cử tri ({participants.length})
                         </Text>
-                        <Tag color="blue" style={{ marginLeft: 10 }}>
-                            Tổng cổ phần: {totalPercentage}%
-                        </Tag>
-
-                        <a
-                            className="add-link"
-                            onClick={() => !disabled && setIsModalOpen(true)}
-                            style={{
-                                cursor: disabled ? "not-allowed" : "pointer",
-                                opacity: disabled ? 0.5 : 1,
-                                pointerEvents: disabled ? "none" : "auto"
-                            }}
-                        >
-                            <PlusOutlined style={{ marginRight: 4 }} />
-                            Thêm
-                        </a>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                            <Tag color="blue" style={{ margin: 0 }}>
+                                Tổng cổ phần: {totalPercentage}%
+                            </Tag>
+                            <a
+                                className="add-link"
+                                onClick={() => !disabled && setIsModalOpen(true)}
+                                style={{
+                                    cursor: disabled ? "not-allowed" : "pointer",
+                                    opacity: disabled ? 0.5 : 1,
+                                    pointerEvents: disabled ? "none" : "auto"
+                                }}
+                            >
+                                <PlusOutlined style={{ marginRight: 4 }} />
+                                Thêm
+                            </a>
+                        </div>
                     </div>
                 }
             >
