@@ -1,5 +1,5 @@
 .resolution-page {
-  padding: 32px;
+  padding: 12px;
   min-height: 100vh;
 }
 
@@ -14,10 +14,10 @@
 
 /* Card */
 .resolution-card {
-  border-radius: 16px;
+  border-radius: 26px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   background: #fff;
-  margin-bottom: 24px;
+  margin-bottom: 14px;
   padding: 20px 24px;
 }
 
@@ -162,7 +162,7 @@
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
-  padding: 16px 24px;
+  padding: 40px 24px;
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   border: 1px solid #eef3ea;
