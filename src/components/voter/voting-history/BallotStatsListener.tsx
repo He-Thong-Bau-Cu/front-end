@@ -19,7 +19,7 @@ const BallotStatsListener: React.FC<BallotStatsListenerProps> = ({
         }
 
         // 👉 FIX: Dùng root namespace
-        const socket: Socket = io("http://54.253.192.210:80", {
+        const socket: Socket = io("http://54.253.192.210:80/notification", {
             auth: { electionId },
             transports: ["websocket"],
         });
@@ -29,11 +29,11 @@ const BallotStatsListener: React.FC<BallotStatsListenerProps> = ({
         });
 
         socket.on("connect", () => {
-            console.log("🟢 Socket connected:", socket.id);
+            console.log("🟢 Socket ballot connected:", socket.id);
         });
 
         socket.on("connect_error", (err) => {
-            console.error("🔴 Lỗi connect socket:", err.message);
+            console.error("🔴 Lỗi connect socket ballot:", err.message);
         });
 
         socket.on("transferData", (transferData) => {
@@ -42,7 +42,7 @@ const BallotStatsListener: React.FC<BallotStatsListenerProps> = ({
         });
 
         return () => {
-            console.log("🔌 Socket disconnected");
+            console.log("🔌 Socket ballot disconnected");
             socket.disconnect();
         };
     }, [electionId, onUpdate]);

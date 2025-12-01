@@ -12,6 +12,8 @@ import BallotService from "@/services/BallotService";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import ElectionService from "@/services/ElectionService";
+import { Election } from "@/types/Election.interface";
 
 const { Title } = Typography;
 
@@ -22,15 +24,23 @@ const VotingLayout: React.FC = () => {
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
   const navigate = useNavigate();
+  const [election, setElection] = useState<Election | null>(null);
+  const electionId = localStorage.getItem("currentElectionId") || "";
 
 
-  // ==========================
-  // 🔥 FIX CỨNG 100% DỮ LIỆU
-  // ==========================
-  const resolutionTitle = "Biểu quyết Nghị quyết 01/2025";
-  const resolutionCode = "01/2025/NQ-HĐQT";
-  const resolutionDate = "21/11/2025";
-  const statusText = "Đang diễn ra";
+
+  useEffect(() => {
+    const fetchElection = async () => {
+      try {
+        const data = await ElectionService.getElectionId(electionId);
+        setElection(data);
+      } catch (err) {
+        console.error("Fetch election failed:", err);
+      }
+    };
+
+    fetchElection();
+  }, []);
 
   useEffect(() => {
     const checkBallot = async () => {
@@ -57,6 +67,7 @@ const VotingLayout: React.FC = () => {
 
     checkBallot();
   }, []);
+
 
 
   // 🔥 Countdown chạy mỗi giây
@@ -115,30 +126,21 @@ const VotingLayout: React.FC = () => {
       <div className="resolution-header">
         <div className="header-left">
           <Title level={3} className="header-title">
-            {resolutionTitle}
+            {election?.title}
           </Title>
 
           <div className="header-meta">
             <span className="meta-item">
               <FileTextOutlined className="meta-icon" />
               <span>
-                Nghị quyết số: <b>{resolutionCode}</b>
+                Nghị quyết số: <b>{election?.decisionNumber}</b>
               </span>
             </span>
 
-            <span className="meta-item">
-              <ClockCircleOutlined className="meta-icon" />
-              <span>
-                Thời gian: <b>{resolutionDate}</b>
-              </span>
-            </span>
+
           </div>
         </div>
 
-        <div className="status-pill">
-          <CheckCircleOutlined />
-          <span>{statusText}</span>
-        </div>
       </div>
       <Row gutter={[32, 32]}>
         <Col xs={24} lg={16}>
