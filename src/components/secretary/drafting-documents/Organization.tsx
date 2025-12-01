@@ -200,19 +200,20 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
               <TeamOutlined style={{ marginRight: 8 }} />
               Thành viên tổ chức ({members.length})
             </Text>
-
-            <a
-              className="add-link"
-              onClick={() => !disabled && setIsModalOpen(true)}
-              style={{
-                cursor: disabled ? "not-allowed" : "pointer",
-                opacity: disabled ? 0.5 : 1,
-                pointerEvents: disabled ? "none" : "auto"
-              }}
-            >
-              <PlusOutlined style={{ marginRight: 4 }} />
-              Thêm
-            </a>
+            <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+              <a
+                className="add-link"
+                onClick={() => !disabled && setIsModalOpen(true)}
+                style={{
+                  cursor: disabled ? "not-allowed" : "pointer",
+                  opacity: disabled ? 0.5 : 1,
+                  pointerEvents: disabled ? "none" : "auto"
+                }}
+              >
+                <PlusOutlined style={{ marginRight: 4 }} />
+                Thêm
+              </a>
+            </div>
           </div>
         }
       >

@@ -4,16 +4,28 @@ import { User } from "@/types/User.interface";
 import { getUserLogin } from "@/utils/auth";
 import { Layout } from "antd";
 import { Content } from "antd/es/layout/layout";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { useNotification } from "@/contexts/NotificationContext";
+import DelegateCardService from "@/services/DelegateCardService";
 
 const AdminLayout = () => {
     const [pageTitle, setPageTitle] = useState("Tổng quan");
     const location = useLocation();
     const [user, setUser] = useState<User | null>(null);
+    const { notify } = useNotification();
+    const hasCheckedDelegateCard = useRef(false);
 
     useEffect(() => {
         fetchDataUser();
+    }, []);
+
+    useEffect(() => {
+        // Chỉ check và tạo thẻ đại biểu khi navigate vào voter pages lần đầu
+        if (!hasCheckedDelegateCard.current) {
+            checkAndCreateDelegateCard();
+            hasCheckedDelegateCard.current = true;
+        }
     }, []);
 
     const fetchDataUser = async () => {
@@ -22,6 +34,37 @@ const AdminLayout = () => {
             setUser(user);
         } catch (error) {
             console.error("Error fetching user:", error);
+        }
+    };
+
+    const checkAndCreateDelegateCard = async () => {
+        try {
+            const electionId = localStorage.getItem("currentElectionId");
+            const voterId = localStorage.getItem("voterId");
+
+            if (!electionId || !voterId) {
+                return;
+            }
+
+            const checkResponse = await DelegateCardService.checkExists(electionId, voterId);
+
+            if (!checkResponse.exists) {
+                notify("Đang tạo thẻ đại biểu...", "info");
+
+                try {
+                    const createResponse = await DelegateCardService.autoCreate(electionId);
+
+                    if (createResponse.success) {
+                        notify("Tạo thẻ thành công", "success");
+                    } else {
+                        console.log("Không thể tạo thẻ đại biểu:", createResponse.message);
+                    }
+                } catch (error: any) {
+                    console.error("Error creating delegate card:", error);
+                }
+            }
+        } catch (error: any) {
+            console.error("Error checking delegate card:", error);
         }
     };
 

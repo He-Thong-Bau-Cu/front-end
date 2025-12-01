@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
     Avatar,
     Badge,
+    Button,
     Dropdown,
     Layout,
     Popover,
@@ -10,6 +11,7 @@ import {
 } from "antd";
 import {
     BellFilled,
+    HomeOutlined,
     IdcardOutlined,
     LogoutOutlined,
     UserOutlined,
@@ -24,6 +26,7 @@ import NotificationDropdown, {
 import NotificationService from "@/services/NotificationService";
 import { useLoading } from "@/contexts/LoadingContext";
 import NotificationListener from "../notification/NotificationListener";
+import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -38,6 +41,7 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title, user }) => {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const { showLoading, hideLoading } = useLoading();
     const [userId, setUserId] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const handleOpenProfile = () => setProfileOpen(true);
     const handleCloseProfile = () => setProfileOpen(false);
@@ -108,6 +112,20 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title, user }) => {
                     {/* Thông báo + Avatar */}
                     <div className="header-actions">
                         <Space size={10} align="center">
+                            <Button
+                                type="text"
+                                icon={<HomeOutlined style={{ fontSize: '20px' }} />}
+                                onClick={() => navigate('/home')}
+                                style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#7cb342',
+                                    padding: 0,
+                                }}
+                            />
                             <Popover
                                 placement="bottomRight"
                                 content={
@@ -122,8 +140,23 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title, user }) => {
                             >
                                 <Badge count={notifications.length} size="small">
                                     <BellFilled
-                                        className="header-icon"
-                                        style={{ cursor: "pointer" }}
+                                        style={{
+                                            fontSize: '20px',
+                                            color: '#7cb342',
+                                            cursor: 'pointer',
+                                            width: '40px',
+                                            height: '40px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            transition: 'transform 0.2s ease',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1.15)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                        }}
                                     />
                                 </Badge>
                             </Popover>

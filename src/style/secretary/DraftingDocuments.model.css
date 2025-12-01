@@ -139,6 +139,50 @@
   color: #888;
 }
 
+/* ===== Card Header ===== */
+.card-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Title/Text ở bên trái - chiếm không gian còn lại và có thể co lại */
+.card-header > span:first-child,
+.card-header > .ant-typography:first-child {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Wrapper div cho các phần tử bên phải - không co lại */
+.card-header > div:last-child {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+/* Các phần tử bên phải (Tag, Button, Link) - không co lại */
+.card-header .ant-col,
+.card-header .ant-tag,
+.card-header .add-link {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.card-header .ant-tag {
+  margin: 0;
+}
+
 /* ===== Link ===== */
 .add-link {
   color: #1a7c3f;
@@ -147,6 +191,9 @@
   cursor: pointer;
   transition: 0.2s;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .add-link:hover {
@@ -160,7 +207,7 @@
     flex-direction: column;
   }
 
-  .meeting-left, 
+  .meeting-left,
   .meeting-right {
     width: 100%;
   }

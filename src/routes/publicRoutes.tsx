@@ -1,5 +1,6 @@
 import ForgotPasswordScreen from "@/pages/user/ForgotPasswordScreen";
 import VerifyEmailScreen from "@/pages/user/VerifyEmailScreen";
+import VerifyForgotPasswordOtp from "@/pages/user/VerifyForgotPasswordOtp";
 import { Navigate } from "react-router-dom";
 import PublicRoute from "../components/auth/PublicRoute";
 import Forbidden403 from "../pages/Forbidden403";
@@ -35,6 +36,14 @@ export const publicRoutes = [
     element: (
       <PublicRoute>
         <VerifyEmailScreen />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/verify-forgot-password-otp",
+    element: (
+      <PublicRoute>
+        <VerifyForgotPasswordOtp />
       </PublicRoute>
     ),
   }

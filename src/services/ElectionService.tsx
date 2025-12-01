@@ -79,10 +79,12 @@ class ElectionService extends BaseService {
 
   async previewPdf(electionId: string): Promise<Blob> {
     try {
+      // Interceptor đã unwrap response, nên response chính là response.data (đã là Blob)
       const response = await this.api.get(`${this.endpoint}/preview-pdf/${electionId}`, {
         responseType: 'blob',
       });
-      return response.data;
+      // Interceptor trả về response.data, nên response chính là Blob
+      return response as Blob;
     } catch (error) {
       console.error("Error preview PDF:", error);
       throw error;

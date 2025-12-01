@@ -1,6 +1,6 @@
 import logo from "@/assets/logo.png";
 import React, { useEffect, useState } from 'react';
-import { Avatar, Badge, Dropdown, Layout, message, Popover, Space, Typography } from 'antd';
+import { Avatar, Badge, Button, Dropdown, Layout, message, Popover, Space, Typography } from 'antd';
 import { BellFilled, IdcardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import '../../style/Header.model.css';
 import { getUserLogin } from '@/utils/auth';
@@ -99,7 +99,7 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
                 <Space size={16} align="center">
 
                     <Title level={4} className="header-title">
-                        {title} 
+                        {title}
                     </Title>
                 </Space>
 
@@ -119,8 +119,23 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
                     >
                         <Badge count={notifications.length} size="small">
                             <BellFilled
-                                className="header-icon"
-                                style={{ cursor: "pointer" }}
+                                style={{
+                                    fontSize: '20px',
+                                    color: '#7cb342',
+                                    cursor: 'pointer',
+                                    width: '40px',
+                                    height: '40px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'transform 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                }}
                             />
                         </Badge>
                     </Popover>

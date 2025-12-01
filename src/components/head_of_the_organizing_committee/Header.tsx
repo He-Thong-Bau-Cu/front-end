@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, Badge, Dropdown, Layout, message, Space, Typography } from 'antd';
-import { BellFilled, IdcardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { Avatar, Badge, Button, Dropdown, Layout, message, Space, Typography } from 'antd';
+import { BellFilled, HomeOutlined, IdcardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { MenuProps } from 'antd/lib';
 import { getUserLogin } from '@/utils/auth';
 import { User } from '@/types/User.interface';
 import ProfileModal from '@/components/homepage/ProfileModal';
+import { useNavigate } from 'react-router-dom';
 import '../../style/Header.model.css';
 
 const { Header } = Layout;
@@ -17,6 +18,7 @@ interface TBTCHeaderProps {
 const TBTCHeader: React.FC<TBTCHeaderProps> = ({ title }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -71,8 +73,41 @@ const TBTCHeader: React.FC<TBTCHeaderProps> = ({ title }) => {
 
           {/* 🔔 Chuông + Avatar */}
           <div className="header-actions">
+            <Button
+              type="text"
+              icon={<HomeOutlined style={{ fontSize: '20px' }} />}
+              onClick={() => navigate('/home')}
+              style={{
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#7cb342',
+                padding: 0,
+                marginRight: '8px',
+              }}
+            />
             <Badge count={3} size="small">
-              <BellFilled className="header-icon" />
+              <BellFilled
+                style={{
+                  fontSize: '20px',
+                  color: '#7cb342',
+                  cursor: 'pointer',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              />
             </Badge>
 
             <Dropdown

@@ -3,7 +3,8 @@ import { Form, Input, Button, Typography } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import { useNavigate } from "react-router-dom"; // ✅ Thêm dòng này
+import { useNavigate } from "react-router-dom";
+import AuthService from "@/services/AuthService";
 
 const { Title, Text, Link } = Typography;
 
@@ -11,21 +12,33 @@ export default function ForgotPasswordScreen() {
   const [form] = Form.useForm();
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
-  const navigate = useNavigate(); // ✅ Thêm dòng này
+  const navigate = useNavigate();
   const [emailSent, setEmailSent] = useState(false);
 
-  const onFinish = (values: any) => {
-    showLoading();
-    setTimeout(() => {
-      hideLoading();
-      setEmailSent(true);
-      notify("Mã xác thực đã được gửi tới email của bạn!", "success");
+  const onFinish = async (values: any) => {
+    try {
+      showLoading();
+      const response = await AuthService.sendOtp({ email: values.email });
 
-      // ✅ Chuyển sang màn VerifyEmail sau khi gửi mã
-      setTimeout(() => {
-        navigate("/verify-email", { state: { email: values.email } });
-      }, 800);
-    }, 1000);
+      if (response.data.success) {
+        setEmailSent(true);
+        notify("Mã xác thực đã được gửi tới email của bạn!", "success");
+
+        setTimeout(() => {
+          navigate("/verify-forgot-password-otp", { state: { email: values.email } });
+        }, 800);
+      } else {
+        notify(response.data.message || "Không thể gửi mã xác thực. Vui lòng thử lại.", "error");
+      }
+    } catch (error: any) {
+      console.error("Error sending OTP:", error);
+      notify(
+        error?.response?.data?.message || "Không thể gửi mã xác thực. Vui lòng thử lại.",
+        "error"
+      );
+    } finally {
+      hideLoading();
+    }
   };
 
   useEffect(() => {
