@@ -75,7 +75,7 @@ const DelegateCardPage = () => {
           decisionNumber: raw.electionId?.decisionNumber || "",
           voterId: raw.voterId?._id || "",
           title: raw.electionId?.title || "",
-          token: "",
+          token: raw.token || raw.voterId?.token || raw.voterId?.userId?.token || "",
           address: raw.voterId?.userId?.address || "",
         };
 
@@ -220,7 +220,7 @@ const DelegateCardPage = () => {
         </div>
 
         {/* QR Code */}
-        {/* <div className="delegate-qr">
+        <div className="delegate-qr">
           <img
             src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${card.token}`}
             alt="QR"
@@ -234,7 +234,7 @@ const DelegateCardPage = () => {
             <br />
             <Text type="success">ID: {card.id}</Text>
           </div>
-        </div> */}
+        </div>
 
         <Text type="secondary" className="delegate-issued">
           Ngày cấp: {dayjs(card.issuedAt).format("DD/MM/YYYY")}
