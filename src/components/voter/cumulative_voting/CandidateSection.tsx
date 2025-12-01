@@ -52,9 +52,9 @@ const CandidateSection = () => {
           const end = localStorage.getItem("voteCountdownEnd");
 
           if (!end) {
-            const newEnd = Date.now() + 10 * 60 * 1000;
+            const newEnd = Date.now() + 30 * 60 * 1000;
             localStorage.setItem("voteCountdownEnd", newEnd.toString());
-            setTimeLeft(10 * 60);
+            setTimeLeft(30 * 60);
           } else {
             const left = Number(end) - Date.now();
             setTimeLeft(Math.max(Math.floor(left / 1000), 0));
