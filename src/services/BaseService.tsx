@@ -9,8 +9,22 @@ export default class BaseService<T = any> {
   protected endpoint: string;
 
   constructor(endpoint: string) {
+    // Tự động detect nếu đang ở Netlify (production) thì dùng relative path /api
+    // Netlify proxy sẽ forward requests đến backend
+    const getBaseURL = () => {
+      const envUrl = import.meta.env.VITE_API_URL;
+      // Nếu đang ở Netlify (hostname chứa netlify.app) và không có VITE_API_URL hoặc là HTTP
+      if (typeof window !== 'undefined' && window.location.hostname.includes('netlify.app')) {
+        // Nếu VITE_API_URL là HTTP hoặc không được set, dùng relative path
+        if (!envUrl || envUrl.startsWith('http://')) {
+          return '/api';
+        }
+      }
+      return envUrl || '/api';
+    };
+
     this.api = axios.create({
-      baseURL: import.meta.env.VITE_API_URL,
+      baseURL: getBaseURL(),
     });
     this.endpoint = endpoint;
 
