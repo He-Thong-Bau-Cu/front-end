@@ -172,6 +172,10 @@ const CandidateSection = () => {
     try {
       showLoading();
       const email = localStorage.getItem("email");
+      if (!email) {
+        notify("Không tìm thấy email!", "error");
+        return;
+      }
       await AuthService.sendOtp({ email });
       setOtpModalOpen(true);
     } catch {
@@ -183,6 +187,10 @@ const CandidateSection = () => {
 
   const handleResendOtp = async (): Promise<void> => {
     const email = localStorage.getItem("email");
+    if (!email) {
+      notify("Không tìm thấy email!", "error");
+      return;
+    }
     try {
       await AuthService.sendOtp({ email });
     } catch {
