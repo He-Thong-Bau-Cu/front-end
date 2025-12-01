@@ -189,6 +189,16 @@ const DraftingDocuments: React.FC = () => {
         return false;
       }
 
+      // Kiểm tra tổng % cổ phần không vượt quá 100%
+      const totalPercentage = attendees.reduce(
+        (sum, v) => sum + (Number(v.percentage) || 0),
+        0
+      );
+      if (totalPercentage > 100) {
+        notify(`Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`, "warning");
+        return false;
+      }
+
       // Kiểm tra participants (thành viên ban tổ chức)
       const participantsList = organization || [];
       const mapParticipants = participantsList.filter((p: any) => p?.roleId?.roleCode !== USER_ROLE.VOTER);
@@ -351,6 +361,16 @@ const DraftingDocuments: React.FC = () => {
           return;
         }
 
+        // Kiểm tra tổng % cổ phần không vượt quá 100%
+        const totalPercentage = votersList.reduce(
+          (sum, v) => sum + (Number(v.percentage) || 0),
+          0
+        );
+        if (totalPercentage > 100) {
+          notify(`Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`, "warning");
+          return;
+        }
+
         // Kiểm tra participants
         if (!Array.isArray(participantsList) || participantsList.length === 0) {
           notify("Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt", "warning");
@@ -366,8 +386,17 @@ const DraftingDocuments: React.FC = () => {
           threshold: meetingInfo.threshold,
           method: meetingInfo.method,
           location: meetingInfo.location,
-          authorizationStart: meetingInfo.authorizationStart?.toISOString(),
-          authorizationEnd: meetingInfo.authorizationEnd?.toISOString(),
+          // Đảm bảo chuyển đổi dayjs thành ISO string đúng cách
+          authorizationStart: meetingInfo.authorizationStart
+            ? (typeof meetingInfo.authorizationStart === 'string'
+                ? meetingInfo.authorizationStart
+                : dayjs(meetingInfo.authorizationStart).toISOString())
+            : null,
+          authorizationEnd: meetingInfo.authorizationEnd
+            ? (typeof meetingInfo.authorizationEnd === 'string'
+                ? meetingInfo.authorizationEnd
+                : dayjs(meetingInfo.authorizationEnd).toISOString())
+            : null,
         },
         electionEntities: candidatesList.map((candidate: any) => {
           const result = {

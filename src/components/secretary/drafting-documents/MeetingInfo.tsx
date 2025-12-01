@@ -446,7 +446,16 @@ const MeetingInfo: React.FC<Props> = ({
       }
     >
       {/* Form KHÔNG submit, chỉ emitChange */}
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        onValuesChange={(changedValues, allValues) => {
+          // Trigger onChange khi có thay đổi, đặc biệt là ngày ủy quyền
+          const values = form.getFieldsValue(true);
+          values.candidates = candidates;
+          onChange(values);
+        }}
+      >
         <Row gutter={16}>
           {/* SỐ NGHỊ QUYẾT VÀ TÊN NGHỊ QUYẾT - LUÔN DISABLED */}
           <Col span={12}>
@@ -634,6 +643,10 @@ const MeetingInfo: React.FC<Props> = ({
                 onChange={() => {
                   // Reset ngày kết thúc khi thay đổi ngày bắt đầu
                   form.setFieldsValue({ authorizationEnd: null });
+                  // Trigger onChange để cập nhật state
+                  const values = form.getFieldsValue(true);
+                  values.candidates = candidates;
+                  onChange(values);
                 }}
               />
             </Form.Item>
@@ -663,6 +676,12 @@ const MeetingInfo: React.FC<Props> = ({
                     if (daysDiff < 10) {
                       return Promise.reject("Ngày kết thúc ủy quyền phải cách ngày bắt đầu ít nhất 10 ngày");
                     }
+                    // Không được vượt quá ngày kết thúc cuộc bầu cử
+                    if (electionEndDate && value.isAfter(electionEndDate, "day")) {
+                      return Promise.reject(
+                        `Ngày kết thúc ủy quyền không được vượt quá ngày kết thúc cuộc bầu cử (${electionEndDate.format("DD/MM/YYYY")})`
+                      );
+                    }
                     return Promise.resolve();
                   },
                 }),
@@ -684,7 +703,16 @@ const MeetingInfo: React.FC<Props> = ({
                   // Phải cách ngày bắt đầu ít nhất 10 ngày
                   const daysDiff = d.diff(start, "day");
                   if (daysDiff < 10) return true;
+                  // Không cho chọn sau ngày kết thúc cuộc bầu cử
+                  if (electionEndDate && d.isAfter(electionEndDate, "day")) return true;
                   return false;
+                }}
+                onChange={() => {
+                  // Trigger form validation và onChange
+                  form.validateFields(['authorizationEnd']);
+                  const values = form.getFieldsValue(true);
+                  values.candidates = candidates;
+                  onChange(values);
                 }}
               />
             </Form.Item>
