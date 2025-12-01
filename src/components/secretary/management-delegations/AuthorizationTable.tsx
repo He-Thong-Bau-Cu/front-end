@@ -257,15 +257,7 @@ const AuthorizationTable = () => {
                                     handleOpenDetail(record);
                                 }}
                             >
-                                Xác nhận
-                            </Button>
-                            <Button
-                                style={{ fontSize: 16, color: "red" }}
-                                onClick={() => {
-                                    handleOpenDetail(record);
-                                }}
-                            >
-                                Từ chối
+                                Duyệt yêu cầu
                             </Button>
                         </>
                     ) : null
@@ -414,7 +406,7 @@ const AuthorizationTable = () => {
                             }}
                             onClick={() => setConfirmApproveOpen(true)}
                         >
-                            Phê duyệt
+                            Xác nhận
                         </Button>
                     ),
                     <Button

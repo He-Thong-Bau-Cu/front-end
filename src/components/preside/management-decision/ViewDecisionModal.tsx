@@ -9,7 +9,6 @@ import {
   Table,
   Button,
   Space,
-  message,
 } from "antd";
 
 import {
@@ -19,10 +18,11 @@ import {
   FileOutlined,
   SolutionOutlined,
   EyeOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import CandidateDetailModal from "./CandidateDetailModal";
 import FileService from "@/services/FileService";
-import ElectionDocumentService from "@/services/ElectionDocumentService";
+import { useNotification } from "@/contexts/NotificationContext";
 const { Title } = Typography;
 
 interface ViewDecisionModalProps {
@@ -38,12 +38,9 @@ interface ViewDecisionModalProps {
   meeting?: any;
 }
 
-
-
 const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   open,
   onClose,
-  onSign,
   data,
   loading = false,
 
@@ -55,31 +52,11 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
 }) => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [openCandidateModal, setOpenCandidateModal] = useState(false);
-
+  const { notify } = useNotification();
   const handleViewCandidate = (record: any) => {
     setSelectedCandidate(record);
     setOpenCandidateModal(true);
   };
-
-  const downloadUrlFile = async (data: any) => {
-    try {
-
-      const blob = new Blob([data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "Danh_sach_uy_quyen.pdf";
-      a.click();
-
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể tải file!");
-    }
-  };
-
-
 
   const downloadUrlFileSign = async (data: any) => {
     try {
@@ -92,9 +69,8 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       a.click();
 
       URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể tải file!");
+    } catch (err: any) {
+      notify(err.message, "error");
     }
   };
 
@@ -140,11 +116,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     "delegation-delegator-signed": "Tài liệu ủy quyền cử tri đã ký",
     "delegation-summary-signed": "Tài liệu tóm tắt ủy quyền chủ tọa đã ký",
     "voter-signed-ballots": "Tài liệu phiếu bầu cử đã ký của cử tri",
+    "election-documents-important": "Tài liệu quan trọng về bầu cử",
     default: "Tài liệu đính kèm",
     // Thêm bao nhiêu loại cũng được
   };
-
-
 
   const attachmentColumns = [
     { title: "Tên tài liệu", dataIndex: "title" },
@@ -157,13 +132,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       title: "Tải xuống",
       dataIndex: "fileUrl",
       render: (_: string, record: any) => (
-        <a
+        <Button
+          icon={<DownloadOutlined />}
           onClick={() => downloadUrlFileSign(record)}
           style={{ cursor: "pointer" }}
         >
-          📄 {record.title}
-        </a>
-
+          
+        </Button>
 
       )
     },
@@ -185,7 +160,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
           {/* ================= HEADER ================= */}
           <div
             style={{
-              background: "#f5f7fa",
+              background: "#f4fdefff",
               padding: 20,
               borderRadius: 8,
               marginBottom: 25,

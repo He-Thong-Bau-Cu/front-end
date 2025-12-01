@@ -6,7 +6,7 @@ import {
   TeamOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { Pagination, Spin, Empty } from "antd";
+import { Pagination, Spin, Empty, message } from "antd";
 import "../../../style/preside/Reports.model.css";
 import ReportService from "@/services/ReportService";
 import removeVietnameseTones from "@/utils/removeVietnameseTones";
@@ -50,19 +50,20 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
     }
   };
   const exportReport = async (item: any) => {
-  try {
-    const fileName = item.fileUrl.split("/").pop();
-    const url = await FileService.getPresignedUrl(
-      "report",
-      item.createdBy?._id,
-      fileName,
-      300
-    );
-    window.open(url, "_blank");
-  } catch (err) {
-    console.error("Không thể tải file báo cáo:", err);
-  }
-};
+    try {
+      const response = await FileService.getSignedFile(item.fileUrl);
+      const blob = new Blob([response], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${item.summary || item.title || "Báo_cáo"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải file!");
+    }
+  };
 
   const closeDetail = () => {
     setDetailOpen(false);

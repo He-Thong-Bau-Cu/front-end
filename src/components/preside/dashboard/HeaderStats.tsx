@@ -1,5 +1,5 @@
 import { Card, Button, Typography, Avatar, message } from "antd";
-import { FileTextOutlined, BarChartOutlined, UserOutlined } from "@ant-design/icons";
+import { FileTextOutlined, UserOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal"; // 📂 import component modal mới
 import { useLoading } from "@/contexts/LoadingContext";
@@ -28,8 +28,8 @@ const HeaderStats = () => {
     fetchUser();
   }, []);
 
-  
-  
+
+
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
     try {
       showLoading();
@@ -58,16 +58,16 @@ const HeaderStats = () => {
         }
       } else {
         response = await DecisionService.createDecision(apiData2);
-         const apiData3: any = {
-            electionId: response.data?._id,
-            userId: values.secretaryId,
-            roleId: "6904d5f7105b6a336b819be5",
-            position: "Thư ký chủ tọa",
-            status: "ACTIVE"
-  
-          };
-          secretary = await ElectionParticipantsService.createParticipant(apiData3);
-  
+        const apiData3: any = {
+          electionId: response.data?._id,
+          userId: values.secretaryId,
+          roleId: "6904d5f7105b6a336b819be5",
+          position: "Thư ký chủ tọa",
+          status: "ACTIVE"
+
+        };
+        secretary = await ElectionParticipantsService.createParticipant(apiData3);
+
         if (response.status === 201 && response.success) {
           notify(response.message, "success");
           message.success("Tạo nghị quyết thành công!");
@@ -91,23 +91,23 @@ const HeaderStats = () => {
 
 
   return (
-    <Card className="dashboard-header-card">
-      <div className="dashboard-header-content">
-        <div className="dashboard-header-left">
-          <Text strong className="dashboard-header-title">Chủ tọa</Text>
-          <p className="dashboard-header-subtitle">
+
+    <Card className="dashboard-preside-header-card">
+      <div className="dashboard-preside-header-content">
+        <div className="dashboard-preside-header-left">
+          <Text strong className="dashboard-preside-header-title">Chủ tọa</Text>
+          <p className="dashboard-preside-header-subtitle">
             Quản lý và giám sát toàn bộ quy trình bầu cử
           </p>
-
-          <div className="dashboard-header-user">
-            <Avatar size={64} src={user?.imageKey || undefined} icon={<UserOutlined />} className="dashboard-avatar" />
-            <div className="dashboard-user-info">
-              <Text strong className="dashboard-user-name">{user?.fullName}</Text>
+          <div className="dashboard-preside-header-user">
+            <Avatar size={64} src={user?.imageKey || undefined} icon={<UserOutlined />} className="dashboard-preside-avatar" />
+            <div className="dashboard-preside-user-info">
+              <Text strong className="dashboard-preside-user-name">{user?.fullName}</Text>
             </div>
           </div>
         </div>
 
-        <div className="dashboard-header-actions">
+        <div className="dashboard-preside-header-actions">
           <Button
             icon={<FileTextOutlined />}
             className="btn-create-decision"

@@ -22,7 +22,7 @@ import AuthorizationDetailModal from "./AuthorizationDetailModal";
 import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
 import FileService from "@/services/FileService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
-
+import { useNotification } from "@/contexts/NotificationContext";
 const { Text } = Typography;
 const { Option } = Select;
 
@@ -50,14 +50,13 @@ const removeVietnameseTones = (str: string) => {
 const AuthorizationTable = () => {
     const [data, setData] = useState<any[]>([]);
     const [rawData, setRawData] = useState<any[]>([]);
-
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailRecordId, setDetailRecordId] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [monthFilter, setMonthFilter] = useState<string>("");
-
+    const { notify } = useNotification();
     // Pagination state
     const [pagination, setPagination] = useState({
         current: 1,
@@ -67,25 +66,18 @@ const AuthorizationTable = () => {
     const [signRecord, setSignRecord] = useState<any>(null);
     const [selectedDelegations, setSelectedDelegations] = useState<string[]>([]);
     const [signModalOpen, setSignModalOpen] = useState(false);
-
-    const reload = () => loadDelegation();
-
-    // ========================== LOAD API ==========================
     const loadDelegation = async () => {
         setLoading(true);
         try {
             const params: any = {};
-
             if (statusFilter) params.status = statusFilter;
             if (search.trim()) params.textSearch = search.trim();
-
             const res = await DelegationService.getAllSummaryDelegation(params);
             const list = res?.data || [];
-
             setRawData(list);
             setData(list);
-        } catch (err) {
-            console.error("Không thể load dữ liệu", err);
+        } catch (err: any) {
+            notify(err.message, "error");
         } finally {
             setLoading(false);
         }
@@ -111,29 +103,28 @@ const AuthorizationTable = () => {
     };
 
     // ================== TẢI FILE ==================
-    const downloadUrlFile = async (data: SummaryDelegate) => {
-        try {
-            const response = await DelegationService.getSummaryDelegationPdf({
-                secretaryId: "651f0a7c1f2b4d1a12345678",
-                electionId: data?.election?._id,
-                recipient: "Chủ tịch",
-            });
+    // const downloadUrlFile = async (data: SummaryDelegate) => {
+    //     try {
+    //         const response = await DelegationService.getSummaryDelegationPdf({
+    //             secretaryId: "651f0a7c1f2b4d1a12345678",
+    //             electionId: data?.election?._id,
+    //             recipient: "Chủ tịch",
+    //         });
 
-            const blob = new Blob([response], { type: "application/pdf" });
-            const url = URL.createObjectURL(blob);
+    //         const blob = new Blob([response], { type: "application/pdf" });
+    //         const url = URL.createObjectURL(blob);
+    //         const a = document.createElement("a");
+    //         a.href = url;
+    //         a.download = "Danh_sach_uy_quyen.pdf";
+    //         a.click();
 
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "Danh_sach_uy_quyen.pdf";
-            a.click();
+    //         URL.revokeObjectURL(url);
+    //     } catch (err: any) {
+    //         notify(err.message, "error");
+    //     }
+    // };
 
-            URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error(err);
-            message.error("Không thể tải file!");
-        }
-    };
-
+    
     const downloadUrlFileSign = async (data: any) => {
         try {
             const data1 = await ElectionDocumentService.getDocumentByElectionId(
@@ -149,9 +140,8 @@ const AuthorizationTable = () => {
             a.click();
 
             URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error(err);
-            message.error("Không thể tải file!");
+        } catch (err: any) {
+            notify(err.message, "error");
         }
     };
 
@@ -167,7 +157,6 @@ const AuthorizationTable = () => {
             const d2 = decisionName.toLowerCase();
             const nd1 = removeVietnameseTones(decisionNumber);
             const nd2 = removeVietnameseTones(decisionName);
-
             if (
                 !(
                     d1.includes(text) ||
@@ -179,7 +168,6 @@ const AuthorizationTable = () => {
                 return false;
             }
         }
-
         if (monthFilter && delegationEnd) {
             const m = new Date(delegationEnd).getMonth() + 1;
             if (m.toString() !== monthFilter) return false;
@@ -187,8 +175,6 @@ const AuthorizationTable = () => {
 
         return true;
     });
-
-    // ================== COLUMNS ==================
     const columns = [
         {
             title: "STT",
@@ -224,37 +210,35 @@ const AuthorizationTable = () => {
         {
             title: "Hạn ủy quyền",
             render: (r: any) => (
-                <Text strong>{formatDate(r.election?.delegationEnd) || "—"}</Text>
+                <Text strong className="white-nowrap">
+                    {formatDate(r.election?.delegationEnd) || "—"}
+                </Text>
             ),
-        },
+        }
+        ,
         {
             title: "Thao tác",
-            render: (_: any, record: any) => (
-                <Space>
-                    <Button
-                        icon={<EyeOutlined style={{ fontSize: 16, color: "blue" }} />}
-                        onClick={() => openDetail(record)}
-                    >
-                        Xem chi tiết hoặc ký
-                    </Button>
-
-                    {record.status !== "SIGNED" ? (
+            render: (_: any, record: any) => {
+                
+                return (
+                    <Space>
                         <Button
-                            icon={<DownloadOutlined />}
-                            onClick={() => downloadUrlFile(record)}
+                            icon={<EyeOutlined style={{ fontSize: 16, color: "blue" }} />}
+                            onClick={() => openDetail(record)}
                         >
-                            Tải tài liệu
+                            Xem hoặc ký
                         </Button>
-                    ) : (
-                        <Button
-                            icon={<DownloadOutlined />}
-                            onClick={() => downloadUrlFileSign(record)}
-                        >
-                            Tải tài liệu có chữ ký số
-                        </Button>
-                    )}
-                </Space>
-            ),
+                        {record.status === "SIGNED" && (
+                            <Button
+                                icon={<DownloadOutlined />}
+                                onClick={() => downloadUrlFileSign(record)}
+                            >
+                                Tải tài liệu
+                            </Button>
+                        )}
+                    </Space>
+                );
+            },
         },
     ];
 

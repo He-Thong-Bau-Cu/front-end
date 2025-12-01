@@ -1,63 +1,54 @@
-
-import { Card, Button, Typography, Avatar, message } from "antd";
-import { FileTextOutlined, BarChartOutlined, UserOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
-import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal"; // 📂 import component modal mới
 import { useLoading } from "@/contexts/LoadingContext";
-import { useNotification } from "@/contexts/NotificationContext";
-import DecisionService from "@/services/DecisionService";
 import { User } from "@/types/User.interface";
 import { getUserLogin } from "@/utils/auth";
+import { UserOutlined } from "@ant-design/icons";
+import { Avatar, Card, Typography } from "antd";
+import { useEffect, useState } from "react";
+import "../../../style/voter/Dashboard.model.css";
 const { Text } = Typography;
 
 const HeaderSecretary = () => {
-    const [open, setOpen] = useState(false);
-    const { showLoading, hideLoading } = useLoading();
-    const { notify } = useNotification();
     const [user, setUser] = useState<User | null>(null);
+    const { showLoading, hideLoading } = useLoading();
 
     useEffect(() => {
-        const fetchUser = async () => {
+
+        const fetchUserData = async () => {
             try {
-                const userData = await getUserLogin();
-                setUser(userData as User);
+                showLoading();
+                const userId = localStorage.getItem("userId");
+                if (userId) {
+                    const userData = await getUserLogin();
+                    setUser(userData);
+                }
             } catch (error) {
-                message.error("Không thể tải thông tin người dùng!");
+                console.error("Error fetching user data:", error);
+            } finally {
+                hideLoading();
             }
         };
-        fetchUser();
-    }, []);
-   
-    return (
-        <Card className="dashboard-header-card">
-            <div className="dashboard-header-content">
-                <div className="dashboard-header-left">
-                    <Text strong className="dashboard-header-title">Thư ký chủ tọa</Text>
-                    <p className="dashboard-header-subtitle">
-                        Hỗ trợ chủ tịch các công việc trong bầu cử
-                    </p>
-                    <div className="dashboard-header-user">
-                        <Avatar size={64} src={user?.imageKey || undefined}  icon={<UserOutlined />} className="dashboard-avatar" />
-                        <div className="dashboard-user-info">
-                            <Text strong className="dashboard-user-name">{user?.fullName}</Text>
-                            <p className="dashboard-user-role">Thư ký Chủ tọa Hội đồng Bầu cử</p>
-                        </div>
-                    </div>
-                </div>
-                {/* <div className="dashboard-header-actions">
-                    <Button
-                        icon={<FileTextOutlined />}
-                        className="btn-create-decision"
-                        type="primary"
-                        onClick={() => setOpen(true)} // 👈 khi click sẽ mở modal
-                    >
-                        Tạo quyết định
-                    </Button>
-                </div> */}
-            </div>
 
-            {/* 🧩 Modal nhập thông tin nghị quyết */}
-        
+        fetchUserData();
+    }, []);
+
+    return (
+        <Card className="voter-welcome-card">
+            <Text strong className="voter-welcome-title">👋 Chào mừng trở lại!</Text>
+            <p className="voter-welcome-subtitle">
+                Công thông tin bầu cử điện tử của thư ký chủ tọa
+            </p>
+            <div className="voter-welcome-user">
+                <Avatar
+                    size={70}
+                    src={user?.image}
+                    icon={user?.image ? undefined : <UserOutlined />}
+                />
+                <div>
+                    <Text strong className="voter-user-name">
+                        {user?.fullName || "Người dùng"}
+                    </Text>
+                </div>
+            </div>
         </Card>
     );
 };
