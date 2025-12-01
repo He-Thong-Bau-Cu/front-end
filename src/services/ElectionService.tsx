@@ -84,7 +84,7 @@ class ElectionService extends BaseService {
         responseType: 'blob',
       });
       // Interceptor trả về response.data, nên response chính là Blob
-      return response as Blob;
+      return response as unknown as Blob;
     } catch (error) {
       console.error("Error preview PDF:", error);
       throw error;

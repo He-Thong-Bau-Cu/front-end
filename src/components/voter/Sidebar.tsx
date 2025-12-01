@@ -55,8 +55,8 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Thẻ đại biểu",
         },
     ].filter((item) =>
-        permissions.some(p => p.startsWith(item.key)) ||
-        permissionsElections.some(p => p.startsWith(item.key))
+        permissions.some((p: string) => p.startsWith(item.key)) ||
+        permissionsElections.some((p: string) => p.startsWith(item.key))
     );
 
 
