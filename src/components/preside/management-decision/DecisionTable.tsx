@@ -450,7 +450,7 @@ const DecisionTable = () => {
     },
   ];
   return (
-    <Card className="decision-table-card">
+    <Card className="decision-table-card" style={{padding:'20px'}}>
       <div className="decision-toolbar">
         <Input
           placeholder="Tìm kiếm theo tên quyết định..."
