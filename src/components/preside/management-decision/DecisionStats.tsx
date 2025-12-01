@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, Row, Col, Typography, Spin } from "antd";
-import { 
-    FileTextOutlined, 
-    CheckCircleOutlined, 
+import {
+    FileTextOutlined,
+    CheckCircleOutlined,
     ClockCircleOutlined,
-    DatabaseOutlined, 
+    DatabaseOutlined,
     EditOutlined,
     FileOutlined,
     FileAddOutlined
 } from "@ant-design/icons";
 import DecisionService from "@/services/DecisionService";
-
+import { useNotification } from "@/contexts/NotificationContext";
 const { Text } = Typography;
 
 interface StatItem {
@@ -36,11 +36,12 @@ interface DecisionStatsProps {
     enableAutoRefresh?: boolean; // Bật/tắt auto refresh, mặc định true
 }
 
-const DecisionStats: React.FC<DecisionStatsProps> = ({ 
-    refreshTrigger, 
+const DecisionStats: React.FC<DecisionStatsProps> = ({
+    refreshTrigger,
     autoRefreshInterval = 30000, // 30 giây
-    enableAutoRefresh = true 
+    enableAutoRefresh = true
 }) => {
+    const { notify } = useNotification();
     const [stats, setStats] = useState<StatsData>({
         total: 0,
         approved: 0,
@@ -58,7 +59,7 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
         if (showLoading) {
             setLoading(true);
         }
-        
+
         try {
             // Lấy tất cả dữ liệu để tính toán thống kê
             const response = await DecisionService.getAllDecisions({
@@ -77,7 +78,7 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
 
             response.content.forEach((item: any) => {
                 const statusData = item.statusData || item.status || "";
-                
+
                 if (statusData === "APPROVED_SIGNED") {
                     approved++;
                 } else if (statusData === "WAIT_ENTER_DATA") {
@@ -104,9 +105,9 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
                     draft,
                     deleted,
                 };
-                
+
                 // Kiểm tra xem có thay đổi không
-                const hasChanged = 
+                const hasChanged =
                     prevStats.total !== newStats.total ||
                     prevStats.approved !== newStats.approved ||
                     prevStats.waitEnterData !== newStats.waitEnterData ||
@@ -114,13 +115,12 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
                     prevStats.requestEdit !== newStats.requestEdit ||
                     prevStats.draft !== newStats.draft ||
                     prevStats.deleted !== newStats.deleted;
-                
+
                 // Chỉ cập nhật nếu có thay đổi
                 return hasChanged ? newStats : prevStats;
             });
-        } catch (error: any) {
-            console.error("Error loading stats:", error);
-            // Giữ giá trị cũ khi lỗi để không bị mất dữ liệu
+        } catch (err: any) {
+            notify(err.message, "error");
         } finally {
             if (showLoading) {
                 setLoading(false);
@@ -202,14 +202,14 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
             <Row gutter={[12, 12]} className="decision-stats-row">
                 {[1, 2, 3, 4, 5].map((i) => (
                     <Col key={i} xs={24} sm={12} md={8} lg={6} xl={4}>
-                        <Card 
-                            className="decision-stat-card" 
+                        <Card
+                            className="decision-stat-card"
                         >
-                            <div style={{ 
-                                display: "flex", 
-                                justifyContent: "center", 
-                                alignItems: "center", 
-                                minHeight: 50 
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                minHeight: 50
                             }}>
                                 <Spin size="small" />
                             </div>
@@ -255,7 +255,7 @@ const DecisionStats: React.FC<DecisionStatsProps> = ({
                                 >
                                     {item.value}
                                 </Text>
-                                <div 
+                                <div
                                     className="decision-stat-label"
                                     style={{
                                         fontSize: 13,

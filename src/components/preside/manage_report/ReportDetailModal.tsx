@@ -1,4 +1,4 @@
-import { Modal, Typography, Divider, Row, Col, Tag, Button, Card } from "antd";
+import { Modal, Typography, Divider, Row, Col, Tag, Button, Card, message } from "antd";
 import {
     FileSearchOutlined,
     DownloadOutlined,
@@ -23,7 +23,21 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
     data,
 }) => {
     if (!data) return null;
-
+    const downloadUrlFileSign = async (data: any) => {
+        try {
+            const response = await FileService.getSignedFile(data.fileUrl);
+            const blob = new Blob([response], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${data.summary || data.title || "Báo_cáo"}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            message.error("Không thể tải file!");
+        }
+    };
     const election = data.electionId; // thông tin cuộc bầu cử
 
     return (
@@ -33,7 +47,6 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             footer={null}
             width={760}
             style={{ top: 40 }}
-            bodyStyle={{ padding: "24px 32px" }}
             title={
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <FileSearchOutlined style={{ fontSize: 22 }} />
@@ -128,26 +141,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                             <Button
                                 type="primary"
                                 icon={<DownloadOutlined />}
-                                onClick={async () => {
-                                    try {
-                                        if (!data.fileUrl) return;
-
-                                        // 1. Tách fileName từ URL (ví dụ: reports/abc.pdf → abc.pdf)
-                                        const fileName = data.fileUrl;
-
-                                        // 2. Lấy presigned URL từ API
-                                        const presignedUrl = await FileService.getPresignedUrl(
-                                            "report",               // fileType do backend yêu cầu
-                                            data.createdBy?._id,    // userId
-                                            fileName,               // fileName
-                                            300                      // expiresIn (seconds)
-                                        );
-                                        // 3. Mở link để tải
-                                        window.open(presignedUrl, "_blank");
-                                    } catch (err) {
-                                        console.error("Không thể xuất báo cáo:", err);
-                                    }
-                                }}
+                                onClick={() => downloadUrlFileSign(data)}
                             >
                                 Xuất báo cáo
                             </Button>

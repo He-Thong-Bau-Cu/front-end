@@ -1,7 +1,7 @@
-.dashboard-header-card {
+.dashboard-preside-header-card {
   background: linear-gradient(90deg, #a8e678 0%, #7ecb50 100%);
   border-radius: 16px !important;
-  margin: 20px 32px;
+  margin: 32px !important;
   padding: 10px 40px;
   color: #fff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -9,7 +9,7 @@
 }
 
 /* --- Container layout --- */
-.dashboard-header-content {
+.dashboard-preside-header-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -17,52 +17,48 @@
   gap: 20px;
 }
 
-/* --- Left info --- */
-.dashboard-header-left {
+.dashboard-preside-header-left {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* --- Title and Subtitle --- */
-.dashboard-header-title {
+.dashboard-preside-header-title {
   font-size: 22px !important;
   color: #fff !important;
 }
 
-.dashboard-header-subtitle {
+.dashboard-preside-header-subtitle {
   color: #eef6eb;
   font-size: 14px;
   margin: 0;
 }
 
-/* --- User block --- */
-.dashboard-header-user {
+.dashboard-preside-header-user {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-top: 8px;
 }
 
-.dashboard-user-info {
+.dashboard-preside-user-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.dashboard-user-name {
+.dashboard-preside-user-name {
   font-size: 17px !important;
   color: #fff !important;
 }
 
-.dashboard-user-role {
+.dashboard-preside-user-role {
   margin: 0;
   font-size: 13px;
   color: #f1f1f1;
 }
 
-/* --- Buttons group --- */
-.dashboard-header-actions {
+.dashboard-preside-header-actions {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -70,7 +66,6 @@
   padding-top: 50px;
 }
 
-/* --- Buttons --- */
 .btn-create-decision {
   background-color: #fff !important;
   color: #124d2d !important;

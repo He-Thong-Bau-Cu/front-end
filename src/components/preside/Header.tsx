@@ -23,7 +23,6 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isProfileOpen, setProfileOpen] = useState(false);
     const [notifications, setNotifications] = useState<INotification[]>([]);
-    const [notificationLoading, setNotificationLoading] = useState(false);
     const { showLoading, hideLoading } = useLoading();
     const [userId, setUserId] = useState<string | null>(null);
 
