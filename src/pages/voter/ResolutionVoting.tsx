@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import VotingLayout from "../../components/voter/resolution_voting/VotingLayout";
+import DigitalSignModal from "../digitalSignature/DigitalSignModal";
 
 export default function ResolutionVoting() {
+  const [openSignModal, setOpenSignModal] = useState(false);
+
   return (
     <>
       <VotingLayout />
