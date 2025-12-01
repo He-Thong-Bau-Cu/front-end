@@ -1,19 +1,17 @@
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import BallotService from "@/services/BallotService";
+import ElectionService from "@/services/ElectionService";
+import { Election } from "@/types/Election.interface";
 import {
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  FileTextOutlined,
+  FileTextOutlined
 } from "@ant-design/icons";
 import { Col, Row, Typography } from "antd";
 import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../../../style/voter/ResolutionVoting.model.css";
 import CountdownCard from "./CountdownCard";
 import ResolutionContent from "./ResolutionContent";
-import BallotService from "@/services/BallotService";
-import { useLoading } from "@/contexts/LoadingContext";
-import { useNotification } from "@/contexts/NotificationContext";
-import { useLocation, useNavigate } from "react-router-dom";
-import ElectionService from "@/services/ElectionService";
-import { Election } from "@/types/Election.interface";
 
 const { Title } = Typography;
 
@@ -52,9 +50,9 @@ const VotingLayout: React.FC = () => {
           const end = localStorage.getItem("voteCountdownEnd");
 
           if (!end) {
-            const newEnd = Date.now() + 10 * 60 * 1000;
+            const newEnd = Date.now() + 30 * 60 * 1000;
             localStorage.setItem("voteCountdownEnd", newEnd.toString());
-            setTimeLeft(10 * 60);
+            setTimeLeft(30 * 60);
           } else {
             const left = Number(end) - Date.now();
             setTimeLeft(Math.max(Math.floor(left / 1000), 0));
