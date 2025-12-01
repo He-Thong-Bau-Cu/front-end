@@ -11,12 +11,6 @@ const Dashboard = () => {
             <HeaderStats />
             <DashboardStats />
             <DashboardCharts />
-
-            <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-                <Col xs={24} lg={24}>
-                    <DecisionList />
-                </Col>
-            </Row>
         </div>
     );
 };
