@@ -7,6 +7,7 @@ interface VoteVerificationDetailProps extends VoteVerificationProps {
   initialConfirmed?: boolean;
   onApprove?: () => Promise<void> | void;
   approving?: boolean;
+  canSign?: boolean;
 }
 
 export default function VoteVerificationDetail({
@@ -15,6 +16,7 @@ export default function VoteVerificationDetail({
   initialConfirmed,
   onApprove,
   approving,
+  canSign = true,
 }: VoteVerificationDetailProps) {
   const [checked, setChecked] = useState<boolean>(!!initialConfirmed);
 
@@ -118,9 +120,10 @@ export default function VoteVerificationDetail({
                             icon={<EditOutlined />}
                             type="primary"
                             className="ev-sign-btn"
-                            disabled={!checked || !!initialConfirmed}
+                            disabled={!checked || !!initialConfirmed || !canSign}
                             loading={approving}
                             onClick={onApprove}
+                            title={!canSign ? "Chưa đến giai đoạn công bố kết quả" : ""}
                         >
                             {initialConfirmed ? "Đã công bố kết quả" : "Ký số & Công bố Kết quả"}
                         </Button>

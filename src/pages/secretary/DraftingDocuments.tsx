@@ -40,7 +40,6 @@ const DraftingDocuments: React.FC = () => {
       if (response && response.success) {
         const data = response.data;
 
-        // Map election data (wrap in data property for MeetingInfo component compatibility)
         setElection({
           data: {
             election: data.election,
@@ -48,27 +47,19 @@ const DraftingDocuments: React.FC = () => {
           },
         });
 
-        // Map election entities (candidates)
         setElectionentities(data.electionEntities || []);
 
-        // Map meeting data
         setMeeting(data.meeting);
 
-        // Map status data
         setStatusData(data.election?.statusData);
 
-        // Map voters data
         setVoter(data.voters || []);
 
-        // Map documents data
         setExistingDocuments(data.electionDocuments || []);
 
-        // Map participants data (organization)
         setExistingParticipants(data.participants || []);
 
-        // Set meeting info with all the required fields from the API response
         const meetingInfoData = {
-          // Basic election info
           decisionName: data.election?.decisionName,
           decisionNumber: data.election?.decisionNumber,
 
@@ -428,12 +419,12 @@ const DraftingDocuments: React.FC = () => {
           remarks: doc.remarks || "",
         })),
         voters: votersList.map((v: any) => ({
-          _id: v._id, // Có _id nếu edit
+          _id: v._id,
           userId: v.userId,
           percentage: v.percentage,
         })),
         participants: participantsList.map((p: any) => ({
-          _id: p._id, // Có _id nếu edit
+          _id: p._id,
           userId: p.userId,
           roleId: p.roleId,
           position: p.roleName || p.position,

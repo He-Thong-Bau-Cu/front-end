@@ -52,6 +52,7 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
   const [form] = Form.useForm();
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const prevDataRef = useRef<any>(null);
   const idCounterRef = useRef<number>(0);
 
@@ -60,14 +61,15 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
     const getUsers = async () => {
       try {
         const electionId = localStorage.getItem("currentElectionId") || "";
-        const currentUserId = localStorage.getItem("userId") || "";
+        const userId = localStorage.getItem("userId") || "";
+        setCurrentUserId(userId); // Lưu userId hiện tại để dùng cho disable nút xóa
         const election = await DecisionService.getElectionById(electionId);
         const res = await ElectionService.getElectionUser({
           startData: election.startDate,
           endDate: election.startDate,
         });
         // Lọc bỏ user có userId trùng với userId hiện tại
-        const filteredUsers = res.filter((user: User) => user._id !== currentUserId);
+        const filteredUsers = res.filter((user: User) => user._id !== userId);
         setUsers(filteredUsers);
       } catch (err) {
         message.error("Không thể tải danh sách người dùng!");
@@ -217,32 +219,39 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
           </div>
         }
       >
-        {members.map((m) => (
-          <div key={m.id} className="participant-item">
-            <div>
-              <strong>{m.fullName}</strong>
-              <p>{m.roleName}</p>
+        {members.map((m) => {
+          // Kiểm tra xem user này có phải là user hiện tại không (thư ký)
+          const isCurrentUser = m.userId === currentUserId;
+          const canDelete = !disabled && !isCurrentUser;
+
+          return (
+            <div key={m.id} className="participant-item">
+              <div>
+                <strong>{m.fullName}</strong>
+                <p>{m.roleName}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <Tag color={statusColor(m.status || "PENDING")} style={{ margin: 0, marginTop: 2 }}>
+                  {m.status === "ACTIVE"
+                    ? "Đã xác nhận"
+                    : m.status === "INACTIVE"
+                      ? "Đã hủy"
+                      : "Chờ duyệt"}
+                </Tag>
+                <DeleteOutlined
+                  onClick={() => canDelete && handleDelete(m)}
+                  style={{
+                    color: canDelete ? "red" : "#ccc",
+                    cursor: canDelete ? "pointer" : "not-allowed",
+                    opacity: canDelete ? 1 : 0.5,
+                    marginTop: 2
+                  }}
+                  title={isCurrentUser ? "Không thể xóa chính mình" : "Xóa"}
+                />
+              </div>
             </div>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-              <Tag color={statusColor(m.status || "PENDING")} style={{ margin: 0, marginTop: 2 }}>
-                {m.status === "ACTIVE"
-                  ? "Đã xác nhận"
-                  : m.status === "INACTIVE"
-                    ? "Đã hủy"
-                    : "Chờ duyệt"}
-              </Tag>
-              <DeleteOutlined
-                onClick={() => !disabled && handleDelete(m)}
-                style={{
-                  color: disabled ? "#ccc" : "red",
-                  cursor: disabled ? "not-allowed" : "pointer",
-                  opacity: disabled ? 0.5 : 1,
-                  marginTop: 2
-                }}
-              />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </Card>
 
       {/* ================= MODAL THÊM THÀNH VIÊN ================= */}

@@ -51,39 +51,72 @@
   width: 100%;
 }
 
-.pause-btn {
+.start-btn {
   width: 85%;
-  background: #feefc3 !important;
-  border-color: #fddc8c !important;
-  color: #b45309 !important;
+  background: linear-gradient(135deg, #4caf50, #2e7d32) !important;
+  border: none !important;
+  color: #fff !important;
   font-weight: 600;
+  height: 40px;
+  border-radius: 8px !important;
   transition: all 0.2s ease;
 }
 
-.pause-btn:hover,
-.pause-btn:focus,
-.pause-btn:active {
-  background: #fde68a !important; /* vàng đậm hơn khi hover */
-  border-color: #fcd34d !important;
-  color: #92400e !important;
+.start-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #43a047, #1b5e20) !important;
+}
+
+.start-btn:disabled {
+  background: #d9d9d9 !important;
+  color: #999 !important;
+  cursor: not-allowed;
+}
+
+.pause-btn {
+  width: 85%;
+  background: linear-gradient(135deg, #ffc107, #ff9800) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  height: 40px;
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+}
+
+.pause-btn:hover:not(:disabled),
+.pause-btn:focus:not(:disabled),
+.pause-btn:active:not(:disabled) {
+  background: linear-gradient(135deg, #ffb300, #f57c00) !important;
+}
+
+.pause-btn:disabled {
+  background: #d9d9d9 !important;
+  color: #999 !important;
+  cursor: not-allowed;
 }
 
 .stop-btn {
   width: 85%;
-  background: #f8d7da !important;
-  border-color: #f1aeb5 !important;
-  color: #842029 !important;
+  background: linear-gradient(135deg, #f44336, #c62828) !important;
+  border: none !important;
+  color: #fff !important;
   font-weight: 600;
+  height: 40px;
+  border-radius: 8px !important;
   transition: all 0.2s ease;
   margin-bottom: 10px;
 }
 
-.stop-btn:hover,
-.stop-btn:focus,
-.stop-btn:active {
-  background: #f5b7b1 !important; /* đỏ nhẹ hơn */
-  border-color: #ec8e8e !important;
-  color: #6c1a1a !important;
+.stop-btn:hover:not(:disabled),
+.stop-btn:focus:not(:disabled),
+.stop-btn:active:not(:disabled) {
+  background: linear-gradient(135deg, #e53935, #b71c1c) !important;
+}
+
+.stop-btn:disabled {
+  background: #d9d9d9 !important;
+  color: #999 !important;
+  cursor: not-allowed;
 }
 
 .pause-btn:focus,
@@ -191,24 +224,49 @@
 }
 
 .end-vote-btn {
-  background: #dff5e0 !important;
-  border: 1px solid #124d2d !important;
-  color: #124d2d !important;
+  background: linear-gradient(135deg, #4caf50, #2e7d32) !important;
+  border: none !important;
+  color: #fff !important;
   font-weight: 600;
   margin-top: 8px;
   height: 40px;
-  border-radius: 6px;
+  border-radius: 8px !important;
   transition: all 0.2s ease;
 }
 
-.end-vote-btn:hover,
-.end-vote-btn:focus,
-.end-vote-btn:active {
-  background: #baf3c0 !important;
-  border-color: #124d2d !important;
-  color: #0f3d23 !important;
+.end-vote-btn:hover:not(:disabled),
+.end-vote-btn:focus:not(:disabled),
+.end-vote-btn:active:not(:disabled) {
+  background: linear-gradient(135deg, #43a047, #1b5e20) !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+.end-vote-btn:disabled {
+  background: #d9d9d9 !important;
+  color: #999 !important;
+  cursor: not-allowed;
+}
+
+/* Chỉnh màu các nút primary trong stage control */
+.stage-card .ant-btn-primary {
+  background: linear-gradient(135deg, #4caf50, #2e7d32) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  height: 40px;
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+}
+
+.stage-card .ant-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #43a047, #1b5e20) !important;
+}
+
+.stage-card .ant-btn-primary:disabled {
+  background: #d9d9d9 !important;
+  color: #999 !important;
+  cursor: not-allowed;
 }
 
 .announcement-card {

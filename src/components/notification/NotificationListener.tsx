@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import { message } from "antd";
 import { useNotification } from "@/contexts/NotificationContext";
+import { SOCKET_URL } from "@/config/socket";
 
 // ====== Type cho notification ======
 export interface INotification {
@@ -27,7 +28,7 @@ const NotificationListener: React.FC<NotificationListenerProps> = ({
     if (!userId) return;
 
     // ====== Connect socket ======
-    const socket: Socket = io("http://54.253.192.210:80/notification", {
+    const socket: Socket = io(SOCKET_URL, {
       auth: { userId },           // truyền userId qua auth
       transports: ["websocket"],  // chỉ dùng websocket
     });

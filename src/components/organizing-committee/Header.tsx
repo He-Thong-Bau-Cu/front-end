@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Badge, Button, Dropdown, Layout, Space, Typography } from "antd";
+import { Avatar, Badge, Button, Dropdown, Layout, Popover, Space, Typography } from "antd";
 import { BellFilled, HomeOutlined, IdcardOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { MenuProps } from "antd/lib";
 import { User } from "@/types/User.interface";
@@ -7,6 +7,10 @@ import { getUserLogin } from "@/utils/auth";
 import ProfileModal from "@/components/homepage/ProfileModal"; // ✅ import modal hồ sơ cá nhân
 import { useNotification } from "@/contexts/NotificationContext";
 import { useNavigate } from "react-router-dom";
+import NotificationDropdown, { INotification } from "../notification/NotificationDropdown";
+import NotificationListener from "../notification/NotificationListener";
+import { useLoading } from "@/contexts/LoadingContext";
+import NotificationService from "@/services/NotificationService";
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -19,7 +23,16 @@ const OrganizingCommitteeHeader: React.FC<OrganizingCommitteeHeaderProps> = ({ t
   const { notify } = useNotification();
   const [user, setUser] = useState<User | null>(null);
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) setUserId(storedUserId);
+    loadNotification();
+  }, []);
 
   // 🧩 Lấy thông tin user đăng nhập
   useEffect(() => {
@@ -33,6 +46,26 @@ const OrganizingCommitteeHeader: React.FC<OrganizingCommitteeHeaderProps> = ({ t
     };
     fetchUser();
   }, [notify]);
+
+  const loadNotification = async () => {
+    try {
+      showLoading();
+      const userId = localStorage.getItem("userId") as string;
+      const response = await NotificationService.getUserNotifications(userId);
+      if (response.success) {
+        const data = response.data;
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleSocketNotification = (data: any) => {
+    setNotifications((prev) => [data, ...prev]);
+  };
 
   // 🧩 Xử lý hành động người dùng
   const handleLogout = () => {
@@ -65,6 +98,12 @@ const OrganizingCommitteeHeader: React.FC<OrganizingCommitteeHeaderProps> = ({ t
   return (
     <>
       <Header className="secretary-header">
+        {userId && (
+          <NotificationListener
+            userId={userId}
+            onNewNotification={handleSocketNotification}
+          />
+        )}
         <div className="header-container">
           {/* 🏷 Tiêu đề */}
           <div className="header-title">{title}</div>
@@ -86,27 +125,40 @@ const OrganizingCommitteeHeader: React.FC<OrganizingCommitteeHeaderProps> = ({ t
                 marginRight: '8px',
               }}
             />
-            <Badge count={3} size="small">
-              <BellFilled
-                style={{
-                  fontSize: '20px',
-                  color: '#7cb342',
-                  cursor: 'pointer',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'transform 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              />
-            </Badge>
+            <Popover
+              placement="bottomRight"
+              content={
+                <NotificationDropdown
+                  userId={localStorage.getItem("userId") as string}
+                  notifications={notifications}
+                  setNotifications={setNotifications}
+                />
+              }
+              trigger="click"
+              overlayClassName="notification-popover"
+            >
+              <Badge count={notifications.length} size="small">
+                <BellFilled
+                  style={{
+                    fontSize: '20px',
+                    color: '#7cb342',
+                    cursor: 'pointer',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'transform 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                />
+              </Badge>
+            </Popover>
 
             {/* 🧩 Dropdown Avatar */}
             <Dropdown

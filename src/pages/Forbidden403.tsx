@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Typography } from 'antd';
 import { HomeOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
+import bannerContent from "@/assets/banner_content.png";
 
 const { Title, Text } = Typography;
 
@@ -44,7 +45,11 @@ export default function Forbidden403() {
     <div style={{
       minHeight: '100vh',
       width: '100vw',
-      background: 'linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)',
+      backgroundImage: `url(${bannerContent})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundAttachment: "fixed",
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -55,27 +60,6 @@ export default function Forbidden403() {
       margin: 0,
       overflow: 'auto'
     }}>
-      {/* Decorative circles */}
-      <div style={{
-        position: 'absolute',
-        width: '300px',
-        height: '300px',
-        background: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: '50%',
-        top: '-100px',
-        left: '-100px',
-        backdropFilter: 'blur(10px)'
-      }} />
-      <div style={{
-        position: 'absolute',
-        width: '400px',
-        height: '400px',
-        background: 'rgba(255, 255, 255, 0.08)',
-        borderRadius: '50%',
-        bottom: '-150px',
-        right: '-150px',
-        backdropFilter: 'blur(10px)'
-      }} />
 
       <div style={{
         maxWidth: '700px',

@@ -14,6 +14,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useLoading } from "@/contexts/LoadingContext";
+import bannerContent from "@/assets/banner_content.png";
 
 const AdminLayout = () => {
   const [pageTitle, setPageTitle] = useState("Tổng quan");
@@ -68,7 +69,11 @@ const AdminLayout = () => {
             height: "calc(100vh - 64px)",
             overflow: "auto",
             padding: "10px 24px 24px",
-            background: "#EFF8EF",
+            backgroundImage: `url(${bannerContent})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundAttachment: "fixed",
           }}
         >
           <Outlet />

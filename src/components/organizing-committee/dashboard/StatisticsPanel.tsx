@@ -12,6 +12,7 @@ import ElectionParticipantService from "@/services/ElectionParticipantsService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
 import { io, Socket } from "socket.io-client";
 import { useNotification } from "@/contexts/NotificationContext";
+import { SOCKET_URL } from "@/config/socket";
 
 const StatisticsPanel: React.FC = () => {
     const { notify } = useNotification();
@@ -30,7 +31,7 @@ const StatisticsPanel: React.FC = () => {
         // Setup socket để nhận cập nhật realtime
         const currentElectionId = localStorage.getItem("currentElectionId");
         if (currentElectionId) {
-            const socket: Socket = io("http://54.253.192.210:80/notification", {
+            const socket: Socket = io(SOCKET_URL, {
                 transports: ["websocket"],
             });
 
