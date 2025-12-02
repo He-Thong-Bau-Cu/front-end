@@ -38,9 +38,8 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
                 backgroundAttachment: "fixed",
                 display: "flex",
                 flexDirection: "column",
-                width: 'calc(100vw - 290px)',
-                minHeight: '100vh',
-                overflow: 'hidden',
+                minHeight: "100vh",
+                overflow: "hidden", // ẩn scroll ngoài
             }}>
                 <Header title={pageTitle} />
                 <Content

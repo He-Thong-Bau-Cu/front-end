@@ -219,37 +219,86 @@
   background: #fff;
   border: 1px solid #eef5ee;
   border-radius: 14px !important;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 /* ======= STAT CARDS ======= */
-.stat-card { padding: 18px; }
-.stat-label { color: #7b8a7b; font-weight: 600; }
-.stat-number { margin-top: 8px; font-size: 34px; font-weight: 800; color: #111; }
-.stat-card--highlight { border-color: #eef5ee !important; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+.stat-card {
+  padding: 18px;
+}
+.stat-label {
+  color: #7b8a7b;
+  font-weight: 600;
+}
+.stat-number {
+  margin-top: 8px;
+  font-size: 34px;
+  font-weight: 800;
+  color: #111;
+}
+.stat-card--highlight {
+  border-color: #eef5ee !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
 
 /* ===== TASK ===== */
-.task-card { border-radius: 14px !important; }
-.task-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; }
-.task-header.with-divider { border-bottom: 1px solid #f0f0f0; }
-.task-icon { color: #6b7280; font-size: 18px; }
-.task-title { margin: 0 !important; font-weight: 700; }
-.task-body { padding: 10px 16px 14px; }
-.task-row { padding: 8px 0; }
-.task-text { color: #111827; font-size: 15px; }
-.task-square { width: 14px; height: 14px; border-radius: 4px; }
-.task-text.is-done { color: #6b7280; text-decoration: line-through; }
+.task-card {
+  border-radius: 14px !important;
+}
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.task-header.with-divider {
+  border-bottom: 1px solid #f0f0f0;
+}
+.task-icon {
+  color: #6b7280;
+  font-size: 18px;
+}
+.task-title {
+  margin: 0 !important;
+  font-weight: 700;
+}
+.task-body {
+  padding: 10px 16px 14px;
+}
+.task-row {
+  padding: 8px 0;
+}
+.task-text {
+  color: #111827;
+  font-size: 15px;
+}
+.task-square {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+.task-text.is-done {
+  color: #6b7280;
+  text-decoration: line-through;
+}
 
 /* ===== EVENT PROGRESS ===== */
 .event-progress-card {
   padding: 20px 24px;
   background: #fff;
   border-radius: 14px !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
-.event-progress-header { text-align: center; margin-bottom: 10px; }
-.event-progress-title { color: #2f7f2f !important; font-weight: 800; font-size: 18px; }
+.event-progress-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.event-progress-title {
+  color: #2f7f2f !important;
+  font-weight: 800;
+  font-size: 18px;
+}
 
 .event-progress-legend {
   display: flex;
@@ -317,7 +366,13 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
-  .event-progress-grid { grid-template-columns: 1fr; }
-  .up-row { grid-template-columns: 1fr; }
-  .up-actions { justify-content: flex-start; }
+  .event-progress-grid {
+    grid-template-columns: 1fr;
+  }
+  .up-row {
+    grid-template-columns: 1fr;
+  }
+  .up-actions {
+    justify-content: flex-start;
+  }
 }

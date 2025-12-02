@@ -172,7 +172,7 @@ const TBTCHeader: React.FC<TBTCHeaderProps> = ({ title }) => {
               <Space className="profile-trigger">
                 <Avatar
                   size={40}
-                  src={user?.imageKey || undefined}
+                  src={user?.image || undefined}
                   icon={!user?.imageKey ? <UserOutlined /> : undefined}
                   className="header-avatar"
                 />

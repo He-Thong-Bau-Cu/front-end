@@ -19,6 +19,7 @@ import AuthService from "@/services/AuthService";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import OtpModal from "../otp-ballot/OtpModal";
 import CountdownCard from "../resolution_voting/CountdownCard";
+import ElectionService from "@/services/ElectionService";
 
 const { Title, Text } = Typography;
 
@@ -43,75 +44,87 @@ const CandidateSection = () => {
 
 
   useEffect(() => {
-    const checkBallot = async () => {
+    const loadVotingTime = async () => {
       try {
-        const data = await BallotService.getBallotById(ballotId);
-        if (!data) return;
+        const electionId = localStorage.getItem("currentElectionId");
+        if (!electionId) return;
 
-        if (data.status === "ACTIVE") {
-          const end = localStorage.getItem("voteCountdownEnd");
+        const res = await ElectionService.getCurrentStage(electionId);
+        const stage = res.data.data || res.data;
+        if (!stage) return;
 
-          if (!end) {
-            const newEnd = Date.now() + 30 * 60 * 1000;
-            localStorage.setItem("voteCountdownEnd", newEnd.toString());
-            setTimeLeft(30 * 60);
-          } else {
-            const left = Number(end) - Date.now();
-            setTimeLeft(Math.max(Math.floor(left / 1000), 0));
-          }
+        const votingStage = stage.stages?.voting;
+        const votingAt = stage.timeline?.votingAt;
+        const resultAnnouncedAt = stage.timeline?.resultAnnouncedAt;
+
+        if (!votingAt) return;
+
+        // Nếu đã COMPLETED hoặc đã có kết quả → khóa phiếu
+        if (votingStage !== "STARTED" || resultAnnouncedAt) {
+          setTimeLeft(0);
+          return;
         }
+
+        const start = new Date(votingAt).getTime();
+        const end = start + 30 * 60 * 1000;
+        const now = Date.now();
+
+        if (now < start) {
+          setTimeLeft(-1);
+          return;
+        }
+
+        if (now >= end) {
+          setTimeLeft(0);
+          return;
+        }
+
+        setTimeLeft(Math.floor((end - now) / 1000));
+
       } catch (err) {
-        console.error("Ballot check failed:", err);
+        console.error("Failed to load stage:", err);
       }
     };
 
-    checkBallot();
+    loadVotingTime();
   }, []);
 
 
-  // 🔥 Countdown chạy mỗi giây
+
   useEffect(() => {
     if (timeLeft <= 0) return;
-
     const timer = setInterval(() => {
       setTimeLeft(prev => Math.max(prev - 1, 0));
     }, 1000);
-
     return () => clearInterval(timer);
   }, [timeLeft]);
 
 
+
+
   // 🔥 Lock khi hết giờ thật sự
   useEffect(() => {
-    const endTime = localStorage.getItem("voteCountdownEnd");
-    if (!endTime) return;
-
-    if (Date.now() < Number(endTime)) return;
-
     if (timeLeft !== 0) return;
 
-    const lock = async () => {
-      try {
-        const ballot = await BallotService.getBallotById(ballotId);
-        if (!ballot || ballot.status !== "ACTIVE") return;
+    // const lockBallot = async () => {
+    //   const ballot = await BallotService.getBallotById(ballotId);
+    //   if (!ballot || ballot.status !== "ACTIVE") return;
 
-        showLoading();
-        await BallotService.updateBallot(ballotId, { status: "LOCKED" });
+    //   showLoading();
+    //   await BallotService.updateBallot(ballotId, {
+    //     electionId: localStorage.getItem("currentElectionId"),
+    //     voterId: localStorage.getItem("voterId"),
+    //     status: "LOCKED",
+    //   });
 
-        notify("Phiếu bầu đã bị khóa do hết thời gian!", "warning");
+    //   notify("Phiếu bầu đã bị khóa!", "warning");
+    //   navigate("/voter/ballots");
+    //   hideLoading();
+    // };
 
-        localStorage.removeItem("voteCountdownEnd");
-        navigate("/voter/ballots");
-      } finally {
-        hideLoading();
-      }
-    };
-
-    lock();
+    // ⚠️ Bẩy comment để test, mở khi chạy thật
+    // lockBallot();
   }, [timeLeft]);
-
-
-
 
 
   const minutes = Math.floor(timeLeft / 60);

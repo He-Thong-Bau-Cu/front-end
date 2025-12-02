@@ -391,3 +391,7 @@
   color: #0a53be !important;
   text-decoration: underline;
 }
+
+.ant-layout {
+  background: transparent !important;
+}
