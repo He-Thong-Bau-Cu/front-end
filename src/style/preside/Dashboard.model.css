@@ -1,11 +1,17 @@
 .dashboard-preside-header-card {
-  background: linear-gradient(90deg, #a8e678 0%, #7ecb50 100%);
+  background: rgba(168, 230, 120, 0.5);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border-radius: 16px !important;
   margin: 32px !important;
-  padding: 10px 40px;
-  color: #fff;
+  padding: 0;
+  color: #000;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border: none !important;
+}
+
+.dashboard-preside-header-card .ant-card-body {
+  padding: 24px 40px !important;
 }
 
 /* --- Container layout --- */
@@ -20,42 +26,50 @@
 .dashboard-preside-header-left {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  flex: 1;
 }
 
 .dashboard-preside-header-title {
-  font-size: 22px !important;
-  color: #fff !important;
+  font-size: 24px !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  line-height: 1.3;
 }
 
 .dashboard-preside-header-subtitle {
-  color: #eef6eb;
-  font-size: 14px;
+  color: #444;
+  font-size: 15px;
   margin: 0;
+  line-height: 1.5;
 }
 
 .dashboard-preside-header-user {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .dashboard-preside-user-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .dashboard-preside-user-name {
-  font-size: 17px !important;
-  color: #fff !important;
+  font-size: 18px !important;
+  color: #000 !important;
+  font-weight: 600 !important;
+  line-height: 1.4;
 }
 
 .dashboard-preside-user-role {
   margin: 0;
-  font-size: 13px;
-  color: #f1f1f1;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
 }
 
 .dashboard-preside-header-actions {
@@ -63,7 +77,12 @@
   gap: 12px;
   align-items: center;
   justify-content: flex-end;
-  padding-top: 50px;
+  padding-top: 0;
+}
+
+.dashboard-preside-avatar {
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-create-decision {
@@ -84,8 +103,8 @@
 
 .btn-report-summary {
   background-color: transparent !important;
-  border: 1px solid #fff !important;
-  color: #fff !important;
+  border: 1px solid #000 !important;
+  color: #000 !important;
   font-weight: 500;
   height: 38px;
   padding: 0 18px;
@@ -94,13 +113,23 @@
 }
 
 .btn-report-summary:hover {
-  background-color: rgba(255, 255, 255, 0.15) !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
   transform: translateY(-2px);
 }
 
 .dashboard-stats-row {
-  margin: 20px 32px 0 32px;
-  padding: 10px 32px;
+  margin: 20px 0 0 0 !important;
+  padding: 10px 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Đảm bảo Row có cùng chiều rộng với welcome card */
+.dashboard-stats-row.ant-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 /* --- Stat Card --- */

@@ -24,42 +24,36 @@ const OrganizingCommitteeLayout = () => {
     }, [location.pathname]);
 
     return (
-        <Layout style={{ minHeight: '10vh', width: '100vw', overflow: 'hidden' }}>
+        <Layout style={{ minHeight: "100vh", width: "100vw", overflow: "hidden" }}>
             <Sideber onMenuSelect={setPageTitle} />
 
-            <Layout style={{
-                marginLeft: 250,
-                backgroundImage: `url(${bannerContent})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-                backgroundAttachment: "fixed",
-                display: "flex",
-                flexDirection: "column",
-                width: 'calc(100vw - 290px)',
-                minHeight: '100vh',
-                overflow: 'hidden',
-            }}>
+            <Layout
+                style={{
+                    marginLeft: 250, // bằng đúng width sidebar
+                    height: "calc(100vh - 64px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: "100vh",
+                    overflow: "hidden", // ẩn scroll ngoài
+                }}
+            >
                 <OrganizingCommitteeHeader title={pageTitle} />
                 <Content
                     style={{
-                        flex: 1,
-                        padding: '32px 24px 24px',
+                        height: "calc(100vh - 64px)",
+                        overflow: "auto",
+                        padding: "10px 24px 24px",
                         backgroundImage: `url(${bannerContent})`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
                         backgroundAttachment: "fixed",
-                        overflowY: 'auto',
-                        overflowX: 'hidden',
-                        boxSizing: 'border-box',
                     }}
                 >
                     <Outlet />
-
                 </Content>
             </Layout>
-        </Layout >
+        </Layout>
     );
 };
 
