@@ -31,6 +31,7 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
 
             <Layout style={{
                 marginLeft: 250,
+                height: "calc(100vh - 64px)",
                 backgroundImage: `url(${bannerContent})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",

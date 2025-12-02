@@ -66,6 +66,7 @@
   border: none !important;
   width: 100%;
   box-sizing: border-box;
+  margin: 32px;
 }
 
 .dashboard-header-content {
