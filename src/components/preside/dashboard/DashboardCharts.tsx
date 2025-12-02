@@ -40,7 +40,7 @@ const DashboardCharts = () => {
             }}
         >
             <Card
-                title={<span style={{ paddingLeft: 30 }}>📈 Tỷ lệ tham gia của 5 cuộc bầu cử gần nhất</span>}
+                title={<span style={{ paddingLeft: 30 }}>📈 Thống kê tổng số người tham gia trong các cuộc bầu cử gần nhất!</span>}
                 style={{
                     flex: 2,
                     borderRadius: '16px'
@@ -51,7 +51,7 @@ const DashboardCharts = () => {
                         <XAxis dataKey="title" />
                         <YAxis />
                         <Tooltip />
-                        <Line type="monotone" dataKey="rate" stroke="#22c55e" strokeWidth={3} />
+                        <Line type="monotone" dataKey="totalParticipants" name="Tổng số người tham gia" stroke="#22c55e" strokeWidth={3} />
                     </LineChart>
                 </ResponsiveContainer>
             </Card>

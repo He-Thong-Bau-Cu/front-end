@@ -40,7 +40,6 @@ const DraftingDocuments: React.FC = () => {
       if (response && response.success) {
         const data = response.data;
 
-        // Map election data (wrap in data property for MeetingInfo component compatibility)
         setElection({
           data: {
             election: data.election,
@@ -48,27 +47,19 @@ const DraftingDocuments: React.FC = () => {
           },
         });
 
-        // Map election entities (candidates)
         setElectionentities(data.electionEntities || []);
 
-        // Map meeting data
         setMeeting(data.meeting);
 
-        // Map status data
         setStatusData(data.election?.statusData);
 
-        // Map voters data
         setVoter(data.voters || []);
 
-        // Map documents data
         setExistingDocuments(data.electionDocuments || []);
 
-        // Map participants data (organization)
         setExistingParticipants(data.participants || []);
 
-        // Set meeting info with all the required fields from the API response
         const meetingInfoData = {
-          // Basic election info
           decisionName: data.election?.decisionName,
           decisionNumber: data.election?.decisionNumber,
 
@@ -186,6 +177,16 @@ const DraftingDocuments: React.FC = () => {
       // Kiểm tra voters
       if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
         notify("Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt", "warning");
+        return false;
+      }
+
+      // Kiểm tra tổng % cổ phần không vượt quá 100%
+      const totalPercentage = attendees.reduce(
+        (sum, v) => sum + (Number(v.percentage) || 0),
+        0
+      );
+      if (totalPercentage > 100) {
+        notify(`Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`, "warning");
         return false;
       }
 
@@ -351,6 +352,16 @@ const DraftingDocuments: React.FC = () => {
           return;
         }
 
+        // Kiểm tra tổng % cổ phần không vượt quá 100%
+        const totalPercentage = votersList.reduce(
+          (sum, v) => sum + (Number(v.percentage) || 0),
+          0
+        );
+        if (totalPercentage > 100) {
+          notify(`Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`, "warning");
+          return;
+        }
+
         // Kiểm tra participants
         if (!Array.isArray(participantsList) || participantsList.length === 0) {
           notify("Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt", "warning");
@@ -366,8 +377,17 @@ const DraftingDocuments: React.FC = () => {
           threshold: meetingInfo.threshold,
           method: meetingInfo.method,
           location: meetingInfo.location,
-          authorizationStart: meetingInfo.authorizationStart?.toISOString(),
-          authorizationEnd: meetingInfo.authorizationEnd?.toISOString(),
+          // Đảm bảo chuyển đổi dayjs thành ISO string đúng cách
+          authorizationStart: meetingInfo.authorizationStart
+            ? (typeof meetingInfo.authorizationStart === 'string'
+                ? meetingInfo.authorizationStart
+                : dayjs(meetingInfo.authorizationStart).toISOString())
+            : null,
+          authorizationEnd: meetingInfo.authorizationEnd
+            ? (typeof meetingInfo.authorizationEnd === 'string'
+                ? meetingInfo.authorizationEnd
+                : dayjs(meetingInfo.authorizationEnd).toISOString())
+            : null,
         },
         electionEntities: candidatesList.map((candidate: any) => {
           const result = {
@@ -399,12 +419,12 @@ const DraftingDocuments: React.FC = () => {
           remarks: doc.remarks || "",
         })),
         voters: votersList.map((v: any) => ({
-          _id: v._id, // Có _id nếu edit
+          _id: v._id,
           userId: v.userId,
           percentage: v.percentage,
         })),
         participants: participantsList.map((p: any) => ({
-          _id: p._id, // Có _id nếu edit
+          _id: p._id,
           userId: p.userId,
           roleId: p.roleId,
           position: p.roleName || p.position,

@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useNotification } from "@/contexts/NotificationContext";
 import DelegateCardService from "@/services/DelegateCardService";
+import bannerContent from "@/assets/banner_content.png";
 
 const AdminLayout = () => {
     const [pageTitle, setPageTitle] = useState("Tổng quan");
@@ -107,7 +108,11 @@ const AdminLayout = () => {
                         height: "calc(100vh - 64px)",
                         overflow: "auto",
                         padding: "10px 24px 24px",
-                        background: "#EFF8EF",
+                        backgroundImage: `url(${bannerContent})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundAttachment: "fixed",
                     }}
                 >
                     <Outlet />

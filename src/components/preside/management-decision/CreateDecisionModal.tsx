@@ -12,6 +12,7 @@ import {
 } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import "../../../style/preside/CreateDecisionModal.model.css";
+import { useNotification } from "@/contexts/NotificationContext";
 import dayjs from "dayjs";
 import ElectionService from "@/services/ElectionService";
 const { Option } = Select;
@@ -34,6 +35,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [userList, setUserList] = useState<any[]>([]);
+  const { notify } = useNotification();
   /* ===========================================================
       LOAD USER THEO THỜI GIAN
   =========================================================== */
@@ -42,8 +44,8 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
       if (!body.startDate || !body.endDate) return;
       const res = await ElectionService.getElectionUser(body);
       setUserList(res);
-    } catch (err) {
-      console.error("Không thể load user:", err);
+    } catch (err: any) {
+      notify(err.message, "error");
     }
   };
 

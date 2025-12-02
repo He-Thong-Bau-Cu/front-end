@@ -1,7 +1,8 @@
 import { Card, Table, Tag, Spin, Input, Button, Modal, Space, message } from "antd";
 import { useEffect, useState } from "react";
+import '../../../style/secretary/Dashboard.model.css'
 import DelegationService from "@/services/DelegationService";
-import { SearchOutlined, EditOutlined, CloseCircleOutlined, FileDoneOutlined } from "@ant-design/icons";
+import { SearchOutlined, CloseCircleOutlined, FileDoneOutlined, EyeOutlined } from "@ant-design/icons";
 
 // ================= FORMAT DATE =================
 const formatDate = (str?: string) => {
@@ -23,8 +24,6 @@ const removeVietnameseTones = (str: string) => {
         .replace(/Đ/g, "D")
         .toLowerCase();
 };
-
-
 // ================= MAP STATUS =================
 const renderStatus = (status: string) => {
     const map: any = {
@@ -48,6 +47,7 @@ const DelegationRequests = () => {
     // ========= Modal xác nhận ký ============
     const [confirmSignModal, setConfirmSignModal] = useState({
         open: false,
+        reject: false,
         record: null as any,
     });
 
@@ -55,6 +55,7 @@ const DelegationRequests = () => {
     const [rejectModal, setRejectModal] = useState({
         open: false,
         record: null as any,
+        reject: true,
         reason: "",
     });
 
@@ -109,7 +110,7 @@ const DelegationRequests = () => {
             });
             message.destroy();
             message.success("Xác nhận yêu cầu thành công!");
-            setConfirmSignModal({ open: false, record: null });
+            setConfirmSignModal({ open: false, reject: false, record: null });
             loadData();
         } catch (err) {
             message.destroy();
@@ -140,7 +141,7 @@ const DelegationRequests = () => {
             message.destroy();
             message.success("Đã từ chối yêu cầu!");
 
-            setRejectModal({ open: false, record: null, reason: "" });
+            setRejectModal({ open: false, record: null, reject: false, reason: "" });
             loadData();
         } catch (err) {
             message.destroy();
@@ -170,10 +171,11 @@ const DelegationRequests = () => {
             width: 200,
             render: (_: any, record: any) => (
                 <Space>
+                   
                     <Button
                         icon={<FileDoneOutlined />}
                         type="primary"
-                        onClick={() => setConfirmSignModal({ open: true, record })}
+                        onClick={() => setConfirmSignModal({ open: true, reject: false, record })}
                     >
                         Xác nhận
                     </Button>
@@ -181,7 +183,7 @@ const DelegationRequests = () => {
                     <Button
                         icon={<CloseCircleOutlined />}
                         danger
-                        onClick={() => setRejectModal({ open: true, record, reason: "" })}
+                        onClick={() => setRejectModal({ open: true, record, reject: true, reason: "" })}
                     >
                         Từ chối
                     </Button>
@@ -192,6 +194,7 @@ const DelegationRequests = () => {
 
     return (
         <Card
+            className="delegation-card"
             title={<span className="delegation-title">📄 Yêu cầu ủy quyền của tôi (Chờ xác nhận)</span>}
         >
             <Input
@@ -223,7 +226,7 @@ const DelegationRequests = () => {
             {/* ===== MODAL KÝ ===== */}
             <Modal
                 open={confirmSignModal.open}
-                onCancel={() => setConfirmSignModal({ open: false, record: null })}
+                onCancel={() => setConfirmSignModal({ open: false, reject: false, record: null })}
                 footer={null}
                 centered
                 styles={{ header: { borderBottom: "none" } }}
@@ -252,7 +255,7 @@ const DelegationRequests = () => {
 
                 <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
                     <Button
-                        onClick={() => setConfirmSignModal({ open: false, record: null })}
+                        onClick={() => setConfirmSignModal({ open: false, reject: false, record: null })}
                         style={{
                             height: 40,
                             paddingInline: 24,
@@ -285,7 +288,7 @@ const DelegationRequests = () => {
             {/* ===== MODAL TỪ CHỐI ===== */}
             <Modal
                 open={rejectModal.open}
-                onCancel={() => setRejectModal({ open: false, record: null, reason: "" })}
+                onCancel={() => setRejectModal({ open: false, record: null, reject: false, reason: "" })}
                 footer={null}
                 centered
                 styles={{ header: { borderBottom: "none" } }}
@@ -330,7 +333,7 @@ const DelegationRequests = () => {
                 <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
                     <Button
                         onClick={() =>
-                            setRejectModal({ open: false, record: null, reason: "" })
+                            setRejectModal({ open: false, record: null, reject: false, reason: "" })
                         }
                         style={{
                             height: 40,

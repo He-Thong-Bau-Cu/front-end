@@ -1,3 +1,44 @@
+.voter-welcome-card {
+  background: linear-gradient(90deg, #a8e678 0%, #7ecb50 100%);
+  border-radius: 16px;
+  padding: 0px 32px;
+  margin: 0 32px;
+  color: #124d2d;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: none !important;
+}
+
+.voter-welcome-card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+  transform: none !important;
+}
+
+.voter-welcome-card .ant-card-body {
+  transition: none !important;
+}
+
+.voter-welcome-card .ant-card-body:hover {
+  transform: none !important;
+}
+
+/* 🌞 Title and subtitle */
+.voter-welcome-title {
+  font-size: 26px;
+  color: #ffffff;
+}
+
+.voter-welcome-subtitle {
+  margin-top: 6px;
+  color: #ffffff;
+}
+
+/* 👤 User info layout */
+.voter-welcome-user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
 .stat-card {
   border-radius: 12px;
   text-align: center;
@@ -42,7 +83,7 @@
 .delegation-card {
   border-radius: 16px;
   margin-bottom: 24px;
-  margin-left: 32px;
+  margin: 32px;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.25s ease;

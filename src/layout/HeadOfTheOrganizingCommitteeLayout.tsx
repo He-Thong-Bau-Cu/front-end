@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Header from '@/components/head_of_the_organizing_committee/Header';
 import Sideber from '@/components/head_of_the_organizing_committee/Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
+import bannerContent from "@/assets/banner_content.png";
 
 const HeadOfTheOrganizingCommitteeLayout = () => {
     const [pageTitle, setPageTitle] = useState('Dashboard');
@@ -29,8 +30,12 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
             <Sideber onMenuSelect={setPageTitle} />
 
             <Layout style={{
-                marginLeft: 250, // bằng đúng width sidebar
-                height: "calc(100vh - 64px)",
+                marginLeft: 250,
+                backgroundImage: `url(${bannerContent})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundAttachment: "fixed",
                 display: "flex",
                 flexDirection: "column",
                 minHeight: "100vh",
@@ -41,7 +46,11 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
                     style={{
                         flex: 1,
                         padding: '10px 24px 24px',
-                        background: '#EFF8EF',
+                        backgroundImage: `url(${bannerContent})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundAttachment: "fixed",
                         overflowY: 'auto',
                         overflowX: 'hidden',
                         boxSizing: 'border-box',

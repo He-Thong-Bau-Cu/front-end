@@ -71,9 +71,8 @@ const MeetingInfo: React.FC<Props> = ({
   disabled = false,
 }) => {
   const [form] = Form.useForm<MeetingFormValues>();
-  const [typeOther, setTypeOther] = useState(false);
   const [voteMethod, setVoteMethod] = useState<string>("");
-  const [types, setTypes] = useState<ElectionTypes[] | null>(null);
+  const [types, setTypes] = useState<ElectionTypes[]>([]);
   const [thresholds, setThresholds] = useState<Threshols[] | null>(null);
   const [methods, setMethods] = useState<VotingMethods[] | null>(null);
   const [isVotingMethodSelectModalOpen, setIsVotingMethodSelectModalOpen] =
@@ -94,20 +93,66 @@ const MeetingInfo: React.FC<Props> = ({
   const isMountedRef = useRef(true);
   const [electionStartDate, setElectionStartDate] = useState<Dayjs | null>(null);
   const [electionEndDate, setElectionEndDate] = useState<Dayjs | null>(null);
+  const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
+  const [formType, setFormType] = useState<"person" | "project" | "other" | null>(null);
   /* ===========================================================
      FETCH DATA ONCE
   ============================================================ */
   const fetchData = async () => {
     try {
-      const res = await VotingMethodsService.searchVotingMethod({});
-      const type = await ElectionTypesService.searchElectionType({});
-      const th = await ThresholdsService.searchThreshold({});
-      setTypes(type);
-      setMethods(res);
-      setThresholds(th);
+      const res: any = await VotingMethodsService.searchVotingMethod({});
+      const type: any = await ElectionTypesService.searchElectionType({});
+      const th: any = await ThresholdsService.searchThreshold({});
+
+      // Đảm bảo types là array
+      let typesArray: ElectionTypes[] = [];
+      if (Array.isArray(type)) {
+        typesArray = type;
+      } else if (type && typeof type === 'object') {
+        if (type.content && Array.isArray(type.content)) {
+          typesArray = type.content;
+        } else if (type.data?.content && Array.isArray(type.data.content)) {
+          typesArray = type.data.content;
+        } else if (type.data && Array.isArray(type.data)) {
+          typesArray = type.data;
+        }
+      }
+      setTypes(Array.isArray(typesArray) ? typesArray : []);
+
+      // Đảm bảo methods là array
+      let methodsArray: VotingMethods[] = [];
+      if (Array.isArray(res)) {
+        methodsArray = res;
+      } else if (res && typeof res === 'object') {
+        if (res.content && Array.isArray(res.content)) {
+          methodsArray = res.content;
+        } else if (res.data?.content && Array.isArray(res.data.content)) {
+          methodsArray = res.data.content;
+        } else if (res.data && Array.isArray(res.data)) {
+          methodsArray = res.data;
+        }
+      }
+      setMethods(Array.isArray(methodsArray) ? methodsArray : []);
+
+      // Đảm bảo thresholds là array
+      let thresholdsArray: Threshols[] = [];
+      if (Array.isArray(th)) {
+        thresholdsArray = th;
+      } else if (th && typeof th === 'object') {
+        if (th.content && Array.isArray(th.content)) {
+          thresholdsArray = th.content;
+        } else if (th.data?.content && Array.isArray(th.data.content)) {
+          thresholdsArray = th.data.content;
+        } else if (th.data && Array.isArray(th.data)) {
+          thresholdsArray = th.data;
+        }
+      }
+      setThresholds(Array.isArray(thresholdsArray) ? thresholdsArray : []);
     } catch (error) {
       console.error("Error fetching voting methods:", error);
       setMethods([]);
+      setTypes([]);
+      setThresholds([]);
     }
   };
 
@@ -195,6 +240,15 @@ const MeetingInfo: React.FC<Props> = ({
     };
   }, [electionentities]);
 
+  // Helper function để xác định formType từ typeCode
+  const getFormTypeFromTypeCode = useCallback((typeCode: string | undefined): "person" | "project" | "other" => {
+    if (!typeCode) return "other";
+    if (typeCode.startsWith("USER")) return "person";
+    if (typeCode.startsWith("PRODUCT")) return "project";
+    if (typeCode === "OTHER") return "other";
+    return "other";
+  }, []);
+
   // Emit change when candidates change - with debounce
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -234,12 +288,14 @@ const MeetingInfo: React.FC<Props> = ({
       }
 
       try {
+        const typeId = d?.meetingInfo?.typeDetails?._id;
+
         form.setFieldsValue({
           decisionNumber: d?.election?.decisionNumber,
           decisionName: d?.election?.decisionName,
           method: d?.meetingInfo.methodDetails?._id,
           methodName: d?.meetingInfo.methodDetails?.methodName,
-          type: d?.meetingInfo.typeDetails?._id,
+          type: typeId,
           threshold: d?.meetingInfo?.thresholdDetails?._id,
           thresholdName: d?.meetingInfo?.thresholdDetails?.thresholdName,
           authorizationStart: d?.election?.delegationStart
@@ -251,6 +307,21 @@ const MeetingInfo: React.FC<Props> = ({
         });
 
         setVoteMethod(d?.meetingInfo.methodDetails?._id);
+
+        // Set selectedTypeId và formType khi load data
+        if (typeId) {
+          setSelectedTypeId(typeId);
+          // Tìm type object trong types array để lấy typeCode
+          const typeObject = Array.isArray(types) ? types.find((t) => t._id === typeId) : null;
+          if (typeObject?.typeCode) {
+            const determinedFormType = getFormTypeFromTypeCode(typeObject.typeCode);
+            setFormType(determinedFormType);
+          } else if (d?.meetingInfo?.typeDetails?.typeCode) {
+            // Fallback: nếu không tìm thấy trong types array, dùng typeCode từ data
+            const determinedFormType = getFormTypeFromTypeCode(d.meetingInfo.typeDetails.typeCode);
+            setFormType(determinedFormType);
+          }
+        }
 
         if (d?.meetingInfo?.thresholdDetails?._id) {
           loadThresholdData(d.meetingInfo.thresholdDetails._id);
@@ -281,7 +352,7 @@ const MeetingInfo: React.FC<Props> = ({
         clearTimeout(timeoutId);
       }
     };
-  }, [data, meeting]);
+  }, [data, meeting, types, getFormTypeFromTypeCode]);
 
   const loadThresholdData = async (thresholdId: string) => {
     try {
@@ -446,7 +517,16 @@ const MeetingInfo: React.FC<Props> = ({
       }
     >
       {/* Form KHÔNG submit, chỉ emitChange */}
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        onValuesChange={(changedValues, allValues) => {
+          // Trigger onChange khi có thay đổi, đặc biệt là ngày ủy quyền
+          const values = form.getFieldsValue(true);
+          values.candidates = candidates;
+          onChange(values);
+        }}
+      >
         <Row gutter={16}>
           {/* SỐ NGHỊ QUYẾT VÀ TÊN NGHỊ QUYẾT - LUÔN DISABLED */}
           <Col span={12}>
@@ -511,63 +591,37 @@ const MeetingInfo: React.FC<Props> = ({
           {/* THỂ LOẠI BẦU CỬ */}
           <Col span={12}>
             <Form.Item label="Thể loại bầu cử" name="type" required>
-              {!typeOther ? (
-                <Select
-                  placeholder="Chọn thể loại"
-                  disabled={disabled}
-                  onChange={(v) => {
-                    if (disabled) return;
-                    if (v === "other") {
-                      setTypeOther(true);
+              <Select
+                placeholder="Chọn thể loại"
+                disabled={disabled}
+                onChange={(v) => {
+                  if (disabled) return;
+                  form.setFieldsValue({ type: v });
 
-                      form.setFieldsValue({
-                        type: {
-                          typeName: "",
-                          typeCode: "",
-                          description: "",
-                        },
-                      });
-                    } else {
-                      setTypeOther(false);
-                      form.setFieldsValue({ type: v });
-                    }
-                    emitChange();
-                  }}
-                >
-                  <Select.Option value="other">Khác…</Select.Option>
-                  {types?.map((item) => (
+                  // Tìm type object để lấy typeCode
+                  const selectedType = Array.isArray(types) ? types.find((t) => t._id === v) : null;
+                  if (selectedType) {
+                    setSelectedTypeId(v);
+                    const determinedFormType = getFormTypeFromTypeCode(selectedType.typeCode);
+                    setFormType(determinedFormType);
+                    // Xóa danh sách candidates khi thay đổi type
+                    setCandidates([]);
+                  } else {
+                    setSelectedTypeId(null);
+                    setFormType(null);
+                  }
+
+                  emitChange();
+                }}
+              >
+                {Array.isArray(types) && types.length > 0 ? (
+                  types.map((item) => (
                     <Select.Option key={item._id} value={item._id}>
                       {item.typeName}
                     </Select.Option>
-                  ))}
-                </Select>
-              ) : (
-                <>
-                  <Form.Item
-                    label="Tên thể loại"
-                    name={["type", "typeName"]}
-                    rules={[{ required: true }]}
-                  >
-                    <Input placeholder="Tên thể loại" disabled={disabled} />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Mã thể loại"
-                    name={["type", "typeCode"]}
-                    rules={[{ required: true }]}
-                  >
-                    <Input placeholder="Mã thể loại" disabled={disabled} />
-                  </Form.Item>
-
-                  <Form.Item label="Mô tả" name={["type", "description"]}>
-                    <Input.TextArea rows={2} disabled={disabled} />
-                  </Form.Item>
-
-                  <Button type="link" onClick={() => !disabled && setTypeOther(false)} disabled={disabled}>
-                    ← Quay lại
-                  </Button>
-                </>
-              )}
+                  ))
+                ) : null}
+              </Select>
             </Form.Item>
           </Col>
           {/* NGƯỠNG THÔNG QUA */}
@@ -634,6 +688,10 @@ const MeetingInfo: React.FC<Props> = ({
                 onChange={() => {
                   // Reset ngày kết thúc khi thay đổi ngày bắt đầu
                   form.setFieldsValue({ authorizationEnd: null });
+                  // Trigger onChange để cập nhật state
+                  const values = form.getFieldsValue(true);
+                  values.candidates = candidates;
+                  onChange(values);
                 }}
               />
             </Form.Item>
@@ -663,6 +721,12 @@ const MeetingInfo: React.FC<Props> = ({
                     if (daysDiff < 10) {
                       return Promise.reject("Ngày kết thúc ủy quyền phải cách ngày bắt đầu ít nhất 10 ngày");
                     }
+                    // Không được vượt quá ngày kết thúc cuộc bầu cử
+                    if (electionEndDate && value.isAfter(electionEndDate, "day")) {
+                      return Promise.reject(
+                        `Ngày kết thúc ủy quyền không được vượt quá ngày kết thúc cuộc bầu cử (${electionEndDate.format("DD/MM/YYYY")})`
+                      );
+                    }
                     return Promise.resolve();
                   },
                 }),
@@ -684,7 +748,16 @@ const MeetingInfo: React.FC<Props> = ({
                   // Phải cách ngày bắt đầu ít nhất 10 ngày
                   const daysDiff = d.diff(start, "day");
                   if (daysDiff < 10) return true;
+                  // Không cho chọn sau ngày kết thúc cuộc bầu cử
+                  if (electionEndDate && d.isAfter(electionEndDate, "day")) return true;
                   return false;
+                }}
+                onChange={() => {
+                  // Trigger form validation và onChange
+                  form.validateFields(['authorizationEnd']);
+                  const values = form.getFieldsValue(true);
+                  values.candidates = candidates;
+                  onChange(values);
                 }}
               />
             </Form.Item>
@@ -1133,6 +1206,7 @@ const MeetingInfo: React.FC<Props> = ({
             ? [candidates[editCandidateIndex]] // Chỉ truyền candidate đang edit
             : candidates // Truyền tất cả nếu thêm mới
         }
+        formType={formType || undefined}
       />
 
       {/* Modal xem chi tiết candidate */}
@@ -1173,43 +1247,192 @@ const MeetingInfo: React.FC<Props> = ({
                   {selectedCandidate.description}
                 </Descriptions.Item>
               )}
-              {selectedCandidate.metaData?.fullName && (
-                <>
-                  <Descriptions.Item label="Họ và tên">
-                    {selectedCandidate.metaData.fullName}
-                  </Descriptions.Item>
-                  {selectedCandidate.metaData.age && (
-                    <Descriptions.Item label="Tuổi">
-                      {selectedCandidate.metaData.age}
-                    </Descriptions.Item>
-                  )}
-                  {selectedCandidate.metaData.department && (
-                    <Descriptions.Item label="Phòng ban">
-                      {selectedCandidate.metaData.department}
-                    </Descriptions.Item>
-                  )}
-                  {selectedCandidate.metaData.position && (
-                    <Descriptions.Item label="Vị trí">
-                      {selectedCandidate.metaData.position}
-                    </Descriptions.Item>
-                  )}
-                  {selectedCandidate.metaData.experience && (
-                    <Descriptions.Item label="Kinh nghiệm">
-                      {selectedCandidate.metaData.experience}
-                    </Descriptions.Item>
-                  )}
-                  {selectedCandidate.metaData.achievements && (
-                    <Descriptions.Item label="Thành tích">
-                      {selectedCandidate.metaData.achievements}
-                    </Descriptions.Item>
-                  )}
-                </>
-              )}
-              {selectedCandidate.file && (
+
+              {/* Hiển thị theo type */}
+              {(() => {
+                const formType = selectedCandidate.formType || selectedCandidate.metaData?.type || "other";
+                const metaData = selectedCandidate.metaData || {};
+
+                if (formType === "person") {
+                  // Hiển thị thông tin người
+                  return (
+                    <>
+                      {metaData.image && (
+                        <Descriptions.Item label="Ảnh">
+                          <Avatar
+                            size={100}
+                            src={metaData.image}
+                            icon={<UserOutlined />}
+                          />
+                        </Descriptions.Item>
+                      )}
+                      {metaData.fullName && (
+                        <Descriptions.Item label="Họ và tên">
+                          {metaData.fullName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.age && (
+                        <Descriptions.Item label="Tuổi">
+                          {metaData.age}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.department && (
+                        <Descriptions.Item label="Phòng ban">
+                          {metaData.department}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.position && (
+                        <Descriptions.Item label="Vị trí">
+                          {metaData.position}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.experience && (
+                        <Descriptions.Item label="Kinh nghiệm">
+                          {metaData.experience}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.achievements && (
+                        <Descriptions.Item label="Thành tích">
+                          {metaData.achievements}
+                        </Descriptions.Item>
+                      )}
+                    </>
+                  );
+                } else if (formType === "project") {
+                  // Hiển thị thông tin dự án
+                  return (
+                    <>
+                      {metaData.projectName && (
+                        <Descriptions.Item label="Tên dự án">
+                          {metaData.projectName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.projectDescription && (
+                        <Descriptions.Item label="Mô tả dự án">
+                          {metaData.projectDescription}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.budget && (
+                        <Descriptions.Item label="Ngân sách">
+                          {metaData.budget}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.duration && (
+                        <Descriptions.Item label="Thời gian thực hiện">
+                          {metaData.duration}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.location && (
+                        <Descriptions.Item label="Địa điểm">
+                          {metaData.location}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.objectives && (
+                        <Descriptions.Item label="Mục tiêu">
+                          {metaData.objectives}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.benefits && (
+                        <Descriptions.Item label="Lợi ích">
+                          {metaData.benefits}
+                        </Descriptions.Item>
+                      )}
+                    </>
+                  );
+                } else {
+                  // Hiển thị tất cả các trường có sẵn cho type "other"
+                  return (
+                    <>
+                      {metaData.image && (
+                        <Descriptions.Item label="Ảnh">
+                          <Avatar
+                            size={100}
+                            src={metaData.image}
+                            icon={<UserOutlined />}
+                          />
+                        </Descriptions.Item>
+                      )}
+                      {metaData.fullName && (
+                        <Descriptions.Item label="Họ và tên">
+                          {metaData.fullName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.age && (
+                        <Descriptions.Item label="Tuổi">
+                          {metaData.age}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.department && (
+                        <Descriptions.Item label="Phòng ban">
+                          {metaData.department}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.position && (
+                        <Descriptions.Item label="Vị trí">
+                          {metaData.position}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.experience && (
+                        <Descriptions.Item label="Kinh nghiệm">
+                          {metaData.experience}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.achievements && (
+                        <Descriptions.Item label="Thành tích">
+                          {metaData.achievements}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.projectName && (
+                        <Descriptions.Item label="Tên dự án">
+                          {metaData.projectName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.projectDescription && (
+                        <Descriptions.Item label="Mô tả dự án">
+                          {metaData.projectDescription}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.budget && (
+                        <Descriptions.Item label="Ngân sách">
+                          {metaData.budget}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.duration && (
+                        <Descriptions.Item label="Thời gian thực hiện">
+                          {metaData.duration}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.location && (
+                        <Descriptions.Item label="Địa điểm">
+                          {metaData.location}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.objectives && (
+                        <Descriptions.Item label="Mục tiêu">
+                          {metaData.objectives}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.benefits && (
+                        <Descriptions.Item label="Lợi ích">
+                          {metaData.benefits}
+                        </Descriptions.Item>
+                      )}
+                    </>
+                  );
+                }
+              })()}
+
+              {/* File đính kèm */}
+              {(selectedCandidate.file || selectedCandidate.fileUrl) && (
                 <Descriptions.Item label="File đính kèm">
                   <Tag icon={<FileTextOutlined />} color="green">
                     Có tài liệu đính kèm
                   </Tag>
+                  {selectedCandidate.fileUrl && (
+                    <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
+                      {selectedCandidate.fileUrl.split("/").pop()}
+                    </Text>
+                  )}
                 </Descriptions.Item>
               )}
             </Descriptions>

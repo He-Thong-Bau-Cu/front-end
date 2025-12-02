@@ -76,9 +76,8 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
         try {
             const res = await DelegationService.getDelegationPresideByElectionId(recordId);
             setData(res[0]);
-        } catch (err) {
-            console.error(err);
-            message.error("Không thể tải chi tiết tài liệu!");
+        } catch (err: any) {
+            notify(err.message, "error");
         } finally {
             setLoading(false);
         }
@@ -122,8 +121,6 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 id,
                 rejectReason: rejectReasons[id] || "",
             }));
-
-
             const payload = {
                 electionId: data?.election?._id,
                 delegationIds: delegationList
@@ -134,11 +131,11 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             } else {
                 notify(reject.message, "error");
             }
+            loadDetail();
             setRejectModalOpen(false);
             // setSelectedDelegations([]);
-        } catch (error) {
-            console.error(error);
-            message.error("Từ chối thất bại!");
+        } catch (err: any) {
+            notify(err.message, "error");
         }
     };
 
@@ -161,11 +158,11 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             }
             setReject1ModalOpen(false);
             onSelectApproved?.(selectedDelegations);
+            loadDetail();
             setModalOpen(true);
 
-        } catch (error) {
-            console.error(error);
-            message.error("Từ chối thất bại!");
+        } catch (err: any) {
+            notify(err.message, "error");
         }
     };
     const downloadUrlFile = async () => {
@@ -178,15 +175,13 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
 
             const blob = new Blob([response], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement("a");
             a.href = url;
             a.download = "Danh_sach_uy_quyen.pdf";
             a.click();
-
             URL.revokeObjectURL(url);
-        } catch {
-            message.error("Không thể tải file!");
+        } catch (err: any) {
+            notify(err.message, "error");
         }
     };
 
@@ -200,10 +195,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             selectedDelegations.forEach(id => {
                 formData.append("delegationIds", id);
             });
-
-
             const res = await DelegationService.delegationApprove(formData);
-
             if (res.success) {
                 notify(res.message, "success");
                 loadDetail();
@@ -211,12 +203,23 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             } else {
                 notify(res.message, "error");
             }
-        } catch {
-            message.error("Ký số thất bại!");
+        } catch (err: any) {
+            notify(err.message, "error");
         } finally {
             hideLoading();
         }
     };
+    const isDelegationExpired = (endDate?: string) => {
+        if (!endDate) return false;
+        return new Date(endDate).getTime() < Date.now();
+    };
+    const isDelegationSigne = (status?: string) => {
+        if (!status) return false;
+        return status === "SIGNED";
+    };
+    const check = isDelegationExpired(data?.election?.delegationEnd);
+    const checkSign = isDelegationSigne(data?.status);
+
 
     const columns = [
         {
@@ -232,6 +235,29 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
         {
             title: "Người được ủy quyền",
             dataIndex: ["delegate", "fullName"],
+        },
+        {
+            title: "Loại",
+            dataIndex: "delegationType",
+            render: (status: string) => {
+                let color = "";
+                let text = "";
+
+                switch (status) {
+                    case "LONG_TERM":
+                        color = "yellow";
+                        text = "Dài hạn";
+                        break;
+                    case "LONG_TERM":
+                        color = "green";
+                        text = "Trong cuộc bầu cử";
+                        break;
+                    default:
+                        color = "default";
+                        text = status;
+                }
+                return <Tag color={color}>{text}</Tag>;
+            },
         },
         {
             title: "Trạng thái",
@@ -296,8 +322,8 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             status: item.status,
             delegateReason: item.delegateReason,
             raw: item,
+            delegationType: item.delegationType,
         })) || [];
-
     return (
         <>
             <Modal
@@ -378,7 +404,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                             rowSelection={{
                                 type: "checkbox",
                                 getCheckboxProps: (record: any) => ({
-                                    disabled: record.status === "SIGNED" || record.status === "REJECTED" || record.status === "PENDING",
+                                    disabled: record.status === "SIGNED" || record.status === "REJECTED" || record.status === "PENDING" || !check || checkSign,
                                 }),
                                 selectedRowKeys: selectedDelegations,
                                 onChange: (keys) => setSelectedDelegations(keys as string[]),
@@ -393,38 +419,40 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                             {data?.status === "PENDING" || data?.status === "CONFIRMED" ? (
                                 <Col>
                                     <Button icon={<DownloadOutlined />} onClick={downloadUrlFile}>
-                                        Tải file
+                                        Tải danh sach ủy quyền
                                     </Button>
                                 </Col>
 
                             ) : null}
-                            <>
-                                <Col>
-                                    <Button
-                                        danger
-                                        disabled={selectedDelegations.length === 0}
-                                        onClick={() => setRejectModalOpen(true)}
-                                    >
-                                        Từ chối
-                                    </Button>
+                            {check && !checkSign && (
+                                <>
+                                    <Col>
+                                        <Button
+                                            danger
+                                            disabled={selectedDelegations.length === 0}
+                                            onClick={() => setRejectModalOpen(true)}
+                                        >
+                                            Từ chối
+                                        </Button>
 
-                                </Col>
+                                    </Col>
 
-                                <Col>
-                                    <Button
-                                        type="primary"
-                                        onClick={handleOpenSign}
-                                        disabled={selectedDelegations.length === 0}
-                                        style={{
-                                            background: "#52c41a",
-                                            borderColor: "#52c41a",
-                                            color: "white"
-                                        }}
-                                    >
-                                        Ký số
-                                    </Button>
-                                </Col>
-                            </>
+                                    <Col>
+                                        <Button
+                                            type="primary"
+                                            onClick={handleOpenSign}
+                                            disabled={selectedDelegations.length === 0}
+                                            style={{
+                                                background: "#52c41a",
+                                                borderColor: "#52c41a",
+                                                color: "white"
+                                            }}
+                                        >
+                                            Ký số
+                                        </Button>
+                                    </Col>
+                                </>
+                            )}
                         </Row>
                     </Card>
                 </Spin>
@@ -454,6 +482,8 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         <span style={{ fontSize: 20, fontWeight: 600 }}>
                             Chi tiết ủy quyền
                         </span>
+                        <b />
+
                     </div>
                 }
                 footer={[
@@ -585,6 +615,14 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         {/* --- NGÀY TẠO --- */}
                         <div style={{ padding: "12px 6px" }}>
                             <Text type="secondary" style={{ fontSize: 14 }}>
+                                Loại ủy quyền
+                            </Text>
+                            <div style={{ fontSize: 16, fontWeight: 500, marginTop: 4 }}>
+                                {detailView?.delegstionType}
+                            </div>
+                        </div>
+                        <div style={{ padding: "12px 6px" }}>
+                            <Text type="secondary" style={{ fontSize: 14 }}>
                                 Ngày tạo
                             </Text>
                             <div style={{ fontSize: 16, fontWeight: 500, marginTop: 4 }}>
@@ -599,6 +637,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                 {detailView.delegateReason}
                             </div>
                         </div>
+
 
                         <Divider />
 

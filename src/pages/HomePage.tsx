@@ -10,6 +10,7 @@ import { Col, Layout, Row, Space } from "antd";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import bannerContent from "@/assets/banner_content.png";
 import "../style/HomePage.model.css";
 
 const { Content } = Layout;
@@ -134,7 +135,6 @@ const HomePage: React.FC = () => {
   const mapToElectionItems = (apiData: any): ElectionItem[] => {
     return apiData.map((item: any) => {
       const election = item.electionId;
-      // map status của API sang status của frontend
       let status: ElectionItem["status"] = "upcoming";
       if (election.status === "ACTIVE" && election.statusData === "ONGOING") {
         status = "ongoing";
@@ -171,40 +171,16 @@ const HomePage: React.FC = () => {
     <Layout
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 50%, #fafcfb 100%)",
+        backgroundImage: `url(${bannerContent})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
         minWidth: "100vw",
         paddingBottom: "32px",
         position: "relative",
       }}
     >
-      {/* Decorative background elements */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          width: "40%",
-          height: "40%",
-          background:
-            "radial-gradient(circle, rgba(76, 175, 80, 0.08) 0%, transparent 70%)",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          width: "30%",
-          height: "30%",
-          background:
-            "radial-gradient(circle, rgba(18, 77, 45, 0.06) 0%, transparent 70%)",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
 
       <HomeHeader />
       <Content

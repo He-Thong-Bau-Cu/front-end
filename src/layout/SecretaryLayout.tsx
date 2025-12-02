@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Header from '@/components/secretary/Header';
 import Sideber from '@/components/secretary/Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
+import bannerContent from "@/assets/banner_content.png";
 
 const SecretaryLayout = () => {
     const [pageTitle, setPageTitle] = useState('Dashboard');
@@ -42,7 +43,11 @@ const SecretaryLayout = () => {
                         height: "calc(100vh - 64px)",
                         overflow: "auto",
                         padding: "10px 24px 24px",
-                        background: "#EFF8EF",
+                        backgroundImage: `url(${bannerContent})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundAttachment: "fixed",
                     }}
                 >
                     <Outlet />

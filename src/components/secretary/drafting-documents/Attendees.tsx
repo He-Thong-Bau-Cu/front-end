@@ -98,6 +98,21 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false,
         if (!userInfo) {
             return message.error("Không tìm thấy thông tin người dùng!");
         }
+
+        // Kiểm tra tổng % cổ phần không vượt quá 100%
+        const percentageValue = Number(values.percentage);
+        const currentTotal = participants.reduce(
+            (sum, p) => sum + (Number(p.percentage) || 0),
+            0
+        );
+        const newTotal = currentTotal + percentageValue;
+
+        if (newTotal > 100) {
+            return message.error(
+                `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${currentTotal}%, Thêm: ${percentageValue}% = ${newTotal}%)`
+            );
+        }
+
         const newMember: Participant = {
             id: Date.now(),
             userId: values.userId,
@@ -109,7 +124,7 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false,
             citizenId: userInfo.citizenId,
             address: userInfo.address,
             department: userInfo.department,
-            percentage: values.percentage
+            percentage: percentageValue
         };
         const updated = [...participants, newMember];
         setParticipants(updated);
@@ -126,16 +141,18 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false,
         onChange(updated);
     };
     /* ===========================================================
-        TAG MÀU TRẠNG THÁI
+        TAG MÀU TRẠNG THÁI - Đồng bộ với Organization
     ============================================================ */
     const statusColor = (status: string) => {
         switch (status) {
-            case "Đã xác nhận":
+            case "ACTIVE":
                 return "green";
-            case "Đang chờ":
+            case "PENDING":
                 return "orange";
-            case "Đã từ chối":
+            case "INACTIVE":
                 return "red";
+            case "AUTHORIZED":
+                return "blue"; // Màu xanh dương cho trạng thái được ủy quyền
             default:
                 return "default";
         }
@@ -265,9 +282,41 @@ const Attendees: React.FC<Props> = ({ onChange, data, percent, disabled = false,
                         rules={[
                             { required: true, message: "Vui lòng nhập tỷ lệ cổ phần" },
                             { pattern: /^[0-9]+$/, message: "Chỉ nhập số" },
+                            {
+                                validator: (_, value) => {
+                                    if (!value) return Promise.resolve();
+                                    const percentageValue = Number(value);
+                                    if (percentageValue <= 0) {
+                                        return Promise.reject("Tỷ lệ cổ phần phải lớn hơn 0");
+                                    }
+                                    if (percentageValue > 100) {
+                                        return Promise.reject("Tỷ lệ cổ phần không được vượt quá 100%");
+                                    }
+                                    // Kiểm tra tổng % hiện tại + % mới không vượt quá 100%
+                                    const currentTotal = participants.reduce(
+                                        (sum, p) => sum + (Number(p.percentage) || 0),
+                                        0
+                                    );
+                                    const newTotal = currentTotal + percentageValue;
+                                    if (newTotal > 100) {
+                                        return Promise.reject(
+                                            `Tổng cổ phần sẽ vượt quá 100% (hiện tại: ${currentTotal}%, thêm ${percentageValue}% = ${newTotal}%)`
+                                        );
+                                    }
+                                    return Promise.resolve();
+                                },
+                            },
                         ]}
                     >
-                        <Input placeholder="VD: 12" disabled={disabled} />
+                        <Input
+                            placeholder="VD: 12"
+                            disabled={disabled}
+                            suffix={
+                                <span style={{ color: "#999", fontSize: 12 }}>
+                                    Tổng hiện tại: {totalPercentage}%
+                                </span>
+                            }
+                        />
                     </Form.Item>
 
                     {/* THÔNG TIN CHI TIẾT CỬ TRI */}

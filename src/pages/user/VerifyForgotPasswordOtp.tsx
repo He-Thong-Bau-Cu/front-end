@@ -5,6 +5,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import AuthService from "@/services/AuthService";
 import { useNotification } from "@/contexts/NotificationContext";
 import { LockOutlined } from "@ant-design/icons";
+import loginBackground from "@/assets/login_background.png";
 
 const { Title, Text, Link } = Typography;
 
@@ -94,11 +95,10 @@ export default function VerifyForgotPasswordOtp() {
             }
           } catch (error: any) {
             console.error("Error forwarding password:", error);
-            notify(
-              error?.response?.data?.message ||
-                "Không thể gửi mật khẩu mới. Vui lòng thử lại.",
-              "error"
-            );
+            const errorMessage = error?.response?.data?.message || error?.message || "Không thể gửi mật khẩu mới. Vui lòng thử lại.";
+            console.error("Error message from response:", errorMessage);
+            console.error("Error response:", error?.response?.data);
+            notify(errorMessage, "error");
           } finally {
             hideLoading();
           }
@@ -108,10 +108,10 @@ export default function VerifyForgotPasswordOtp() {
       }
     } catch (error: any) {
       console.error("Error verifying OTP:", error);
-      notify(
-        error?.response?.data?.message || "Mã OTP không đúng. Vui lòng thử lại.",
-        "error"
-      );
+      const errorMessage = error?.response?.data?.message || error?.message || "Mã OTP không đúng. Vui lòng thử lại.";
+      console.error("Error message from response:", errorMessage);
+      console.error("Error response:", error?.response?.data);
+      notify(errorMessage, "error");
     } finally {
       hideLoading();
     }
@@ -137,11 +137,10 @@ export default function VerifyForgotPasswordOtp() {
       }
     } catch (error: any) {
       console.error("Error resending OTP:", error);
-      notify(
-        error?.response?.data?.message ||
-          "Không thể gửi mã OTP. Vui lòng thử lại.",
-        "error"
-      );
+      const errorMessage = error?.response?.data?.message || error?.message || "Không thể gửi mã OTP. Vui lòng thử lại.";
+      console.error("Error message from response:", errorMessage);
+      console.error("Error response:", error?.response?.data);
+      notify(errorMessage, "error");
     } finally {
       hideLoading();
     }
@@ -161,7 +160,10 @@ export default function VerifyForgotPasswordOtp() {
       style={{
         minHeight: "100vh",
         width: "100vw",
-        background: "linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)",
+        backgroundImage: `url(${loginBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

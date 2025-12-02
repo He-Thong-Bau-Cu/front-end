@@ -16,7 +16,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
   onViewDetail,
   onExport,
 }) => (
-  <Card className="report-card" bordered={false}>
+  <Card className="report-card">
     <div className="card-content">
       <div className="report-icon">{icon}</div>
       <div className="report-title">{title}</div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Header from '@/components/preside/Header';
 import Sideber from '@/components/preside/Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
+import bannerContent from "@/assets/banner_content.png";
 
 const PresideLayout = () => {
     const [pageTitle, setPageTitle] = useState('Dashboard');
@@ -44,7 +45,11 @@ const PresideLayout = () => {
                         height: "calc(100vh - 64px)",
                         overflow: "auto",
                         padding: "10px 24px 24px",
-                        background: "#EFF8EF",
+                        backgroundImage: `url(${bannerContent})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundAttachment: "fixed",
                     }}
                 >
                     <Outlet />

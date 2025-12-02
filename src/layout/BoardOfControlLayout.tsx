@@ -6,6 +6,7 @@ import { Layout } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import bannerContent from "@/assets/banner_content.png";
 
 const BoardOfControlLayout = () => {
     const [pageTitle, setPageTitle] = useState("Tổng quan");
@@ -56,7 +57,11 @@ const BoardOfControlLayout = () => {
                         height: "calc(100vh - 64px)",
                         overflow: "auto",
                         padding: "10px 24px 24px",
-                        background: "#EFF8EF",
+                        backgroundImage: `url(${bannerContent})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundAttachment: "fixed",
                     }}
                 >
                     <Outlet />

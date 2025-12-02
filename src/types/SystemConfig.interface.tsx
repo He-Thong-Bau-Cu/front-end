@@ -3,7 +3,8 @@ export type SystemSettingsGroup =
   | "NOTIFY"
   | "SECURITY"
   | "INTEGRATION"
-  | "ADVANCED";
+  | "ADVANCED"
+  | "ELECTION_TYPES";
 
 export interface SystemConfig {
   _id: string;

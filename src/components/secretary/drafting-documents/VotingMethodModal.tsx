@@ -54,6 +54,7 @@ interface VotingMethodModalProps {
   methods: VotingMethods[];
   selectedMethodId?: string;
   initialCandidates?: Candidate[];
+  formType?: "person" | "project" | "other"; // formType từ election type (auto-determined)
 }
 
 const emptyCandidate: Candidate = {
@@ -78,12 +79,16 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
   methods,
   selectedMethodId,
   initialCandidates,
+  formType: propFormType, // formType từ props (auto-determined từ election type)
 }) => {
   const [form] = Form.useForm();
   const [selectedMethod, setSelectedMethod] = useState<string>("");
   const [formType, setFormType] = useState<"person" | "project" | "other">("person"); // State để lưu loại form được chọn
   const { notify } = useNotification();
   const { showLoading, hideLoading } = useLoading();
+
+  // Nếu có formType từ props, sử dụng nó; nếu không, dùng state
+  const currentFormType = propFormType || formType;
 
   useEffect(() => {
     if (open) {
@@ -107,7 +112,9 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
             }
           }
 
-          setFormType(firstFormType as "person" | "project" | "other");
+          // Nếu có propFormType, ưu tiên dùng nó; nếu không, dùng firstFormType
+          const finalFormType = propFormType || (firstFormType as "person" | "project" | "other");
+          setFormType(finalFormType);
 
           const candidatesWithFormType = initialCandidates.map((candidate) => {
             return {
@@ -126,21 +133,25 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
           });
           form.setFieldsValue({ candidates: candidatesWithFormType });
         } else {
-          setFormType("person"); // Reset về mặc định
+          // Nếu có propFormType, dùng nó; nếu không, reset về mặc định
+          const defaultFormType = propFormType || "person";
+          setFormType(defaultFormType);
           form.setFieldsValue({ candidates: [emptyCandidate, emptyCandidate] });
         }
       } else {
         setSelectedMethod("");
-        setFormType("person");
+        const defaultFormType = propFormType || "person";
+        setFormType(defaultFormType);
         form.resetFields();
         form.setFieldsValue({ candidates: [] });
       }
     } else {
       // Reset when modal closes
-      setFormType("person");
+      const defaultFormType = propFormType || "person";
+      setFormType(defaultFormType);
       form.resetFields();
     }
-  }, [open, selectedMethodId, initialCandidates, form]);
+  }, [open, selectedMethodId, initialCandidates, form, propFormType]);
 
 
   const handleSubmit = async () => {
@@ -165,10 +176,10 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
 
         // Clear các trường không thuộc formType hiện tại
         let cleanedMetaData: any = {
-          type: formType,
+          type: currentFormType,
         };
 
-        if (formType === "person") {
+        if (currentFormType === "person") {
           // Chỉ giữ lại các trường của person
           cleanedMetaData = {
             type: formType,
@@ -201,7 +212,7 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
         return {
           ...candidate,
           _id: initialCandidate?._id,
-          formType: formType,
+          formType: currentFormType,
           metaData: cleanedMetaData,
           fileUrl: fileUrl,
         };
@@ -470,19 +481,33 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
               </Tag>
             </div>
 
-            {/* RADIO BUTTON CHỌN LOẠI FORM */}
-            <div style={{ marginBottom: 24, padding: 16, background: "#fff", border: "1px solid #e8e8e8", borderRadius: 6 }}>
-              <Text strong style={{ display: "block", marginBottom: 12 }}>Chọn loại form: </Text>
-              <Radio.Group
-                value={formType}
-                onChange={(e) => setFormType(e.target.value)}
-                style={{ width: "100%" }}
-              >
-                <Radio value="person">Nhập người</Radio>
-                <Radio value="project">Nhập dự án</Radio>
-                <Radio value="other">Khác</Radio>
-              </Radio.Group>
-            </div>
+            {/* RADIO BUTTON CHỌN LOẠI FORM - Chỉ hiển thị nếu không có formType từ props */}
+            {!propFormType && (
+              <div style={{ marginBottom: 24, padding: 16, background: "#fff", border: "1px solid #e8e8e8", borderRadius: 6 }}>
+                <Text strong style={{ display: "block", marginBottom: 12 }}>Chọn loại form: </Text>
+                <Radio.Group
+                  value={formType}
+                  onChange={(e) => setFormType(e.target.value)}
+                  style={{ width: "100%" }}
+                >
+                  <Radio value="person">Nhập người</Radio>
+                  <Radio value="project">Nhập dự án</Radio>
+                  <Radio value="other">Khác</Radio>
+                </Radio.Group>
+              </div>
+            )}
+
+            {/* Hiển thị thông báo nếu formType được xác định tự động */}
+            {propFormType && (
+              <div style={{ marginBottom: 24, padding: 12, background: "#e6f7ff", border: "1px solid #91d5ff", borderRadius: 6 }}>
+                <Text strong style={{ display: "block", marginBottom: 4 }}>
+                  Loại form đã được xác định tự động:
+                </Text>
+                <Tag color="blue" style={{ marginTop: 4 }}>
+                  {propFormType === "person" ? "Nhập người" : propFormType === "project" ? "Nhập dự án" : "Khác"}
+                </Tag>
+              </div>
+            )}
 
             {selectedMethod && (
           <div style={{ marginTop: 24 }}>
@@ -502,7 +527,7 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
                       }}
                     >
                       {/* FORM CHUNG DỰA TRÊN formType - KHÔNG PHỤ THUỘC VÀO HÌNH THỨC BẦU CỬ */}
-                      {formType === "person" ? (
+                      {currentFormType === "person" ? (
                         // FORM NHẬP NGƯỜI
                         <Row gutter={12}>
                           <Col span={12}>
@@ -662,7 +687,7 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
                             </Form.Item>
                           </Col>
                         </Row>
-                      ) : formType === "project" ? (
+                      ) : currentFormType === "project" ? (
                         // FORM NHẬP DỰ ÁN
                         <Row gutter={12}>
                           <Col span={12}>
@@ -945,7 +970,7 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
 
                   <Button
                     type="dashed"
-                    onClick={() => add({ ...emptyCandidate, formType: formType })}
+                    onClick={() => add({ ...emptyCandidate, formType: currentFormType })}
                     icon={<PlusOutlined />}
                     style={{ width: "100%", marginTop: 8 }}
                   >

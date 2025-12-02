@@ -5,189 +5,46 @@ import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
 import DelegateCardService from "@/services/DelegateCardService";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
-import ElectionService from "@/services/ElectionService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
 import { useNotification } from "@/contexts/NotificationContext";
-import { io, Socket } from "socket.io-client";
 
-const QRScannerPanel: React.FC = () => {
+interface QRScannerPanelProps {
+  canCheckin: boolean;
+  checkinStage: any;
+}
+
+const QRScannerPanel: React.FC<QRScannerPanelProps> = ({ canCheckin, checkinStage }) => {
   const navigate = useNavigate();
   const { notify } = useNotification();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [delegateData, setDelegateData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [checkinStage, setCheckinStage] = useState<any>(null); // Trạng thái giai đoạn checkin
-  const [canCheckin, setCanCheckin] = useState(false); // Có thể checkin hay không
   const isProcessingRef = useRef(false); // Flag để ngăn quét lại khi đang xử lý (dùng ref vì callback không cập nhật state)
   const lastProcessedTokenRef = useRef<string | null>(null); // Lưu token đã xử lý để tránh xử lý lại
   const scannerReadyRef = useRef(false); // Flag để đảm bảo scanner đã sẵn sàng trước khi xử lý QR code
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null); // Timer để debounce các lần quét
   const scannerRef = useRef<Html5Qrcode | null>(null); // Ref để lưu scanner instance
 
-  // Helper function để tính toán currentStage từ timeline và stages
-  const calculateCurrentStage = (timeline: any, stages: any) => {
-    let currentStage = 'not_started';
-    let stageStartedAt: Date | null = null;
-    let stageStatus = 'NOT_STARTED';
-
-    // Kiểm tra từng giai đoạn theo thứ tự (logic giống backend)
-    if (timeline.checkinAt && stages.checkin !== 'COMPLETED') {
-      currentStage = 'checkin';
-      stageStartedAt = timeline.checkinAt ?? null;
-      stageStatus = 'STARTED';
-    } else if (stages.checkin === 'COMPLETED' && timeline.reportAt && stages.report !== 'COMPLETED') {
-      currentStage = 'report';
-      stageStartedAt = timeline.reportAt ?? null;
-      stageStatus = 'STARTED';
-    } else if (stages.report === 'COMPLETED' && timeline.votingAt && stages.voting !== 'COMPLETED') {
-      currentStage = 'voting';
-      stageStartedAt = timeline.votingAt ?? null;
-      stageStatus = 'STARTED';
-    } else if (stages.voting === 'COMPLETED' && timeline.resultAnnouncedAt && stages.result !== 'COMPLETED') {
-      currentStage = 'result';
-      stageStartedAt = timeline.resultAnnouncedAt ?? null;
-      stageStatus = 'STARTED';
-    } else if (stages.result === 'COMPLETED' && timeline.closingAt && stages.closing !== 'COMPLETED') {
-      currentStage = 'closing';
-      stageStartedAt = timeline.closingAt ?? null;
-      stageStatus = 'STARTED';
-    } else if (stages.closing === 'COMPLETED') {
-      currentStage = 'completed';
-      stageStartedAt = timeline.closingAt ?? null;
-      stageStatus = 'COMPLETED';
-    } else if (timeline.checkinAt) {
-      // Nếu đã có timeline nhưng không match với điều kiện nào, lấy giai đoạn cuối cùng đã completed
-      if (stages.closing === 'COMPLETED') {
-        currentStage = 'completed';
-        stageStartedAt = timeline.closingAt ?? null;
-        stageStatus = 'COMPLETED';
-      } else if (stages.result === 'COMPLETED') {
-        currentStage = 'result';
-        stageStartedAt = timeline.resultAnnouncedAt ?? null;
-        stageStatus = 'COMPLETED';
-      } else if (stages.voting === 'COMPLETED') {
-        currentStage = 'voting';
-        stageStartedAt = timeline.votingAt ?? null;
-        stageStatus = 'COMPLETED';
-      } else if (stages.report === 'COMPLETED') {
-        currentStage = 'report';
-        stageStartedAt = timeline.reportAt ?? null;
-        stageStatus = 'COMPLETED';
-      } else if (stages.checkin === 'COMPLETED') {
-        currentStage = 'checkin';
-        stageStartedAt = timeline.checkinAt ?? null;
-        stageStatus = 'COMPLETED';
-      }
-    }
-
-    return {
-      currentStage,
-      stageStartedAt,
-      stageStatus,
-      timeline,
-      stages,
-    };
-  };
-
-  // Cập nhật state từ stageData (có thể từ API hoặc từ socket payload)
-  const updateStageState = (stageData: any) => {
-    setCheckinStage(stageData);
-
-    // Kiểm tra xem có thể checkin không (chỉ khi giai đoạn checkin đang STARTED)
-    const isCheckinActive =
-      stageData?.currentStage === 'checkin' &&
-      stageData?.stageStatus === 'STARTED';
-
-    setCanCheckin(isCheckinActive);
-  };
-
-  // Kiểm tra trạng thái checkin
-  const checkCheckinStage = async () => {
-    try {
-      const electionId = localStorage.getItem("currentElectionId");
-      if (!electionId) {
-        setCanCheckin(false);
-        return;
-      }
-
-      const stageResponse = await ElectionService.getCurrentStage(electionId);
-      const stageData = stageResponse?.data || stageResponse;
-
-      updateStageState(stageData);
-    } catch (error: any) {
-      console.error("Error checking checkin stage:", error);
-      setCanCheckin(false);
-    }
-  };
-
-  // Setup socket listener để nhận cập nhật realtime
   useEffect(() => {
-    const electionId = localStorage.getItem("currentElectionId");
-    if (!electionId) return;
-
-    const socket: Socket = io("http://54.253.192.210:80/notification", {
-      transports: ["websocket"],
-    });
-
-    socket.on("connect", () => {
-      console.log("Socket connected for checkin stage:", socket.id);
-      socket.emit("join", electionId);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err.message);
-    });
-
-    // Lắng nghe cập nhật trạng thái giai đoạn
-    socket.on("transferData", (data: any) => {
-      if (data.type === "stage-started" || data.type === "stage-ended") {
-        console.log("📊 Received stage update:", data);
-        // Refresh trạng thái khi có cập nhật
-        checkCheckinStage();
-      }
-    });
-
-    // Lắng nghe socket transferStateDataRT khi trạng thái cuộc họp thay đổi
-    socket.on("transferStateDataRT", (data: any) => {
-      if (data.type === "meeting-status-changed" && data.payload) {
-        console.log("📊 Received meeting status update:", data);
-
-        // Sử dụng payload trực tiếp thay vì gọi lại API
-        const payload = data.payload;
-        if (payload.election) {
-          const election = payload.election;
-          const timeline = election.timeline || {};
-          const stages = election.stages || {};
-
-          // Tính toán currentStage từ timeline và stages
-          const stageData = calculateCurrentStage(timeline, stages);
-
-          // Thêm các thông tin khác từ election
-          const fullStageData = {
-            ...stageData,
-            startDate: election.startDate,
-          };
-
-          // Cập nhật state trực tiếp từ payload, không cần gọi API
-          updateStageState(fullStageData);
-        }
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-      console.log("Socket disconnected for checkin stage");
-    };
-  }, []);
-
-  // Kiểm tra trạng thái khi component mount
-  useEffect(() => {
-    checkCheckinStage();
-  }, []);
-
-  useEffect(() => {
-    // Không bật camera nếu không thể checkin
+    // Dừng camera nếu không thể checkin
     if (!canCheckin) {
+      const stopScanner = async () => {
+        if (scannerRef.current) {
+          try {
+            const state = scannerRef.current.getState?.();
+            if (
+              state === Html5QrcodeScannerState.SCANNING ||
+              state === Html5QrcodeScannerState.PAUSED
+            ) {
+              await scannerRef.current.stop();
+              await scannerRef.current.clear();
+            }
+          } catch (e) {
+            console.warn("⚠️ Bỏ qua lỗi khi dừng camera:", e);
+          }
+        }
+      };
+      stopScanner();
       return;
     }
 
@@ -522,6 +379,11 @@ const QRScannerPanel: React.FC = () => {
     setIsModalVisible(false);
     setDelegateData(null);
     notify("❎ Đã hủy xác nhận.", "info");
+
+    // Chỉ bật lại camera nếu có thể checkin
+    if (!canCheckin) {
+      return;
+    }
 
     // Bật lại camera sau khi đóng modal
     try {

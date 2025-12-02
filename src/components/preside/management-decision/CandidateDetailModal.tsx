@@ -22,9 +22,7 @@ const CandidateDetailModal: React.FC<CandidateDetailModalProps> = ({
   data,
 }) => {
   if (!data) return null;
-
   const meta = data.metaData || {};
-
   return (
     <Modal
       open={open}

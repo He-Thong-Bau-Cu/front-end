@@ -12,12 +12,12 @@ const ManagementDecision = () => {
     }, []);
 
     return (
-        <div style={{ padding: '0 32px' }}>
-            <DecisionStats 
+        <div style={{ padding: '0 32px', marginTop: '30px' }}>
+            {/* <DecisionStats 
                 refreshTrigger={refreshTrigger}
                 autoRefreshInterval={30000} // Tự động refresh mỗi 30 giây
                 enableAutoRefresh={true}
-            />
+            /> */}
             <DecisionTable  />
         </div>
     )

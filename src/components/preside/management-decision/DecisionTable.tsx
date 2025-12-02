@@ -6,7 +6,6 @@ import {
   Table,
   Tag,
   Space,
-  Typography,
   message,
   Spin,
   Modal,
@@ -18,7 +17,7 @@ import {
   EyeOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { Decision } from "@/types/Decision.interface";
 import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal";
 import ViewDecisionModal from "@/components/preside/management-decision/ViewDecisionModal";
@@ -34,9 +33,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import FileService from "@/services/FileService";
-import VotingMethodsService from "@/services/VotingMethodsService";
 import VotingRightService from "@/services/VotingRightService";
-import { set } from "react-hook-form";
 const { Option } = Select;
 const { confirm } = Modal;
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
@@ -130,8 +127,8 @@ const DecisionTable = () => {
         pageSize: response.limit || limit,
         total: response.totalItems || 0,
       });
-    } catch (error: any) {
-      message.error("Không thể tải danh sách nghị quyết.");
+    } catch (err: any) {
+      notify(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -145,8 +142,8 @@ const DecisionTable = () => {
       const res = await ResultService.getResultByElectionId(record._id); // API lấy kết quả
       setResultData(res);
       setOpenResultModal(true);
-    } catch (err) {
-      message.error("Không lấy được kết quả");
+    } catch (err: any) {
+      notify(err.message, "error");
     }
   };
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
@@ -166,10 +163,9 @@ const DecisionTable = () => {
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
           notify(response.message, "success");
-          message.success("Cập nhật nghị quyết thành công!");
         } else {
           notify(response.message, "error");
-          message.error("Không thể cập nhật nghị quyết. Vui lòng thử lại.");
+
         }
       } else {
         const apiData2: any = {
@@ -201,11 +197,8 @@ const DecisionTable = () => {
       // setEditMode(false);
       setEditingDecision(null);
       await loadDecisions(pagination.current, pagination.pageSize);
-    } catch (error: any) {
-      message.error(
-        error.response?.data?.message ||
-        `Không thể ${isEdit ? "cập nhật" : "tạo"} nghị quyết. Vui lòng thử lại.`
-      );
+    } catch (err: any) {
+      notify(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -227,8 +220,8 @@ const DecisionTable = () => {
       } else {
         notify(res.message, "error");
       }
-    } catch {
-      message.error("Ký số thất bại!");
+    } catch (err: any) {
+      notify(err.message, "error");
     } finally {
       hideLoading();
     }
@@ -255,11 +248,10 @@ const DecisionTable = () => {
         notify(reject.message, "error");
       }
       setRejectModal({ open: false, record: null });
-    } catch (err) {
-      message.error("Từ chối thất bại!");
+    } catch (err: any) {
+      notify(err.message, "error");
     }
   };
-
 
   const downloadUrlFileSign = async (data: any) => {
     try {
@@ -268,23 +260,17 @@ const DecisionTable = () => {
       );
       const signedDocuments = data1.filter((item: any) => item?.type === "signed-documents");
       const response = await FileService.getSignedFile(signedDocuments[0]?.fileUrl);
-
       const blob = new Blob([response], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+      a.download = `${data.decisionName}_đã_ký.pdf`;
       a.click();
-
       URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể tải file!");
+    } catch (err: any) {
+      notify(err.message, "error");
     }
   };
-
-
-
 
   const handleViewDecision = async (record: Decision) => {
     try {
@@ -292,19 +278,15 @@ const DecisionTable = () => {
       setViewModalOpen(true);
       const data1 = await ElectionDocumentService.getDocumentByElectionId(record._id);
       setDocument(data1);
-      // const data2 = await ElectionParticipantsService.getVoterByElectionId(record._id);
-      // setVoters(data2);
       const data3 = await ElectionEntitiesService.getElectionEntitiesByElectionId(record._id);
       setEntities(data3);
       const data4 = await ElectionParticipantsService.getByElectionId(record._id);
       const roleId1List: any = data4.filter((p: any) => p.roleId.roleCode === "VOTER");
-      // MẢNG 2: roleId != 1
       const otherRolesList: any = data4.filter((p: any) => p.roleId.roleCode !== "VOTER");
       setOrganize(otherRolesList ? otherRolesList : []);
       const data5 = await MeetingService.getByElectionId(record._id);
-      setMeeting(data5.data);
+      setMeeting(data5.data[0] ? data5.data[0] : null);
       const v = await VotingRightService.getVotingRightByElectionId(record._id);
-
       roleId1List.forEach((voter: any) => {
         const votingRight = v.find(
           (vr: any) => vr.voterId.userId === voter.userId._id
@@ -316,14 +298,12 @@ const DecisionTable = () => {
         }
       });
       setVoters(roleId1List);
-
       // Gọi API để lấy chi tiết decision
       const decisionDetail = await DecisionService.getElectionById(record._id);
 
       setViewDecisionData(decisionDetail.data);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Không thể tải chi tiết quyết định. Vui lòng thử lại.";
-      message.error(errorMessage);
+    } catch (err: any) {
+      notify(err.message, "error");
       setViewModalOpen(false);
       setViewDecisionData(null);
     } finally {
@@ -345,8 +325,8 @@ const DecisionTable = () => {
       }
       setEditingDecision(decisionDetail.data);
       setOpen(true);
-    } catch (error: any) {
-      message.error(error.response?.data?.message || "Không thể tải dữ liệu chỉnh sửa.");
+    } catch (err: any) {
+      notify(err.message, "error");
     } finally {
       setEditLoading(false);
     }
@@ -470,7 +450,7 @@ const DecisionTable = () => {
     },
   ];
   return (
-    <Card className="decision-table-card">
+    <Card className="decision-table-card" style={{padding:'20px'}}>
       <div className="decision-toolbar">
         <Input
           placeholder="Tìm kiếm theo tên quyết định..."
@@ -568,9 +548,6 @@ const DecisionTable = () => {
         onClose={() => setOpenResultModal(false)}
         data={resultData}
       />
-
-
-
       <ConfirmDeleteModal
         open={openConfirm}
         onCancel={() => setOpenConfirm(false)}
@@ -611,7 +588,6 @@ const DecisionTable = () => {
         centered
       >
         <p>Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> ủy quyền này không?</p>
-
         <Input.TextArea
           rows={4}
           placeholder="Nhập lý do từ chối..."
@@ -632,8 +608,6 @@ const DecisionTable = () => {
           </Button>
         </div>
       </Modal>
-
-
     </Card>
   );
 };

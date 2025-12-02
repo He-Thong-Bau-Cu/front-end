@@ -129,6 +129,7 @@ export interface DelegationSummary {
   createdAt: string;
   endDate: string;
   status: string;
+  delegationType: string;
 }
 
 export type DelegationStatus =

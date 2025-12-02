@@ -7,6 +7,7 @@ import Forbidden403 from "../pages/Forbidden403";
 import NotFound404 from "../pages/NotFound404";
 import LoginScreen from "../pages/user/Login";
 import Invited from "../pages/user/Invited";
+import FirstTimeChangePasswordScreen from "@/pages/user/ChangePasswordFirstTime";
 
 
 export const publicRoutes = [
@@ -46,5 +47,13 @@ export const publicRoutes = [
         <VerifyForgotPasswordOtp />
       </PublicRoute>
     ),
-  }
+  },
+  {
+    path: "/change-password-first-time",
+    element: (
+      <PublicRoute>
+        <FirstTimeChangePasswordScreen />
+      </PublicRoute>
+    )
+  },
 ];

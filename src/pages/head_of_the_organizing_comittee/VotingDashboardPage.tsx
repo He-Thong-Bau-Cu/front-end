@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Row, Col, Spin, message } from "antd";
 import LiveResult from "../../components/head_of_the_organizing_committee/voting_process/LiveResult";
 import LiveVoteFlow from "../../components/head_of_the_organizing_committee/voting_process/LiveVoteFlow";
@@ -32,6 +32,9 @@ export default function VotingDashboardPage() {
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(0);
   const [isVotingCompleted, setIsVotingCompleted] = useState<boolean>(false);
   const [autoEndTriggered, setAutoEndTriggered] = useState<boolean>(false);
+  // Lưu thông tin để tính toán lại thời gian còn lại
+  const votingStartTimeRef = useRef<number | null>(null);
+  const voteDurationSecondsRef = useRef<number>(0);
 
   const formatSecondsToClock = (seconds: number): string => {
     if (!seconds || seconds <= 0) return "00:00:00";
@@ -46,6 +49,27 @@ export default function VotingDashboardPage() {
       .padStart(2, "0");
     return `${h}:${m}:${s}`;
   };
+
+  // Hàm tính toán thời gian còn lại từ thời gian thực
+  const calculateTimeRemaining = useCallback((): number => {
+    if (isVotingCompleted || !votingStartTimeRef.current || voteDurationSecondsRef.current <= 0) {
+      return 0;
+    }
+
+    const votingStartTime = votingStartTimeRef.current;
+    const voteDurationSeconds = voteDurationSecondsRef.current;
+    const now = new Date().getTime();
+
+    // Tính thời gian còn lại
+    const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
+    const timeRemaining = votingEndTime - now;
+
+    if (timeRemaining > 0) {
+      return Math.floor(timeRemaining / 1000);
+    } else {
+      return 0;
+    }
+  }, [isVotingCompleted]);
 
   const loadData = async () => {
     try {
@@ -90,6 +114,10 @@ export default function VotingDashboardPage() {
 
           if (voteDurationSeconds > 0) {
             const votingStartTime = new Date(timeline.votingAt).getTime();
+            // Lưu vào ref để tính toán lại sau này
+            votingStartTimeRef.current = votingStartTime;
+            voteDurationSecondsRef.current = voteDurationSeconds;
+
             const votingEndTime = votingStartTime + (voteDurationSeconds * 1000); // Thời gian kết thúc = thời gian bắt đầu + duration
             const now = new Date().getTime();
 
@@ -99,6 +127,10 @@ export default function VotingDashboardPage() {
             } else {
               seconds = 0;
             }
+          } else {
+            // Reset ref nếu không có duration
+            votingStartTimeRef.current = null;
+            voteDurationSecondsRef.current = 0;
           }
         } catch (error: any) {
           console.error("Error loading TIME_VOTE_ELECTION config:", error);
@@ -111,6 +143,10 @@ export default function VotingDashboardPage() {
             }
           }
         }
+      } else {
+        // Reset ref nếu không có votingAt
+        votingStartTimeRef.current = null;
+        voteDurationSecondsRef.current = 0;
       }
 
       // Lấy voting overview
@@ -314,28 +350,48 @@ export default function VotingDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeftSeconds, isVotingCompleted, autoEndTriggered, loading]);
 
-  // Timer đếm ngược mỗi giây (chỉ chạy khi voting chưa completed)
+  // Timer đếm ngược mỗi giây - tính lại từ thời gian thực
   useEffect(() => {
-    if (isVotingCompleted || timeLeftSeconds <= 0) {
+    if (isVotingCompleted || !votingStartTimeRef.current || voteDurationSecondsRef.current <= 0) {
       if (timeLeftSeconds <= 0) {
         setTimeLeft("00:00:00");
       }
       return;
     }
 
-    const interval = setInterval(() => {
-      setTimeLeftSeconds((prev) => {
-        if (prev <= 0) {
-          return 0;
-        }
-        const newSeconds = prev - 1;
-        setTimeLeft(formatSecondsToClock(newSeconds));
-        return newSeconds;
-      });
-    }, 1000);
+    // Tính toán lại thời gian còn lại từ thời gian thực mỗi giây
+    const updateTimer = () => {
+      const seconds = calculateTimeRemaining();
+      if (seconds > 0) {
+        setTimeLeftSeconds(seconds);
+        setTimeLeft(formatSecondsToClock(seconds));
+      } else {
+        setTimeLeftSeconds(0);
+        setTimeLeft("00:00:00");
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [timeLeftSeconds, isVotingCompleted]);
+    // Cập nhật ngay lập tức
+    updateTimer();
+
+    // Thiết lập interval để cập nhật mỗi giây
+    const interval = setInterval(updateTimer, 1000);
+
+    // Xử lý khi tab trở nên visible (tính lại thời gian khi quay lại tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Tab đã trở nên visible, tính lại thời gian
+        updateTimer();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isVotingCompleted, calculateTimeRemaining]);
 
   if (loading) {
     return (
@@ -347,21 +403,25 @@ export default function VotingDashboardPage() {
 
   return (
     <div className="vd-page">
-      <Row gutter={[20, 20]}>
-        {/* LEFT */}
-        <Col xs={24} lg={16}>
-          <LiveResult candidates={candidates} />
-          <LiveVoteFlow logs={voteLogs} />
+      <Row gutter={[24, 24]} align="stretch">
+        {/* LEFT SIDE - Main Content */}
+        <Col xs={24} lg={15}>
+          <div className="vd-left-column">
+            <LiveResult candidates={candidates} />
+            <LiveVoteFlow logs={voteLogs} />
+          </div>
         </Col>
 
-        {/* RIGHT */}
-        <Col xs={24} lg={8}>
-          <CountdownControl
-            timeLeft={timeLeft}
-            onRefresh={loadData}
-            isVotingCompleted={isVotingCompleted}
-          />
-          <SummaryStats stats={stats} />
+        {/* RIGHT SIDE - Controls & Stats */}
+        <Col xs={24} lg={9}>
+          <div className="vd-right-column">
+            <CountdownControl
+              timeLeft={timeLeft}
+              onRefresh={loadData}
+              isVotingCompleted={isVotingCompleted}
+            />
+            <SummaryStats stats={stats} />
+          </div>
         </Col>
       </Row>
     </div>
