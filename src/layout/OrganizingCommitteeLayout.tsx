@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import OrganizingCommitteeHeader from '@/components/organizing-committee/Header';
 import Sideber from '@/components/organizing-committee/Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
+import bannerContent from "@/assets/banner_content.png";
 
 const OrganizingCommitteeLayout = () => {
     const [pageTitle, setPageTitle] = useState('Dashboard');
@@ -28,7 +29,11 @@ const OrganizingCommitteeLayout = () => {
 
             <Layout style={{
                 marginLeft: 250,
-                background: "#EFF8EF",
+                backgroundImage: `url(${bannerContent})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundAttachment: "fixed",
                 display: "flex",
                 flexDirection: "column",
                 width: 'calc(100vw - 290px)',
@@ -40,7 +45,11 @@ const OrganizingCommitteeLayout = () => {
                     style={{
                         flex: 1,
                         padding: '32px 24px 24px',
-                        background: '#EFF8EF',
+                        backgroundImage: `url(${bannerContent})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundAttachment: "fixed",
                         overflowY: 'auto',
                         overflowX: 'hidden',
                         boxSizing: 'border-box',

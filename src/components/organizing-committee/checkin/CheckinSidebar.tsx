@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Input, Button, Progress, Typography, Spin, Modal, Descriptions } from "antd";
+import { Card, Input, Button, Progress, Typography, Spin, Modal, Descriptions, Alert } from "antd";
 import {
     CalendarOutlined,
     BarChartOutlined,
@@ -17,6 +17,7 @@ import { BaseResponse } from "@/types/BaseResponse.interface";
 import dayjs from "dayjs";
 import { io, Socket } from "socket.io-client";
 import { useNotification } from "@/contexts/NotificationContext";
+import { SOCKET_URL } from "@/config/socket";
 
 const { Text } = Typography;
 
@@ -26,7 +27,11 @@ interface RecentActivity {
     time: string;
 }
 
-const CheckinSidebar: React.FC = () => {
+interface CheckinSidebarProps {
+    canCheckin: boolean;
+}
+
+const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
     const { notify } = useNotification();
     const [electionInfo, setElectionInfo] = useState<any>(null);
     const [meetingInfo, setMeetingInfo] = useState<any>(null);
@@ -45,7 +50,7 @@ const CheckinSidebar: React.FC = () => {
         // Setup socket để nhận cập nhật realtime
         const currentElectionId = localStorage.getItem("currentElectionId");
         if (currentElectionId) {
-            const socket: Socket = io("http://54.253.192.210:80/notification", {
+            const socket: Socket = io(SOCKET_URL, {
                 transports: ["websocket"],
             });
 
@@ -265,6 +270,12 @@ const CheckinSidebar: React.FC = () => {
                 return;
             }
 
+            // Kiểm tra lại trạng thái checkin trước khi checkin
+            if (!canCheckin) {
+                notify("❌ Giai đoạn checkin chưa bắt đầu hoặc đã kết thúc", "warning");
+                return;
+            }
+
             const currentElectionId = localStorage.getItem("currentElectionId");
             if (!currentElectionId) {
                 notify("Vui lòng chọn cuộc bầu cử từ trang chủ", "warning");
@@ -408,6 +419,15 @@ const CheckinSidebar: React.FC = () => {
                 <h3 className="sidebar-title-qr">
                     <UserOutlined /> Check-in Thủ công
                 </h3>
+                {!canCheckin && (
+                    <Alert
+                        message="Giai đoạn checkin đã kết thúc"
+                        description="Không thể thực hiện checkin nữa."
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 12 }}
+                    />
+                )}
                 <Input
                     placeholder="Nhập ID thẻ đại biểu..."
                     value={searchText}
@@ -415,6 +435,7 @@ const CheckinSidebar: React.FC = () => {
                     onPressEnter={handleManualSearch}
                     style={{ marginBottom: 8 }}
                     allowClear
+                    disabled={!canCheckin}
                 />
                 <Button
                     block
@@ -422,6 +443,7 @@ const CheckinSidebar: React.FC = () => {
                     className="checkin-btn"
                     onClick={handleManualSearch}
                     loading={searchLoading}
+                    disabled={!canCheckin}
                 >
                     Tìm kiếm & Xác nhận
                 </Button>
@@ -463,9 +485,10 @@ const CheckinSidebar: React.FC = () => {
                         type="primary"
                         onClick={handleSave}
                         loading={searchLoading}
+                        disabled={!canCheckin}
                         style={{
-                            backgroundColor: '#52c41a',
-                            borderColor: '#52c41a',
+                            backgroundColor: canCheckin ? '#52c41a' : '#d9d9d9',
+                            borderColor: canCheckin ? '#52c41a' : '#d9d9d9',
                         }}
                     >
                         Checkin

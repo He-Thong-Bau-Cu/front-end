@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
+import { SOCKET_URL } from "@/config/socket";
 
 interface BallotStatsListenerProps {
     electionId: string;
@@ -19,7 +20,7 @@ const BallotStatsListener: React.FC<BallotStatsListenerProps> = ({
         }
 
         // 👉 FIX: Dùng root namespace
-        const socket: Socket = io("http://54.253.192.210:80/notification", {
+        const socket: Socket = io(SOCKET_URL, {
             auth: { electionId },
             transports: ["websocket"],
         });

@@ -13,6 +13,7 @@ import { PATH } from "@/enums/PATH";
 import { getUserLogin, setLocalStorage } from "@/utils/auth";
 import { jwtDecode } from "jwt-decode";
 import { USER_ROLE } from "@/enums/STATUS";
+import loginBackground from "@/assets/login_background.png";
 
 const { Title, Text, Link } = Typography;
 
@@ -54,14 +55,19 @@ export default function LoginScreen() {
           }
 
           notify("Đăng nhập thành công!!!", "success");
+          console.log(decoded.role);
           if (decoded.role === USER_ROLE.ADMIN) {
+            console.log("admin");
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
+              console.log('run 1')
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
             } else {
+              console.log('run 2')
               navigate(PATH.ADMIN);
             }
           } else if (decoded.role === USER_ROLE.PRESIDE) {
+            console.log("preside");
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
@@ -69,6 +75,7 @@ export default function LoginScreen() {
               navigate(PATH.PRESIDE);
             }
           } else {
+            console.log("home");
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
@@ -80,8 +87,12 @@ export default function LoginScreen() {
       } else {
         notify(response.data.message, "error");
       }
-    } catch (error) {
-      notify("Đăng nhập thất bại. Vui lòng thử lại.", "error");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Đăng nhập thất bại. Vui lòng thử lại.";
+      console.error("Error message from response:", errorMessage);
+      console.error("Error response:", error?.response?.data);
+      notify(errorMessage, "error");
     } finally {
       hideLoading();
     }
@@ -102,7 +113,10 @@ export default function LoginScreen() {
       style={{
         minHeight: "100vh",
         width: "100vw",
-        background: "linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)",
+        backgroundImage: `url(${loginBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

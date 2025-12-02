@@ -98,6 +98,12 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
     const isPending = meetingStatus === "PENDING";
     const isCompleted = meetingStatus === "COMPLETED";
 
+    // Kiểm tra meetingDate có <= thời gian hiện tại không
+    const meetingDate = meeting?.meetingDate ? new Date(meeting.meetingDate) : null;
+    const now = new Date();
+    console.log(meetingDate, now)
+    const canStartMeeting = meetingDate ? meetingDate <= now : false;
+
     // Kiểm tra tất cả các giai đoạn đã hoàn thành chưa
     const stages = election?.stages || {};
     const allStagesCompleted =
@@ -127,9 +133,14 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                             className="start-btn"
                             type="primary"
                             block
+                            disabled={!canStartMeeting}
                             onClick={async () => {
                                 if (!meeting?._id) {
                                     message.error("Không tìm thấy thông tin cuộc họp");
+                                    return;
+                                }
+                                if (!canStartMeeting) {
+                                    message.warning("Chỉ có thể bắt đầu cuộc họp khi ngày họp đã đến hoặc đã qua");
                                     return;
                                 }
                                 try {
@@ -146,6 +157,11 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                         >
                             ▶️ Bắt đầu Sự kiện
                         </Button>
+                    )}
+                    {isPending && !canStartMeeting && (
+                        <p style={{ color: '#999', fontStyle: 'italic', margin: '8px 0 0', fontSize: '12px' }}>
+                            Chờ đến ngày họp để bắt đầu
+                        </p>
                     )}
                     {!isPending && !isCompleted && (
                         <Button

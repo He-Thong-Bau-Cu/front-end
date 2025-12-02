@@ -6,9 +6,10 @@ interface ReportSignatureProps {
   info: SignatureInfo;
   onConfirm?: () => Promise<void> | void;
   loading?: boolean;
+  canSign?: boolean;
 }
 
-export default function ReportSignature({ info, onConfirm, loading }: ReportSignatureProps) {
+export default function ReportSignature({ info, onConfirm, loading, canSign = true }: ReportSignatureProps) {
   const [checked, setChecked] = useState(info.isConfirmed);
 
   useEffect(() => {
@@ -37,9 +38,10 @@ export default function ReportSignature({ info, onConfirm, loading }: ReportSign
           <Button
             type="primary"
             className="sar-sign-btn"
-            disabled={!checked || info.isConfirmed}
+            disabled={!checked || info.isConfirmed || !canSign}
             loading={loading}
             onClick={onConfirm}
+            title={!canSign ? "Chưa đến thời điểm có thể ký báo cáo" : ""}
           >
             {info.isConfirmed ? "Đã ký số" : "Ký số & Phê duyệt"}
           </Button>

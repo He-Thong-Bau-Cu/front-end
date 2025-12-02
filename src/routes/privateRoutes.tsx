@@ -196,14 +196,5 @@ export const privateRoutes = [
     ],
   },
 
-  {
-    path: "/change-password-first-time",
-    element: <PrivateRoute />,
-    children: [
-      {
-        index: true,
-        element: <FirstTimeChangePasswordScreen />,
-      },
-    ],
-  },
+  
 ];

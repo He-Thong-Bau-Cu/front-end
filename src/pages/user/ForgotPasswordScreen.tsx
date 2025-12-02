@@ -5,6 +5,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useNavigate } from "react-router-dom";
 import AuthService from "@/services/AuthService";
+import loginBackground from "@/assets/login_background.png";
 
 const { Title, Text, Link } = Typography;
 
@@ -32,10 +33,10 @@ export default function ForgotPasswordScreen() {
       }
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      notify(
-        error?.response?.data?.message || "Không thể gửi mã xác thực. Vui lòng thử lại.",
-        "error"
-      );
+      const errorMessage = error?.response?.data?.message || error?.message || "Không thể gửi mã xác thực. Vui lòng thử lại.";
+      console.error("Error message from response:", errorMessage);
+      console.error("Error response:", error?.response?.data);
+      notify(errorMessage, "error");
     } finally {
       hideLoading();
     }
@@ -55,7 +56,10 @@ export default function ForgotPasswordScreen() {
       style={{
         minHeight: "100vh",
         width: "100vw",
-        background: "linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)",
+        backgroundImage: `url(${loginBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

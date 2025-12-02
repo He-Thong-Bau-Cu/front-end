@@ -38,10 +38,12 @@ class ElectionTypesService extends BaseService {
         }
     }
 
-    async searchElectionType(body: any): Promise<ElectionTypes[]> {
+    async searchElectionType(body: any): Promise<any> {
         try {
+            // Interceptor đã unwrap response.data, nên response có thể là BaseResponse hoặc data trực tiếp
             const response = await this.api.post<any>(`${this.endpoint}/search`, body);
-            return response.data.content;
+            // Response có thể là { success: true, data: { content: [], ... } } hoặc { content: [], ... }
+            return response?.data || response;
         } catch (error) {
             console.error("Error search election type :", error);
             throw error;

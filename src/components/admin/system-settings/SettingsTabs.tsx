@@ -5,6 +5,7 @@ import {
   SafetyOutlined,
   LinkOutlined,
   RocketOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import type { SystemSettingsGroup } from "@/types/SystemConfig.interface";
 
@@ -20,6 +21,7 @@ const tabs: { id: SystemSettingsGroup; icon: React.ReactNode; label: string }[] 
     { id: "SECURITY", icon: <SafetyOutlined />, label: "Bảo mật" },
     { id: "INTEGRATION", icon: <LinkOutlined />, label: "Tích hợp" },
     { id: "ADVANCED", icon: <RocketOutlined />, label: "Nâng cao" },
+    { id: "ELECTION_TYPES", icon: <AppstoreOutlined />, label: "Thể loại bầu cử" },
   ];
 
 const SettingsTabs = ({ activeKey, onChange }: SettingsTabsProps) => {

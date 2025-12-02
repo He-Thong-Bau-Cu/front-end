@@ -12,6 +12,7 @@ import UserService from "@/services/UserService";
 import { USER_ROLE } from "@/enums/STATUS";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "@/enums/PATH";
+import loginBackground from "@/assets/login_background.png";
 
 const { Title, Text, Link } = Typography;
 
@@ -54,8 +55,12 @@ export default function FirstTimeChangePasswordScreen() {
       } else {
         notify(response.message, "error");
       }
-    } catch (error) {
-      notify("Đã có lỗi xảy ra. Vui lòng thử lagi.", "error");
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+      console.error("Error message from response:", errorMessage);
+      console.error("Error response:", error?.response?.data);
+      notify(errorMessage, "error");
     } finally {
       hideLoading();
     }
@@ -87,7 +92,10 @@ export default function FirstTimeChangePasswordScreen() {
       style={{
         minHeight: "100vh",
         width: "100vw",
-        background: "linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)",
+        backgroundImage: `url(${loginBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
