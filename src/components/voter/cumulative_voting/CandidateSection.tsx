@@ -5,7 +5,7 @@ import {
   UsergroupAddOutlined,
 } from "@ant-design/icons";
 import { Button, Card, Col, Row, Space, Typography } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import VotingRightsService from "@/services/VotingRightsService";
 import CandidateCard from "./CandidateCard";
@@ -27,6 +27,8 @@ const CandidateSection = () => {
   const [totalVotes, setTotalVotes] = useState(0);
   const [remainingVotes, setRemainingVotes] = useState(0);
   const [electionTitle, setElectionTitle] = useState("");
+  const [timeLeft, setTimeLeft] = useState(-1); // Thay đổi 0 thành -1 (hoặc null)
+  const isInitialLoad = useRef(true);
 
   const [candidates, setCandidates] = useState<ElectionEntities[]>([]);
   const { showLoading, hideLoading } = useLoading();
@@ -38,7 +40,6 @@ const CandidateSection = () => {
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [signModalOpen, setSignModalOpen] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
 
   const [vote, setVote] = useState<Record<string, number>>({});
 
@@ -65,9 +66,15 @@ const CandidateSection = () => {
           return;
         }
 
-        const start = new Date(votingAt).getTime();
-        const end = start + 30 * 60 * 1000;
+        const localVotingAtString = votingAt.endsWith('Z')
+          ? votingAt.slice(0, -1)
+          : votingAt;
+        const start = new Date(localVotingAtString).getTime();
+
+        const durationMinutes = 30;
+        const end = start + durationMinutes * 60 * 1000;
         const now = Date.now();
+
 
         if (now < start) {
           setTimeLeft(-1);
@@ -101,34 +108,45 @@ const CandidateSection = () => {
 
 
 
-
-  // 🔥 Lock khi hết giờ thật sự
+  //Hết giờ khóa phiếu
   useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
     if (timeLeft !== 0) return;
 
-    // const lockBallot = async () => {
-    //   const ballot = await BallotService.getBallotById(ballotId);
-    //   if (!ballot || ballot.status !== "ACTIVE") return;
+    const lockBallot = async () => {
+      const ballot = await BallotService.getBallotById(ballotId);
+      if (!ballot || ballot.status !== "ACTIVE") return;
 
-    //   showLoading();
-    //   await BallotService.updateBallot(ballotId, {
-    //     electionId: localStorage.getItem("currentElectionId"),
-    //     voterId: localStorage.getItem("voterId"),
-    //     status: "LOCKED",
-    //   });
+      showLoading();
+      try {
+        await BallotService.updateBallot(ballotId, {
+          electionId: localStorage.getItem("currentElectionId"),
+          voterId: localStorage.getItem("voterId"),
+          status: "LOCKED",
+        });
+        notify("Phiếu bầu đã bị khóa do hết thời gian!", "error");
+        navigate("/voter/ballots");
+      } catch (error: any) {
+        // ... xử lý lỗi
+      } finally {
+        hideLoading();
+      }
+    };
 
-    //   notify("Phiếu bầu đã bị khóa!", "warning");
-    //   navigate("/voter/ballots");
-    //   hideLoading();
-    // };
-
-    // ⚠️ Bẩy comment để test, mở khi chạy thật
-    // lockBallot();
+    lockBallot();
   }, [timeLeft]);
 
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = (timeLeft % 60).toString().padStart(2, "0");
+
+
+
+  const minutes = timeLeft > 0 ? Math.floor(timeLeft / 60) : 0;
+  const seconds = timeLeft > 0 ? (timeLeft % 60).toString().padStart(2, "0") : "00";
+
 
 
   useEffect(() => {
@@ -172,16 +190,29 @@ const CandidateSection = () => {
 
   // Xử lý phân bổ phiếu
   const handleVoteChange = (entity: ElectionEntities, value: number) => {
-    const newDistribution = { ...vote, [entity._id]: value };
+    let newValue = Math.max(0, Math.min(value, totalVotes)); // giới hạn 0 → total
+
+    const newDistribution = { ...vote, [entity._id]: newValue };
+
+    // Tổng dùng
+    let totalUsed = Object.values(newDistribution).reduce((sum, v) => sum + v, 0);
+
+    // Nếu vượt quá tổng số phiếu → cắt lại
+    if (totalUsed > totalVotes) {
+      const exceed = totalUsed - totalVotes;
+      newValue -= exceed;
+      newDistribution[entity._id] = newValue;
+
+      totalUsed = totalVotes;
+    }
+
     setVote(newDistribution);
-    const totalUsed = Object.values(newDistribution).reduce((sum, v) => sum + v, 0);
-    setRemainingVotes(Math.max(totalVotes - totalUsed, 0));
+    setRemainingVotes(totalVotes - totalUsed);
   };
+
 
   //send otp
   const handleOpenOtp = async () => {
-    if (remainingVotes > 0)
-      return notify("Bạn chưa phân bổ hết số phiếu!", "warning");
     try {
       showLoading();
       const email = localStorage.getItem("email");
@@ -314,7 +345,7 @@ const CandidateSection = () => {
             {candidates.map((entity) => {
               const currentVotes = vote[entity._id] || 0;
 
-              const maxVotesForCandidate = remainingVotes + currentVotes;
+              const maxVotesForCandidate = totalVotes;
 
               return (
                 <CandidateCard
@@ -345,8 +376,7 @@ const CandidateSection = () => {
                   boxShadow: "0 4px 12px rgba(0,0,0,0.12)"
                 }}
                 onClick={handleOpenOtp}
-                disabled={remainingVotes !== 0}
-              >
+                disabled={false}              >
                 Gửi Phiếu Bầu
               </Button>
             </Row>

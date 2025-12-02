@@ -1,4 +1,5 @@
 /* 🌿 Welcome card container */
+
 .voter-welcome-card {
   background: rgba(168, 230, 120, 0.5);
   backdrop-filter: blur(15px);
@@ -9,7 +10,12 @@
   color: #000;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   transition: none !important;
-  border: none !important;
+  margin-left: 0px;
+}
+
+.voter-welcome-card {
+  margin-left: -0px !important;
+  margin-right: -0px !important;
 }
 
 .voter-welcome-card:hover {
@@ -786,7 +792,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-
 .election-overview-name {
   margin: 0 !important;
   font-size: 20px;
@@ -840,7 +845,6 @@
   background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
 }
 
-
 .election-info-icon-wrapper {
   width: 48px;
   height: 48px;
@@ -869,7 +873,6 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
 
 .election-info-icon {
   font-size: 24px;
@@ -902,7 +905,6 @@
   line-height: 1.4;
   word-wrap: break-word;
 }
-
 
 .election-overview-description {
   color: #555;
@@ -978,7 +980,6 @@
   background: linear-gradient(180deg, #e74c3c, #c0392b);
 }
 
-
 .time-icon-wrapper {
   width: 48px;
   height: 48px;
@@ -999,7 +1000,6 @@
   background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
   color: #e74c3c;
 }
-
 
 .time-content {
   display: flex;
@@ -1064,7 +1064,6 @@
   transition: left 0.5s ease;
 }
 
-
 .election-vote-button:active {
   transform: translateY(-1px);
   box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
@@ -1077,13 +1076,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-
 .election-view-upcoming {
   background: linear-gradient(135deg, #fff7e6 0%, #fffbf0 100%);
   border-color: #ffb84c;
   color: #ff9800;
 }
-
 
 .election-view-voted {
   background: linear-gradient(135deg, #e6f4ff 0%, #f0f8ff 100%);
@@ -1091,10 +1088,8 @@
   color: #1677ff;
 }
 
-
 .button-arrow {
 }
-
 
 @media (max-width: 768px) {
   .election-overview-card {
