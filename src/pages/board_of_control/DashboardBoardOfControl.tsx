@@ -10,7 +10,13 @@ export default function DashboardBoardOfControlPage() {
 
   return (
     <div className="bks-page">
-      <Header />
+      <div style={{
+        marginBottom: 20,
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
+        <Header />
+      </div>
 
       <Row gutter={[20, 20]} align="top">
         <Col xs={24}>
@@ -19,7 +25,7 @@ export default function DashboardBoardOfControlPage() {
         <Col xs={24} >
           <LiveMonitoring />
         </Col>
-        {/* 
+        {/*
         <Col xs={24} lg={8}>
           <ReportStorage />
           <div style={{ height: 20 }}></div>

@@ -18,7 +18,7 @@ export interface ElectionItem {
     title: string;
     startDate: string;
     endDate?: string;
-    status: "upcoming" | "completed" | "ongoing";
+    status: "upcoming" | "completed" | "ongoing" | "undefined";
     roleCode: string;
     role: string;
     actionLabel: string;
@@ -27,7 +27,8 @@ export interface ElectionItem {
     progress?: number; // 0-100 for ongoing elections
     totalVoters?: number;
     permissionElections?: string[];
-    voter?: string
+    voter?: string;
+    meetingStatus?: string;
 }
 
 interface ElectionListProps {
@@ -49,6 +50,10 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                 return <ClockCircleOutlined style={{ color: "#d48806" }} />;
             case "completed":
                 return <CheckCircleOutlined style={{ color: "#1677ff" }} />;
+            case "ongoing":
+                return <FireOutlined style={{ color: "#52c41a" }} />;
+            case "undefined":
+                return <ClockCircleOutlined style={{ color: "#999" }} />;
             default:
                 return <ClockCircleOutlined />;
         }
@@ -108,11 +113,18 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                                         </Space>
                                     </div>
                                     <Tag
-                                        className={`status-tag ${item.status === "upcoming" ? "tag-upcoming" : "tag-completed"
-                                            }`}
+                                        className={`status-tag ${
+                                            item.status === "upcoming" ? "tag-upcoming" :
+                                            item.status === "completed" ? "tag-completed" :
+                                            item.status === "ongoing" ? "tag-ongoing" :
+                                            "tag-undefined"
+                                        }`}
                                         icon={getStatusIcon(item.status)}
                                     >
-                                        {item.status === "upcoming" ? "Sắp diễn ra" : "Đã hoàn thành"}
+                                        {item.status === "upcoming" ? "Sắp diễn ra" :
+                                         item.status === "completed" ? "Đã hoàn thành" :
+                                         item.status === "ongoing" ? "Đang diễn ra" :
+                                         "Chưa có meeting"}
                                     </Tag>
                                 </div>
 

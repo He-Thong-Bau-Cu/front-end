@@ -8,7 +8,18 @@ const Dashboard = () => {
     return (
         <div>
             <HeaderSecretary />
-            <SecretaryStats />
+            <div style={{
+                marginLeft: 32,
+                marginRight: 32,
+                marginTop: 0,
+                marginBottom: 0,
+                width: 'calc(100% - 64px)',
+                boxSizing: 'border-box',
+                paddingLeft: 0,
+                paddingRight: 0
+            }}>
+                <SecretaryStats />
+            </div>
 
             <Row gutter={[24, 24]} >
                 <Col xs={24} lg={24}>

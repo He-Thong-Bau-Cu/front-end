@@ -139,12 +139,17 @@ export default function OrganizerDashboardPage() {
   return (
     <div className="organizer-dashboard-wrap">
       {/* Organizer Info Header */}
-      <OrganizerInfo />
-
-      {/* Header */}
-      {/* <div className="dashboard-header" style={{ marginTop: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>Tổng quan</Title>
-      </div> */}
+      <div style={{
+        marginLeft: -10,
+        marginRight: -10,
+        paddingLeft: 42,
+        paddingRight: 42,
+        marginBottom: 24,
+        width: 'calc(100% + 20px)',
+        boxSizing: 'border-box'
+      }}>
+        <OrganizerInfo />
+      </div>
 
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>

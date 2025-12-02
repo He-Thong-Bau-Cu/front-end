@@ -27,6 +27,16 @@ import {
   DeleteOutlined,
   SearchOutlined,
   FolderOutlined,
+  CalendarOutlined,
+  BankOutlined,
+  TeamOutlined,
+  TrophyOutlined,
+  ProjectOutlined,
+  DollarOutlined,
+  EnvironmentOutlined,
+  AimOutlined,
+  CheckCircleOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import "@/style/secretary/MettingInfo.model.css";
@@ -39,6 +49,10 @@ import ThresholdsService from "@/services/ThresholdsService";
 import VotingMethodModal from "./VotingMethodModal";
 import VotingMethodSelectModal from "./VotingMethodSelectModal";
 import ThresholdModal from "./ThresholdModal";
+import FileService from "@/services/FileService";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
+import { downloadBlob } from "@/utils/file";
 const { Title, Text } = Typography;
 
 interface Props {
@@ -70,6 +84,8 @@ const MeetingInfo: React.FC<Props> = ({
   meeting,
   disabled = false,
 }) => {
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
   const [form] = Form.useForm<MeetingFormValues>();
   const [voteMethod, setVoteMethod] = useState<string>("");
   const [types, setTypes] = useState<ElectionTypes[]>([]);
@@ -458,7 +474,29 @@ const MeetingInfo: React.FC<Props> = ({
 
   // Xử lý View candidate
   const handleViewCandidate = (candidate: any, index: number) => {
-    setSelectedCandidate({ ...candidate, index });
+    // Xác định formType một cách chính xác
+    let candidateFormType = candidate.formType || candidate.metaData?.type;
+
+    // Nếu không có formType, tự động xác định từ dữ liệu
+    if (!candidateFormType) {
+      if (candidate.metaData?.projectName || candidate.metaData?.projectDescription || candidate.metaData?.budget) {
+        candidateFormType = "project";
+      } else if (candidate.metaData?.fullName || candidate.metaData?.department || candidate.metaData?.position) {
+        candidateFormType = "person";
+      } else {
+        candidateFormType = "other";
+      }
+    }
+
+    setSelectedCandidate({
+      ...candidate,
+      index,
+      formType: candidateFormType, // Đảm bảo formType được lưu
+      metaData: {
+        ...candidate.metaData,
+        type: candidateFormType, // Đảm bảo type trong metaData
+      }
+    });
     setViewModalVisible(true);
   };
 
@@ -1235,209 +1273,278 @@ const MeetingInfo: React.FC<Props> = ({
         width={700}
         destroyOnClose
       >
-        {selectedCandidate && (
-          <div>
-            <Descriptions column={1} bordered>
-              <Descriptions.Item label="Tiêu đề">
-                {selectedCandidate.title ||
-                  `Ứng viên ${selectedCandidate.index + 1}`}
-              </Descriptions.Item>
-              {selectedCandidate.description && (
-                <Descriptions.Item label="Mô tả">
-                  {selectedCandidate.description}
+        {selectedCandidate && (() => {
+          // Xác định formType
+          let formType = selectedCandidate.formType || selectedCandidate.metaData?.type;
+          if (!formType) {
+            if (selectedCandidate.metaData?.projectName || selectedCandidate.metaData?.projectDescription || selectedCandidate.metaData?.budget) {
+              formType = "project";
+            } else if (selectedCandidate.metaData?.fullName || selectedCandidate.metaData?.department || selectedCandidate.metaData?.position) {
+              formType = "person";
+            } else {
+              formType = "other";
+            }
+          }
+          const metaData = selectedCandidate.metaData || {};
+
+          // Helper để kiểm tra giá trị có dữ liệu không
+          const hasValue = (value: any) => {
+            if (value === null || value === undefined) return false;
+            if (typeof value === "string" && value.trim() === "") return false;
+            return true;
+          };
+
+          return (
+            <div style={{ padding: "4px 0" }}>
+              <Descriptions
+                column={1}
+                bordered
+                size="middle"
+                labelStyle={{
+                  fontWeight: 600,
+                  width: "180px",
+                  background: "#fafafa",
+                }}
+                contentStyle={{
+                  background: "#fff",
+                }}
+              >
+                <Descriptions.Item label="Tiêu đề">
+                  <Text strong style={{ fontSize: 15 }}>
+                    {selectedCandidate.title || `Ứng viên ${selectedCandidate.index + 1}`}
+                  </Text>
                 </Descriptions.Item>
-              )}
 
-              {/* Hiển thị theo type */}
-              {(() => {
-                const formType = selectedCandidate.formType || selectedCandidate.metaData?.type || "other";
-                const metaData = selectedCandidate.metaData || {};
+                {hasValue(selectedCandidate.description) && (
+                  <Descriptions.Item label="Mô tả">
+                    <Text>{selectedCandidate.description}</Text>
+                  </Descriptions.Item>
+                )}
 
-                if (formType === "person") {
-                  // Hiển thị thông tin người
-                  return (
-                    <>
-                      {metaData.image && (
-                        <Descriptions.Item label="Ảnh">
-                          <Avatar
-                            size={100}
-                            src={metaData.image}
-                            icon={<UserOutlined />}
-                          />
-                        </Descriptions.Item>
-                      )}
-                      {metaData.fullName && (
-                        <Descriptions.Item label="Họ và tên">
-                          {metaData.fullName}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.age && (
-                        <Descriptions.Item label="Tuổi">
-                          {metaData.age}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.department && (
-                        <Descriptions.Item label="Phòng ban">
-                          {metaData.department}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.position && (
-                        <Descriptions.Item label="Vị trí">
-                          {metaData.position}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.experience && (
-                        <Descriptions.Item label="Kinh nghiệm">
-                          {metaData.experience}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.achievements && (
-                        <Descriptions.Item label="Thành tích">
-                          {metaData.achievements}
-                        </Descriptions.Item>
-                      )}
-                    </>
-                  );
-                } else if (formType === "project") {
-                  // Hiển thị thông tin dự án
-                  return (
-                    <>
-                      {metaData.projectName && (
-                        <Descriptions.Item label="Tên dự án">
-                          {metaData.projectName}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.projectDescription && (
-                        <Descriptions.Item label="Mô tả dự án">
-                          {metaData.projectDescription}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.budget && (
-                        <Descriptions.Item label="Ngân sách">
-                          {metaData.budget}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.duration && (
-                        <Descriptions.Item label="Thời gian thực hiện">
-                          {metaData.duration}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.location && (
-                        <Descriptions.Item label="Địa điểm">
-                          {metaData.location}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.objectives && (
-                        <Descriptions.Item label="Mục tiêu">
-                          {metaData.objectives}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.benefits && (
-                        <Descriptions.Item label="Lợi ích">
-                          {metaData.benefits}
-                        </Descriptions.Item>
-                      )}
-                    </>
-                  );
-                } else {
-                  // Hiển thị tất cả các trường có sẵn cho type "other"
-                  return (
-                    <>
-                      {metaData.image && (
-                        <Descriptions.Item label="Ảnh">
-                          <Avatar
-                            size={100}
-                            src={metaData.image}
-                            icon={<UserOutlined />}
-                          />
-                        </Descriptions.Item>
-                      )}
-                      {metaData.fullName && (
-                        <Descriptions.Item label="Họ và tên">
-                          {metaData.fullName}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.age && (
-                        <Descriptions.Item label="Tuổi">
-                          {metaData.age}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.department && (
-                        <Descriptions.Item label="Phòng ban">
-                          {metaData.department}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.position && (
-                        <Descriptions.Item label="Vị trí">
-                          {metaData.position}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.experience && (
-                        <Descriptions.Item label="Kinh nghiệm">
-                          {metaData.experience}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.achievements && (
-                        <Descriptions.Item label="Thành tích">
-                          {metaData.achievements}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.projectName && (
-                        <Descriptions.Item label="Tên dự án">
-                          {metaData.projectName}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.projectDescription && (
-                        <Descriptions.Item label="Mô tả dự án">
-                          {metaData.projectDescription}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.budget && (
-                        <Descriptions.Item label="Ngân sách">
-                          {metaData.budget}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.duration && (
-                        <Descriptions.Item label="Thời gian thực hiện">
-                          {metaData.duration}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.location && (
-                        <Descriptions.Item label="Địa điểm">
-                          {metaData.location}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.objectives && (
-                        <Descriptions.Item label="Mục tiêu">
-                          {metaData.objectives}
-                        </Descriptions.Item>
-                      )}
-                      {metaData.benefits && (
-                        <Descriptions.Item label="Lợi ích">
-                          {metaData.benefits}
-                        </Descriptions.Item>
-                      )}
-                    </>
-                  );
-                }
-              })()}
-
-              {/* File đính kèm */}
-              {(selectedCandidate.file || selectedCandidate.fileUrl) && (
-                <Descriptions.Item label="File đính kèm">
-                  <Tag icon={<FileTextOutlined />} color="green">
-                    Có tài liệu đính kèm
+                <Descriptions.Item label="Loại bầu chọn">
+                  <Tag color={formType === "person" ? "blue" : formType === "project" ? "green" : "orange"}>
+                    {formType === "person" ? "👤 Bầu người" : formType === "project" ? "📁 Bầu dự án" : "📋 Loại khác"}
                   </Tag>
-                  {selectedCandidate.fileUrl && (
-                    <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
-                      {selectedCandidate.fileUrl.split("/").pop()}
-                    </Text>
-                  )}
                 </Descriptions.Item>
-              )}
-            </Descriptions>
-          </div>
-        )}
+
+                {formType === "person" && (
+                  <>
+                    {hasValue(metaData.image) && (
+                      <Descriptions.Item label="Ảnh đại diện">
+                        <Avatar size={80} src={metaData.image} icon={<UserOutlined />} />
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.fullName) && (
+                      <Descriptions.Item label="Họ và tên">
+                        <Text strong>{metaData.fullName}</Text>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.age) && (
+                      <Descriptions.Item label="Tuổi">
+                        {metaData.age}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.department) && (
+                      <Descriptions.Item label="Phòng ban">
+                        {metaData.department}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.position) && (
+                      <Descriptions.Item label="Vị trí / Chức vụ">
+                        {metaData.position}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.experience) && (
+                      <Descriptions.Item label="Kinh nghiệm">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.experience}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.achievements) && (
+                      <Descriptions.Item label="Thành tích">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.achievements}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                  </>
+                )}
+
+                {formType === "project" && (
+                  <>
+                    {hasValue(metaData.projectName) && (
+                      <Descriptions.Item label="Tên dự án">
+                        <Text strong style={{ fontSize: 15 }}>{metaData.projectName}</Text>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.projectDescription) && (
+                      <Descriptions.Item label="Mô tả dự án">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.projectDescription}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.budget) && (
+                      <Descriptions.Item label="Ngân sách">
+                        <Text strong>{metaData.budget}</Text>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.duration) && (
+                      <Descriptions.Item label="Thời gian thực hiện">
+                        {metaData.duration}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.location) && (
+                      <Descriptions.Item label="Địa điểm">
+                        {metaData.location}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.objectives) && (
+                      <Descriptions.Item label="Mục tiêu dự án">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.objectives}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.benefits) && (
+                      <Descriptions.Item label="Lợi ích dự án">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.benefits}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                  </>
+                )}
+
+                {formType === "other" && (
+                  <>
+                    {hasValue(metaData.image) && (
+                      <Descriptions.Item label="Ảnh đại diện">
+                        <Avatar size={80} src={metaData.image} icon={<UserOutlined />} />
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.fullName) && (
+                      <Descriptions.Item label="Họ và tên">
+                        <Text strong>{metaData.fullName}</Text>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.age) && (
+                      <Descriptions.Item label="Tuổi">
+                        {metaData.age}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.department) && (
+                      <Descriptions.Item label="Phòng ban">
+                        {metaData.department}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.position) && (
+                      <Descriptions.Item label="Vị trí / Chức vụ">
+                        {metaData.position}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.experience) && (
+                      <Descriptions.Item label="Kinh nghiệm">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.experience}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.achievements) && (
+                      <Descriptions.Item label="Thành tích">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.achievements}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.projectName) && (
+                      <Descriptions.Item label="Tên dự án">
+                        <Text strong style={{ fontSize: 15 }}>{metaData.projectName}</Text>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.projectDescription) && (
+                      <Descriptions.Item label="Mô tả dự án">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.projectDescription}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.budget) && (
+                      <Descriptions.Item label="Ngân sách">
+                        <Text strong>{metaData.budget}</Text>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.duration) && (
+                      <Descriptions.Item label="Thời gian thực hiện">
+                        {metaData.duration}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.location) && (
+                      <Descriptions.Item label="Địa điểm">
+                        {metaData.location}
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.objectives) && (
+                      <Descriptions.Item label="Mục tiêu">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.objectives}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                    {hasValue(metaData.benefits) && (
+                      <Descriptions.Item label="Lợi ích">
+                        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, maxWidth: "100%" }}>
+                          {metaData.benefits}
+                        </div>
+                      </Descriptions.Item>
+                    )}
+                  </>
+                )}
+
+                {(selectedCandidate.file || selectedCandidate.fileUrl) && (
+                  <Descriptions.Item label="Tài liệu đính kèm">
+                    <Space>
+                      <Tag icon={<FileTextOutlined />} color="green">
+                        Có tài liệu đính kèm
+                      </Tag>
+                      {selectedCandidate.fileUrl && (
+                        <>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {selectedCandidate.fileUrl.split("/").pop() || "File đính kèm"}
+                          </Text>
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={<FolderOutlined />}
+                            onClick={async () => {
+                              try {
+                                showLoading();
+                                const blob = await FileService.downloadByKey(selectedCandidate.fileUrl);
+                                const fileName = selectedCandidate.fileUrl.split("/").pop() || "document";
+                                downloadBlob(blob, fileName);
+                                notify("Tải file thành công", "success");
+                              } catch (error: any) {
+                                console.error("Error downloading file:", error);
+                                const errorMessage = error?.response?.data?.message || error?.message || "Không thể tải file";
+                                notify(errorMessage, "error");
+                              } finally {
+                                hideLoading();
+                              }
+                            }}
+                          >
+                            Tải xuống
+                          </Button>
+                        </>
+                      )}
+                    </Space>
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </div>
+          );
+        })()}
+
       </Modal>
 
       {/* Modal quản lý ngưỡng thông qua */}

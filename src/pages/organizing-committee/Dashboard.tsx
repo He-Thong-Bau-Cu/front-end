@@ -9,7 +9,15 @@ import '../../style/organizing-committee/Dashboard.model.css'
 const Dashboard: React.FC = () => {
     return (
         <div >
-            <CommitteeInfo />
+            <div style={{
+                marginLeft: 32,
+                marginRight: 32,
+                marginBottom: 20,
+                width: 'calc(100% - 64px)',
+                boxSizing: 'border-box'
+            }}>
+                <CommitteeInfo />
+            </div>
 
             <Row gutter={[20, 20]}>
                 <Col xs={24} lg={16}>
@@ -17,9 +25,6 @@ const Dashboard: React.FC = () => {
                 </Col>
                 <Col xs={24} lg={8}>
                     <StatisticsPanel />
-                    <div style={{ marginTop: 20 }}>
-                        <VerificationPanel />
-                    </div>
                 </Col>
             </Row>
         </div>
