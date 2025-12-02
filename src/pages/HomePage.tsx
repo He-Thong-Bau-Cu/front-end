@@ -58,8 +58,9 @@ const HomePage: React.FC = () => {
       const userId = localStorage.getItem("userId") || "";
       const response = await ElectionParticipantsService.getByUserId(userId);
       if (response.success) {
-        setDataElection(mapToElectionItems(response.data));
-        setStats(getElectionSummary(response.data));
+        const electionItems = mapToElectionItems(response.data);
+        setDataElection(electionItems);
+        setStats(getElectionSummary(response.data, electionItems));
       } else {
         notify(response.message, "error");
       }
@@ -101,28 +102,38 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const getElectionSummary = (apiData: any): any => {
+  const getElectionSummary = (apiData: any, electionItems?: ElectionItem[]): any => {
     let total = apiData.length;
     let upcoming = 0;
     let ongoing = 0;
     let completed = 0;
 
-    apiData.forEach((item: any) => {
-      const election = item.electionId;
+    // Nếu có electionItems (đã có meeting status), dùng chúng
+    if (electionItems && electionItems.length > 0) {
+      electionItems.forEach((item) => {
+        if (item.status === "ongoing") {
+          ongoing++;
+        } else if (item.status === "completed") {
+          completed++;
+        } else {
+          upcoming++;
+        }
+      });
+    } else {
+      // Fallback: dùng election status như cũ
+      apiData.forEach((item: any) => {
+        const election = item.electionId;
 
-      // map status từ API
-      if (election?.statusData === "ONGOING") {
-        ongoing++;
-
-      } else if (
-        // election?.status === "ACTIVE" &&
-        election?.statusData === "COMPLETED"
-      ) {
-        completed++;
-      } else {
-        upcoming++;
-      }
-    });
+        // map status từ API
+        if (election?.statusData === "ONGOING") {
+          ongoing++;
+        } else if (election?.statusData === "COMPLETED") {
+          completed++;
+        } else {
+          upcoming++;
+        }
+      });
+    }
 
     return {
       totalElections: total,
@@ -135,20 +146,36 @@ const HomePage: React.FC = () => {
   const mapToElectionItems = (apiData: any): ElectionItem[] => {
     return apiData.map((item: any) => {
       const election = item.electionId;
+      const meetingStatus = item.meetingStatus || "UNDEFINED";
       let status: ElectionItem["status"] = "upcoming";
-      if (election.status === "ACTIVE" && election.statusData === "ONGOING") {
+
+      // Xác định status dựa trên meeting status từ backend
+      if (meetingStatus === "UNDEFINED") {
+        status = "undefined";
+      } else if (meetingStatus === "ONGOING" || meetingStatus === "ACTIVE") {
         status = "ongoing";
-      } else if (
-        election.status === "ACTIVE" &&
-        election.statusData === "COMPLETED"
-      ) {
+      } else if (meetingStatus === "COMPLETED" || meetingStatus === "CLOSED") {
         status = "completed";
+      } else if (meetingStatus === "SCHEDULED" || meetingStatus === "PENDING") {
+        status = "upcoming";
+      } else {
+        // Fallback về election status nếu meetingStatus không khớp
+        if (election.status === "ACTIVE" && election.statusData === "ONGOING") {
+          status = "ongoing";
+        } else if (
+          election.status === "ACTIVE" &&
+          election.statusData === "COMPLETED"
+        ) {
+          status = "completed";
+        } else {
+          status = "upcoming";
+        }
       }
 
       return {
         id: election._id,
         title: election.title,
-        startDate: election.startDate || "", // default string nếu null
+        startDate: election.startDate || "",
         endDate: election.endDate || undefined,
         status,
         roleCode: item.roleId.roleCode,
@@ -158,11 +185,12 @@ const HomePage: React.FC = () => {
             ? "Chờ phê duyệt"
             : "Xem chi tiết",
         actionType: election.statusData === "WAIT_APPROVAL" ? "blue" : "green",
-        participants: undefined, // nếu có dữ liệu từ API bạn fill vào
-        progress: undefined, // nếu muốn tính % từ start/endDate
-        totalVoters: undefined, // nếu API trả về
+        participants: undefined,
+        progress: undefined,
+        totalVoters: undefined,
         permissionElections: item?.permissionElections || [],
         voter: item?.voter || null,
+        meetingStatus: meetingStatus,
       };
     });
   };

@@ -32,13 +32,6 @@ const CheckInPanel: React.FC = () => {
                     Bắt đầu Quét QR
                 </Button>
             </div>
-
-            {/* Kết quả Check-in */}
-            <Card size="small" className="valid-card">
-                <p className="valid-title">HỢP LỆ</p>
-                <p className="valid-name">Nguyễn Thị Lan Anh</p>
-                <small className="valid-code">Mã ĐB: NV0078</small>
-            </Card>
         </Card>
     );
 };

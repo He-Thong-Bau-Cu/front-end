@@ -150,6 +150,13 @@
   row-gap: 0 !important;
 }
 
+/* ====== WELCOME CARD ALIGNMENT ====== */
+.bks-page .voter-welcome-card {
+  width: 100% !important;
+  margin: 0 0 20px 0 !important;
+  box-sizing: border-box !important;
+}
+
 /* ====== RESPONSIVE ====== */
 @media (max-width: 900px) {
   .sr-item {

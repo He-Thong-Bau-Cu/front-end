@@ -1,10 +1,13 @@
 /* 🌿 Welcome card container */
 
 .voter-welcome-card {
-  background: linear-gradient(90deg, #a8e678 0%, #7ecb50 100%);
+  background: rgba(168, 230, 120, 0.5);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border-radius: 16px;
-  padding: 0px 32px;
-  color: #124d2d;
+  padding: 0;
+  margin: 0;
+  color: #000;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   transition: none !important;
   margin-left: 0px;
@@ -22,6 +25,7 @@
 
 .voter-welcome-card .ant-card-body {
   transition: none !important;
+  padding: 24px 32px !important;
 }
 
 .voter-welcome-card .ant-card-body:hover {
@@ -30,13 +34,18 @@
 
 /* 🌞 Title and subtitle */
 .voter-welcome-title {
-  font-size: 26px;
-  color: #ffffff;
+  font-size: 24px;
+  color: #000;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.3;
 }
 
 .voter-welcome-subtitle {
-  margin-top: 6px;
-  color: #ffffff;
+  margin-top: 8px;
+  color: #444;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 /* 👤 User info layout */
@@ -47,15 +56,23 @@
   margin-top: 16px;
 }
 
+.voter-welcome-card .ant-avatar {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* 🧑‍💼 Name and info */
 .voter-user-name {
   font-size: 18px;
-  color: #124d2d;
+  color: #000;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .voter-user-info {
-  color: #124d2d;
+  color: #666;
   font-size: 14px;
+  line-height: 1.4;
 }
 
 .voter-stats-container {

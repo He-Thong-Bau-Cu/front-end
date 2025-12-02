@@ -36,6 +36,25 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   const [form] = Form.useForm();
   const [userList, setUserList] = useState<any[]>([]);
   const { notify } = useNotification();
+  // Giờ hành chính
+  const WORK_START = 8;   // 08:00
+  const WORK_END = 17;    // 17:00
+
+  // Disable time ngoài giờ hành chính
+  const disabledTime = () => {
+    return {
+      disabledHours: () => {
+        const hours: number[] = [];
+        for (let h = 0; h < 24; h++) {
+          if (h < WORK_START || h >= WORK_END) hours.push(h);
+        }
+        return hours;
+      },
+      disabledMinutes: () => [],
+      disabledSeconds: () => [],
+    };
+  };
+
   /* ===========================================================
       LOAD USER THEO THỜI GIAN
   =========================================================== */
@@ -163,7 +182,10 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                 rules={[{ required: true }]}
               >
                 <DatePicker
-                  showTime
+                  showTime={{
+                    format: "HH:mm",
+                    disabledTime,   // ⬅ CHỈ ĐƯỢC CHỌN TRONG GIỜ HÀNH CHÍNH
+                  }}
                   format={FORMAT}
                   style={{ width: "100%" }}
                   placeholder="Chọn thời gian bắt đầu"
@@ -180,6 +202,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                     }
                   }}
                 />
+
               </Form.Item>
             </Col>
 
@@ -208,7 +231,10 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                 ]}
               >
                 <DatePicker
-                  showTime
+                  showTime={{
+                    format: "HH:mm",
+                    disabledTime,   // ⬅ CHỈ ĐƯỢC CHỌN TRONG GIỜ HÀNH CHÍNH
+                  }}
                   format={FORMAT}
                   style={{ width: "100%" }}
                   placeholder="Chọn thời gian kết thúc"
@@ -217,7 +243,6 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 
                     if (!start) return current && current < todayPlus20;
 
-                    // Cho phép cùng ngày, chỉ cấm ngày trước
                     return current && current < start.startOf("day");
                   }}
                   onChange={(value) => {
@@ -232,6 +257,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                     }
                   }}
                 />
+
               </Form.Item>
             </Col>
           </Row>
