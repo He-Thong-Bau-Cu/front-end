@@ -9,6 +9,9 @@ import {
   Table,
   Button,
   Space,
+  Avatar,
+  Input,
+  Tooltip,
 } from "antd";
 
 import {
@@ -19,11 +22,14 @@ import {
   SolutionOutlined,
   EyeOutlined,
   DownloadOutlined,
+  SearchOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import CandidateDetailModal from "./CandidateDetailModal";
 import FileService from "@/services/FileService";
 import { useNotification } from "@/contexts/NotificationContext";
-const { Title } = Typography;
+import { Col } from "antd/lib";
+const { Title, Text } = Typography;
 
 interface ViewDecisionModalProps {
   open: boolean;
@@ -52,6 +58,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
 }) => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [openCandidateModal, setOpenCandidateModal] = useState(false);
+  const [searchText, setSearchText] = useState<string>("");
   const { notify } = useNotification();
   const handleViewCandidate = (record: any) => {
     setSelectedCandidate(record);
@@ -66,6 +73,22 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       const a = document.createElement("a");
       a.href = url;
       a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      notify(err.message, "error");
+    }
+  };
+
+  const downloadUrlFileSign1 = async (data: any) => {
+    try {
+      const response = await FileService.getSignedFile(data.fileUrl);
+      const blob = new Blob([response], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Tai_lieu_lien_quan.pdf";
       a.click();
 
       URL.revokeObjectURL(url);
@@ -137,12 +160,31 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
           onClick={() => downloadUrlFileSign(record)}
           style={{ cursor: "pointer" }}
         >
-          
+
         </Button>
 
       )
     },
   ];
+
+  // Lọc candidates theo search text
+  const filteredCandidates = electionentities.filter((candidate) => {
+    if (!searchText.trim()) return true;
+    const search = searchText.toLowerCase().trim();
+    const title = (candidate.title || "").toLowerCase();
+    const description = (candidate.description || "").toLowerCase();
+    const fullName = (candidate.metaData?.fullName || "").toLowerCase();
+    const department = (candidate.metaData?.department || "").toLowerCase();
+    const position = (candidate.metaData?.position || "").toLowerCase();
+
+    return (
+      title.includes(search) ||
+      description.includes(search) ||
+      fullName.includes(search) ||
+      department.includes(search) ||
+      position.includes(search)
+    );
+  });
 
   return (
     <Modal
@@ -236,32 +278,364 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                 key: "1",
                 label: (
                   <span>
-                    <SolutionOutlined /> Nội dung nghị quyết & Ứng viên
+                    <SolutionOutlined /> Danh sách bầu chọn
                   </span>
                 ),
                 children: (
                   <div style={{ padding: 5 }}>
-                    <Table
-                      dataSource={electionentities}
-                      columns={[
-                        { title: "Nội dung bầu chọn", dataIndex: "title" },
-                        { title: "Mô tả", dataIndex: "description" },
-                        {
-                          title: "Xem chi tiết",
-                          key: "view",
-                          align: "center",
-                          render: (_: any, record: any) => (
-                            <Button
-                              type="link"
-                              icon={<EyeOutlined style={{ fontSize: 18 }} />}
-                              onClick={() => handleViewCandidate(record)}
-                            />
-                          ),
-                        },
-                      ]}
-                      rowKey={(r) => r._id || r.id || r.title}
-                      pagination={{ pageSize: 10 }}
-                    />
+                    <Col span={24}>
+                      <div style={{ marginTop: 16 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 12,
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                  
+                            {data?.votingMethodId?._id && electionentities.length > 0 && (
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                Tổng: {electionentities.length} nội dung bầu chọn
+                              </Text>
+                            )}
+                          </div>
+                          {data?.votingMethodId?._id && (
+                            <div
+                              style={{ display: "flex", alignItems: "center", gap: 12 }}
+                            >
+                              <Input
+                                placeholder="Tìm kiếm..."
+                                prefix={<SearchOutlined />}
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                allowClear
+                                style={{ width: 250 }}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        <Table
+                          columns={(() => {
+                            // Kiểm tra xem cột nào có dữ liệu từ filteredCandidates
+                            const hasTitle = filteredCandidates.some(
+                              (c) => c.title || c.description
+                            );
+                            const hasCandidateInfo = filteredCandidates.some(
+                              (c) => c.metaData?.fullName
+                            );
+                            const hasDetails = filteredCandidates.some(
+                              (c) => c.metaData?.experience || c.metaData?.achievements
+                            );
+                            const hasFile = filteredCandidates.some((c) => c.fileUrl && c.fileUrl.trim() !== "");
+
+                            const columns: any[] = [
+                              {
+                                title: "STT",
+                                key: "index",
+                                width: 70,
+                                align: "center" as const,
+                                render: (_: any, __: any, index: number) => (
+                                  <Tag
+                                    color="green"
+                                    style={{
+                                      margin: 0,
+                                      minWidth: 32,
+                                      textAlign: "center",
+                                    }}
+                                  >
+                                    {index + 1}
+                                  </Tag>
+                                ),
+                              },
+                            ];
+
+                            // Chỉ thêm cột Tiêu đề nếu có dữ liệu
+                            if (hasTitle) {
+                              columns.push({
+                                title: "Tiêu đề / Mô tả",
+                                dataIndex: "title",
+                                key: "title",
+                                width: 250,
+                                render: (text: string, record: any, index: number) => (
+                                  <div>
+                                    <Text
+                                      strong
+                                      style={{
+                                        fontSize: 14,
+                                        display: "block",
+                                        marginBottom: 4,
+                                      }}
+                                    >
+                                      {text || `Ứng viên ${index + 1}`}
+                                    </Text>
+                                    {record.description && (
+                                      <Text
+                                        type="secondary"
+                                        ellipsis={{ tooltip: record.description }}
+                                        style={{ fontSize: 12, display: "block" }}
+                                      >
+                                        {record.description}
+                                      </Text>
+                                    )}
+                                  </div>
+                                ),
+                              });
+                            }
+
+                            // Chỉ thêm cột Thông tin ứng viên nếu có dữ liệu
+                            if (hasCandidateInfo) {
+                              columns.push({
+                                title: "Thông tin ứng viên",
+                                key: "candidateInfo",
+                                width: 300,
+                                render: (_: any, record: any) => {
+                                  if (!record.metaData?.fullName) {
+                                    return (
+                                      <Text
+                                        type="secondary"
+                                        style={{ fontStyle: "italic" }}
+                                      >
+                                        Chưa có thông tin
+                                      </Text>
+                                    );
+                                  }
+                                  return (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "flex-start",
+                                        gap: 12,
+                                      }}
+                                    >
+                                      <Avatar
+                                        size={48}
+                                        src={record.metaData?.image}
+                                        icon={<UserOutlined />}
+                                        style={{
+                                          background:
+                                            "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
+                                          flexShrink: 0,
+                                        }}
+                                      />
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        <Text
+                                          strong
+                                          style={{
+                                            display: "block",
+                                            fontSize: 14,
+                                            marginBottom: 6,
+                                            lineHeight: 1.5,
+                                          }}
+                                        >
+                                          {record.metaData.fullName}
+                                        </Text>
+                                        <Space
+                                          size={[4, 4]}
+                                          wrap
+                                          style={{ marginTop: 0 }}
+                                        >
+                                          {record.metaData.age && (
+                                            <Tag
+                                              color="green"
+                                              style={{ margin: 0, fontSize: 11 }}
+                                            >
+                                              {record.metaData.age} tuổi
+                                            </Tag>
+                                          )}
+                                          {record.metaData.department && (
+                                            <Tag
+                                              color="green"
+                                              style={{ margin: 0, fontSize: 11 }}
+                                            >
+                                              {record.metaData.department}
+                                            </Tag>
+                                          )}
+                                          {record.metaData.position && (
+                                            <Tag
+                                              color="orange"
+                                              style={{ margin: 0, fontSize: 11 }}
+                                            >
+                                              {record.metaData.position}
+                                            </Tag>
+                                          )}
+                                        </Space>
+                                      </div>
+                                    </div>
+                                  );
+                                },
+                              });
+                            }
+
+                            // Chỉ thêm cột Kinh nghiệm/Thành tích nếu có dữ liệu
+                            if (hasDetails) {
+                              columns.push({
+                                title: "Kinh nghiệm / Thành tích",
+                                key: "details",
+                                width: 250,
+                                render: (_: any, record: any) => {
+                                  const hasExperience = record.metaData?.experience;
+                                  const hasAchievements = record.metaData?.achievements;
+                                  if (!hasExperience && !hasAchievements) {
+                                    return (
+                                      <Text
+                                        type="secondary"
+                                        style={{ fontStyle: "italic", fontSize: 12 }}
+                                      >
+                                        -
+                                      </Text>
+                                    );
+                                  }
+                                  return (
+                                    <div style={{ lineHeight: 1.6 }}>
+                                      {hasExperience && (
+                                        <div style={{ marginBottom: 8 }}>
+                                          <Tag
+                                            color="purple"
+                                            style={{ marginBottom: 4, fontSize: 11 }}
+                                          >
+                                            Kinh nghiệm
+                                          </Tag>
+                                          <div>
+                                            <Text
+                                              ellipsis={{
+                                                tooltip: record.metaData.experience,
+                                              }}
+                                              style={{ fontSize: 12, display: "block" }}
+                                            >
+                                              {record.metaData.experience}
+                                            </Text>
+                                          </div>
+                                        </div>
+                                      )}
+                                      {hasAchievements && (
+                                        <div>
+                                          <Tag
+                                            color="cyan"
+                                            style={{ marginBottom: 4, fontSize: 11 }}
+                                          >
+                                            Thành tích
+                                          </Tag>
+                                          <div>
+                                            <Text
+                                              ellipsis={{
+                                                tooltip: record.metaData.achievements,
+                                              }}
+                                              style={{ fontSize: 12, display: "block" }}
+                                            >
+                                              {record.metaData.achievements}
+                                            </Text>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                },
+                              });
+                            }
+
+                            // Chỉ thêm cột File đính kèm nếu có dữ liệu
+                            if (hasFile) {
+                              columns.push({
+                                title: "Tài liệu",
+                                key: "file",
+                                width: 100,
+                                align: "center" as const,
+                                render: (_: any, record: any) =>
+                                  record.fileUrl && record.fileUrl.trim() !== "" ? (
+                                    <Tooltip title="Có tài liệu đính kèm">
+                                      <Button
+                                        icon={<DownloadOutlined />}
+                                        onClick={() => downloadUrlFileSign1(selectedCandidate)}
+                                        style={{ cursor: "pointer", color:"green" }}
+                                      >
+                                      </Button>
+                                    </Tooltip>
+                                  ) : (
+                                    <Text type="secondary" style={{ fontSize: 12 }}>
+                                      -
+                                    </Text>
+                                  ),
+                              });
+                            }
+
+                            // Luôn thêm cột Hành động
+                            columns.push({
+                              title: "Thao tác",
+                              key: "action",
+                              width: 140,
+                              fixed: "right" as const,
+                              align: "center" as const,
+                              render: (_: any, record: any, index: number) => {
+                                return (
+                                  <Space size="small">
+                                    <Tooltip title="Xem chi tiết">
+                                      <Button
+                                        type="text"
+                                        icon={<EyeOutlined />}
+                                        size="small"
+                                        onClick={() => handleViewCandidate(record)}
+                                        style={{
+                                          color: "#52c41a",
+                                        }}
+                                      />
+                                    </Tooltip>
+
+                                  </Space>
+                                );
+                              },
+                            });
+
+                            return columns;
+                          })()}
+                          dataSource={filteredCandidates}
+                          rowKey={(record) => {
+                            // Use _id if available, otherwise create unique key
+                            return record._id || `candidate-${record.title || Math.random()}`;
+                          }}
+                          pagination={{
+                            pageSize: 10,
+                            showSizeChanger: true,
+                            showTotal: (total, range) =>
+                              searchText
+                                ? `${range[0]}-${range[1]} của ${total} kết quả (Tổng: ${electionentities.length})`
+                                : `${range[0]}-${range[1]} của ${total} nội dung bầu chọn`,
+                            pageSizeOptions: ["5", "10", "20", "50"],
+                          }}
+                          scroll={{ x: "max-content" }}
+                          locale={{
+                            emptyText: searchText ? (
+                              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                                <SearchOutlined
+                                  style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+                                />
+                                <p style={{ color: "#999", margin: 0, fontSize: 14 }}>
+                                  Không tìm thấy kết quả phù hợp với "{searchText}"
+                                </p>
+                                <Button
+                                  type="link"
+                                  onClick={() => setSearchText("")}
+                                  style={{ marginTop: 8 }}
+                                >
+                                  Xóa bộ lọc
+                                </Button>
+                              </div>
+                            ) : (
+                              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                                <FileTextOutlined
+                                  style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+                                />
+                                <p style={{ color: "#999", margin: 0, fontSize: 14 }}>
+                                  Chưa có nội dung bầu chọn.
+                                </p>
+                              </div>
+                            ),
+                          }}
+                        />
+                      </div>
+                    </Col>
                   </div>
                 ),
               },
@@ -327,11 +701,238 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       </Spin>
 
       {/* MODAL CHI TIẾT ỨNG VIÊN */}
-      <CandidateDetailModal
+      {/* <CandidateDetailModal
         open={openCandidateModal}
         onClose={() => setOpenCandidateModal(false)}
         data={selectedCandidate}
-      />
+      /> */}
+
+      <Modal
+        open={openCandidateModal}
+        title={
+          <span style={{ fontSize: "18px", fontWeight: 600 }}>
+            Chi tiết nội dung bầu chọn
+          </span>
+        }
+        onCancel={() => setOpenCandidateModal(false)}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => setOpenCandidateModal(false)}
+          >
+            Đóng
+          </Button>,
+        ]}
+        width={700}
+      >
+        {selectedCandidate && (
+          <div>
+            <Descriptions column={1} bordered>
+              <Descriptions.Item label="Tiêu đề">
+                {selectedCandidate.title ||
+                  `Ứng viên ${selectedCandidate.index + 1}`}
+              </Descriptions.Item>
+              {selectedCandidate.description && (
+                <Descriptions.Item label="Mô tả">
+                  {selectedCandidate.description}
+                </Descriptions.Item>
+              )}
+
+              {/* Hiển thị theo type */}
+              {(() => {
+                const formType = selectedCandidate.formType || selectedCandidate.metaData?.type || "other";
+                const metaData = selectedCandidate.metaData || {};
+
+                if (formType === "person") {
+                  // Hiển thị thông tin người
+                  return (
+                    <>
+                      {metaData.image && (
+                        <Descriptions.Item label="Ảnh">
+                          <Avatar
+                            size={100}
+                            src={metaData.image}
+                            icon={<UserOutlined />}
+                          />
+                        </Descriptions.Item>
+                      )}
+                      {metaData.fullName && (
+                        <Descriptions.Item label="Họ và tên">
+                          {metaData.fullName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.age && (
+                        <Descriptions.Item label="Tuổi">
+                          {metaData.age}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.department && (
+                        <Descriptions.Item label="Phòng ban">
+                          {metaData.department}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.position && (
+                        <Descriptions.Item label="Vị trí">
+                          {metaData.position}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.experience && (
+                        <Descriptions.Item label="Kinh nghiệm">
+                          {metaData.experience}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.achievements && (
+                        <Descriptions.Item label="Thành tích">
+                          {metaData.achievements}
+                        </Descriptions.Item>
+                      )}
+                    </>
+                  );
+                } else if (formType === "project") {
+                  // Hiển thị thông tin dự án
+                  return (
+                    <>
+                      {metaData.projectName && (
+                        <Descriptions.Item label="Tên dự án">
+                          {metaData.projectName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.projectDescription && (
+                        <Descriptions.Item label="Mô tả dự án">
+                          {metaData.projectDescription}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.budget && (
+                        <Descriptions.Item label="Ngân sách">
+                          {metaData.budget}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.duration && (
+                        <Descriptions.Item label="Thời gian thực hiện">
+                          {metaData.duration}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.location && (
+                        <Descriptions.Item label="Địa điểm">
+                          {metaData.location}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.objectives && (
+                        <Descriptions.Item label="Mục tiêu">
+                          {metaData.objectives}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.benefits && (
+                        <Descriptions.Item label="Lợi ích">
+                          {metaData.benefits}
+                        </Descriptions.Item>
+                      )}
+                    </>
+                  );
+                } else {
+                  // Hiển thị tất cả các trường có sẵn cho type "other"
+                  return (
+                    <>
+                      {metaData.image && (
+                        <Descriptions.Item label="Ảnh">
+                          <Avatar
+                            size={100}
+                            src={metaData.image}
+                            icon={<UserOutlined />}
+                          />
+                        </Descriptions.Item>
+                      )}
+                      {metaData.fullName && (
+                        <Descriptions.Item label="Họ và tên">
+                          {metaData.fullName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.age && (
+                        <Descriptions.Item label="Tuổi">
+                          {metaData.age}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.department && (
+                        <Descriptions.Item label="Phòng ban">
+                          {metaData.department}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.position && (
+                        <Descriptions.Item label="Vị trí">
+                          {metaData.position}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.experience && (
+                        <Descriptions.Item label="Kinh nghiệm">
+                          {metaData.experience}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.achievements && (
+                        <Descriptions.Item label="Thành tích">
+                          {metaData.achievements}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.projectName && (
+                        <Descriptions.Item label="Tên dự án">
+                          {metaData.projectName}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.projectDescription && (
+                        <Descriptions.Item label="Mô tả dự án">
+                          {metaData.projectDescription}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.budget && (
+                        <Descriptions.Item label="Ngân sách">
+                          {metaData.budget}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.duration && (
+                        <Descriptions.Item label="Thời gian thực hiện">
+                          {metaData.duration}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.location && (
+                        <Descriptions.Item label="Địa điểm">
+                          {metaData.location}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.objectives && (
+                        <Descriptions.Item label="Mục tiêu">
+                          {metaData.objectives}
+                        </Descriptions.Item>
+                      )}
+                      {metaData.benefits && (
+                        <Descriptions.Item label="Lợi ích">
+                          {metaData.benefits}
+                        </Descriptions.Item>
+                      )}
+                    </>
+                  );
+                }
+              })()}
+
+              {/* File đính kèm */}
+              {(selectedCandidate.file || selectedCandidate.fileUrl) && (
+                <Descriptions.Item label="File đính kèm">
+                  <Tag icon={<FileTextOutlined />} color="green">
+                    Có tài liệu đính kèm
+                  </Tag>
+                  {selectedCandidate.fileUrl && (
+                    <Button
+                      icon={<DownloadOutlined />}
+                      onClick={() => downloadUrlFileSign1(selectedCandidate)}
+                      style={{ cursor: "pointer" }}
+                    >
+                    </Button>
+
+                  )}
+                </Descriptions.Item>
+              )}
+            </Descriptions>
+          </div>
+        )}
+      </Modal>
     </Modal>
   );
 };
