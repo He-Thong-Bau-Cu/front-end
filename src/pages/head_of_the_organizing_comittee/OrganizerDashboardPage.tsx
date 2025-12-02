@@ -142,9 +142,9 @@ export default function OrganizerDashboardPage() {
       <OrganizerInfo />
 
       {/* Header */}
-      <div className="dashboard-header" style={{ marginTop: 24 }}>
+      {/* <div className="dashboard-header" style={{ marginTop: 24 }}>
         <Title level={2} style={{ margin: 0 }}>Tổng quan</Title>
-      </div>
+      </div> */}
 
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>

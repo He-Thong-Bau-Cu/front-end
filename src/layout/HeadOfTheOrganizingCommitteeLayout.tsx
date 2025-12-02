@@ -29,13 +29,12 @@ const HeadOfTheOrganizingCommitteeLayout = () => {
             <Sideber onMenuSelect={setPageTitle} />
 
             <Layout style={{
-                marginLeft: 250,
-                background: "#EFF8EF",
+                marginLeft: 250, // bằng đúng width sidebar
+                height: "calc(100vh - 64px)",
                 display: "flex",
                 flexDirection: "column",
-                width: 'calc(100vw - 290px)',
-                minHeight: '100vh',
-                overflow: 'hidden',
+                minHeight: "100vh",
+                overflow: "hidden", // ẩn scroll ngoài
             }}>
                 <Header title={pageTitle} />
                 <Content

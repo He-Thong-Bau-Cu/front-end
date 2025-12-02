@@ -51,7 +51,7 @@ const VotingHeader = () => {
     return (
         <>
             {/* Listener realtime */}
-            <BallotStatsListener electionId={electionId} onUpdate={fetchStats} />
+            {/* <BallotStatsListener electionId={electionId} onUpdate={fetchStats} /> */}
 
             <Card className="voting-header-card">
                 <div className="voting-header-top">
