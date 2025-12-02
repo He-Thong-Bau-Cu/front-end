@@ -7,7 +7,7 @@ import {
   FileTextOutlined
 } from "@ant-design/icons";
 import { Col, Row, Typography } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../../../style/voter/ResolutionVoting.model.css";
 import CountdownCard from "./CountdownCard";
@@ -16,7 +16,6 @@ import ResolutionContent from "./ResolutionContent";
 const { Title } = Typography;
 
 const VotingLayout: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState(0);
   const location = useLocation();
   const ballotId = location.state?.ballotId;
   const { showLoading, hideLoading } = useLoading();
@@ -24,8 +23,8 @@ const VotingLayout: React.FC = () => {
   const navigate = useNavigate();
   const [election, setElection] = useState<Election | null>(null);
   const electionId = localStorage.getItem("currentElectionId") || "";
-
-
+  const [timeLeft, setTimeLeft] = useState(-1);
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     const fetchElection = async () => {
@@ -38,37 +37,59 @@ const VotingLayout: React.FC = () => {
     };
 
     fetchElection();
-  }, []);
+  }, [electionId]);
+
 
   useEffect(() => {
-    const checkBallot = async () => {
+    const loadVotingTime = async () => {
       try {
-        const data = await BallotService.getBallotById(ballotId);
-        if (!data) return;
+        if (!electionId) return;
 
-        if (data.status === "ACTIVE") {
-          const end = localStorage.getItem("voteCountdownEnd");
+        const res = await ElectionService.getCurrentStage(electionId);
+        const stage = res.data.data || res.data;
+        if (!stage) return;
 
-          if (!end) {
-            const newEnd = Date.now() + 30 * 60 * 1000;
-            localStorage.setItem("voteCountdownEnd", newEnd.toString());
-            setTimeLeft(30 * 60);
-          } else {
-            const left = Number(end) - Date.now();
-            setTimeLeft(Math.max(Math.floor(left / 1000), 0));
-          }
+        const votingStage = stage.stages?.voting;
+        const votingAt = stage.timeline?.votingAt;
+        const resultAnnouncedAt = stage.timeline?.resultAnnouncedAt;
+
+        if (!votingAt) return;
+
+        if (votingStage !== "STARTED" || resultAnnouncedAt) {
+          setTimeLeft(0);
+          return;
         }
+
+        const localVotingAtString = votingAt.endsWith('Z')
+          ? votingAt.slice(0, -1)
+          : votingAt;
+        const start = new Date(localVotingAtString).getTime();
+
+        const durationMinutes = 30;
+        const end = start + durationMinutes * 60 * 1000;
+        const now = Date.now();
+
+        if (now < start) {
+          setTimeLeft(-1);
+          return;
+        }
+
+        if (now >= end) {
+          setTimeLeft(0);
+          return;
+        }
+
+
+
+        setTimeLeft(Math.floor((end - now) / 1000));
       } catch (err) {
-        console.error("Ballot check failed:", err);
+        console.error("loadVotingTime error:", err);
       }
     };
 
-    checkBallot();
-  }, []);
+    loadVotingTime();
+  }, [electionId]);
 
-
-
-  // 🔥 Countdown chạy mỗi giây
   useEffect(() => {
     if (timeLeft <= 0) return;
 
@@ -82,39 +103,38 @@ const VotingLayout: React.FC = () => {
 
   // 🔥 Lock khi hết giờ thật sự
   useEffect(() => {
-    const endTime = localStorage.getItem("voteCountdownEnd");
-    if (!endTime) return;
-
-    if (Date.now() < Number(endTime)) return;
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
 
     if (timeLeft !== 0) return;
 
-    const lock = async () => {
+    const lockBallot = async () => {
+      const ballot = await BallotService.getBallotById(ballotId);
+      if (!ballot || ballot.status !== "ACTIVE") return;
+
+      showLoading();
       try {
-        const ballot = await BallotService.getBallotById(ballotId);
-        if (!ballot || ballot.status !== "ACTIVE") return;
-
-        showLoading();
-        await BallotService.updateBallot(ballotId, { status: "LOCKED" });
-
-        notify("Phiếu bầu đã bị khóa do hết thời gian!", "warning");
-
-        localStorage.removeItem("voteCountdownEnd");
+        await BallotService.updateBallot(ballotId, {
+          electionId: localStorage.getItem("currentElectionId"),
+          voterId: localStorage.getItem("voterId"),
+          status: "LOCKED",
+        });
+        notify("Phiếu bầu đã bị khóa do hết thời gian!", "error");
         navigate("/voter/ballots");
+      } catch (error: any) {
+        notify("Khóa phiếu bầu không thành công", "error");
       } finally {
         hideLoading();
       }
     };
 
-    lock();
+    lockBallot();
   }, [timeLeft]);
 
-
-
-
-
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = (timeLeft % 60).toString().padStart(2, "0");
+  const minutes = timeLeft > 0 ? Math.floor(timeLeft / 60) : 0;
+  const seconds = timeLeft > 0 ? (timeLeft % 60).toString().padStart(2, "0") : "00";
 
 
 
@@ -144,7 +164,6 @@ const VotingLayout: React.FC = () => {
         <Col xs={24} lg={16}>
           <ResolutionContent />
         </Col>
-
         <Col xs={24} lg={8}>
           <CountdownCard minutes={minutes} seconds={seconds} />
         </Col>
