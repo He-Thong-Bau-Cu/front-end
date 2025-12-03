@@ -14,12 +14,10 @@ import {
 } from "@ant-design/icons";
 import { Button, Card, Col, Descriptions, Divider, Row, Tag, Typography } from "antd";
 import dayjs from "dayjs";
-import "dayjs/locale/vi";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../../style/voter/VotingHistory.model.css";
 import { formatDate } from "@/utils/format";
-dayjs.locale("vi");
 
 
 const { Text, Title } = Typography;

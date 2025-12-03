@@ -6,7 +6,7 @@ import { useNotification } from "@/contexts/NotificationContext";
 import { PATH } from "@/enums/PATH";
 import { USER_ROLE } from "@/enums/STATUS";
 import ElectionParticipantsService from "@/services/ElectionParticipantsService";
-import { Col, Layout, Row, Space } from "antd";
+import { Col, Layout, Row, Space, Pagination } from "antd";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -77,32 +77,48 @@ const HomePage: React.FC = () => {
       notify("Không tìm thấy cuộc bầu cử", "error");
       return;
     }
-    localStorage.setItem("permissionsElections", JSON.stringify(election.permissionElections));
+    localStorage.setItem(
+      "permissionsElections",
+      JSON.stringify(election.permissionElections)
+    );
     localStorage.setItem("currentElectionId", electionId);
     localStorage.setItem("voterId", election.voter || "");
 
     switch (election.roleCode) {
       case USER_ROLE.PRESIDE_SECRETARY:
-        navigate(PATH.SECRETARY, { state: { electionId: electionId, voter: election.voter } });
+        navigate(PATH.SECRETARY, {
+          state: { electionId: electionId, voter: election.voter },
+        });
         break;
       case USER_ROLE.ORGANIZING_COMMITTEE_MEMBERS:
-        navigate(PATH.ORGANIZING_COMMITTEE, { state: { electionId: electionId, voter: election.voter } });
+        navigate(PATH.ORGANIZING_COMMITTEE, {
+          state: { electionId: electionId, voter: election.voter },
+        });
         break;
       case USER_ROLE.BOARD_OF_CONTROL:
-        navigate(PATH.BOARD_OF_CONTROL, { state: { electionId: electionId, voter: election.voter } });
+        navigate(PATH.BOARD_OF_CONTROL, {
+          state: { electionId: electionId, voter: election.voter },
+        });
         break;
       case USER_ROLE.VOTER:
-        navigate(PATH.VOTER, { state: { electionId: electionId, voter: election.voter } });
+        navigate(PATH.VOTER, {
+          state: { electionId: electionId, voter: election.voter },
+        });
         break;
       case USER_ROLE.HEAD_OF_THE_ORGANIZING_COMMITTEE:
-        navigate(PATH.HEAD_OF_THE_ORGANIZING_COMMITTEE, { state: { electionId: electionId, voter: election.voter } });
+        navigate(PATH.HEAD_OF_THE_ORGANIZING_COMMITTEE, {
+          state: { electionId: electionId, voter: election.voter },
+        });
         break;
       default:
         break;
     }
   };
 
-  const getElectionSummary = (apiData: any, electionItems?: ElectionItem[]): any => {
+  const getElectionSummary = (
+    apiData: any,
+    electionItems?: ElectionItem[]
+  ): any => {
     let total = apiData.length;
     let upcoming = 0;
     let ongoing = 0;
@@ -195,6 +211,19 @@ const HomePage: React.FC = () => {
     });
   };
 
+  const pageSize = 3;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const paginatedData = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return dataElection.slice(start, start + pageSize);
+  }, [dataElection, currentPage]);
+
+  // reset page khi dữ liệu thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dataElection]);
+
   return (
     <Layout
       style={{
@@ -203,7 +232,12 @@ const HomePage: React.FC = () => {
         position: "relative",
       }}
     >
-      <HomeHeader />
+      {/* make header fixed so content won't jump under it */}
+      <div
+        style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000 }}
+      >
+        <HomeHeader />
+      </div>
       <Content
         className="homepage-content"
         style={{
@@ -214,6 +248,8 @@ const HomePage: React.FC = () => {
           backgroundAttachment: "fixed",
           position: "relative",
           zIndex: 1,
+          // add top padding so content is visible below fixed header
+          paddingTop: 100,
           minHeight: "calc(100vh - 100px)",
         }}
       >
@@ -228,7 +264,28 @@ const HomePage: React.FC = () => {
             <Col xs={24} lg={16}>
               <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 <motion.div variants={itemVariants}>
-                  <ElectionList data={dataElection} onSelectElection={handleRedirect} />
+                  <div style={{ marginTop: 20 }}>
+                    <ElectionList
+                      data={paginatedData}
+                      onSelectElection={handleRedirect}
+                    />
+                    {/* Pagination */}
+                    <div
+                      style={{
+                        marginTop: 20,
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Pagination
+                        current={currentPage}
+                        pageSize={pageSize}
+                        total={dataElection.length}
+                        onChange={(page) => setCurrentPage(page)}
+                        showSizeChanger={false}
+                      />
+                    </div>
+                  </div>
                 </motion.div>
               </Space>
             </Col>
@@ -237,7 +294,9 @@ const HomePage: React.FC = () => {
             <Col xs={24} lg={8}>
               <Space direction="vertical" style={{ width: "100%" }} size={24}>
                 <motion.div variants={itemVariants}>
-                  <WelcomeCard userName={userName} stats={stats} />
+                  <div style={{ marginTop: 20 }}>
+                    <WelcomeCard userName={userName} stats={stats} />
+                  </div>
                 </motion.div>
               </Space>
             </Col>
