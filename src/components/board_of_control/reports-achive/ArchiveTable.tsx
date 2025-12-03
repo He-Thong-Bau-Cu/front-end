@@ -12,6 +12,7 @@ import BoardControlService from "@/services/BoardControlService";
 import { downloadBlob } from "@/utils/file";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useLoading } from "@/contexts/LoadingContext";
+import { formatDate } from "@/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -207,10 +208,10 @@ export default function ArchiveTable({
                 {selectedItem.date}
               </Descriptions.Item>
               <Descriptions.Item label="Ngày cập nhật">
-                {selectedItem.updatedAt ? dayjs(selectedItem.updatedAt).format("DD/MM/YYYY HH:mm") : "-"}
+                {selectedItem.updatedAt ? formatDate(new Date(selectedItem.updatedAt)) : "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Ngày xem xét">
-                {selectedItem.reviewedAt ? dayjs(selectedItem.reviewedAt).format("DD/MM/YYYY HH:mm") : "-"}
+                {selectedItem.reviewedAt ? formatDate(new Date(selectedItem.reviewedAt)) : "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Cuộc bầu cử" span={2}>
                 {selectedItem.event}

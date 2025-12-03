@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import "@/style/admin/ManagementData.model.css";
 import type { DataManagementStats } from "@/types/DataManagement.interface";
 import type { MenuProps } from "antd";
+import { formatDate } from "@/utils/format";
 
 const { Text } = Typography;
 
@@ -40,7 +41,7 @@ const DataStats = ({ stats, onRefresh, onBackup, backupLoading }: DataStatsProps
     {
       icon: <ClockCircleOutlined style={{ fontSize: 48, color: "#f97316" }} />,
       title: stats.latestBackupAt
-        ? dayjs(stats.latestBackupAt).format("HH:mm DD/MM")
+        ? formatDate(new Date(stats.latestBackupAt))
         : "--",
       desc: "Sao lưu gần nhất",
       hint: stats.latestActionBy || "Chưa xác định",
