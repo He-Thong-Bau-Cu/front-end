@@ -564,10 +564,7 @@ html {
 }
 
 /* Prevent parent containers from breaking sticky */
-.ant-layout {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
+/* Note: Don't set background transparent here to allow background images */
 
 /* Ensure no overflow hidden on parent that breaks sticky */
 .ant-layout > .ant-layout-header {

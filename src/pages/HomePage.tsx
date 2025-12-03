@@ -199,23 +199,22 @@ const HomePage: React.FC = () => {
     <Layout
       style={{
         minHeight: "100vh",
-        backgroundImage: `url(${bannerContent})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
         minWidth: "100vw",
-        paddingBottom: "32px",
         position: "relative",
       }}
     >
-
       <HomeHeader />
       <Content
         className="homepage-content"
         style={{
+          backgroundImage: `url(${bannerContent})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "fixed",
           position: "relative",
           zIndex: 1,
+          minHeight: "calc(100vh - 100px)",
         }}
       >
         <motion.div
