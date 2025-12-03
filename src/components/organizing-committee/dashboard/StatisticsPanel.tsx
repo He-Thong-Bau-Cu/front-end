@@ -13,6 +13,7 @@ import { BaseResponse } from "@/types/BaseResponse.interface";
 import { io, Socket } from "socket.io-client";
 import { useNotification } from "@/contexts/NotificationContext";
 import { SOCKET_URL } from "@/config/socket";
+import { USER_ROLE } from "@/enums/STATUS";
 
 const StatisticsPanel: React.FC = () => {
     const { notify } = useNotification();
@@ -46,7 +47,6 @@ const StatisticsPanel: React.FC = () => {
 
             socket.on("transferData", (data: any) => {
                 if (data.type === "checkin-update" && data.stats) {
-                    console.log("📊 Received checkin update:", data);
                     setStats((prevStats) => {
                         const newStats = {
                             total: data.stats.total || prevStats.total,
@@ -76,7 +76,6 @@ const StatisticsPanel: React.FC = () => {
                 return;
             }
 
-            // Fetch meeting info
             try {
                 const meetingsResponse: BaseResponse<any> = await MeetingService.getByElectionId(currentElectionId);
                 if (meetingsResponse?.success && meetingsResponse?.data) {
@@ -103,21 +102,19 @@ const StatisticsPanel: React.FC = () => {
 
     const fetchStatistics = async (meetingId: string, electionId: string) => {
         try {
-            // Get total participants
             const participantsResponse: any = await ElectionParticipantService.getElectionParticipantByElectionId(electionId);
             let participants: any[] = [];
             if (participantsResponse) {
                 if (participantsResponse.success && Array.isArray(participantsResponse.data)) {
-                    participants = participantsResponse.data;
+                    participants = participantsResponse.data.filter((p: any) => p.roleId.roleCode === USER_ROLE.VOTER);
                 } else if (Array.isArray(participantsResponse)) {
-                    participants = participantsResponse;
+                    participants = participantsResponse.filter((p: any) => p.roleId.roleCode === USER_ROLE.VOTER);
                 } else if (participantsResponse.data && Array.isArray(participantsResponse.data)) {
-                    participants = participantsResponse.data;
+                    participants = participantsResponse.data.filter((p: any) => p.roleId.roleCode === USER_ROLE.VOTER);
                 }
             }
             const total = participants.length;
 
-            // Get attended count
             const attendeesResponse: BaseResponse<any> = await MeetingAttendeeService.getByMeetingId(meetingId);
             const attendees = attendeesResponse?.success && attendeesResponse?.data
                 ? (Array.isArray(attendeesResponse.data) ? attendeesResponse.data : [attendeesResponse.data])

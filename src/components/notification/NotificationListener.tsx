@@ -27,13 +27,11 @@ const NotificationListener: React.FC<NotificationListenerProps> = ({
   useEffect(() => {
     if (!userId) return;
 
-    // ====== Connect socket ======
     const socket: Socket = io(SOCKET_URL, {
-      auth: { userId },           // truyền userId qua auth
-      transports: ["websocket"],  // chỉ dùng websocket
+      auth: { userId },
+      transports: ["websocket"],
     });
 
-    // ====== Connection log ======
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
     });
@@ -42,14 +40,12 @@ const NotificationListener: React.FC<NotificationListenerProps> = ({
       console.error("Socket connection error:", err.message);
     });
 
-    // ====== Nhận notification ======
     socket.on("notification", (data: INotification) => {
       console.log("Notification received:", data);
       notify(data.message, "info");
       onNewNotification?.(data);
     });
 
-    // ====== Cleanup khi component unmount ======
     return () => {
       socket.disconnect();
       console.log("Socket disconnected");

@@ -136,7 +136,14 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
           // Nếu có propFormType, dùng nó; nếu không, reset về mặc định
           const defaultFormType = propFormType || "person";
           setFormType(defaultFormType);
-          form.setFieldsValue({ candidates: [emptyCandidate, emptyCandidate] });
+          // Nếu là YES_NO_ABSTAIN, chỉ cho phép 1 candidate
+          const selectedMethod = methods.find((m) => m._id === selectedMethodId);
+          const isYesNoMethod = selectedMethod?.methodCode === "YES_NO_ABSTAIN";
+          if (isYesNoMethod) {
+            form.setFieldsValue({ candidates: [emptyCandidate] });
+          } else {
+            form.setFieldsValue({ candidates: [emptyCandidate, emptyCandidate] });
+          }
         }
       } else {
         setSelectedMethod("");
@@ -162,7 +169,20 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
         return;
       }
 
-      const candidatesWithId = (values.candidates || []).map((candidate: any, index: number) => {
+      // Kiểm tra nếu hình thức bầu cử là YES_NO_ABSTAIN thì chỉ cho phép 1 bản ghi
+      const selectedMethod = methods.find((m) => m._id === selectedMethodId);
+      const isYesNoMethod = selectedMethod?.methodCode === "YES_NO_ABSTAIN";
+      const candidatesList = values.candidates || [];
+
+      // Lọc bỏ các candidate rỗng (không có title)
+      const validCandidates = candidatesList.filter((c: any) => c.title && c.title.trim() !== "");
+
+      if (isYesNoMethod && validCandidates.length > 1) {
+        notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉ nhập 1 bản ghi.", "warning");
+        return;
+      }
+
+      const candidatesWithId = validCandidates.map((candidate: any, index: number) => {
         const initialCandidate = initialCandidates?.[index];
 
         let fileUrl = "";

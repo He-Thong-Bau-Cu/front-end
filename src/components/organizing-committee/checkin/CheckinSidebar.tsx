@@ -18,6 +18,7 @@ import dayjs from "dayjs";
 import { io, Socket } from "socket.io-client";
 import { useNotification } from "@/contexts/NotificationContext";
 import { SOCKET_URL } from "@/config/socket";
+import { USER_ROLE } from "@/enums/STATUS";
 
 const { Text } = Typography;
 
@@ -47,7 +48,6 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
     useEffect(() => {
         fetchData();
 
-        // Setup socket để nhận cập nhật realtime
         const currentElectionId = localStorage.getItem("currentElectionId");
         if (currentElectionId) {
             const socket: Socket = io(SOCKET_URL, {
@@ -56,9 +56,7 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
 
             socket.on("connect", () => {
                 console.log("Socket connected for checkin stats:", socket.id);
-                // Join room theo electionId để nhận cập nhật
                 socket.emit("join", currentElectionId);
-                // Cũng có thể join trực tiếp bằng cách emit event tùy chỉnh
                 socket.emit("join-election-room", currentElectionId);
             });
 
@@ -157,17 +155,18 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
             let participants: any[] = [];
             if (participantsResponse) {
                 if (participantsResponse.success && Array.isArray(participantsResponse.data)) {
-                    participants = participantsResponse.data;
+                    participants = participantsResponse.data.filter((p: any) => p.roleId.roleCode === USER_ROLE.VOTER);
                 } else if (Array.isArray(participantsResponse)) {
-                    participants = participantsResponse;
+                    participants = participantsResponse.filter((p: any) => p.roleId.roleCode === USER_ROLE.VOTER);
                 } else if (participantsResponse.data && Array.isArray(participantsResponse.data)) {
-                    participants = participantsResponse.data;
+                    participants = participantsResponse.data.filter((p: any) => p.roleId.roleCode === USER_ROLE.VOTER);
                 }
             }
             const total = participants.length;
 
             // Get attended count
             const attendeesResponse: BaseResponse<any> = await MeetingAttendeeService.getByMeetingId(meetingId);
+            console.log("Attendees response for stats:", attendeesResponse);
             const attendees = attendeesResponse?.success && attendeesResponse?.data
                 ? (Array.isArray(attendeesResponse.data) ? attendeesResponse.data : [attendeesResponse.data])
                 : [];

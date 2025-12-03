@@ -415,6 +415,28 @@ const MeetingInfo: React.FC<Props> = ({
   }, [form, onChange]);
 
   const handleCandidatesModalSubmit = (newCandidates: any[]) => {
+    // Kiểm tra nếu hình thức bầu cử là YES_NO_ABSTAIN thì chỉ cho phép 1 bản ghi
+    const selectedMethod = methods?.find((m) => m._id === voteMethod);
+    const isYesNoMethod = selectedMethod?.methodCode === "YES_NO_ABSTAIN";
+
+    if (isYesNoMethod) {
+      // Nếu đang edit, chỉ cho phép sửa 1 bản ghi hiện có
+      if (editCandidateIndex !== null && editCandidateIndex >= 0) {
+        // Đang edit - OK, chỉ sửa 1 bản ghi
+      } else {
+        // Nếu đã có 1 candidate và đang thêm mới, không cho phép
+        if (candidates.length >= 1) {
+          notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉnh sửa bản ghi hiện có.", "warning");
+          return;
+        }
+        // Nếu đang thêm mới và đã có 1 candidate từ newCandidates, chỉ lấy 1 bản ghi đầu tiên
+        if (newCandidates.length > 1) {
+          notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Chỉ bản ghi đầu tiên sẽ được lưu.", "warning");
+          newCandidates = [newCandidates[0]];
+        }
+      }
+    }
+
     let updatedCandidates: any[] = [];
 
     if (editCandidateIndex !== null && editCandidateIndex >= 0) {
@@ -842,6 +864,13 @@ const MeetingInfo: React.FC<Props> = ({
                       className="add-link"
                       onClick={() => {
                         if (disabled) return;
+                        // Kiểm tra nếu hình thức bầu cử là YES_NO_ABSTAIN và đã có 1 candidate
+                        const selectedMethod = methods?.find((m) => m._id === voteMethod);
+                        const isYesNoMethod = selectedMethod?.methodCode === "YES_NO_ABSTAIN";
+                        if (isYesNoMethod && candidates.length >= 1) {
+                          notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉnh sửa bản ghi hiện có.", "warning");
+                          return;
+                        }
                         setEditCandidateIndex(null);
                         setIsVotingMethodModalOpen(true);
                       }}

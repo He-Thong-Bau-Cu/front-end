@@ -13,6 +13,7 @@ const Dashboard: React.FC = () => {
                 marginLeft: 32,
                 marginRight: 32,
                 marginBottom: 20,
+                marginTop: 20,
                 width: 'calc(100% - 64px)',
                 boxSizing: 'border-box'
             }}>

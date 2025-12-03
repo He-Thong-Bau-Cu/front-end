@@ -129,33 +129,27 @@ const Checkin: React.FC = () => {
         socket.on("transferData", (data: any) => {
             if (data.type === "stage-started" || data.type === "stage-ended") {
                 console.log("📊 Received stage update:", data);
-                // Refresh trạng thái khi có cập nhật
                 checkCheckinStage();
             }
         });
 
-        // Lắng nghe socket transferStateDataRT khi trạng thái cuộc họp thay đổi
         socket.on("transferStateDataRT", (data: any) => {
             if (data.type === "meeting-status-changed" && data.payload) {
                 console.log("📊 Received meeting status update:", data);
 
-                // Sử dụng payload trực tiếp thay vì gọi lại API
                 const payload = data.payload;
                 if (payload.election) {
                     const election = payload.election;
                     const timeline = election.timeline || {};
                     const stages = election.stages || {};
 
-                    // Tính toán currentStage từ timeline và stages
                     const stageData = calculateCurrentStage(timeline, stages);
 
-                    // Thêm các thông tin khác từ election
                     const fullStageData = {
                         ...stageData,
                         startDate: election.startDate,
                     };
 
-                    // Cập nhật state trực tiếp từ payload, không cần gọi API
                     updateStageState(fullStageData);
                 }
             }
@@ -167,7 +161,6 @@ const Checkin: React.FC = () => {
         };
     }, []);
 
-    // Kiểm tra trạng thái khi component mount
     useEffect(() => {
         checkCheckinStage();
     }, []);

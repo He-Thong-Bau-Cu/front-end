@@ -5,7 +5,7 @@ import {
   UsergroupAddOutlined,
 } from "@ant-design/icons";
 import { Button, Card, Col, Row, Space, Typography } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import VotingRightsService from "@/services/VotingRightsService";
 import CandidateCard from "./CandidateCard";
@@ -20,6 +20,7 @@ import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import OtpModal from "../otp-ballot/OtpModal";
 import CountdownCard from "../resolution_voting/CountdownCard";
 import ElectionService from "@/services/ElectionService";
+import SystemConfigService from "@/services/SystemConfigService";
 
 const { Title, Text } = Typography;
 
@@ -39,50 +40,101 @@ const CandidateSection = () => {
   const [signModalOpen, setSignModalOpen] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [isLoadingTime, setIsLoadingTime] = useState(true);
+  const votingEndTimeRef = useRef<number | null>(null);
 
   const [vote, setVote] = useState<Record<string, number>>({});
 
 
   useEffect(() => {
     const loadVotingTime = async () => {
+      setIsLoadingTime(true);
       try {
         const electionId = localStorage.getItem("currentElectionId");
-        if (!electionId) return;
+        if (!electionId) {
+          setIsLoadingTime(false);
+          return;
+        }
 
         const res = await ElectionService.getCurrentStage(electionId);
         const stage = res.data.data || res.data;
-        if (!stage) return;
+        if (!stage) {
+          setIsLoadingTime(false);
+          return;
+        }
 
         const votingStage = stage.stages?.voting;
         const votingAt = stage.timeline?.votingAt;
         const resultAnnouncedAt = stage.timeline?.resultAnnouncedAt;
 
-        if (!votingAt) return;
+        if (!votingAt) {
+          setTimeLeft(0);
+          votingEndTimeRef.current = null;
+          setIsLoadingTime(false);
+          return;
+        }
 
         // Nếu đã COMPLETED hoặc đã có kết quả → khóa phiếu
         if (votingStage !== "STARTED" || resultAnnouncedAt) {
           setTimeLeft(0);
+          votingEndTimeRef.current = null;
+          setIsLoadingTime(false);
           return;
         }
 
-        const start = new Date(votingAt).getTime();
-        const end = start + 30 * 60 * 1000;
-        const now = Date.now();
+        try {
+          // Lấy config TIME_VOTE_ELECTION (thời gian bầu cử tính bằng phút)
+          const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
+          const config: any = configResponse?.data || configResponse;
+          const configValue = (config?.data?.configValue !== undefined)
+            ? config.data.configValue
+            : config?.configValue;
+          const timeVoteElection = (typeof configValue === 'object' && configValue?.value !== undefined)
+            ? configValue.value
+            : (typeof configValue === 'number' ? configValue : 0);
+          const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(String(timeVoteElection)) || 30;
+          const voteDurationSeconds = voteDurationMinutes * 60;
 
-        if (now < start) {
-          setTimeLeft(-1);
-          return;
+          const votingStartTime = new Date(votingAt).getTime();
+          const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
+          const now = Date.now();
+
+          if (now < votingStartTime) {
+            setTimeLeft(0);
+            votingEndTimeRef.current = null;
+            setIsLoadingTime(false);
+            return;
+          }
+
+          if (now >= votingEndTime) {
+            setTimeLeft(0);
+            votingEndTimeRef.current = null;
+            setIsLoadingTime(false);
+            return;
+          }
+
+          const secondsLeft = Math.floor((votingEndTime - now) / 1000);
+          setTimeLeft(Math.max(secondsLeft, 0));
+          votingEndTimeRef.current = votingEndTime;
+        } catch (configError) {
+          console.error("Error loading TIME_VOTE_ELECTION config:", configError);
+          // Fallback về 30 phút nếu không load được config
+          const votingStartTime = new Date(votingAt).getTime();
+          const votingEndTime = votingStartTime + (30 * 60 * 1000);
+          const now = Date.now();
+          if (now >= votingEndTime) {
+            setTimeLeft(0);
+            votingEndTimeRef.current = null;
+          } else {
+            const secondsLeft = Math.floor((votingEndTime - now) / 1000);
+            setTimeLeft(Math.max(secondsLeft, 0));
+            votingEndTimeRef.current = votingEndTime;
+          }
         }
-
-        if (now >= end) {
-          setTimeLeft(0);
-          return;
-        }
-
-        setTimeLeft(Math.floor((end - now) / 1000));
-
       } catch (err) {
         console.error("Failed to load stage:", err);
+      } finally {
+        setIsLoadingTime(false);
       }
     };
 
@@ -91,13 +143,28 @@ const CandidateSection = () => {
 
 
 
+  // 🔥 Countdown chạy mỗi giây - tính toán lại từ thời gian thực
   useEffect(() => {
-    if (timeLeft <= 0) return;
     const timer = setInterval(() => {
-      setTimeLeft(prev => Math.max(prev - 1, 0));
+      // Chỉ update nếu đã có votingEndTime
+      if (!votingEndTimeRef.current) return;
+
+      const now = Date.now();
+      const votingEndTime = votingEndTimeRef.current;
+
+      if (now >= votingEndTime) {
+        setTimeLeft(0);
+        votingEndTimeRef.current = null;
+        return;
+      }
+
+      // Tính toán lại thời gian còn lại từ thời gian thực
+      const secondsLeft = Math.floor((votingEndTime - now) / 1000);
+      setTimeLeft(Math.max(secondsLeft, 0));
     }, 1000);
+
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, []); // Chỉ chạy 1 lần khi mount
 
 
 

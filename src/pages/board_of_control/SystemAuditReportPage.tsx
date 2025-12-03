@@ -34,6 +34,7 @@ export default function SystemAuditReportPage() {
   );
   const [signing, setSigning] = useState(false);
   const [canSign, setCanSign] = useState<boolean>(false);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [stageInfo, setStageInfo] = useState<{
     currentStage: string;
     stageStatus: string;
@@ -69,7 +70,7 @@ export default function SystemAuditReportPage() {
   };
 
   // Kiểm tra trạng thái stage để cho phép ký báo cáo
-  // Ký báo cáo có thể được ký sau khi voting completed
+  // Chỉ cho phép ký khi stage là "công bố kết quả" (result STARTED)
   const checkSignatureStage = async () => {
     const electionId = localStorage.getItem("currentElectionId");
     if (!electionId) {
@@ -79,7 +80,7 @@ export default function SystemAuditReportPage() {
         stageStatus: 'NOT_STARTED',
         message: 'Không tìm thấy cuộc bầu cử hiện tại'
       });
-      return;
+      return { currentStage: 'unknown', stageStatus: 'NOT_STARTED', canLoadData: false };
     }
 
     try {
@@ -90,22 +91,26 @@ export default function SystemAuditReportPage() {
       const stages = stageData?.stages || {};
       const { currentStage, stageStatus } = calculateCurrentStage(timeline, stages);
 
-      // Cho phép ký báo cáo sau khi voting đã completed (từ stage result trở đi)
-      const canSignReport = stages.voting === 'COMPLETED' ||
-                            (currentStage === 'result' && stageStatus === 'STARTED') ||
-                            (currentStage === 'closing' && stageStatus === 'STARTED') ||
-                            (currentStage === 'completed' && stageStatus === 'COMPLETED');
+      // Chỉ cho phép ký khi stage "result" đã STARTED
+      const canSignReport = currentStage === 'result' && stageStatus === 'STARTED';
+      // Cho phép load data khi stage là result hoặc completed
+      const canLoadData = currentStage === 'result' || currentStage === 'completed';
+      // Kiểm tra nếu đã completed
+      const completed = currentStage === 'completed' || stages.result === 'COMPLETED';
 
       setCanSign(canSignReport);
+      setIsCompleted(completed);
 
       let message = '';
       if (!canSignReport) {
         if (currentStage === 'not_started' || currentStage === 'checkin' || currentStage === 'report') {
-          message = 'Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu mới có thể ký báo cáo.';
-        } else if (currentStage === 'voting' && stageStatus === 'STARTED') {
-          message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu.';
+          message = 'Vui lòng đợi đến giai đoạn công bố kết quả mới có thể ký báo cáo.';
+        } else if (currentStage === 'voting') {
+          message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến giai đoạn công bố kết quả.';
+        } else if (stages.result === 'COMPLETED' || currentStage === 'completed') {
+          message = 'Giai đoạn công bố kết quả đã hoàn tất.';
         } else {
-          message = 'Chưa đến thời điểm có thể ký báo cáo kiểm soát.';
+          message = 'Chưa đến giai đoạn công bố kết quả.';
         }
       }
 
@@ -114,6 +119,8 @@ export default function SystemAuditReportPage() {
         stageStatus,
         message
       });
+
+      return { currentStage, stageStatus, canLoadData };
     } catch (error: any) {
       console.error("Error checking signature stage:", error);
       setCanSign(false);
@@ -122,16 +129,26 @@ export default function SystemAuditReportPage() {
         stageStatus: 'ERROR',
         message: 'Không thể kiểm tra trạng thái giai đoạn.'
       });
+      return { currentStage: 'error', stageStatus: 'ERROR', canLoadData: false };
     }
   };
 
   useEffect(() => {
-    const loadReport = async () => {
+    const loadData = async () => {
       const electionId = localStorage.getItem("currentElectionId");
       if (!electionId) {
         notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
         return;
       }
+
+      // Kiểm tra stage trước, chỉ gọi API nếu stage là result hoặc completed
+      const stageCheckResult = await checkSignatureStage();
+
+      // Nếu chưa đến stage thì không gọi API
+      if (!stageCheckResult.canLoadData) {
+        return;
+      }
+
       try {
         showLoading();
         const response = await BoardControlService.getAuditReport(electionId);
@@ -148,8 +165,7 @@ export default function SystemAuditReportPage() {
       }
     };
 
-    loadReport();
-    checkSignatureStage();
+    loadData();
   }, []);
 
   // Setup socket listener để nhận cập nhật realtime
@@ -171,15 +187,30 @@ export default function SystemAuditReportPage() {
     });
 
     // Lắng nghe cập nhật trạng thái giai đoạn
-    socket.on("transferData", (data: any) => {
+    socket.on("transferData", async (data: any) => {
       if (data.type === "stage-started" || data.type === "stage-ended") {
         console.log("📊 Received stage update:", data);
-        checkSignatureStage();
+        const stageCheckResult = await checkSignatureStage();
+
+        // Nếu stage đã đạt result/completed thì load data
+        if (stageCheckResult.canLoadData) {
+          const electionId = localStorage.getItem("currentElectionId");
+          if (electionId) {
+            try {
+              const response = await BoardControlService.getAuditReport(electionId);
+              if (response.success && response.data) {
+                setReportData(response.data);
+              }
+            } catch (error) {
+              console.error("Error loading audit report data:", error);
+            }
+          }
+        }
       }
     });
 
     // Lắng nghe socket transferStateDataRT khi trạng thái cuộc họp thay đổi
-    socket.on("transferStateDataRT", (data: any) => {
+    socket.on("transferStateDataRT", async (data: any) => {
       if (data.type === "meeting-status-changed" && data.payload) {
         console.log("📊 Received meeting status update:", data);
 
@@ -190,22 +221,24 @@ export default function SystemAuditReportPage() {
           const stages = election.stages || {};
           const { currentStage, stageStatus } = calculateCurrentStage(timeline, stages);
 
-          // Cho phép ký báo cáo sau khi voting đã completed
-          const canSignReport = stages.voting === 'COMPLETED' ||
-                                (currentStage === 'result' && stageStatus === 'STARTED') ||
-                                (currentStage === 'closing' && stageStatus === 'STARTED') ||
-                                (currentStage === 'completed' && stageStatus === 'COMPLETED');
+          // Chỉ cho phép ký khi stage "result" đã STARTED
+          const canSignReport = currentStage === 'result' && stageStatus === 'STARTED';
+          const canLoadData = currentStage === 'result' || currentStage === 'completed';
+          const completed = currentStage === 'completed' || stages.result === 'COMPLETED';
 
           setCanSign(canSignReport);
+          setIsCompleted(completed);
 
           let message = '';
           if (!canSignReport) {
             if (currentStage === 'not_started' || currentStage === 'checkin' || currentStage === 'report') {
-              message = 'Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu mới có thể ký báo cáo.';
-            } else if (currentStage === 'voting' && stageStatus === 'STARTED') {
-              message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu.';
+              message = 'Vui lòng đợi đến giai đoạn công bố kết quả mới có thể ký báo cáo.';
+            } else if (currentStage === 'voting') {
+              message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến giai đoạn công bố kết quả.';
+            } else if (stages.result === 'COMPLETED' || currentStage === 'completed') {
+              message = 'Giai đoạn công bố kết quả đã hoàn tất.';
             } else {
-              message = 'Chưa đến thời điểm có thể ký báo cáo kiểm soát.';
+              message = 'Chưa đến giai đoạn công bố kết quả.';
             }
           }
 
@@ -214,6 +247,21 @@ export default function SystemAuditReportPage() {
             stageStatus,
             message
           });
+
+          // Load data nếu stage đã đạt result/completed
+          if (canLoadData) {
+            const electionId = localStorage.getItem("currentElectionId");
+            if (electionId) {
+              try {
+                const response = await BoardControlService.getAuditReport(electionId);
+                if (response.success && response.data) {
+                  setReportData(response.data);
+                }
+              } catch (error) {
+                console.error("Error loading audit report data:", error);
+              }
+            }
+          }
         }
       }
     });
@@ -321,13 +369,13 @@ export default function SystemAuditReportPage() {
       <>
         <div className="sar-topbar">
           <Space>
-            <Button icon={<DownloadOutlined />} onClick={handleDownloadDraft}>
+            <Button icon={<DownloadOutlined />} onClick={handleDownloadDraft} disabled={isCompleted}>
               Tải xuống bản nháp
             </Button>
-            <Button icon={<FileTextOutlined />} onClick={handlePrintReport}>
+            <Button icon={<FileTextOutlined />} onClick={handlePrintReport} disabled={isCompleted}>
               In Báo cáo
             </Button>
-            <Button danger icon={<CloseCircleOutlined />}>
+            <Button danger icon={<CloseCircleOutlined />} disabled={isCompleted}>
               Từ chối & Gửi Phản hồi
             </Button>
           </Space>
@@ -352,7 +400,7 @@ export default function SystemAuditReportPage() {
               info={signatureInfo}
               onConfirm={handleSignReport}
               loading={signing}
-              canSign={canSign}
+              canSign={canSign && !isCompleted}
           />
         </div>
       </>
