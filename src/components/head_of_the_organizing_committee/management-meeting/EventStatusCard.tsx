@@ -82,16 +82,27 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
 
     // Đếm thời gian từ 0 lên khi meeting đang chạy
     useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (isRunning && meetingStartTime) {
-            timer = setInterval(() => {
-                const now = new Date().getTime();
-                const elapsed = Math.floor((now - meetingStartTime) / 1000);
-                setTimeElapsed(Math.max(0, elapsed));
-            }, 1000);
+        // Tính toán và cập nhật ngay lập tức
+        const updateTime = () => {
+            if (!meetingStartTime) {
+                return;
+            }
+
+            const now = new Date().getTime();
+            const elapsed = Math.floor((now - meetingStartTime) / 1000);
+            setTimeElapsed(Math.max(0, elapsed));
+        };
+
+        // Cập nhật ngay lập tức lần đầu nếu có meetingStartTime
+        if (meetingStartTime) {
+            updateTime();
         }
+
+        // Sau đó cập nhật mỗi giây (luôn chạy để kiểm tra)
+        const timer = setInterval(updateTime, 1000);
+
         return () => clearInterval(timer);
-    }, [isRunning, meetingStartTime]);
+    }, [meetingStartTime]);
 
     // Kiểm tra trạng thái meeting
     const meetingStatus = meeting?.status || "PENDING";
@@ -101,7 +112,6 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
     // Kiểm tra meetingDate có <= thời gian hiện tại không
     const meetingDate = meeting?.meetingDate ? new Date(meeting.meetingDate) : null;
     const now = new Date();
-    console.log(meetingDate, now)
     const canStartMeeting = meetingDate ? meetingDate <= now : false;
 
     // Kiểm tra tất cả các giai đoạn đã hoàn thành chưa

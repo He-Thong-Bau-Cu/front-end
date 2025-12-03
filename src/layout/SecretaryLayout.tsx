@@ -27,22 +27,20 @@ const SecretaryLayout = () => {
         <Layout style={{ minHeight: "100vh", width: "100vw", overflow: "hidden" }}>
             <Sideber onMenuSelect={setPageTitle} />
 
+            <Header title={pageTitle}  />
             <Layout
                 style={{
                     marginLeft: 250, // bằng đúng width sidebar
-                    height: "calc(100vh - 64px)",
-                    display: "flex",
-                    flexDirection: "column",
-                    minHeight: "100vh",
+                    height: "100vh",
                     overflow: "hidden", // ẩn scroll ngoài
                 }}
             >
-                <Header title={pageTitle}  />
                 <Content
                     style={{
-                        height: "calc(100vh - 64px)",
+                        height: "100vh",
                         overflow: "auto",
-                        padding: "10px 24px 24px",
+                        padding: "115px 24px 24px 24px",
+                        margin: 0,
                         backgroundImage: `url(${bannerContent})`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",

@@ -145,6 +145,7 @@ export default function OrganizerDashboardPage() {
         paddingLeft: 42,
         paddingRight: 42,
         marginBottom: 24,
+        marginTop: 20,
         width: 'calc(100% + 20px)',
         boxSizing: 'border-box'
       }}>

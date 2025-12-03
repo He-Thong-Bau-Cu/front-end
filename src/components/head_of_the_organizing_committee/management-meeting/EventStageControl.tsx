@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Card, Button, message, Modal } from "antd";
 import {
     CheckCircleFilled,
@@ -25,37 +25,32 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
     stats,
     onRefresh
 }) => {
-    // Kiểm tra trạng thái meeting - chỉ có thể bắt đầu giai đoạn khi meeting đã được bắt đầu
     const meetingStatus = meeting?.status || "PENDING";
     const isMeetingStarted = meetingStatus !== "PENDING";
     const isMeetingCompleted = meetingStatus === "COMPLETED";
 
-    // Xác định trạng thái các giai đoạn dựa trên timeline và stages
     const timeline = election?.timeline || {};
     const stages = election?.stages || {};
 
-    // Giai đoạn Check-in
     const checkinStarted = !!timeline.checkinAt;
     const checkinCompleted = stages.checkin === 'COMPLETED';
     const checkinActive = checkinStarted && !checkinCompleted;
     const canStartCheckin = isMeetingStarted && !checkinStarted && !checkinCompleted;
 
-    // Giai đoạn Phát biểu & Báo cáo
     const reportStarted = !!timeline.reportAt;
     const reportCompleted = stages.report === 'COMPLETED';
     const reportActive = reportStarted && !reportCompleted;
     const canStartReport = isMeetingStarted && checkinCompleted && !reportStarted && !reportCompleted;
 
-    // Giai đoạn Bỏ phiếu
     const votingStarted = !!timeline.votingAt;
     const votingCompleted = stages.voting === 'COMPLETED';
     const votingActive = votingStarted && !votingCompleted;
     const canStartVoting = isMeetingStarted && reportCompleted && !votingStarted && !votingCompleted;
 
-    // Timer cho giai đoạn bỏ phiếu
     const [votingTimeLeft, setVotingTimeLeft] = useState<string>("--:--:--");
     const [votingTimeLeftSeconds, setVotingTimeLeftSeconds] = useState<number>(0);
     const [autoEndTriggered, setAutoEndTriggered] = useState<boolean>(false);
+    const votingEndTimeRef = useRef<number | null>(null);
 
     const formatSecondsToClock = (seconds: number): string => {
         if (!seconds || seconds <= 0) return "00:00:00";
@@ -71,25 +66,65 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
         return `${h}:${m}:${s}`;
     };
 
-    // Hàm tính toán thời gian còn lại từ thời gian thực
+    // helper: chuẩn hoá config value -> minutes (1..1440)
+    const normalizeVoteDurationMinutes = (configValue: any, defaultMinutes = 30): number => {
+        if (configValue == null) return defaultMinutes;
+
+        let rawNumber: number | null = null;
+
+        if (typeof configValue === 'number') {
+            rawNumber = configValue;
+        } else if (typeof configValue === 'string') {
+            const p = parseFloat(configValue);
+            rawNumber = isNaN(p) ? null : p;
+        } else if (typeof configValue === 'object' && configValue !== null) {
+            if (typeof configValue.value === 'number') rawNumber = configValue.value;
+            else if (typeof configValue.minutes === 'number') rawNumber = configValue.minutes;
+            else if (typeof configValue.amount === 'number') rawNumber = configValue.amount;
+            else if (typeof configValue.total === 'number') rawNumber = configValue.total;
+            else {
+                const first = Object.values(configValue)[0];
+                if (typeof first === 'number') rawNumber = first;
+                else if (typeof first === 'string') {
+                    const p = parseFloat(first as string);
+                    rawNumber = isNaN(p) ? null : p;
+                }
+            }
+        }
+
+        if (rawNumber == null) return defaultMinutes;
+
+        // Detect units robustly:
+        // - If value is very large (> 86400) assume milliseconds -> convert to minutes
+        // - Else if value between 1000 and 86400 assume seconds -> convert to minutes
+        // - Else treat as minutes
+        if (rawNumber > 86400) {
+            // milliseconds -> minutes
+            rawNumber = rawNumber / 60000;
+        } else if (rawNumber >= 1000 && rawNumber <= 86400) {
+            // seconds -> minutes
+            rawNumber = rawNumber / 60;
+        }
+
+        const minutes = Math.max(1, Math.min(Math.round(rawNumber), 1440));
+        return minutes;
+    };
+
     const calculateTimeRemaining = useCallback(async (): Promise<number> => {
         if (!votingActive || votingCompleted || !timeline.votingAt) {
             return 0;
         }
 
         try {
-            // Lấy config TIME_VOTE_ELECTION (thời gian bầu cử tính bằng phút)
             const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
             const config: any = configResponse?.data || configResponse;
-            // Xử lý cả 2 trường hợp: config có thể là SystemConfig hoặc BaseResponse<SystemConfig>
             const configValue = (config?.data?.configValue !== undefined)
                 ? config.data.configValue
                 : config?.configValue;
-            const timeVoteElection = (typeof configValue === 'object' && configValue?.value !== undefined)
-                ? configValue.value
-                : (typeof configValue === 'number' ? configValue : 0);
-            const voteDurationMinutes = typeof timeVoteElection === 'number' ? timeVoteElection : parseInt(String(timeVoteElection)) || 0;
-            const voteDurationSeconds = voteDurationMinutes * 60; // Chuyển đổi từ phút sang giây
+
+            // Sử dụng hàm chuẩn hoá
+            const voteDurationMinutes = normalizeVoteDurationMinutes(configValue, 30);
+            const voteDurationSeconds = voteDurationMinutes * 60;
 
             if (voteDurationSeconds <= 0) {
                 return 0;
@@ -98,12 +133,10 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
             const votingStartTime = new Date(timeline.votingAt).getTime();
             const now = new Date().getTime();
 
-            // Nếu thời điểm bắt đầu trong tương lai (không hợp lệ), tính từ bây giờ
             if (votingStartTime > now) {
                 return voteDurationSeconds;
             }
 
-            // Tính thời gian còn lại
             const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
             const timeRemaining = votingEndTime - now;
 
@@ -118,31 +151,101 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
         }
     }, [votingActive, votingCompleted, timeline.votingAt]);
 
-    // Load và tính thời gian còn lại cho giai đoạn bỏ phiếu
     useEffect(() => {
         const loadVotingTimer = async () => {
             if (!votingActive || votingCompleted || !timeline.votingAt) {
                 setVotingTimeLeft("--:--:--");
                 setVotingTimeLeftSeconds(0);
                 setAutoEndTriggered(false);
+                votingEndTimeRef.current = null;
+                // clear persisted end time when not active
+                try { sessionStorage.removeItem(`voting_end_time_${electionId || 'global'}`); } catch {}
                 return;
             }
 
-            const seconds = await calculateTimeRemaining();
-            if (seconds > 0) {
-                setVotingTimeLeftSeconds(seconds);
-                setVotingTimeLeft(formatSecondsToClock(seconds));
-                setAutoEndTriggered(false); // Reset khi có thời gian còn lại
-            } else {
+            try {
+                const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
+                const config: any = configResponse?.data || configResponse;
+                const configValue = (config?.data?.configValue !== undefined)
+                    ? config.data.configValue
+                    : config?.configValue;
+
+                // Dùng hàm chuẩn hoá để lấy minutes nhất quán
+                const voteDurationMinutes = normalizeVoteDurationMinutes(configValue, 30);
+
+                const voteDurationSeconds = voteDurationMinutes * 60;
+
+                if (voteDurationSeconds <= 0) {
+                    setVotingTimeLeftSeconds(0);
+                    setVotingTimeLeft("00:00:00");
+                    votingEndTimeRef.current = null;
+                    try { sessionStorage.removeItem(`voting_end_time_${electionId || 'global'}`); } catch {}
+                    return;
+                }
+
+                const votingStartTime = new Date(timeline.votingAt).getTime();
+                const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
+                const now = Date.now();
+
+                const storageKey = `voting_end_time_${electionId || 'global'}`;
+                // Nếu voting chưa bắt đầu (votingStartTime > now),
+                // ưu tiên tiếp tục countdown đã lưu (nếu có), ngược lại tạo mới countdown bắt đầu từ now.
+                if (votingStartTime > now) {
+                    let storedEnd: number | null = null;
+                    try {
+                        const raw = sessionStorage.getItem(storageKey);
+                        storedEnd = raw ? Number(raw) : null;
+                        if (storedEnd && isNaN(storedEnd)) storedEnd = null;
+                    } catch (e) {
+                        storedEnd = null;
+                    }
+
+                    if (storedEnd && storedEnd > now) {
+                        // tiếp tục từ end time đã lưu
+                        votingEndTimeRef.current = storedEnd;
+                        const secondsLeft = Math.max(0, Math.floor((storedEnd - now) / 1000));
+                        setVotingTimeLeftSeconds(secondsLeft);
+                        setVotingTimeLeft(formatSecondsToClock(secondsLeft));
+                        setAutoEndTriggered(false);
+                        return;
+                    } else {
+                        // không có lưu, bắt đầu countdown mới từ now và lưu end time
+                        const end = now + (voteDurationSeconds * 1000);
+                        votingEndTimeRef.current = end;
+                        try { sessionStorage.setItem(storageKey, String(end)); } catch {}
+                        setVotingTimeLeftSeconds(voteDurationSeconds);
+                        setVotingTimeLeft(formatSecondsToClock(voteDurationSeconds));
+                        setAutoEndTriggered(false);
+                        return;
+                    }
+                }
+                // voting đã thực sự bắt đầu theo timeline -> clear persisted pre-start key
+                try { sessionStorage.removeItem(storageKey); } catch {}
+                votingEndTimeRef.current = votingEndTime;
+
+                if (now >= votingEndTime) {
+                    setVotingTimeLeftSeconds(0);
+                    setVotingTimeLeft("00:00:00");
+                    votingEndTimeRef.current = null;
+                    try { sessionStorage.removeItem(`voting_end_time_${electionId || 'global'}`); } catch {}
+                } else {
+                    const secondsLeft = Math.floor((votingEndTime - now) / 1000);
+                    setVotingTimeLeftSeconds(secondsLeft);
+                    setVotingTimeLeft(formatSecondsToClock(secondsLeft));
+                    setAutoEndTriggered(false);
+                }
+            } catch (error: any) {
+                console.error("Error loading voting timer:", error);
+                setVotingTimeLeft("--:--:--");
                 setVotingTimeLeftSeconds(0);
-                setVotingTimeLeft("00:00:00");
+                votingEndTimeRef.current = null;
+                try { sessionStorage.removeItem(`voting_end_time_${electionId || 'global'}`); } catch {}
             }
         };
 
         loadVotingTimer();
-    }, [votingActive, votingCompleted, timeline.votingAt]);
+    }, [votingActive, votingCompleted, timeline.votingAt, electionId]);
 
-    // Tự động kết thúc giai đoạn bỏ phiếu khi hết thời gian
     useEffect(() => {
         const autoEndVoting = async () => {
             if (votingCompleted || autoEndTriggered || votingTimeLeftSeconds > 0 || !votingActive) {
@@ -183,7 +286,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
         }
     }, [votingTimeLeftSeconds, votingActive, votingCompleted, autoEndTriggered, electionId, onRefresh, timeline.votingAt]);
 
-    // Timer đếm ngược mỗi giây - tính lại từ thời gian thực
+    // Timer đếm ngược mỗi giây - tính lại từ thời gian thực (không fetch config)
     useEffect(() => {
         if (votingCompleted || !votingActive || !timeline.votingAt) {
             if (votingTimeLeftSeconds <= 0 && votingActive) {
@@ -192,27 +295,37 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
             return;
         }
 
-        // Tính toán lại thời gian còn lại từ thời gian thực mỗi giây
-        const updateTimer = async () => {
-            const seconds = await calculateTimeRemaining();
-            if (seconds > 0) {
-                setVotingTimeLeftSeconds(seconds);
-                setVotingTimeLeft(formatSecondsToClock(seconds));
-            } else {
+        // Tính toán lại thời gian còn lại từ votingEndTime ref (nhanh hơn, không cần fetch)
+        const updateTimer = () => {
+            if (!votingEndTimeRef.current) {
+                return;
+            }
+
+            const now = Date.now();
+            const votingEndTime = votingEndTimeRef.current;
+
+            if (now >= votingEndTime) {
                 setVotingTimeLeftSeconds(0);
                 setVotingTimeLeft("00:00:00");
+                votingEndTimeRef.current = null;
+            } else {
+                const secondsLeft = Math.floor((votingEndTime - now) / 1000);
+                setVotingTimeLeftSeconds(secondsLeft);
+                setVotingTimeLeft(formatSecondsToClock(secondsLeft));
             }
         };
 
-        // Cập nhật ngay lập tức
-        updateTimer();
+        // Cập nhật ngay lập tức nếu đã có votingEndTime
+        if (votingEndTimeRef.current) {
+            updateTimer();
+        }
 
         // Thiết lập interval để cập nhật mỗi giây
         const interval = setInterval(updateTimer, 1000);
 
         // Xử lý khi tab trở nên visible (tính lại thời gian khi quay lại tab)
         const handleVisibilityChange = () => {
-            if (!document.hidden) {
+            if (!document.hidden && votingEndTimeRef.current) {
                 // Tab đã trở nên visible, tính lại thời gian
                 updateTimer();
             }
@@ -224,14 +337,15 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
             clearInterval(interval);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [votingActive, votingCompleted, timeline.votingAt, calculateTimeRemaining]);
+    }, [votingActive, votingCompleted, timeline.votingAt]);
 
     // Reset autoEndTriggered khi voting completed
     useEffect(() => {
         if (votingCompleted) {
             setAutoEndTriggered(false);
+            try { sessionStorage.removeItem(`voting_end_time_${electionId || 'global'}`); } catch {}
         }
-    }, [votingCompleted]);
+    }, [votingCompleted, electionId]);
 
     // Giai đoạn Công bố Kết quả
     const resultAnnounced = !!timeline.resultAnnouncedAt;

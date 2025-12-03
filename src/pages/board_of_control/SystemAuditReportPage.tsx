@@ -36,6 +36,7 @@ export default function SystemAuditReportPage() {
   const [signing, setSigning] = useState(false);
   const [signModalOpen, setSignModalOpen] = useState(false);
   const [canSign, setCanSign] = useState<boolean>(false);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [stageInfo, setStageInfo] = useState<{
     currentStage: string;
     stageStatus: string;
@@ -81,7 +82,7 @@ export default function SystemAuditReportPage() {
         stageStatus: 'NOT_STARTED',
         message: 'Không tìm thấy cuộc bầu cử hiện tại'
       });
-      return;
+      return { currentStage: 'unknown', stageStatus: 'NOT_STARTED', canLoadData: false };
     }
 
     try {
@@ -103,11 +104,13 @@ export default function SystemAuditReportPage() {
       let message = '';
       if (!canSignReport) {
         if (currentStage === 'not_started' || currentStage === 'checkin' || currentStage === 'report') {
-          message = 'Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu mới có thể ký báo cáo.';
-        } else if (currentStage === 'voting' && stageStatus === 'STARTED') {
-          message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu.';
+          message = 'Vui lòng đợi đến giai đoạn công bố kết quả mới có thể ký báo cáo.';
+        } else if (currentStage === 'voting') {
+          message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến giai đoạn công bố kết quả.';
+        } else if (stages.result === 'COMPLETED' || currentStage === 'completed') {
+          message = 'Giai đoạn công bố kết quả đã hoàn tất.';
         } else {
-          message = 'Chưa đến thời điểm có thể ký báo cáo kiểm soát.';
+          message = 'Chưa đến giai đoạn công bố kết quả.';
         }
       }
 
@@ -116,6 +119,8 @@ export default function SystemAuditReportPage() {
         stageStatus,
         message
       });
+
+      return { currentStage, stageStatus };
     } catch (error: any) {
       console.error("Error checking signature stage:", error);
       setCanSign(false);
@@ -124,6 +129,7 @@ export default function SystemAuditReportPage() {
         stageStatus: 'ERROR',
         message: 'Không thể kiểm tra trạng thái giai đoạn.'
       });
+      return { currentStage: 'error', stageStatus: 'ERROR', canLoadData: false };
     }
   };
 
@@ -134,6 +140,15 @@ export default function SystemAuditReportPage() {
         notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
         return;
       }
+
+      // Kiểm tra stage trước, chỉ gọi API nếu stage là result hoặc completed
+      const stageCheckResult = await checkSignatureStage();
+
+      // Nếu chưa đến stage thì không gọi API
+      if (!stageCheckResult.canLoadData) {
+        return;
+      }
+
       try {
         showLoading();
         const response = await BoardControlService.getAuditReport(electionId);
@@ -173,15 +188,30 @@ export default function SystemAuditReportPage() {
     });
 
     // Lắng nghe cập nhật trạng thái giai đoạn
-    socket.on("transferData", (data: any) => {
+    socket.on("transferData", async (data: any) => {
       if (data.type === "stage-started" || data.type === "stage-ended") {
         console.log("📊 Received stage update:", data);
-        checkSignatureStage();
+        const stageCheckResult = await checkSignatureStage();
+
+        // Nếu stage đã đạt result/completed thì load data
+        if (stageCheckResult.canLoadData) {
+          const electionId = localStorage.getItem("currentElectionId");
+          if (electionId) {
+            try {
+              const response = await BoardControlService.getAuditReport(electionId);
+              if (response.success && response.data) {
+                setReportData(response.data);
+              }
+            } catch (error) {
+              console.error("Error loading audit report data:", error);
+            }
+          }
+        }
       }
     });
 
     // Lắng nghe socket transferStateDataRT khi trạng thái cuộc họp thay đổi
-    socket.on("transferStateDataRT", (data: any) => {
+    socket.on("transferStateDataRT", async (data: any) => {
       if (data.type === "meeting-status-changed" && data.payload) {
         console.log("📊 Received meeting status update:", data);
 
@@ -192,22 +222,24 @@ export default function SystemAuditReportPage() {
           const stages = election.stages || {};
           const { currentStage, stageStatus } = calculateCurrentStage(timeline, stages);
 
-          // Cho phép ký báo cáo sau khi voting đã completed
-          const canSignReport = stages.voting === 'COMPLETED' ||
-            (currentStage === 'result' && stageStatus === 'STARTED') ||
-            (currentStage === 'closing' && stageStatus === 'STARTED') ||
-            (currentStage === 'completed' && stageStatus === 'COMPLETED');
+          // Chỉ cho phép ký khi stage "result" đã STARTED
+          const canSignReport = currentStage === 'result' && stageStatus === 'STARTED';
+          const canLoadData = currentStage === 'result' || currentStage === 'completed';
+          const completed = currentStage === 'completed' || stages.result === 'COMPLETED';
 
           setCanSign(canSignReport);
+          setIsCompleted(completed);
 
           let message = '';
           if (!canSignReport) {
             if (currentStage === 'not_started' || currentStage === 'checkin' || currentStage === 'report') {
-              message = 'Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu mới có thể ký báo cáo.';
-            } else if (currentStage === 'voting' && stageStatus === 'STARTED') {
-              message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến sau khi kết thúc giai đoạn bỏ phiếu.';
+              message = 'Vui lòng đợi đến giai đoạn công bố kết quả mới có thể ký báo cáo.';
+            } else if (currentStage === 'voting') {
+              message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến giai đoạn công bố kết quả.';
+            } else if (stages.result === 'COMPLETED' || currentStage === 'completed') {
+              message = 'Giai đoạn công bố kết quả đã hoàn tất.';
             } else {
-              message = 'Chưa đến thời điểm có thể ký báo cáo kiểm soát.';
+              message = 'Chưa đến giai đoạn công bố kết quả.';
             }
           }
 
@@ -216,6 +248,21 @@ export default function SystemAuditReportPage() {
             stageStatus,
             message
           });
+
+          // Load data nếu stage đã đạt result/completed
+          if (canLoadData) {
+            const electionId = localStorage.getItem("currentElectionId");
+            if (electionId) {
+              try {
+                const response = await BoardControlService.getAuditReport(electionId);
+                if (response.success && response.data) {
+                  setReportData(response.data);
+                }
+              } catch (error) {
+                console.error("Error loading audit report data:", error);
+              }
+            }
+          }
         }
       }
     });
@@ -320,24 +367,24 @@ export default function SystemAuditReportPage() {
   };
 
   return (
-    <>
-      <div className="sar-topbar">
-        <Space>
-          <Button icon={<DownloadOutlined />} onClick={handleDownloadDraft}>
-            Tải xuống bản nháp
-          </Button>
-          <Button icon={<FileTextOutlined />} onClick={handlePrintReport}>
-            In Báo cáo
-          </Button>
-          <Button danger icon={<CloseCircleOutlined />}>
-            Từ chối & Gửi Phản hồi
-          </Button>
-        </Space>
-      </div>
-      <div className="sar-page">
-        <ReportHeader info={reportInfo} />
-        <ReportSummary cards={summaryCards} />
-        <ReportTabs logs={reportLogs} />
+      <>
+        <div className="sar-topbar">
+          <Space>
+            <Button icon={<DownloadOutlined />} onClick={handleDownloadDraft} disabled={isCompleted}>
+              Tải xuống bản nháp
+            </Button>
+            <Button icon={<FileTextOutlined />} onClick={handlePrintReport} disabled={isCompleted}>
+              In Báo cáo
+            </Button>
+            <Button danger icon={<CloseCircleOutlined />} disabled={isCompleted}>
+              Từ chối & Gửi Phản hồi
+            </Button>
+          </Space>
+        </div>
+        <div className="sar-page">
+          <ReportHeader info={reportInfo} />
+          <ReportSummary cards={summaryCards} />
+          <ReportTabs logs={reportLogs} />
 
         {/* Hiển thị thông báo khi chưa đến stage */}
         {stageInfo && !canSign && stageInfo.message && (

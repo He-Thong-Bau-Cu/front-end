@@ -45,6 +45,7 @@ export default function ElectionVerificationPage() {
   const [eventTitle, setEventTitle] = useState<string>("");
   const [approving, setApproving] = useState(false);
   const [canSign, setCanSign] = useState<boolean>(false);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [stageInfo, setStageInfo] = useState<{
     currentStage: string;
     stageStatus: string;
@@ -91,7 +92,7 @@ export default function ElectionVerificationPage() {
         stageStatus: 'NOT_STARTED',
         message: 'Không tìm thấy cuộc bầu cử hiện tại'
       });
-      return;
+      return { currentStage: 'unknown', stageStatus: 'NOT_STARTED', canLoadData: false };
     }
 
     try {
@@ -104,8 +105,13 @@ export default function ElectionVerificationPage() {
 
       // Chỉ cho phép ký khi stage "result" đã STARTED
       const canSignResult = currentStage === 'result' && stageStatus === 'STARTED';
+      // Cho phép load data khi stage là result hoặc completed
+      const canLoadData = currentStage === 'result' || currentStage === 'completed';
+      // Kiểm tra nếu đã completed
+      const completed = currentStage === 'completed' || stages.result === 'COMPLETED';
 
       setCanSign(canSignResult);
+      setIsCompleted(completed);
 
       let message = '';
       if (!canSignResult) {
@@ -113,7 +119,7 @@ export default function ElectionVerificationPage() {
           message = 'Vui lòng đợi đến giai đoạn công bố kết quả mới có thể ký xác nhận.';
         } else if (currentStage === 'voting') {
           message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến giai đoạn công bố kết quả.';
-        } else if (stages.result === 'COMPLETED') {
+        } else if (stages.result === 'COMPLETED' || currentStage === 'completed') {
           message = 'Giai đoạn công bố kết quả đã hoàn tất.';
         } else {
           message = 'Chưa đến giai đoạn công bố kết quả.';
@@ -125,6 +131,8 @@ export default function ElectionVerificationPage() {
         stageStatus,
         message
       });
+
+      return { currentStage, stageStatus, canLoadData };
     } catch (error: any) {
       console.error("Error checking signature stage:", error);
       setCanSign(false);
@@ -133,16 +141,26 @@ export default function ElectionVerificationPage() {
         stageStatus: 'ERROR',
         message: 'Không thể kiểm tra trạng thái giai đoạn.'
       });
+      return { currentStage: 'error', stageStatus: 'ERROR', canLoadData: false };
     }
   };
 
   useEffect(() => {
-    const loadVerification = async () => {
+    const loadData = async () => {
       const electionId = localStorage.getItem("currentElectionId");
       if (!electionId) {
         notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
         return;
       }
+
+      // Kiểm tra stage trước, chỉ gọi API nếu stage là result hoặc completed
+      const stageCheckResult = await checkSignatureStage();
+
+      // Nếu chưa đến stage thì không gọi API
+      if (!stageCheckResult.canLoadData) {
+        return;
+      }
+
       try {
         showLoading();
         const response = await BoardControlService.getVerification(electionId);
@@ -163,8 +181,7 @@ export default function ElectionVerificationPage() {
       }
     };
 
-    loadVerification();
-    checkSignatureStage();
+    loadData();
   }, []);
 
   // Setup socket listener để nhận cập nhật realtime
@@ -186,15 +203,34 @@ export default function ElectionVerificationPage() {
     });
 
     // Lắng nghe cập nhật trạng thái giai đoạn
-    socket.on("transferData", (data: any) => {
+    socket.on("transferData", async (data: any) => {
       if (data.type === "stage-started" || data.type === "stage-ended") {
         console.log("📊 Received stage update:", data);
-        checkSignatureStage();
+        const stageCheckResult = await checkSignatureStage();
+
+        // Nếu stage đã đạt result/completed thì load data
+        if (stageCheckResult.canLoadData) {
+          const electionId = localStorage.getItem("currentElectionId");
+          if (electionId) {
+            try {
+              const response = await BoardControlService.getVerification(electionId);
+              if (response.success && response.data) {
+                setCandidates(response.data.candidates || []);
+                setSummaryCards(response.data.summaryCards || []);
+                setVerification(response.data.verification || defaultVerification);
+                setLogs(response.data.logs || []);
+                setEventTitle(response.data.election?.title || "");
+              }
+            } catch (error) {
+              console.error("Error loading verification data:", error);
+            }
+          }
+        }
       }
     });
 
     // Lắng nghe socket transferStateDataRT khi trạng thái cuộc họp thay đổi
-    socket.on("transferStateDataRT", (data: any) => {
+    socket.on("transferStateDataRT", async (data: any) => {
       if (data.type === "meeting-status-changed" && data.payload) {
         console.log("📊 Received meeting status update:", data);
 
@@ -207,7 +243,11 @@ export default function ElectionVerificationPage() {
 
           // Chỉ cho phép ký khi stage "result" đã STARTED
           const canSignResult = currentStage === 'result' && stageStatus === 'STARTED';
+          const canLoadData = currentStage === 'result' || currentStage === 'completed';
+          const completed = currentStage === 'completed' || stages.result === 'COMPLETED';
+
           setCanSign(canSignResult);
+          setIsCompleted(completed);
 
           let message = '';
           if (!canSignResult) {
@@ -215,7 +255,7 @@ export default function ElectionVerificationPage() {
               message = 'Vui lòng đợi đến giai đoạn công bố kết quả mới có thể ký xác nhận.';
             } else if (currentStage === 'voting') {
               message = 'Giai đoạn bỏ phiếu đang diễn ra. Vui lòng đợi đến giai đoạn công bố kết quả.';
-            } else if (stages.result === 'COMPLETED') {
+            } else if (stages.result === 'COMPLETED' || currentStage === 'completed') {
               message = 'Giai đoạn công bố kết quả đã hoàn tất.';
             } else {
               message = 'Chưa đến giai đoạn công bố kết quả.';
@@ -227,6 +267,25 @@ export default function ElectionVerificationPage() {
             stageStatus,
             message
           });
+
+          // Load data nếu stage đã đạt result/completed
+          if (canLoadData) {
+            const electionId = localStorage.getItem("currentElectionId");
+            if (electionId) {
+              try {
+                const response = await BoardControlService.getVerification(electionId);
+                if (response.success && response.data) {
+                  setCandidates(response.data.candidates || []);
+                  setSummaryCards(response.data.summaryCards || []);
+                  setVerification(response.data.verification || defaultVerification);
+                  setLogs(response.data.logs || []);
+                  setEventTitle(response.data.election?.title || "");
+                }
+              } catch (error) {
+                console.error("Error loading verification data:", error);
+              }
+            }
+          }
         }
       }
     });
@@ -241,7 +300,7 @@ export default function ElectionVerificationPage() {
   };
 
 
-  const handleDigitalSign = async ({ file, password }) => {
+  const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
     const electionId = localStorage.getItem("currentElectionId");
     if (!electionId) {
       notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
@@ -285,8 +344,8 @@ export default function ElectionVerificationPage() {
     <>
       <div className="ev-topbar">
         <Space>
-          <Button icon={<DownloadOutlined />}>Tải xuống</Button>
-          <Button danger icon={<CloseCircleOutlined />}>
+          <Button icon={<DownloadOutlined />} disabled={isCompleted}>Tải xuống</Button>
+          <Button danger icon={<CloseCircleOutlined />} disabled={isCompleted}>
             Từ chối Kết quả
           </Button>
         </Space>
@@ -317,7 +376,7 @@ export default function ElectionVerificationPage() {
           initialConfirmed={verification.isConfirmed}
           onApprove={handleApprove}
           approving={approving}
-          canSign={canSign}
+          canSign={canSign && !isCompleted}
         />
 
         <DigitalSignModal

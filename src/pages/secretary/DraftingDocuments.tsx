@@ -132,6 +132,56 @@ const DraftingDocuments: React.FC = () => {
     fetchData();
   }, []);
 
+  // Helper function để lấy roleId từ participant (hỗ trợ cả object và string)
+  const getRoleId = (participant: any): string | null => {
+    if (!participant || !participant.roleId) {
+      return null;
+    }
+
+    // Nếu roleId là string
+    if (typeof participant.roleId === 'string') {
+      return participant.roleId;
+    }
+
+    // Nếu roleId là object có _id
+    if (participant.roleId._id) {
+      return participant.roleId._id;
+    }
+
+    return null;
+  };
+
+  // Helper function để kiểm tra có đủ 3 role bắt buộc không
+  const checkRequiredRoles = (participantsList: any[]): { isValid: boolean; missingRoles: string[] } => {
+    const requiredRoleIds = [
+      "6906eb6a3bb016c908c61b92", // Trưởng ban tổ chức
+      "6906eb903bb016c908c61b99", // Thành viên ban tổ chức
+      "6907a5b5399e3682d80a1ddf"  // Ban kiểm soát
+    ];
+
+    const roleIdNames: Record<string, string> = {
+      "6906eb6a3bb016c908c61b92": "Trưởng ban tổ chức",
+      "6906eb903bb016c908c61b99": "Thành viên ban tổ chức",
+      "6907a5b5399e3682d80a1ddf": "Ban kiểm soát"
+    };
+
+    const existingRoleIds = participantsList
+      .map((p: any) => getRoleId(p))
+      .filter((id: string | null) => id !== null) as string[];
+
+    const missingRoles: string[] = [];
+    requiredRoleIds.forEach((roleId) => {
+      if (!existingRoleIds.includes(roleId)) {
+        missingRoles.push(roleIdNames[roleId]);
+      }
+    });
+
+    return {
+      isValid: missingRoles.length === 0,
+      missingRoles
+    };
+  };
+
   // Validation function
   const validateForm = (isSubmit: boolean): boolean => {
     if (!meetingInfo) {
@@ -165,6 +215,13 @@ const DraftingDocuments: React.FC = () => {
       // Kiểm tra candidates/electionEntities
       if (!meetingInfo.candidates || !Array.isArray(meetingInfo.candidates) || meetingInfo.candidates.length === 0) {
         notify("Vui lòng thêm ít nhất một ứng viên/bầu chọn trước khi gửi duyệt", "warning");
+        return false;
+      }
+
+      // Kiểm tra nếu hình thức bầu cử là YES_NO_ABSTAIN thì chỉ cho phép 1 bản ghi
+      const methodCode = meetingInfo.methodDetails?.methodCode || election?.data?.meetingInfo?.methodDetails?.methodCode;
+      if (methodCode === "YES_NO_ABSTAIN" && meetingInfo.candidates.length > 1) {
+        notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉ nhập 1 bản ghi.", "warning");
         return false;
       }
 
@@ -204,6 +261,16 @@ const DraftingDocuments: React.FC = () => {
       );
       if (invalidParticipants.length > 0) {
         notify("Vui lòng kiểm tra lại thông tin thành viên tổ chức, một số thành viên thiếu thông tin", "warning");
+        return false;
+      }
+
+      // Kiểm tra phải có đủ 3 role bắt buộc: Trưởng ban tổ chức, Thành viên ban tổ chức, Ban kiểm soát
+      const roleCheck = checkRequiredRoles(mapParticipants);
+      if (!roleCheck.isValid) {
+        notify(
+          `Vui lòng thêm đầy đủ các thành viên tổ chức bắt buộc: ${roleCheck.missingRoles.join(", ")}`,
+          "warning"
+        );
         return false;
       }
     }
@@ -340,6 +407,13 @@ const DraftingDocuments: React.FC = () => {
           return;
         }
 
+        // Kiểm tra nếu hình thức bầu cử là YES_NO_ABSTAIN thì chỉ cho phép 1 bản ghi
+        const methodCode = meetingInfo?.methodDetails?.methodCode || election?.data?.meetingInfo?.methodDetails?.methodCode;
+        if (methodCode === "YES_NO_ABSTAIN" && candidatesList.length > 1) {
+          notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉ nhập 1 bản ghi.", "warning");
+          return;
+        }
+
         // Kiểm tra documents
         if (!Array.isArray(documentsList) || documentsList.length === 0) {
           notify("Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt", "warning");
@@ -365,6 +439,22 @@ const DraftingDocuments: React.FC = () => {
         // Kiểm tra participants
         if (!Array.isArray(participantsList) || participantsList.length === 0) {
           notify("Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt", "warning");
+          return;
+        }
+
+        // Kiểm tra phải có đủ 3 role bắt buộc: Trưởng ban tổ chức, Thành viên ban tổ chức, Ban kiểm soát
+        // Lọc bỏ VOTER trước khi kiểm tra
+        const mapParticipants = participantsList.filter((p: any) => {
+          const roleCode = p?.roleId?.roleCode || p?.role?.roleCode;
+          return roleCode !== USER_ROLE.VOTER;
+        });
+
+        const roleCheck = checkRequiredRoles(mapParticipants);
+        if (!roleCheck.isValid) {
+          notify(
+            `Vui lòng thêm đầy đủ các thành viên tổ chức bắt buộc: ${roleCheck.missingRoles.join(", ")}`,
+            "warning"
+          );
           return;
         }
       }

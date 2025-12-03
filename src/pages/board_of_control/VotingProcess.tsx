@@ -37,7 +37,8 @@ export default function VotingProcess() {
         if (response.success && response.data) {
           const data = response.data;
           setStats(data.summary || defaultStats);
-          setTimeLeft(formatSecondsToClock(data.timer?.timeLeftSeconds));
+          const timeLeftSeconds = data.timer?.timeLeftSeconds || 0;
+          setTimeLeft(formatSecondsToClock(timeLeftSeconds));
         } else {
           notify(response.message || "Không thể tải dữ liệu giám sát", "error");
         }
@@ -50,6 +51,9 @@ export default function VotingProcess() {
     };
 
     loadOverview();
+    // Cập nhật timer mỗi 5 giây
+    const interval = setInterval(loadOverview, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
