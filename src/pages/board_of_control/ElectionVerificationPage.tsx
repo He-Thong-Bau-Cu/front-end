@@ -23,15 +23,17 @@ import BoardControlService from "@/services/BoardControlService";
 import ElectionService from "@/services/ElectionService";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import ResultService from "@/services/ResultService";
+import DigitalSignModal from "../digitalSignature/DigitalSignModal";
 
 const defaultVerification: VerificationDetailData & { isDataValid: boolean; isConfirmed?: boolean } =
-  {
-    totalCheckin: 0,
-    totalVotes: 0,
-    isDataValid: true,
-    checksumBefore: "--",
-    checksumAfter: "--",
-  };
+{
+  totalCheckin: 0,
+  totalVotes: 0,
+  isDataValid: true,
+  checksumBefore: "--",
+  checksumAfter: "--",
+};
 
 export default function ElectionVerificationPage() {
   const { showLoading, hideLoading } = useLoading();
@@ -49,6 +51,8 @@ export default function ElectionVerificationPage() {
     stageStatus: string;
     message: string;
   } | null>(null);
+  const [signModalOpen, setSignModalOpen] = useState(false);
+
 
   // Tính toán currentStage từ timeline và stages
   const calculateCurrentStage = (timeline: any, stages: any) => {
@@ -291,32 +295,50 @@ export default function ElectionVerificationPage() {
       console.log("Socket disconnected for verification signature");
     };
   }, []);
+  const handleApprove = () => {
+    setSignModalOpen(true);
+  };
 
-  const handleApprove = async () => {
+
+  const handleDigitalSign = async ({ file, password }) => {
     const electionId = localStorage.getItem("currentElectionId");
     if (!electionId) {
       notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
       return;
     }
+
     try {
-      setApproving(true);
-      const response = await BoardControlService.approveVerification(electionId);
-      if (response.success) {
-        notify(response.message || "Đã xác nhận kết quả", "success");
-        setVerification((prev) => ({
-          ...prev,
-          isConfirmed: true,
-        }));
-      } else {
-        notify(response.message || "Không thể xác nhận", "error");
+      showLoading();
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("password", password);
+      formData.append("electionId", electionId);
+
+      const res = await ResultService.signElectionResult(formData);
+
+      if (!res?.success) {
+        notify("Ký số thất bại! Kiểm tra mật khẩu hoặc chứng thư số.", "error");
+        return;
       }
-    } catch (error) {
-      console.error(error);
-      notify("Không thể xác nhận kết quả", "error");
+
+      notify("Ký số & công bố kết quả thành công!", "success");
+
+      setVerification((prev) => ({
+        ...prev,
+        isConfirmed: true,
+      }));
+
+
+      setSignModalOpen(false);
+
+    } catch (err) {
+      notify("Ký số thất bại!", "error");
     } finally {
-      setApproving(false);
+      hideLoading();
     }
   };
+
 
   return (
     <>
@@ -356,6 +378,13 @@ export default function ElectionVerificationPage() {
           approving={approving}
           canSign={canSign && !isCompleted}
         />
+
+        <DigitalSignModal
+          open={signModalOpen}
+          onClose={() => setSignModalOpen(false)}
+          onSubmit={handleDigitalSign}
+        />
+
       </div>
     </>
   );

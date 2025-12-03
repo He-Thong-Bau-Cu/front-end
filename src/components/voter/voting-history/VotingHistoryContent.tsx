@@ -254,6 +254,18 @@ const VotingHistoryContent = () => {
                                             </Text>
                                         </Descriptions.Item>
                                     )}
+
+                                    {(ballot.allocations.length === 0 ||
+                                        (methodCode === "YES_NO_ABSTAIN" &&
+                                            ballot.allocations.length > 0 &&
+                                            ballot.allocations[0].voteValue === -1)
+                                    ) && (
+                                            <Descriptions.Item>
+                                                <Text strong type="warning">
+                                                    Phiếu trắng / Không bỏ phiếu
+                                                </Text>
+                                            </Descriptions.Item>
+                                        )}
                                 </Descriptions>
                             </Card>
                         </div>

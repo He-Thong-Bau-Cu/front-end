@@ -48,8 +48,6 @@ const ResolutionContent: React.FC = () => {
   }, [electionId]);
 
   const handleSendOtp = async () => {
-    if (!selected) return notify("Bạn phải chọn phương án biểu quyết!", "warning");
-
     try {
       showLoading();
       await AuthService.sendOtp({ email });
@@ -87,13 +85,12 @@ const ResolutionContent: React.FC = () => {
     try {
       showLoading();
       await BallotService.signBallot(ballotId, file, password);
-      const voteValue = selected === "YES" ? 1 : 0;
-      const allocations = [
-        {
+      const allocations = selected && entity
+        ? [{
           entityId: entity._id,
-          voteValue,
-        },
-      ];
+          voteValue: selected === "YES" ? 1 : 0,
+        }]
+        : [];
 
       // update ballot
       await BallotService.updateBallot(ballotId, {
@@ -185,8 +182,8 @@ const ResolutionContent: React.FC = () => {
       <div className="vote-form-buttons">
         <Button
           icon={<SendOutlined />}
-          className={`confirm-btn ${selected ? "active" : ""}`}
-          disabled={!selected}
+          className="confirm-btn active"
+          disabled={false}
           onClick={handleSendOtp}
         >
           Gửi Phiếu Bầu

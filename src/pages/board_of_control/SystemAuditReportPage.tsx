@@ -25,6 +25,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import { BoardAuditReportPayload } from "@/types/BoardControl.interface";
 import { downloadBlob } from "@/utils/file";
+import DigitalSignModal from "../digitalSignature/DigitalSignModal";
 
 export default function SystemAuditReportPage() {
   const { showLoading, hideLoading } = useLoading();
@@ -33,6 +34,7 @@ export default function SystemAuditReportPage() {
     null
   );
   const [signing, setSigning] = useState(false);
+  const [signModalOpen, setSignModalOpen] = useState(false);
   const [canSign, setCanSign] = useState<boolean>(false);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [stageInfo, setStageInfo] = useState<{
@@ -70,7 +72,7 @@ export default function SystemAuditReportPage() {
   };
 
   // Kiểm tra trạng thái stage để cho phép ký báo cáo
-  // Chỉ cho phép ký khi stage là "công bố kết quả" (result STARTED)
+  // Ký báo cáo có thể được ký sau khi voting completed
   const checkSignatureStage = async () => {
     const electionId = localStorage.getItem("currentElectionId");
     if (!electionId) {
@@ -91,12 +93,11 @@ export default function SystemAuditReportPage() {
       const stages = stageData?.stages || {};
       const { currentStage, stageStatus } = calculateCurrentStage(timeline, stages);
 
-      // Chỉ cho phép ký khi stage "result" đã STARTED
-      const canSignReport = currentStage === 'result' && stageStatus === 'STARTED';
-      // Cho phép load data khi stage là result hoặc completed
-      const canLoadData = currentStage === 'result' || currentStage === 'completed';
-      // Kiểm tra nếu đã completed
-      const completed = currentStage === 'completed' || stages.result === 'COMPLETED';
+      // Cho phép ký báo cáo sau khi voting đã completed (từ stage result trở đi)
+      const canSignReport = stages.voting === 'COMPLETED' ||
+        (currentStage === 'result' && stageStatus === 'STARTED') ||
+        (currentStage === 'closing' && stageStatus === 'STARTED') ||
+        (currentStage === 'completed' && stageStatus === 'COMPLETED');
 
       setCanSign(canSignReport);
       setIsCompleted(completed);
@@ -120,7 +121,7 @@ export default function SystemAuditReportPage() {
         message
       });
 
-      return { currentStage, stageStatus, canLoadData };
+      return { currentStage, stageStatus };
     } catch (error: any) {
       console.error("Error checking signature stage:", error);
       setCanSign(false);
@@ -134,7 +135,7 @@ export default function SystemAuditReportPage() {
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadReport = async () => {
       const electionId = localStorage.getItem("currentElectionId");
       if (!electionId) {
         notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
@@ -165,7 +166,8 @@ export default function SystemAuditReportPage() {
       }
     };
 
-    loadData();
+    loadReport();
+    checkSignatureStage();
   }, []);
 
   // Setup socket listener để nhận cập nhật realtime
@@ -286,12 +288,12 @@ export default function SystemAuditReportPage() {
         setReportData((prev) =>
           prev
             ? {
-                ...prev,
-                signature: {
-                  ...prev.signature,
-                  isConfirmed: true,
-                },
-              }
+              ...prev,
+              signature: {
+                ...prev.signature,
+                isConfirmed: true,
+              },
+            }
             : prev
         );
       } else {
@@ -385,24 +387,34 @@ export default function SystemAuditReportPage() {
           <ReportSummary cards={summaryCards} />
           <ReportTabs logs={reportLogs} />
 
-          {/* Hiển thị thông báo khi chưa đến stage */}
-          {stageInfo && !canSign && stageInfo.message && (
-            <Alert
-              message="Chưa thể ký báo cáo"
-              description={stageInfo.message}
-              type="warning"
-              showIcon
-              style={{ marginBottom: 24 }}
-            />
-          )}
-
-          <ReportSignature
-              info={signatureInfo}
-              onConfirm={handleSignReport}
-              loading={signing}
-              canSign={canSign && !isCompleted}
+        {/* Hiển thị thông báo khi chưa đến stage */}
+        {stageInfo && !canSign && stageInfo.message && (
+          <Alert
+            message="Chưa thể ký báo cáo"
+            description={stageInfo.message}
+            type="warning"
+            showIcon
+            style={{ marginBottom: 24 }}
           />
-        </div>
-      </>
+        )}
+
+        <ReportSignature
+          info={signatureInfo}
+          onConfirm={() => setSignModalOpen(true)}   // mở popup
+          loading={signing}
+          canSign={canSign}
+        />
+
+        <DigitalSignModal
+          open={signModalOpen}
+          onClose={() => setSignModalOpen(false)}
+          onSubmit={async () => {
+            await handleSignReport();
+            setSignModalOpen(false);
+          }}
+        />
+
+      </div>
+    </>
   );
 }
