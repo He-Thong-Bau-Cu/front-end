@@ -25,6 +25,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import { BoardAuditReportPayload } from "@/types/BoardControl.interface";
 import { downloadBlob } from "@/utils/file";
+import DigitalSignModal from "../digitalSignature/DigitalSignModal";
 
 export default function SystemAuditReportPage() {
   const { showLoading, hideLoading } = useLoading();
@@ -33,6 +34,7 @@ export default function SystemAuditReportPage() {
     null
   );
   const [signing, setSigning] = useState(false);
+  const [signModalOpen, setSignModalOpen] = useState(false);
   const [canSign, setCanSign] = useState<boolean>(false);
   const [stageInfo, setStageInfo] = useState<{
     currentStage: string;
@@ -92,9 +94,9 @@ export default function SystemAuditReportPage() {
 
       // Cho phép ký báo cáo sau khi voting đã completed (từ stage result trở đi)
       const canSignReport = stages.voting === 'COMPLETED' ||
-                            (currentStage === 'result' && stageStatus === 'STARTED') ||
-                            (currentStage === 'closing' && stageStatus === 'STARTED') ||
-                            (currentStage === 'completed' && stageStatus === 'COMPLETED');
+        (currentStage === 'result' && stageStatus === 'STARTED') ||
+        (currentStage === 'closing' && stageStatus === 'STARTED') ||
+        (currentStage === 'completed' && stageStatus === 'COMPLETED');
 
       setCanSign(canSignReport);
 
@@ -192,9 +194,9 @@ export default function SystemAuditReportPage() {
 
           // Cho phép ký báo cáo sau khi voting đã completed
           const canSignReport = stages.voting === 'COMPLETED' ||
-                                (currentStage === 'result' && stageStatus === 'STARTED') ||
-                                (currentStage === 'closing' && stageStatus === 'STARTED') ||
-                                (currentStage === 'completed' && stageStatus === 'COMPLETED');
+            (currentStage === 'result' && stageStatus === 'STARTED') ||
+            (currentStage === 'closing' && stageStatus === 'STARTED') ||
+            (currentStage === 'completed' && stageStatus === 'COMPLETED');
 
           setCanSign(canSignReport);
 
@@ -238,12 +240,12 @@ export default function SystemAuditReportPage() {
         setReportData((prev) =>
           prev
             ? {
-                ...prev,
-                signature: {
-                  ...prev.signature,
-                  isConfirmed: true,
-                },
-              }
+              ...prev,
+              signature: {
+                ...prev.signature,
+                isConfirmed: true,
+              },
+            }
             : prev
         );
       } else {
@@ -318,43 +320,53 @@ export default function SystemAuditReportPage() {
   };
 
   return (
-      <>
-        <div className="sar-topbar">
-          <Space>
-            <Button icon={<DownloadOutlined />} onClick={handleDownloadDraft}>
-              Tải xuống bản nháp
-            </Button>
-            <Button icon={<FileTextOutlined />} onClick={handlePrintReport}>
-              In Báo cáo
-            </Button>
-            <Button danger icon={<CloseCircleOutlined />}>
-              Từ chối & Gửi Phản hồi
-            </Button>
-          </Space>
-        </div>
-        <div className="sar-page">
-          <ReportHeader info={reportInfo} />
-          <ReportSummary cards={summaryCards} />
-          <ReportTabs logs={reportLogs} />
+    <>
+      <div className="sar-topbar">
+        <Space>
+          <Button icon={<DownloadOutlined />} onClick={handleDownloadDraft}>
+            Tải xuống bản nháp
+          </Button>
+          <Button icon={<FileTextOutlined />} onClick={handlePrintReport}>
+            In Báo cáo
+          </Button>
+          <Button danger icon={<CloseCircleOutlined />}>
+            Từ chối & Gửi Phản hồi
+          </Button>
+        </Space>
+      </div>
+      <div className="sar-page">
+        <ReportHeader info={reportInfo} />
+        <ReportSummary cards={summaryCards} />
+        <ReportTabs logs={reportLogs} />
 
-          {/* Hiển thị thông báo khi chưa đến stage */}
-          {stageInfo && !canSign && stageInfo.message && (
-            <Alert
-              message="Chưa thể ký báo cáo"
-              description={stageInfo.message}
-              type="warning"
-              showIcon
-              style={{ marginBottom: 24 }}
-            />
-          )}
-
-          <ReportSignature
-              info={signatureInfo}
-              onConfirm={handleSignReport}
-              loading={signing}
-              canSign={canSign}
+        {/* Hiển thị thông báo khi chưa đến stage */}
+        {stageInfo && !canSign && stageInfo.message && (
+          <Alert
+            message="Chưa thể ký báo cáo"
+            description={stageInfo.message}
+            type="warning"
+            showIcon
+            style={{ marginBottom: 24 }}
           />
-        </div>
-      </>
+        )}
+
+        <ReportSignature
+          info={signatureInfo}
+          onConfirm={() => setSignModalOpen(true)}   // mở popup
+          loading={signing}
+          canSign={canSign}
+        />
+
+        <DigitalSignModal
+          open={signModalOpen}
+          onClose={() => setSignModalOpen(false)}
+          onSubmit={async () => {
+            await handleSignReport();
+            setSignModalOpen(false);
+          }}
+        />
+
+      </div>
+    </>
   );
 }
