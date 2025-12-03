@@ -93,19 +93,16 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
   // Filter + Search
   const filtered = useMemo(() => {
     return reports.filter((r) => {
-      const desc = (r.description || "").toLowerCase();
-      const title = (r.summary || r.title || "").toLowerCase();
+      const title = (r.summary || "").toLowerCase();
 
       const searchNormalized = removeVietnameseTones(searchValue.toLowerCase());
-      const descNormalized = removeVietnameseTones(desc);
       const titleNormalized = removeVietnameseTones(title);
 
       const matchType =
-        filter === "" || r.type?.toLowerCase() === filter.toLowerCase();
+        filter === "" || r.summary?.toLowerCase() === filter.toLowerCase();
 
       const matchSearch =
         searchValue === "" ||
-        descNormalized.includes(searchNormalized) ||
         titleNormalized.includes(searchNormalized);
 
       return matchType && matchSearch;
@@ -143,10 +140,10 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
       <div className="report-grid">
         {pagedReports.map((r) => (
           <ReportCard
-            key={r._id || r.title}
+            key={r._id}
             icon={iconMap[r.type] || <BarChartOutlined />}
-            title={r.summary || r.title}
-            description={`Bầu cử: ${r.electionId?.decisionName || "Không rõ"}`}
+            title={r.summary? `Báo cáo ${r.summary}` : "Báo cáo không tiêu đề"}
+            description={`Bầu cử: ${r.electionId?.title || "Không rõ"}`}
             onViewDetail={() => openDetail(r)}
             onExport={() => exportReport(r)}
           />
