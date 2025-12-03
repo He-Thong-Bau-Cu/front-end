@@ -116,6 +116,21 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
     { title: "Vai trò", dataIndex: ["roleId", "roleName"] },
     {
+      title: "Trạng Thái", dataIndex: "statusVoter",
+      render: (status: string) => {
+        switch (status) {
+          case "ACTIVE":
+            return <Tag color="green">Hoạt động</Tag>;
+          case "INACTIVE":
+            return <Tag color="orange">Không hoạt động</Tag>;
+          case "AUTHORIZED":
+            return <Tag color="red">Được ủy quyền</Tag>;
+          default:
+            return <Tag color="default">Không rõ</Tag>;
+        }
+      }
+    },
+    {
       title: "Cổ phần", dataIndex: "percent",
       render: (percent: number) => (percent !== undefined ? `${percent}%` : `${0}%`),
     },
@@ -294,7 +309,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                           }}
                         >
                           <div style={{ flex: 1 }}>
-                  
+
                             {data?.votingMethodId?._id && electionentities.length > 0 && (
                               <Text type="secondary" style={{ fontSize: 12 }}>
                                 Tổng: {electionentities.length} nội dung bầu chọn
@@ -549,7 +564,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                       <Button
                                         icon={<DownloadOutlined />}
                                         onClick={() => downloadUrlFileSign1(selectedCandidate)}
-                                        style={{ cursor: "pointer", color:"green" }}
+                                        style={{ cursor: "pointer", color: "green" }}
                                       >
                                       </Button>
                                     </Tooltip>
