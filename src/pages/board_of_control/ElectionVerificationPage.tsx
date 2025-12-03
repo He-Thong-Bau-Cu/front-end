@@ -300,7 +300,7 @@ export default function ElectionVerificationPage() {
   };
 
 
-  const handleDigitalSign = async ({ file, password }) => {
+  const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
     const electionId = localStorage.getItem("currentElectionId");
     if (!electionId) {
       notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");

@@ -100,7 +100,6 @@ export default function SystemAuditReportPage() {
         (currentStage === 'completed' && stageStatus === 'COMPLETED');
 
       setCanSign(canSignReport);
-      setIsCompleted(completed);
 
       let message = '';
       if (!canSignReport) {
