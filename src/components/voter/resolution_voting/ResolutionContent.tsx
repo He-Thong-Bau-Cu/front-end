@@ -85,12 +85,14 @@ const ResolutionContent: React.FC = () => {
     try {
       showLoading();
       await BallotService.signBallot(ballotId, file, password);
-      const allocations = selected && entity
-        ? [{
-          entityId: entity._id,
-          voteValue: selected === "YES" ? 1 : 0,
-        }]
-        : [];
+      const allocations = [{
+        entityId: entity._id,
+        voteValue:
+          selected === "YES" ? 1 :
+            selected === "NO" ? 0 :
+              -1, // không chọn → -1
+      }];
+
 
       // update ballot
       await BallotService.updateBallot(ballotId, {

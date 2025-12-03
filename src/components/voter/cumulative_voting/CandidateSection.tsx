@@ -264,10 +264,15 @@ const CandidateSection = () => {
 
       const voterId = localStorage.getItem("voterId");
       const electionId = localStorage.getItem("currentElectionId");
-      const allocations = Object.entries(vote).map(([entityId, voteValue]) => ({
-        entityId,
-        voteValue
-      }));
+      const allocations = candidates.map((entity) => {
+        const voteValue = vote[entity._id];
+
+        return {
+          entityId: entity._id,
+          voteValue: voteValue !== undefined ? voteValue : -1
+        };
+      });
+
 
       await BallotService.updateBallot(ballotId, {
         electionId,

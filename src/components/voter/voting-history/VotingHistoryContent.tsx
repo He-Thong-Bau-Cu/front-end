@@ -236,38 +236,53 @@ const VotingHistoryContent = () => {
                                 }}
                             >
                                 <Descriptions column={1} size="small">
-                                    {/* 👉 CUMULATIVE: hiển thị nguyên như cũ */}
-                                    {methodCode === "CUMULATIVE" &&
-                                        ballot.allocations.map((a, i) => (
+
+                                    {/* ---- CUMULATIVE ---- */}
+                                    {methodCode === "CUMULATIVE" && (() => {
+                                        const votedEntities = ballot.allocations.filter(a => a.voteValue >= 0);
+                                        const allBlank = votedEntities.length === 0;
+
+                                        if (allBlank) {
+                                            return (
+                                                <Descriptions.Item>
+                                                    <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
+                                                </Descriptions.Item>
+                                            );
+                                        }
+
+                                        return votedEntities.map((a, i) => (
                                             <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
                                                 <Text strong style={{ color: "#52c41a" }}>
                                                     {a.entityId?.title} - Số phiếu: {a.voteValue}
                                                 </Text>
                                             </Descriptions.Item>
-                                        ))
-                                    }
+                                        ));
+                                    })()}
 
-                                    {/* 👉 YES_NO_ABSTAIN: chỉ hiển thị 1 kết quả */}
-                                    {methodCode === "YES_NO_ABSTAIN" && ballot.allocations.length > 0 && (
-                                        <Descriptions.Item>
-                                            <Text strong style={{ color: "#52c41a" }}>
-                                                {ballot.allocations[0].entityId.title} - {convertYesNo(ballot.allocations[0].voteValue)}
-                                            </Text>
-                                        </Descriptions.Item>
-                                    )}
 
-                                    {(ballot.allocations.length === 0 ||
-                                        (methodCode === "YES_NO_ABSTAIN" &&
-                                            ballot.allocations.length > 0 &&
-                                            ballot.allocations[0].voteValue === -1)
-                                    ) && (
+                                    {/* ---- YES_NO_ABSTAIN ---- */}
+                                    {methodCode === "YES_NO_ABSTAIN" && ballot.allocations.length > 0 && (() => {
+                                        const value = ballot.allocations[0].voteValue;
+
+                                        if (value === -1) {
+                                            return (
+                                                <Descriptions.Item>
+                                                    <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
+                                                </Descriptions.Item>
+                                            );
+                                        }
+
+                                        return (
                                             <Descriptions.Item>
-                                                <Text strong type="warning">
-                                                    Phiếu trắng / Không bỏ phiếu
+                                                <Text strong style={{ color: "#52c41a" }}>
+                                                    {ballot.allocations[0].entityId.title} - {convertYesNo(value)}
                                                 </Text>
                                             </Descriptions.Item>
-                                        )}
+                                        );
+                                    })()}
+
                                 </Descriptions>
+
                             </Card>
                         </div>
                     </Col>
