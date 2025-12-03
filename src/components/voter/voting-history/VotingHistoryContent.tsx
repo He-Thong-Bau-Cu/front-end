@@ -18,6 +18,7 @@ import "dayjs/locale/vi";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../../style/voter/VotingHistory.model.css";
+import { formatDate } from "@/utils/format";
 dayjs.locale("vi");
 
 
@@ -194,7 +195,7 @@ const VotingHistoryContent = () => {
                                                 Phát hành:
                                             </Text>
                                             <strong style={{ fontSize: 15 }}>
-                                                {ballot.issuedAt ? dayjs(ballot.issuedAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa có"}
+                                                {ballot.issuedAt ? formatDate(new Date(ballot.issuedAt)) : "Chưa có"}
                                             </strong>
                                         </div>
                                     </div>
@@ -209,7 +210,7 @@ const VotingHistoryContent = () => {
                                                 Bỏ phiếu:
                                             </Text>
                                             <strong style={{ fontSize: 15 }}>
-                                                {ballot.castAt ? dayjs(ballot.castAt).format("DD/MM/YYYY - HH:mm:ss") : "Chưa bỏ"}
+                                                {ballot.castAt ? formatDate(new Date(ballot.castAt)) : "Chưa bỏ"}
                                             </strong>
                                         </div>
                                     </div>

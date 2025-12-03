@@ -1,3 +1,4 @@
+import { formatDate } from "@/utils/format";
 import {
     CalendarOutlined,
     CheckCircleOutlined,
@@ -38,7 +39,7 @@ interface ElectionListProps {
 
 const formatDateTime = (date?: string) => {
     if (!date) return "";
-    return dayjs(date).format("DD/MM/YYYY HH:mm");
+    return formatDate(new Date(date));
 };
 
 
