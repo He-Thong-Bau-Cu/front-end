@@ -3,14 +3,12 @@ import {
     CheckCircleOutlined,
     ClockCircleOutlined,
     FireOutlined,
-    RightOutlined,
     UserOutlined
 } from "@ant-design/icons";
 import { Card, List, Progress, Space, Tag, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import React from "react";
-
 const { Text } = Typography;
 
 export interface ElectionItem {
@@ -83,7 +81,7 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
             extra={
                 <Tooltip title="Xem tất cả cuộc bầu cử">
                     <Text className="view-all" style={{ cursor: "pointer" }}>
-                        Xem tất cả <RightOutlined />
+                        {/* Xem tất cả <RightOutlined /> */}
                     </Text>
                 </Tooltip>
             }
@@ -113,18 +111,17 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                                         </Space>
                                     </div>
                                     <Tag
-                                        className={`status-tag ${
-                                            item.status === "upcoming" ? "tag-upcoming" :
+                                        className={`status-tag ${item.status === "upcoming" ? "tag-upcoming" :
                                             item.status === "completed" ? "tag-completed" :
-                                            item.status === "ongoing" ? "tag-ongoing" :
-                                            "tag-undefined"
-                                        }`}
+                                                item.status === "ongoing" ? "tag-ongoing" :
+                                                    "tag-undefined"
+                                            }`}
                                         icon={getStatusIcon(item.status)}
                                     >
                                         {item.status === "upcoming" ? "Sắp diễn ra" :
-                                         item.status === "completed" ? "Đã hoàn thành" :
-                                         item.status === "ongoing" ? "Đang diễn ra" :
-                                         "Chưa có meeting"}
+                                            item.status === "completed" ? "Đã hoàn thành" :
+                                                item.status === "ongoing" ? "Đang diễn ra" :
+                                                    "Chưa có meeting"}
                                     </Tag>
                                 </div>
 
