@@ -317,7 +317,7 @@ export default function ElectionVerificationPage() {
 
       const res = await ResultService.signElectionResult(formData);
 
-      if (!res?.success) {
+      if (!res?.signedFilePath) {
         notify("Ký số thất bại! Kiểm tra mật khẩu hoặc chứng thư số.", "error");
         return;
       }
@@ -329,15 +329,16 @@ export default function ElectionVerificationPage() {
         isConfirmed: true,
       }));
 
+      setSignModalOpen(false); // đóng modal khi thành công
 
-      setSignModalOpen(false);
-
-    } catch (err) {
-      notify("Ký số thất bại!", "error");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Ký số thất bại!";
+      notify(msg, "error");
     } finally {
       hideLoading();
     }
   };
+
 
 
   return (
