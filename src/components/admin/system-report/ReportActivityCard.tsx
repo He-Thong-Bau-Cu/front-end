@@ -8,6 +8,7 @@ import {
 import dayjs from "dayjs";
 import "../../../style/admin/SystemReport.model.css";
 import type { SystemReportAuditSummary } from "@/types/SystemReport.interface";
+import { formatDate } from "@/utils/format";
 
 const { Text } = Typography;
 
@@ -74,7 +75,7 @@ const ReportActivityCard: React.FC<ReportActivityCardProps> = ({
                 </Text>
               </div>
               <Text type="secondary" className="report-activity-time">
-                {dayjs(item.at).format("HH:mm DD/MM")}
+                {formatDate(new Date(item.at))}
               </Text>
             </List.Item>
           )}

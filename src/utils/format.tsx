@@ -5,7 +5,7 @@ export const getTimeAgo = (date: Date) => {
 }
 
 export const formatDate = (date: Date) => {
-  return moment(date).format('YYYY-MM-DD HH:mm:ss');
+  return moment(date).format('DD-MM-YYYY HH:mm:ss');
 }
 
 export const formatDateOfBirth = (date: Date) => {

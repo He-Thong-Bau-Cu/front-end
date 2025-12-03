@@ -14,6 +14,7 @@ import type {
   SystemReportBackupSummary,
   SystemReportSummary,
 } from "@/types/SystemReport.interface";
+import { formatDate } from "@/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -75,7 +76,7 @@ const ReportStatsCard: React.FC<ReportStatsCardProps> = ({
       {
         title: "SAO LƯU GẦN NHẤT",
         value: backupSummary?.lastBackupAt
-          ? dayjs(backupSummary.lastBackupAt).format("HH:mm DD/MM")
+          ? formatDate(new Date(backupSummary.lastBackupAt))
           : "Chưa có",
         hint: "Thời gian backup cuối",
         icon: <ClockCircleOutlined />,
