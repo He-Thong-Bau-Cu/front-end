@@ -86,6 +86,24 @@ class ResultService extends BaseService {
 
     }
 
+    async signElectionResult(formData: FormData): Promise<any> {
+        try {
+            const response = await this.api.post(
+                `${this.endpoint}/sign`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error signing election result:", error);
+            throw error;
+        }
+    }
+
 }
 
 export default new ResultService();

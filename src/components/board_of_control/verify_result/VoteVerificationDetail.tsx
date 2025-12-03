@@ -4,25 +4,25 @@ import { EditOutlined } from "@ant-design/icons";
 import { VoteVerificationProps } from "../../../types/ElectionVerification.interface";
 
 interface VoteVerificationDetailProps extends VoteVerificationProps {
-  initialConfirmed?: boolean;
-  onApprove?: () => Promise<void> | void;
-  approving?: boolean;
-  canSign?: boolean;
+    initialConfirmed?: boolean;
+    onApprove?: () => Promise<void> | void;
+    approving?: boolean;
+    canSign?: boolean;
 }
 
 export default function VoteVerificationDetail({
-  verification,
-  logs,
-  initialConfirmed,
-  onApprove,
-  approving,
-  canSign = true,
+    verification,
+    logs,
+    initialConfirmed,
+    onApprove,
+    approving,
+    canSign = true,
 }: VoteVerificationDetailProps) {
-  const [checked, setChecked] = useState<boolean>(!!initialConfirmed);
+    const [checked, setChecked] = useState<boolean>(!!initialConfirmed);
 
-  useEffect(() => {
-    setChecked(!!initialConfirmed);
-  }, [initialConfirmed]);
+    useEffect(() => {
+        setChecked(!!initialConfirmed);
+    }, [initialConfirmed]);
 
     const columns = [
         {
