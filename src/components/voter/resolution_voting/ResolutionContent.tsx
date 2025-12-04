@@ -4,7 +4,7 @@ import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import "../../../style/voter/ResolutionVoting.model.css";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import { SendOutlined } from "@ant-design/icons";
+import { CheckCircleFilled, CloseCircleFilled, MinusCircleFilled, SendOutlined } from "@ant-design/icons";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import OtpModal from "../otp-ballot/OtpModal";
 import BallotService from "@/services/BallotService";
@@ -90,7 +90,8 @@ const ResolutionContent: React.FC = () => {
         voteValue:
           selected === "YES" ? 1 :
             selected === "NO" ? 0 :
-              -1, // không chọn → -1
+              selected === "ABSTAIN" ? -1 :
+                -1, // không chọn → -1
       }];
 
 
@@ -118,13 +119,20 @@ const ResolutionContent: React.FC = () => {
       key: "YES",
       label: "Tán thành",
       description: "Tôi đồng ý với nội dung nghị quyết này",
-      icon: <span>✔</span>,
+      icon: <CheckCircleFilled style={{ color: "#52c41a", fontSize: 20 }} />,
     },
     {
       key: "NO",
       label: "Không tán thành",
       description: "Tôi không đồng ý với nội dung nghị quyết này",
-      icon: <span>✘</span>,
+      icon: <CloseCircleFilled style={{ color: "#ff4d4f", fontSize: 20 }} />,
+    },
+    {
+      key: "ABSTAIN",
+      label: "Không ý kiến",
+      description: "Tôi không có ý kiến về nội dung nghị quyết này",
+      icon: <MinusCircleFilled style={{ color: "#ffb300", fontSize: 20 }} />,
+
     },
   ];
 
