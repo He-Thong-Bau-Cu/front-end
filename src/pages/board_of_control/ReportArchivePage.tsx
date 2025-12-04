@@ -16,6 +16,9 @@ const TYPE_MAP: Record<string, string> = {
   NORMAL: "Báo cáo Thường",
   ABNORMAL: "Báo cáo Bất thường",
   FINAL: "Kết quả Bầu cử",
+  VERIFICATION: "Báo cáo xác minh",
+  AUDIT: "Báo cáo lưu trữ"
+
 };
 
 // Map Report từ API sang ReportArchiveItem
@@ -130,10 +133,6 @@ export default function ReportArchivePage() {
       });
     }
 
-    // 2️⃣ LỌC THEO LOẠI BÁO CÁO (so sánh với type đã map)
-    if (type !== "Tất cả") {
-      result = result.filter((item) => item.type === type);
-    }
 
     return result;
   }, [allData, keyword, type]);
