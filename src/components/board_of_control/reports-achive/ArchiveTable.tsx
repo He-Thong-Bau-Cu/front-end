@@ -1,18 +1,17 @@
-import {
-  CloseCircleFilled,
-  EyeOutlined,
-  FileTextOutlined,
-  DownloadOutlined
-} from "@ant-design/icons";
-import { Button, Descriptions, Divider, Modal, Pagination, Table, Tag, Tooltip, Typography } from "antd";
-import dayjs from "dayjs";
-import { useState } from "react";
-import { ReportArchiveItem } from "../../../types/ReportArchive.interface";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
 import BoardControlService from "@/services/BoardControlService";
 import { downloadBlob } from "@/utils/file";
-import { useNotification } from "@/contexts/NotificationContext";
-import { useLoading } from "@/contexts/LoadingContext";
 import { formatDate } from "@/utils/format";
+import {
+  CloseCircleFilled,
+  DownloadOutlined,
+  EyeOutlined,
+  FileTextOutlined
+} from "@ant-design/icons";
+import { Button, Descriptions, Divider, Modal, Pagination, Table, Tag, Tooltip, Typography } from "antd";
+import { useState } from "react";
+import { ReportArchiveItem } from "../../../types/ReportArchive.interface";
 
 const { Title, Text } = Typography;
 
@@ -65,6 +64,36 @@ export default function ArchiveTable({
       hideLoading();
     }
   };
+
+  const translateStatus = (status?: string) => {
+    if (!status) return "-";
+
+    const map: Record<string, string> = {
+      PENDING: "Chờ xử lý",
+      REVIEWED: "Đang xem xét",
+      RESOLVED: "Đã xử lý",
+      REJECTED: "Từ chối",
+      ACTIVE: "Đang hiệu lực",
+
+    };
+
+    return map[status] || status;
+  };
+
+
+  const translateSeverity = (severity?: string) => {
+    if (!severity) return "-";
+
+    const map: Record<string, string> = {
+      HIGH: "Cao",
+      MEDIUM: "Trung bình",
+      LOW: "Thấp",
+    };
+
+    return map[severity.toUpperCase()] || severity;
+  };
+
+
   const columns = [
     {
       title: "STT",
@@ -76,9 +105,14 @@ export default function ArchiveTable({
       },
     },
     { title: "TÊN BÁO CÁO", dataIndex: "name", key: "name" },
-    { title: "LOẠI", dataIndex: "type", key: "type" },
     { title: "CUỘC BẦU CỬ", dataIndex: "event", key: "event" },
     { title: "NGÀY TẠO", dataIndex: "date", key: "date" },
+    {
+      title: "TRẠNG THÁI",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => translateStatus(status),
+    },
     {
       title: "HÀNH ĐỘNG",
       key: "actions",
@@ -92,15 +126,20 @@ export default function ArchiveTable({
               style={{ cursor: "pointer" }}
             />
           </Tooltip>
-          <Tooltip title="Tải xuống">
-            <DownloadOutlined
-              className="ra-icon"
-              onClick={() => handleDownload(record)}
-              style={{ cursor: "pointer" }}
-            />
-          </Tooltip>
+
+          {/* ❗ Chỉ hiện nút tải xuống khi đã ký */}
+          {record.signer && record.signer !== "-" && (
+            <Tooltip title="Tải xuống">
+              <DownloadOutlined
+                className="ra-icon"
+                onClick={() => handleDownload(record)}
+                style={{ cursor: "pointer" }}
+              />
+            </Tooltip>
+          )}
         </div>
-      ),
+      )
+
     },
   ];
 
@@ -179,31 +218,34 @@ export default function ArchiveTable({
               <Descriptions.Item label="Mô tả" span={2}>
                 {selectedItem.description || "-"}
               </Descriptions.Item>
-              <Descriptions.Item label="Tóm tắt" span={2}>
-                {selectedItem.summary || "-"}
-              </Descriptions.Item>
-              <Descriptions.Item label="Loại báo cáo">
-                <Tag color="blue">{selectedItem.type}</Tag>
-              </Descriptions.Item>
               <Descriptions.Item label="Trạng thái">
-                <Tag color={
-                  selectedItem.status?.includes("Pending") ? "orange" :
-                    selectedItem.status?.includes("Reviewed") ? "blue" :
-                      selectedItem.status?.includes("Resolved") ? "green" :
-                        selectedItem.status?.includes("Rejected") ? "red" : "default"
-                }>
-                  {selectedItem.status || "-"}
+                <Tag
+                  color={
+                    selectedItem.status === "PENDING" ? "orange" :
+                      selectedItem.status === "REVIEWED" ? "blue" :
+                        selectedItem.status === "RESOLVED" ? "green" :
+                          selectedItem.status === "REJECTED" ? "red" :
+                            selectedItem.status === "ACTIVE" ? "geekblue" :
+                              "default"
+                  }
+                >
+                  {translateStatus(selectedItem.status)}
                 </Tag>
               </Descriptions.Item>
+
               <Descriptions.Item label="Mức độ nghiêm trọng">
-                <Tag color={
-                  selectedItem.severity === "high" ? "red" :
-                    selectedItem.severity === "medium" ? "orange" :
-                      selectedItem.severity === "low" ? "green" : "default"
-                }>
-                  {selectedItem.severity || "-"}
+                <Tag
+                  color={
+                    selectedItem.severity?.toUpperCase() === "HIGH" ? "red" :
+                      selectedItem.severity?.toUpperCase() === "MEDIUM" ? "orange" :
+                        selectedItem.severity?.toUpperCase() === "LOW" ? "green" :
+                          "default"
+                  }
+                >
+                  {translateSeverity(selectedItem.severity)}
                 </Tag>
               </Descriptions.Item>
+
               <Descriptions.Item label="Ngày tạo">
                 {selectedItem.date}
               </Descriptions.Item>
@@ -249,9 +291,6 @@ export default function ArchiveTable({
                   </a>
                 </Descriptions.Item>
               )}
-              <Descriptions.Item label="Mã lưu trữ" span={2}>
-                <Text code>{selectedItem.id}</Text>
-              </Descriptions.Item>
             </Descriptions>
 
             <div style={{ textAlign: "right", marginTop: 24 }}>
