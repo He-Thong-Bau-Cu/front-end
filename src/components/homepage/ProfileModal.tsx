@@ -172,7 +172,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
     { key: "info", label: "Thông tin Cá nhân", icon: <UserOutlined /> },
     { key: "avatar", label: "Ảnh Đại diện", icon: <PictureOutlined /> },
     { key: "security", label: "Bảo mật", icon: <LockOutlined /> },
-    { key: "certificate", label: "Đăng ký Chứng thư số", icon: <FileProtectOutlined /> },
+    // { key: "certificate", label: "Đăng ký Chứng thư số", icon: <FileProtectOutlined /> },
     // { key: "notification", label: "Cài đặt Thông báo", icon: <BellOutlined /> },
   ];
 
