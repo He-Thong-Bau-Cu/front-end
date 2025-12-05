@@ -22,7 +22,7 @@ const NotificationListener: React.FC<NotificationListenerProps> = ({
   onNewNotification,
 }) => {
   const { notify } = useNotification();
-  const callbackRef = useRef<typeof onNewNotification>();
+  const callbackRef = useRef<typeof onNewNotification>(undefined);
 
   // keep latest callback without re-subscribing socket
   useEffect(() => {

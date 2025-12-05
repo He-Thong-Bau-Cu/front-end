@@ -11,7 +11,7 @@ const BallotStatsListener: React.FC<BallotStatsListenerProps> = ({
     electionId,
     onUpdate,
 }) => {
-    const callbackRef = useRef<typeof onUpdate>();
+    const callbackRef = useRef<typeof onUpdate>(undefined);
 
     // keep latest handler without re-subscribing socket
     useEffect(() => {
