@@ -15,6 +15,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
+import { formatServerDate } from "@/utils/date";
 
 import ReportStatsCard from "@/components/admin/system-report/ReportStatsCard";
 import ReportChartCard from "@/components/admin/system-report/ReportChartCard";
@@ -134,8 +135,8 @@ const SystemReport: React.FC = () => {
 
   const subtitle = useMemo(() => {
     if (!overview?.range) return "Tổng quan và phân tích dữ liệu hệ thống bầu cử";
-    const from = dayjs(overview.range.fromDate).format("DD/MM/YYYY");
-    const to = dayjs(overview.range.toDate).format("DD/MM/YYYY");
+    const from = formatServerDate(overview.range.fromDate, "DD/MM/YYYY", { fallback: "--/--/----" });
+    const to = formatServerDate(overview.range.toDate, "DD/MM/YYYY", { fallback: "--/--/----" });
     return `Thống kê từ ${from} đến ${to}`;
   }, [overview?.range]);
 

@@ -7,7 +7,7 @@ import {
   UserOutlined
 } from "@ant-design/icons";
 import { Avatar, Card, Col, Row, Tag, Typography } from "antd";
-import dayjs from "dayjs";
+import { formatServerDate } from "@/utils/date";
 import { useEffect, useState } from "react";
 import "../../../style/voter/DelegateCard.model.css";
 
@@ -127,7 +127,8 @@ const DelegateCardPage = () => {
           </Title>
 
           <Text className="delegate-header-sub">
-            Hạn thẻ: {dayjs(card.issuedAt).format("DD/MM/YYYY")} - {dayjs(card.expiresAt).format("DD/MM/YYYY")}
+            Hạn thẻ: {formatServerDate(card.issuedAt, "DD/MM/YYYY", { fallback: "—" })} -{" "}
+            {formatServerDate(card.expiresAt, "DD/MM/YYYY", { fallback: "—" })}
           </Text>
         </div>
 
@@ -198,7 +199,7 @@ const DelegateCardPage = () => {
             {/* <Col xs={24} md={12}>
               <div className="delegate-detail-item">
                 <Text strong>Ngày phát hành: </Text>
-                <span>{dayjs(card.issuedAt).format("DD/MM/YYYY")}</span>
+                <span>{formatServerDate(card.issuedAt, "DD/MM/YYYY", { fallback: "—" })}</span>
               </div>
             </Col> */}
 
@@ -236,7 +237,7 @@ const DelegateCardPage = () => {
         </div>
 
         <Text type="secondary" className="delegate-issued">
-          Ngày cấp: {dayjs(card.issuedAt).format("DD/MM/YYYY")}
+          Ngày cấp: {formatServerDate(card.issuedAt, "DD/MM/YYYY", { fallback: "—" })}
         </Text>
 
       </Card>

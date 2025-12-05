@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { SOCKET_URL } from "@/config/socket";
 
@@ -11,6 +11,13 @@ const BallotStatsListener: React.FC<BallotStatsListenerProps> = ({
     electionId,
     onUpdate,
 }) => {
+    const callbackRef = useRef<typeof onUpdate>();
+
+    // keep latest handler without re-subscribing socket
+    useEffect(() => {
+        callbackRef.current = onUpdate;
+    }, [onUpdate]);
+
     useEffect(() => {
         console.log("📌 BallotStatsListener mounted với electionId =", electionId);
 
@@ -39,14 +46,14 @@ const BallotStatsListener: React.FC<BallotStatsListenerProps> = ({
 
         socket.on("transferData", (transferData) => {
             console.log("📥 Nhận ballot:update:", transferData);
-            onUpdate(transferData);
+            callbackRef.current?.(transferData);
         });
 
         return () => {
             console.log("🔌 Socket ballot disconnected");
             socket.disconnect();
         };
-    }, [electionId, onUpdate]);
+    }, [electionId]);
 
     return null;
 };

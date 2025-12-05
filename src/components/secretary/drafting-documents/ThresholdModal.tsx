@@ -98,7 +98,12 @@ const ThresholdModal: React.FC<ThresholdModalProps> = ({
       title: "Giá trị",
       dataIndex: "value",
       key: "value",
-      render: (value: number) => `${value}%`,
+      render: (_: number, record: Threshols) => {
+        const codeUpper = record.thresholdCode?.toUpperCase();
+        const typeUpper = record.thresholdType?.toUpperCase();
+        const isPercent = codeUpper?.includes("PERCENT") || typeUpper?.includes("PERCENT");
+        return isPercent ? `${record.value}%` : record.value;
+      },
     },
     {
       title: "Mô tả",
@@ -189,13 +194,12 @@ const ThresholdModal: React.FC<ThresholdModalProps> = ({
                 </Form.Item>
 
                 <Form.Item
-                  label="Giá trị (%)"
+                  label="Giá trị"
                   name="value"
                   rules={[{ required: true, message: "Vui lòng nhập giá trị" }]}
                 >
                   <InputNumber
                     min={0}
-                    max={100}
                     placeholder="Nhập giá trị"
                     style={{ width: "100%" }}
                   />

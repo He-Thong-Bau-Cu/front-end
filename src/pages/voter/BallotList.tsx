@@ -20,7 +20,7 @@ import {
   Space,
   Typography
 } from "antd";
-import dayjs from "dayjs";
+import { formatServerDate } from "@/utils/date";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../style/voter/BallotList.model.css";
@@ -54,10 +54,8 @@ export default function BallotList() {
   };
 
 
-  const formatDate = (date: string | null | undefined) => {
-    if (!date) return "Không xác định";
-    return dayjs(date).format("DD/MM/YYYY HH:mm");
-  };
+  const formatDate = (date: string | null | undefined) =>
+    formatServerDate(date, "DD/MM/YYYY HH:mm", { fallback: "Không xác định" });
 
 
   useEffect(() => {

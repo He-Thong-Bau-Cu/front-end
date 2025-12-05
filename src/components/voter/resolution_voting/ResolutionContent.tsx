@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Radio, Space, Button } from "antd";
+import { Card, Typography, Radio, Space, Button, Alert } from "antd";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import "../../../style/voter/ResolutionVoting.model.css";
 import { useLoading } from "@/contexts/LoadingContext";
@@ -13,7 +13,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
 
-const ResolutionContent: React.FC = () => {
+interface ResolutionContentProps {
+  isVotingWindow: boolean;
+  stageMessage?: string;
+}
+
+const ResolutionContent: React.FC<ResolutionContentProps> = ({ isVotingWindow, stageMessage }) => {
   const [entity, setEntity] = useState<any>(null);
 
   const [selected, setSelected] = useState<string | null>(null);
@@ -49,6 +54,10 @@ const ResolutionContent: React.FC = () => {
 
   const handleSendOtp = async () => {
     try {
+      if (!isVotingWindow) {
+        notify(stageMessage || "Chưa đến giai đoạn bỏ phiếu.", "warning");
+        return;
+      }
       showLoading();
       await AuthService.sendOtp({ email });
       notify("OTP đã được gửi!", "success");
@@ -83,6 +92,10 @@ const ResolutionContent: React.FC = () => {
 
   const handleSign = async ({ file, password }: { file: File; password: string }) => {
     try {
+      if (!isVotingWindow) {
+        notify(stageMessage || "Chưa đến giai đoạn bỏ phiếu.", "warning");
+        return;
+      }
       showLoading();
       await BallotService.signBallot(ballotId, file, password);
       const allocations = [{
@@ -163,9 +176,18 @@ const ResolutionContent: React.FC = () => {
         </>
       )}
 
+      {!isVotingWindow && stageMessage && (
+        <Alert
+          message={stageMessage}
+          type="warning"
+          showIcon
+          style={{ marginBottom: 12 }}
+        />
+      )}
+
       <Title level={5} className="section-title">Lựa chọn biểu quyết</Title>
 
-      <Radio.Group onChange={(e) => setSelected(e.target.value)} value={selected} style={{ width: "100%" }}>
+      <Radio.Group onChange={(e) => setSelected(e.target.value)} value={selected} style={{ width: "100%" }} disabled={!isVotingWindow}>
         <Space direction="vertical" size="middle" style={{ width: "100%" }}>
           {options.map((opt) => (
             <Card
@@ -193,7 +215,7 @@ const ResolutionContent: React.FC = () => {
         <Button
           icon={<SendOutlined />}
           className="confirm-btn active"
-          disabled={false}
+          disabled={!isVotingWindow || !selected}
           onClick={handleSendOtp}
         >
           Gửi Phiếu Bầu

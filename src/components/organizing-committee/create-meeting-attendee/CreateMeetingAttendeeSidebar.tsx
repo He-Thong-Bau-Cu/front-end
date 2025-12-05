@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
 import MeetingService from "@/services/MeetingService";
-import dayjs from "dayjs";
+import { formatServerDate } from "@/utils/date";
 
 const { Text } = Typography;
 
@@ -59,7 +59,7 @@ const CreateMeetingAttendeeSidebar: React.FC<{ refreshTrigger?: number }> = ({ r
       if (response?.success && response?.data) {
         const data = Array.isArray(response.data) ? response.data : [];
         setMeetingAttendees(data);
-        
+
         // Tính thống kê
         const attended = data.filter((p: MeetingAttendee) => p.attended).length;
         setStats({
@@ -76,7 +76,7 @@ const CreateMeetingAttendeeSidebar: React.FC<{ refreshTrigger?: number }> = ({ r
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
-    return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
+    return formatServerDate(dateString, "DD/MM/YYYY | HH:mm");
   };
 
   return (
@@ -93,7 +93,7 @@ const CreateMeetingAttendeeSidebar: React.FC<{ refreshTrigger?: number }> = ({ r
             </p>
             <p className="sidebar-event-time">
               {meetingInfo.meetingDate
-                ? dayjs(meetingInfo.meetingDate).format("DD/MM/YYYY | HH:mm")
+                ? formatServerDate(meetingInfo.meetingDate, "DD/MM/YYYY | HH:mm")
                 : "N/A"}
             </p>
           </>

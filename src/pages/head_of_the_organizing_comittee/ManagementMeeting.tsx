@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Layout, Row, Col, Spin, message } from "antd";
 import EventStatusCard from "@/components/head_of_the_organizing_committee/management-meeting/EventStatusCard";
 import EventStageControl from "@/components/head_of_the_organizing_committee/management-meeting/EventStageControl";
 import AnnouncementCard from "@/components/head_of_the_organizing_committee/management-meeting/AnnouncementCard";
 import MeetingService from "@/services/MeetingService";
 import '../../style/head-of-the-organizing-committee/ManagementMeeting.model.css'
+import { io, Socket } from "socket.io-client";
+import { SOCKET_URL } from "@/config/socket";
 
 interface EventManagementStats {
     meeting: {
@@ -52,11 +54,7 @@ const ManagementMeeting: React.FC = () => {
     const [stats, setStats] = useState<EventManagementStats | null>(null);
     const [electionId, setElectionId] = useState<string>("");
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         try {
             // Lấy electionId từ localStorage
             const currentElectionId = localStorage.getItem("currentElectionId");
@@ -80,7 +78,33 @@ const ManagementMeeting: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [stats]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    // Lắng nghe socket realtime cho quản lý cuộc họp (checkin-update, stage changes)
+    useEffect(() => {
+        if (!electionId) return;
+        const socket: Socket = io(SOCKET_URL, { transports: ["websocket"] });
+        socket.on("connect", () => {
+            socket.emit("join", electionId);
+        });
+
+        const handleRealtime = (data: any) => {
+            if (data.type === "checkin-update" || data.type === "stage-started" || data.type === "stage-ended") {
+                loadData();
+            }
+        };
+
+        socket.on("transferData", handleRealtime);
+
+        return () => {
+            socket.off("transferData", handleRealtime);
+            socket.disconnect();
+        };
+    }, [electionId, loadData]);
 
     if (loading) {
         return (

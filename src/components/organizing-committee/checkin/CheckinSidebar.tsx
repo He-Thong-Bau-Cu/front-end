@@ -14,7 +14,7 @@ import MeetingAttendeeService from "@/services/MeetingAttendeeService";
 import ElectionParticipantService from "@/services/ElectionParticipantsService";
 import DelegateCardService from "@/services/DelegateCardService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
-import dayjs from "dayjs";
+import { formatServerDate } from "@/utils/date";
 import { io, Socket } from "socket.io-client";
 import { useNotification } from "@/contexts/NotificationContext";
 import { SOCKET_URL } from "@/config/socket";
@@ -85,7 +85,11 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
                         const newActivity: RecentActivity = {
                             type: "success",
                             name: data.attendee.participantId.userId.fullName || "Người tham gia",
-                            time: dayjs(data.attendee.checkInTime || new Date()).format("HH:mm:ss"),
+                    time: formatServerDate(
+                        data.attendee?.checkInTime || new Date(),
+                        "HH:mm:ss",
+                        { adjustTimezone: Boolean(data.attendee?.checkInTime) }
+                    ),
                         };
                         setRecentActivities((prev) => [newActivity, ...prev].slice(0, 5));
                     }
@@ -198,7 +202,7 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
                 const activities: RecentActivity[] = sorted.map((a: any) => ({
                     type: a.attended ? "success" : "error",
                     name: a.participantId?.userId?.fullName || "Không xác định",
-                    time: dayjs(a.checkInTime).format("HH:mm:ss"),
+                    time: formatServerDate(a.checkInTime, "HH:mm:ss"),
                 }));
 
                 setRecentActivities(activities);
@@ -366,7 +370,7 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
 
     const formatDate = (dateString: string) => {
         if (!dateString) return "N/A";
-        return dayjs(dateString).format("DD/MM/YYYY | HH:mm");
+        return formatServerDate(dateString, "DD/MM/YYYY | HH:mm");
     };
 
     if (loading) {

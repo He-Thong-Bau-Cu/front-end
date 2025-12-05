@@ -7,11 +7,14 @@ import {
   FileTextOutlined
 } from "@ant-design/icons";
 import { Col, Row, Typography } from "antd";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../../../style/voter/ResolutionVoting.model.css";
 import CountdownCard from "./CountdownCard";
 import ResolutionContent from "./ResolutionContent";
+import BoardControlService from "@/services/BoardControlService";
+import { SOCKET_URL } from "@/config/socket";
 
 const { Title } = Typography;
 
@@ -23,8 +26,10 @@ const VotingLayout: React.FC = () => {
   const navigate = useNavigate();
   const [election, setElection] = useState<Election | null>(null);
   const electionId = localStorage.getItem("currentElectionId") || "";
-  const [timeLeft, setTimeLeft] = useState(-1);
-  const isInitialLoad = useRef(true);
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(0);
+  const [canVote, setCanVote] = useState(false);
+  const [stageInfo, setStageInfo] = useState<{ currentStage: string; stageStatus: string; message?: string } | null>(null);
+  const lastTickRef = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchElection = async () => {
@@ -40,101 +45,174 @@ const VotingLayout: React.FC = () => {
   }, [electionId]);
 
 
-  useEffect(() => {
-    const loadVotingTime = async () => {
-      try {
-        if (!electionId) return;
+  const calculateCurrentStage = useCallback((timeline: any = {}, stages: any = {}) => {
+    let currentStage = 'not_started';
+    let stageStartedAt: Date | null = null;
+    let stageStatus = 'NOT_STARTED';
 
-        const res = await ElectionService.getCurrentStage(electionId);
-        const stage = res.data.data || res.data;
-        if (!stage) return;
-
-        const votingStage = stage.stages?.voting;
-        const votingAt = stage.timeline?.votingAt;
-        const resultAnnouncedAt = stage.timeline?.resultAnnouncedAt;
-
-        if (!votingAt) return;
-
-        if (votingStage !== "STARTED" || resultAnnouncedAt) {
-          setTimeLeft(0);
-          return;
-        }
-
-        const localVotingAtString = votingAt.endsWith('Z')
-          ? votingAt.slice(0, -1)
-          : votingAt;
-        const start = new Date(localVotingAtString).getTime();
-
-        const durationMinutes = 30;
-        const end = start + durationMinutes * 60 * 1000;
-        const now = Date.now();
-
-        if (now < start) {
-          setTimeLeft(-1);
-          return;
-        }
-
-        if (now >= end) {
-          setTimeLeft(0);
-          return;
-        }
-
-
-
-        setTimeLeft(Math.floor((end - now) / 1000));
-      } catch (err) {
-        console.error("loadVotingTime error:", err);
+    if (timeline.checkinAt && stages.checkin !== 'COMPLETED') {
+      currentStage = 'checkin';
+      stageStartedAt = timeline.checkinAt ?? null;
+      stageStatus = 'STARTED';
+    } else if (stages.checkin === 'COMPLETED' && timeline.reportAt && stages.report !== 'COMPLETED') {
+      currentStage = 'report';
+      stageStartedAt = timeline.reportAt ?? null;
+      stageStatus = 'STARTED';
+    } else if (stages.report === 'COMPLETED' && timeline.votingAt && stages.voting !== 'COMPLETED') {
+      currentStage = 'voting';
+      stageStartedAt = timeline.votingAt ?? null;
+      stageStatus = 'STARTED';
+    } else if (stages.voting === 'COMPLETED' && timeline.resultAnnouncedAt && stages.result !== 'COMPLETED') {
+      currentStage = 'result';
+      stageStartedAt = timeline.resultAnnouncedAt ?? null;
+      stageStatus = 'STARTED';
+    } else if (stages.result === 'COMPLETED' && timeline.closingAt && stages.closing !== 'COMPLETED') {
+      currentStage = 'closing';
+      stageStartedAt = timeline.closingAt ?? null;
+      stageStatus = 'STARTED';
+    } else if (stages.closing === 'COMPLETED') {
+      currentStage = 'completed';
+      stageStartedAt = timeline.closingAt ?? null;
+      stageStatus = 'COMPLETED';
+    } else if (timeline.checkinAt) {
+      if (stages.closing === 'COMPLETED') {
+        currentStage = 'completed';
+        stageStartedAt = timeline.closingAt ?? null;
+        stageStatus = 'COMPLETED';
+      } else if (stages.result === 'COMPLETED') {
+        currentStage = 'result';
+        stageStartedAt = timeline.resultAnnouncedAt ?? null;
+        stageStatus = 'COMPLETED';
+      } else if (stages.voting === 'COMPLETED') {
+        currentStage = 'voting';
+        stageStartedAt = timeline.votingAt ?? null;
+        stageStatus = 'COMPLETED';
+      } else if (stages.report === 'COMPLETED') {
+        currentStage = 'report';
+        stageStartedAt = timeline.reportAt ?? null;
+        stageStatus = 'COMPLETED';
+      } else if (stages.checkin === 'COMPLETED') {
+        currentStage = 'checkin';
+        stageStartedAt = timeline.checkinAt ?? null;
+        stageStatus = 'COMPLETED';
       }
-    };
+    }
 
-    loadVotingTime();
-  }, [electionId]);
+    return { currentStage, stageStartedAt, stageStatus, timeline, stages };
+  }, []);
+
+  const updateStageState = useCallback((timeline: any = {}, stages: any = {}) => {
+    const stageData = calculateCurrentStage(timeline, stages);
+    const isActive = stageData.currentStage === 'voting' && stageData.stageStatus === 'STARTED';
+
+    let message = '';
+    if (!isActive) {
+      if (stageData.currentStage === 'not_started' || stageData.currentStage === 'checkin' || stageData.currentStage === 'report') {
+        message = 'Chưa đến giai đoạn bỏ phiếu.';
+      } else if (stageData.currentStage === 'result' || stageData.currentStage === 'completed' || stages.voting === 'COMPLETED') {
+        message = 'Giai đoạn bỏ phiếu đã kết thúc.';
+      }
+    }
+
+    setCanVote(isActive);
+    setStageInfo({ ...stageData, message });
+  }, [calculateCurrentStage]);
+
+  const loadStageAndTimer = useCallback(async () => {
+    try {
+      if (!electionId) return;
+      const stageResponse = await ElectionService.getCurrentStage(electionId);
+      const stagePayload = stageResponse?.data?.data ?? stageResponse?.data ?? stageResponse ?? {};
+      const timeline = stagePayload.timeline || {};
+      const stages = stagePayload.stages || {};
+      updateStageState(timeline, stages);
+
+      const overviewRes: any = await BoardControlService.getVotingOverview(electionId);
+      const overview = overviewRes?.data || overviewRes;
+      const seconds = overview?.data?.timer?.timeLeftSeconds ?? overview?.timer?.timeLeftSeconds ?? 0;
+      setTimeLeftSeconds(Math.max(seconds, 0));
+    } catch (err) {
+      console.error("loadVotingTime error:", err);
+    }
+  }, [electionId, updateStageState]);
+
+  const lockBallot = useCallback(async () => {
+    if (!ballotId) return;
+    const ballot = await BallotService.getBallotById(ballotId);
+    if (!ballot || ballot.status !== "ACTIVE") return;
+
+    showLoading();
+    try {
+      await BallotService.updateBallot(ballotId, {
+        electionId: localStorage.getItem("currentElectionId"),
+        voterId: localStorage.getItem("voterId"),
+        status: "LOCKED",
+      });
+      notify("Phiếu bầu đã bị khóa do hết thời gian!", "error");
+      navigate("/voter/ballots");
+    } catch (error: any) {
+      notify("Khóa phiếu bầu không thành công", "error");
+    } finally {
+      hideLoading();
+    }
+  }, [ballotId, hideLoading, navigate, notify, showLoading]);
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    loadStageAndTimer();
+  }, [loadStageAndTimer]);
+
+  useEffect(() => {
+    if (!electionId) return;
+
+    const socket: Socket = io(SOCKET_URL, { transports: ["websocket"] });
+    socket.on("connect", () => {
+      socket.emit("join", electionId);
+    });
+
+    socket.on("transferData", (data: any) => {
+      if (data.type === "stage-started" || data.type === "stage-ended" || data.type === "ballot-cast") {
+        loadStageAndTimer();
+      }
+    });
+
+    socket.on("transferStateDataRT", (data: any) => {
+      if (data.type === "meeting-status-changed" && data.payload?.election) {
+        const election = data.payload.election;
+        updateStageState(election.timeline || {}, election.stages || {});
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [electionId, loadStageAndTimer, updateStageState]);
+
+  useEffect(() => {
+    if (!canVote || timeLeftSeconds <= 0) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => Math.max(prev - 1, 0));
+      setTimeLeftSeconds(prev => Math.max(prev - 1, 0));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [canVote, timeLeftSeconds]);
 
-
-  // 🔥 Lock khi hết giờ thật sự
   useEffect(() => {
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false;
+    if (!canVote) {
+      lastTickRef.current = timeLeftSeconds;
       return;
     }
 
-    if (timeLeft !== 0) return;
+    const prev = lastTickRef.current;
+    if (prev !== null && prev > 0 && timeLeftSeconds === 0) {
+      lockBallot();
+    }
+    lastTickRef.current = timeLeftSeconds;
+  }, [timeLeftSeconds, canVote, lockBallot]);
 
-    const lockBallot = async () => {
-      const ballot = await BallotService.getBallotById(ballotId);
-      if (!ballot || ballot.status !== "ACTIVE") return;
-
-      showLoading();
-      try {
-        await BallotService.updateBallot(ballotId, {
-          electionId: localStorage.getItem("currentElectionId"),
-          voterId: localStorage.getItem("voterId"),
-          status: "LOCKED",
-        });
-        notify("Phiếu bầu đã bị khóa do hết thời gian!", "error");
-        navigate("/voter/ballots");
-      } catch (error: any) {
-        notify("Khóa phiếu bầu không thành công", "error");
-      } finally {
-        hideLoading();
-      }
-    };
-
-    lockBallot();
-  }, [timeLeft]);
-
-  const minutes = timeLeft > 0 ? Math.floor(timeLeft / 60) : 0;
-  const seconds = timeLeft > 0 ? (timeLeft % 60).toString().padStart(2, "0") : "00";
+  const minutes = timeLeftSeconds > 0 ? Math.floor(timeLeftSeconds / 60) : 0;
+  const seconds = timeLeftSeconds > 0 ? (timeLeftSeconds % 60).toString().padStart(2, "0") : "00";
+  const isVotingWindow = canVote && timeLeftSeconds > 0;
 
 
 
@@ -185,7 +263,7 @@ const VotingLayout: React.FC = () => {
 
       <Row gutter={[32, 32]}>
         <Col xs={24} lg={16}>
-          <ResolutionContent />
+          <ResolutionContent isVotingWindow={isVotingWindow} stageMessage={stageInfo?.message} />
         </Col>
         <Col xs={24} lg={8}>
           <CountdownCard minutes={minutes} seconds={seconds} />

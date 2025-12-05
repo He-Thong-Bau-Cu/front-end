@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from "react";
-import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
 import { message } from "antd";
 import ArchiveSearchBar from "../../components/board_of_control/reports-achive/ArchiveSearchBar";
@@ -10,6 +9,7 @@ import removeVietnameseTones from "@/utils/removeVietnameseTones";
 import ReportService from "@/services/ReportService.interface";
 import { Report } from "@/types/Report.interface";
 import { useLoading } from "@/contexts/LoadingContext";
+import { formatServerDate } from "@/utils/date";
 
 // Type mapping
 const TYPE_MAP: Record<string, string> = {
@@ -24,10 +24,10 @@ const TYPE_MAP: Record<string, string> = {
 // Map Report từ API sang ReportArchiveItem
 const mapReportToArchiveItem = (report: Report): ReportArchiveItem => {
   const date = report.createdAt
-    ? dayjs(report.createdAt).format("DD/MM/YYYY")
+    ? formatServerDate(report.createdAt, "DD/MM/YYYY", { fallback: "-" })
     : report.reviewedAt
-      ? dayjs(report.reviewedAt).format("DD/MM/YYYY")
-      : dayjs().format("DD/MM/YYYY");
+      ? formatServerDate(report.reviewedAt, "DD/MM/YYYY", { fallback: "-" })
+      : formatServerDate(new Date(), "DD/MM/YYYY", { adjustTimezone: false, fallback: "-" });
 
   const signer = report.signedBy?.fullName || report.signedBy?.username || "-";
   const event = report.electionId?.title || "-";
