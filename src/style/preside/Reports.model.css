@@ -8,7 +8,7 @@
 }
 
 /* Giới hạn vùng nội dung để không quá rộng trên màn hình lớn */
-.reports-container > * {
+.reports-container>* {
   width: 100%;
   /* max-width: 1280px; */
 }
@@ -28,99 +28,62 @@
 }
 
 /* ====== Grid báo cáo ====== */
+/* ====== GRID REPORT ====== */
 .report-grid {
   display: grid;
-  gap: clamp(16px, 2vw, 24px);
-  width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+
+  /* KHÔNG FULL-WIDTH | KHÔNG FIX WIDTH | CO GIÃN TỰ NHIÊN */
+  grid-template-columns: repeat(auto-fit, minmax(260px, max-content));
+
+  justify-content: flex-start; /* hoặc center nếu muốn */
 }
 
-/* ====== Card báo cáo ====== */
+
+/* ====== REPORT CARD (ĐÃ GỠ FIX WIDTH/HEIGHT) ====== */
 .report-card {
-  background: #fff;
-  border: 1px solid #e0f2e9;
-  border-radius: 12px;
-  padding: clamp(16px, 2vw, 24px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  /* XÓA: width: 280px; height: 280px; */
+  width: auto;
+  height: auto;
+background-color: #e7f7dc;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 220px;
+
+  border-radius: 12px;
+  transition: all 0.2s ease-in-out;
+
+  /* Cho card đẹp hơn khi co giãn */
+  padding: 16px;
 }
 
-.report-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-3px);
+/* Nếu muốn card không bị kéo dài theo nội dung */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-/* ====== Nội dung trong card ====== */
-.report-icon {
-  font-size: clamp(22px, 2vw, 28px);
-  color: #52c41a;
-  margin-bottom: 8px;
-}
-
+/* ====== TITLE VÀ DESC VẪN GIỮ ĐÚNG CHỐT CHIỀU CAO ====== */
 .report-title {
-  font-size: clamp(15px, 1.6vw, 18px);
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  min-height: 42px;
+  overflow: hidden;
 }
 
 .report-desc {
   color: #666;
+  font-size: 14px;
+  min-height: 38px;
+  overflow: hidden;
   margin: 8px 0 16px;
-  font-size: clamp(13px, 1.4vw, 14px);
   line-height: 1.5;
-  flex-grow: 1;
 }
 
-/* ====== Nút xuất báo cáo ====== */
-.report-btn {
-  background: #b7eb8f;
-  border: none;
-  width: 100%;
-  border-radius: 8px;
-  font-weight: 500;
-  color: #000;
-  height: 40px;
-  font-size: clamp(13px, 1.5vw, 14px);
-}
-
-.report-btn:hover {
-  background: #95de64 !important;
-}
-
-/* ====== Responsive đặc biệt cho màn nhỏ ====== */
-@media (max-width: 768px) {
-  .report-filter {
-    justify-content: center;
-  }
-
-  .report-btn {
-    height: 36px;
-  }
-
-  .report-card {
-    min-height: 180px;
-  }
-}
-
-@media (max-width: 480px) {
-  .reports-container {
-    padding: 16px;
-  }
-
-  .report-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .report-title {
-    font-size: 15px;
-  }
-
-  .report-desc {
-    font-size: 13px;
-  }
+/* ====== FOOTER (NÚT) ====== */
+.report-card .card-content > div:last-child {
+  margin-top: auto;
+  margin-bottom: 20px;
 }

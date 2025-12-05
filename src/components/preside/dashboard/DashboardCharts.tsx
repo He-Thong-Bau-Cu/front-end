@@ -22,8 +22,8 @@ const DashboardCharts = () => {
                 const data = await SystemService.getDashboardChart();
                 setCharts(data);
                 console.log(charts)
-            } catch (error) {
-                message.error("Không thể tải thông tin người dùng!");
+            } catch (err: any) {
+                notify(err.response?.data?.message, "error");
             }
         };
         fetchUser();

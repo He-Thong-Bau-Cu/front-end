@@ -77,7 +77,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             const res = await DelegationService.getDelegationPresideByElectionId(recordId);
             setData(res[0]);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         } finally {
             setLoading(false);
         }
@@ -135,7 +135,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             setRejectModalOpen(false);
             // setSelectedDelegations([]);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         }
     };
 
@@ -162,7 +162,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             setModalOpen(true);
 
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         }
     };
     const downloadUrlFile = async () => {
@@ -181,7 +181,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             a.click();
             URL.revokeObjectURL(url);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         }
     };
 
@@ -204,7 +204,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 notify(res.message, "error");
             }
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         } finally {
             hideLoading();
         }
