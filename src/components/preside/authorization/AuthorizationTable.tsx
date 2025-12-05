@@ -77,7 +77,7 @@ const AuthorizationTable = () => {
             setRawData(list);
             setData(list);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         } finally {
             setLoading(false);
         }
@@ -102,29 +102,6 @@ const AuthorizationTable = () => {
         setDetailOpen(true);
     };
 
-    // ================== TẢI FILE ==================
-    // const downloadUrlFile = async (data: SummaryDelegate) => {
-    //     try {
-    //         const response = await DelegationService.getSummaryDelegationPdf({
-    //             secretaryId: "651f0a7c1f2b4d1a12345678",
-    //             electionId: data?.election?._id,
-    //             recipient: "Chủ tịch",
-    //         });
-
-    //         const blob = new Blob([response], { type: "application/pdf" });
-    //         const url = URL.createObjectURL(blob);
-    //         const a = document.createElement("a");
-    //         a.href = url;
-    //         a.download = "Danh_sach_uy_quyen.pdf";
-    //         a.click();
-
-    //         URL.revokeObjectURL(url);
-    //     } catch (err: any) {
-    //         notify(err.message, "error");
-    //     }
-    // };
-
-    
     const downloadUrlFileSign = async (data: any) => {
         try {
             const data1 = await ElectionDocumentService.getDocumentByElectionId(
@@ -141,7 +118,7 @@ const AuthorizationTable = () => {
 
             URL.revokeObjectURL(url);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         }
     };
 
@@ -219,7 +196,7 @@ const AuthorizationTable = () => {
         {
             title: "Thao tác",
             render: (_: any, record: any) => {
-                
+
                 return (
                     <Space>
                         <Button

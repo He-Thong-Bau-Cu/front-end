@@ -64,7 +64,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
       const res = await ElectionService.getElectionUser(body);
       setUserList(res);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -135,11 +135,11 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
         <FileTextOutlined className="header-icon" />
         <div>
           <h2 className="header-title">
-            {editMode ? "Chỉnh sửa nghị quyết bầu cử" : "Tạo nghị quyết bầu cử"}
+            {editMode ? "Chỉnh sửa quyết định bầu cử" : "Tạo quyết định bầu cử"}
           </h2>
           <p className="header-sub">
             {editMode
-              ? "Cập nhật thông tin nghị quyết bầu cử"
+              ? "Cập nhật thông quyết định bầu cử"
               : "Nhập đầy đủ thông tin cần thiết"}
           </p>
         </div>
@@ -165,10 +165,10 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
           <Col span={24}>
             <Form.Item
               name="decisionName"
-              label="Tên nghị quyết"
-              rules={[{ required: true, message: "Vui lòng nhập tên nghị quyết" }]}
+              label="Tên quyết định"
+              rules={[{ required: true, message: "Vui lòng nhập tên quyết định" }]}
             >
-              <Input placeholder="Nhập tên nghị quyết" />
+              <Input placeholder="Nhập tên quyết định" />
             </Form.Item>
           </Col>
 
@@ -286,11 +286,11 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
           <Col span={24}>
             <Form.Item
               name="statusData"
-              label="Trạng thái nghị quyết"
-              rules={[{ required: true, message: "Vui lòng chọn trạng thái nghị quyết" }]}
+              label="Trạng thái quyết định"
+              rules={[{ required: true, message: "Vui lòng chọn trạng thái quyết định" }]}
             >
               <Select
-                placeholder="Chọn trạng thái nghị quyết"
+                placeholder="Chọn trạng thái quyết định"
                 allowClear
               >
                 <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu (Chờ thư ký nhập dữ liệu)</Option>
@@ -305,7 +305,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
         <div className="modal-footer">
           <Button onClick={onCancel}>Hủy</Button>
           <Button type="primary" htmlType="submit">
-            {editMode ? "Cập nhật nghị quyết" : "Tạo nghị quyết"}
+            {editMode ? "Cập nhật quyết định" : "Tạo quyết định"}
           </Button>
         </div>
       </Form>

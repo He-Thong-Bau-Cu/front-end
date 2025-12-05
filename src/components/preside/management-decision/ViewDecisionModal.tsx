@@ -23,9 +23,7 @@ import {
   EyeOutlined,
   DownloadOutlined,
   SearchOutlined,
-  EditOutlined,
 } from "@ant-design/icons";
-import CandidateDetailModal from "./CandidateDetailModal";
 import FileService from "@/services/FileService";
 import { useNotification } from "@/contexts/NotificationContext";
 import { Col } from "antd/lib";
@@ -49,7 +47,6 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   onClose,
   data,
   loading = false,
-
   voters = [],
   organize = [],
   electionentities = [],
@@ -74,10 +71,9 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       a.href = url;
       a.download = "Danh_sach_uy_quyen_da_ky.pdf";
       a.click();
-
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -90,10 +86,9 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       a.href = url;
       a.download = "Tai_lieu_lien_quan.pdf";
       a.click();
-
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -122,11 +117,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
           case "ACTIVE":
             return <Tag color="green">Hoạt động</Tag>;
           case "INACTIVE":
-            return <Tag color="orange">Không hoạt động</Tag>;
+            return <Tag color="red">Không hoạt động</Tag>;
           case "AUTHORIZED":
-            return <Tag color="red">Được ủy quyền</Tag>;
+            return <Tag color="blue">Được ủy quyền</Tag>;
+          case "PENDING":
+            return <Tag color="orange">Chờ duyệt</Tag>;
           default:
-            return <Tag color="default">Không rõ</Tag>;
+            return <Tag color="default">Không hoạt động</Tag>;
         }
       }
     },
@@ -563,7 +560,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                     <Tooltip title="Có tài liệu đính kèm">
                                       <Button
                                         icon={<DownloadOutlined />}
-                                        onClick={() => downloadUrlFileSign1(selectedCandidate)}
+                                        onClick={() => downloadUrlFileSign1(record)}
                                         style={{ cursor: "pointer", color: "green" }}
                                       >
                                       </Button>

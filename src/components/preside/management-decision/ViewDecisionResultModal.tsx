@@ -26,7 +26,6 @@ interface Props {
 
 const ViewDecisionResultModal: React.FC<Props> = ({ open, onClose, data }) => {
   const election = data && data.length > 0 ? data[0].electionId : undefined;
-
   const columns: ColumnsType<ResultItem> = [
     {
       title: "Tên đề cử / dự án",

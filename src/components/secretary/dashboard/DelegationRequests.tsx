@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import '../../../style/secretary/Dashboard.model.css'
 import DelegationService from "@/services/DelegationService";
 import { SearchOutlined, CloseCircleOutlined, FileDoneOutlined, EyeOutlined } from "@ant-design/icons";
-
+import { useNotification } from "@/contexts/NotificationContext";
 // ================= FORMAT DATE =================
 const formatDate = (str?: string) => {
     if (!str) return "—";
@@ -36,6 +36,7 @@ const renderStatus = (status: string) => {
 const DelegationRequests = () => {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const { notify } = useNotification();
     const [search, setSearch] = useState("");
     const electionId = localStorage.getItem("currentElectionId") || "";
     // ========= Pagination ============
@@ -85,8 +86,8 @@ const DelegationRequests = () => {
             }));
 
             setData(mapped);
-        } catch (err) {
-            console.error("Lỗi load dữ liệu", err);
+        } catch (err: any) {
+            notify(err.message, "error");
         } finally {
             setLoading(false);
         }
@@ -101,20 +102,23 @@ const DelegationRequests = () => {
     const handleSign = async () => {
         const record = confirmSignModal.record;
         if (!record?._id) return;
-
         try {
             message.loading("Đang xác nhận yêu cầu...", 0);
-            await DelegationService.delegationConfirmed({
+            const res = await DelegationService.delegationConfirmed({
                 delegationId: record._id,
                 status: "CONFIRMED",
             });
+            if (res.success) {
+                notify(res.message, "success")
+            } else {
+                notify(res.message, "error")
+            }
             message.destroy();
             message.success("Xác nhận yêu cầu thành công!");
             setConfirmSignModal({ open: false, reject: false, record: null });
             loadData();
-        } catch (err) {
-            message.destroy();
-            message.error("Không thể Xác nhận yêu cầu!");
+        } catch (err: any) {
+            notify(err.response?.data?.message, "error");
         }
     };
 
@@ -143,9 +147,8 @@ const DelegationRequests = () => {
 
             setRejectModal({ open: false, record: null, reject: false, reason: "" });
             loadData();
-        } catch (err) {
-            message.destroy();
-            message.error("Không thể từ chối yêu cầu!");
+        } catch (err: any) {
+            notify(err.response?.data?.message, "error");
         }
     };
 
@@ -171,7 +174,7 @@ const DelegationRequests = () => {
             width: 200,
             render: (_: any, record: any) => (
                 <Space>
-                   
+
                     <Button
                         icon={<FileDoneOutlined />}
                         type="primary"

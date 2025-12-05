@@ -78,9 +78,8 @@ const DecisionList: React.FC = () => {
       const decisionDetail = await DecisionService.getElectionById(record._id);
 
       setViewDecisionData(decisionDetail.data);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Không thể tải chi tiết quyết định. Vui lòng thử lại.";
-      message.error(errorMessage);
+    } catch (err: any) {
+      notify(err.response?.data?.message, "error");
       setViewModalOpen(false);
       setViewDecisionData(null);
     } finally {

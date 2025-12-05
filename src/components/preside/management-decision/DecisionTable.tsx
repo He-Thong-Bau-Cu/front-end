@@ -113,7 +113,7 @@ const DecisionTable = () => {
   }, [searchText]);
 
   const loadDecisions = async (page: number = 1, limit: number = 10) => {
-    setLoading(true);
+    showLoading();
     try {
       const response = await DecisionService.getAllDecisions({
         page,
@@ -128,9 +128,9 @@ const DecisionTable = () => {
         total: response.totalItems || 0,
       });
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
   const handleOpenSign = (data: any) => {
@@ -143,12 +143,12 @@ const DecisionTable = () => {
       setResultData(res);
       setOpenResultModal(true);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     }
   };
   const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
     try {
-      setLoading(true);
+      showLoading();
       let response;
       let secretary;
       if (isEdit && id) {
@@ -162,10 +162,10 @@ const DecisionTable = () => {
         };
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
+          setOpen(false);
           notify(response.message, "success");
         } else {
           notify(response.message, "error");
-
         }
       } else {
         const apiData2: any = {
@@ -177,6 +177,12 @@ const DecisionTable = () => {
           endDate: values.endDate
         };
         response = await DecisionService.createDecision(apiData2);
+        if (response.success) {
+          setOpen(false);
+          notify(response.message, "success");
+        } else {
+          notify(response.message, "error");
+        }
         const apiData3: any = {
           electionId: response.data?._id,
           userId: values.secretaryId,
@@ -185,22 +191,15 @@ const DecisionTable = () => {
           status: "ACTIVE"
         };
         secretary = await ElectionParticipantsService.createParticipant(apiData3);
-        if (response.status === 201 && response.success) {
-          notify(response.message, "success");
-          message.success("Tạo nghị quyết thành công!");
-        } else {
-          notify(response.message, "error");
-          message.error("Không thể tạo nghị quyết. Vui lòng thử lại.");
-        }
       }
       setOpen(false);
-      // setEditMode(false);
+      setEditMode(false);
       setEditingDecision(null);
       await loadDecisions(pagination.current, pagination.pageSize);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
@@ -221,7 +220,7 @@ const DecisionTable = () => {
         notify(res.message, "error");
       }
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     } finally {
       hideLoading();
     }
@@ -249,7 +248,7 @@ const DecisionTable = () => {
       }
       setRejectModal({ open: false, record: null });
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -268,7 +267,7 @@ const DecisionTable = () => {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -292,10 +291,10 @@ const DecisionTable = () => {
           (vr: any) => vr.voterId.userId === voter.userId._id
         );
         if (votingRight) {
-          voter.percent = votingRight.shares; 
+          voter.percent = votingRight.shares;
           voter.statusVoter = votingRight.voterId.status;   // <-- Thêm dòng này
         } else {
-          voter.percent = 0; 
+          voter.percent = 0;
           voter.statusVoter = "INACTIVE";                    // <-- hoặc null tuỳ ý bạn
         }
       });
@@ -305,7 +304,7 @@ const DecisionTable = () => {
 
       setViewDecisionData(decisionDetail.data);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
       setViewModalOpen(false);
       setViewDecisionData(null);
     } finally {
@@ -328,7 +327,7 @@ const DecisionTable = () => {
       setEditingDecision(decisionDetail.data);
       setOpen(true);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     } finally {
       setEditLoading(false);
     }
@@ -452,7 +451,7 @@ const DecisionTable = () => {
     },
   ];
   return (
-    <Card className="decision-table-card" style={{padding:'20px'}}>
+    <Card className="decision-table-card" style={{ padding: '20px' }}>
       <div className="decision-toolbar">
         <Input
           placeholder="Tìm kiếm theo tên quyết định..."
