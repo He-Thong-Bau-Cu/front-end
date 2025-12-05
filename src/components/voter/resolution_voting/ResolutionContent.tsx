@@ -119,8 +119,13 @@ const ResolutionContent: React.FC<ResolutionContentProps> = ({ isVotingWindow, s
       notify("Bỏ phiếu thành công!", "success");
       setSignModalOpen(false);
       navigate("/voter/ballots");
-    } catch {
-      notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư.", "error");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc chứng thư số.";
+
+      notify(msg, "error");
     } finally {
       hideLoading();
     }
