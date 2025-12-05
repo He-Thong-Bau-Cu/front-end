@@ -54,8 +54,8 @@ const VoterStats = () => {
             icon: <FileDoneOutlined />,
             title: "Tổng người tham gia",
             value: statsData.totalParticipants,
-            color: "#4A90E2",
-            bg: "#E8F1FB",
+            color: "#27AE60",
+            bg: "#E8F8F2",
         },
         {
             icon: <CheckCircleOutlined />,
@@ -68,15 +68,15 @@ const VoterStats = () => {
             icon: <UserOutlined />,
             title: "Chưa tham gia",
             value: `${statsData.voterNotActive}`,
-            color: "#8E44AD",
-            bg: "#F4E6FA",
+            color: "#27AE60",
+            bg: "#E8F8F2",
         },
         {
             icon: <BarChartOutlined />,
             title: "Tỷ lệ tham gia",
             value: `${Math.round(statsData.participationPercentage)}%`,
-            color: "#F39C12",
-            bg: "#FFF6E5",
+            color: "#27AE60",
+            bg: "#E8F8F2",
         },
 
     ];
