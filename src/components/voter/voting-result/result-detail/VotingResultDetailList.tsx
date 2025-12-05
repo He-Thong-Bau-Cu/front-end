@@ -148,6 +148,26 @@ const VotingResultDetailList: React.FC = () => {
                             <span className="yesno-count">{yesNoItem.no.count} phiếu</span>
                         </div>
 
+                        <div className="yesno-row">
+                            <span className="yesno-label">Không ý kiến</span>
+                            <span className="yesno-percent abstain">
+                                {yesNoItem.abstain.percent.toFixed(0)}%
+                            </span>
+
+                            <Progress
+                                percent={yesNoItem.abstain.percent}
+                                showInfo={false}
+                                strokeColor="#faad14"
+                                strokeWidth={8}
+                                className="yesno-progress"
+                            />
+
+                            <span className="yesno-count">
+                                {yesNoItem.abstain.count} phiếu
+                            </span>
+                        </div>
+
+
 
 
                     </div>
