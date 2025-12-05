@@ -1,5 +1,6 @@
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import DelegationService from "@/services/DelegationService";
 import styles from "@/style/voter/AuthorizationHistory.module.css";
 import { DelegationSearch, DelegationStatus } from "@/types/Delegate.interface";
@@ -65,6 +66,9 @@ export default function AuthorizationHistory() {
     } | null>(null);
     const { showLoading, hideLoading } = useLoading();
     const { notify } = useNotification();
+    const [signModalOpen, setSignModalOpen] = useState(false);
+    const [currentDelegationId, setCurrentDelegationId] = useState<string | null>(null);
+
 
     useEffect(() => {
         const fetchDelegations = async () => {
@@ -87,6 +91,60 @@ export default function AuthorizationHistory() {
     const blockingDelegation = delegations.find((item) =>
         ["PENDING", "CONFIRMED", "ACTIVE", "SIGNED"].includes(item.status)
     );
+
+    const openSignModal = (id: string) => {
+        setCurrentDelegationId(id);
+        setSignModalOpen(true);
+    };
+
+
+    const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
+        try {
+            showLoading();
+
+            if (!currentDelegationId) {
+                notify("Không tìm thấy yêu cầu ủy quyền!", "error");
+                return;
+            }
+
+            // 1️⃣ Gửi file + password để BE ký
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("password", password);
+            formData.append("delegationId", currentDelegationId);
+
+            const signRes = await DelegationService.delegationApproveVoter(formData);
+
+            if (!signRes?.success) {
+                notify(signRes?.message || "Ký số thất bại!", "error");
+                return;
+            }
+
+            // 2️⃣ Gọi BE cập nhật trạng thái sang PENDING
+            await DelegationService.update(currentDelegationId, {
+                status: "PENDING",
+            });
+
+            notify("Ký số thành công!", "success");
+
+            setSignModalOpen(false);
+
+            // 3️⃣ Cập nhật tại chỗ trong FE
+            setDelegations(prev =>
+                prev.map(item =>
+                    item._id === currentDelegationId
+                        ? { ...item, status: "PENDING" }
+                        : item
+                )
+            );
+
+        } catch (err: any) {
+            notify(err?.response?.data?.message || "Lỗi ký số!", "error");
+        } finally {
+            hideLoading();
+        }
+    };
+
 
 
 
@@ -217,18 +275,39 @@ export default function AuthorizationHistory() {
             title: "Hành động",
             key: "action",
             render: (_: unknown, record: DelegationSearch) => (
-                <Button
-                    className={styles.viewDetailButton}
-                    icon={<EyeOutlined />}
-                    onClick={() => navigate("/voter/authorization-detail", { state: { id: record._id } })}
-                >
-                    Xem chi tiết
-                </Button>
+                <Space>
+                    {/* Nút xem chi tiết */}
+                    <Button
+                        className={styles.viewDetailButton}
+                        icon={<EyeOutlined />}
+                        onClick={() =>
+                            navigate("/voter/authorization-detail", {
+                                state: { id: record._id },
+                            })
+                        }
+                    >
+                    </Button>
+
+                    {/* Nếu trạng thái là DRAFT thì hiện thêm nút "Ký" */}
+                    {record.status === "DRAFT" && (
+                        <Button
+                            shape="circle"
+                            icon={<EditOutlined />}
+                            style={{
+                                border: "1px solid #3ca860",
+                                color: "#3ca860",
+                                background: "white",
+                            }}
+                            onClick={() => openSignModal(record._id)}
+                        />
+                    )}
+                </Space>
             ),
         },
     ];
 
     return (
+
         <Card
             className={styles.delegationHistoryCard}
             title={
@@ -297,6 +376,12 @@ export default function AuthorizationHistory() {
                 scroll={{ x: 1000 }}
                 style={{ background: "transparent" }}
             />
+            <DigitalSignModal
+                open={signModalOpen}
+                onClose={() => setSignModalOpen(false)}
+                onSubmit={handleDigitalSign}
+            />
+
         </Card>
     );
 }
