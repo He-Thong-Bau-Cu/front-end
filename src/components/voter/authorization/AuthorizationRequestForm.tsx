@@ -131,9 +131,13 @@ export default function AuthorizationRequestForm() {
             setModalOpen(false);
             navigate(-2);
 
-        } catch (err) {
-            console.error(err);
-            notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư số", "error");
+        } catch (err: any) {
+            const msg =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư số";
+
+            notify(msg, "error");
         } finally {
             hideLoading();
         }

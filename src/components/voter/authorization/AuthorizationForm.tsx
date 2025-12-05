@@ -92,8 +92,12 @@ export default function AuthorizationForm() {
             setTempPayload({ draftId: draft._id });
             setModalOpen(true);
 
-        } catch (err) {
-            notify("Lỗi khi tạo bản nháp ủy quyền!", "error");
+        } catch (err: any) {
+            const msg =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Lỗi khi tạo ủy quyền!";
+            notify(msg, "error");
         } finally {
             hideLoading();
         }
@@ -172,9 +176,13 @@ export default function AuthorizationForm() {
             setModalOpen(false);
             navigate(-2);
 
-        } catch (err) {
-            console.error(err);
-            notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư số", "error");
+        } catch (err: any) {
+            const msg =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư số";
+
+            notify(msg, "error");
         } finally {
             hideLoading();
         }
