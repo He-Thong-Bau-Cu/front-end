@@ -16,6 +16,58 @@ import MeetingService from "@/services/MeetingService";
 import SystemConfigService from "@/services/SystemConfigService";
 import ElectionService from "@/services/ElectionService";
 import "../../style/head-of-the-organizing-committee/VotingDashboard.model.css";
+import { io, Socket } from "socket.io-client";
+import { SOCKET_URL } from "@/config/socket";
+
+const formatSecondsToClock = (seconds: number): string => {
+  if (!seconds || seconds <= 0) return "00:00:00";
+  const h = Math.floor(seconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const m = Math.floor((seconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${h}:${m}:${s}`;
+};
+
+const normalizeVoteDurationMinutes = (configValue: any, defaultMinutes = 30): number => {
+  if (configValue == null) return defaultMinutes;
+
+  let rawNumber: number | null = null;
+
+  if (typeof configValue === 'number') {
+    rawNumber = configValue;
+  } else if (typeof configValue === 'string') {
+    const p = parseFloat(configValue);
+    rawNumber = isNaN(p) ? null : p;
+  } else if (typeof configValue === 'object' && configValue !== null) {
+    if (typeof configValue.value === 'number') rawNumber = configValue.value;
+    else if (typeof configValue.minutes === 'number') rawNumber = configValue.minutes;
+    else if (typeof configValue.amount === 'number') rawNumber = configValue.amount;
+    else if (typeof configValue.total === 'number') rawNumber = configValue.total;
+    else {
+      const first = Object.values(configValue)[0];
+      if (typeof first === 'number') rawNumber = first;
+      else if (typeof first === 'string') {
+        const p = parseFloat(first as string);
+        rawNumber = isNaN(p) ? null : p;
+      }
+    }
+  }
+
+  if (rawNumber == null) return defaultMinutes;
+  if (rawNumber > 86400) {
+    rawNumber = rawNumber / 60000;
+  } else if (rawNumber >= 1000 && rawNumber <= 86400) {
+    rawNumber = rawNumber / 60;
+  }
+
+  const minutes = Math.max(1, Math.min(Math.round(rawNumber), 1440));
+  return minutes;
+};
 
 export default function VotingDashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -32,74 +84,11 @@ export default function VotingDashboardPage() {
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(0);
   const [isVotingCompleted, setIsVotingCompleted] = useState<boolean>(false);
   const [autoEndTriggered, setAutoEndTriggered] = useState<boolean>(false);
-  // Lưu thông tin để tính toán lại thời gian còn lại
   const votingStartTimeRef = useRef<number | null>(null);
   const voteDurationSecondsRef = useRef<number>(0);
-  // Sử dụng votingEndTimeRef làm nguồn truth cho countdown (vừa có thể là end dự kiến khi timeline đã bắt đầu,
-  // vừa có thể là end của countdown bắt đầu từ client trước khi timeline.votingAt)
   const votingEndTimeRef = useRef<number | null>(null);
-  // state để trigger/use trong effect (ref không trigger re-render)
   const [votingEndAt, setVotingEndAt] = useState<number | null>(null);
 
-  const formatSecondsToClock = (seconds: number): string => {
-    if (!seconds || seconds <= 0) return "00:00:00";
-    const h = Math.floor(seconds / 3600)
-      .toString()
-      .padStart(2, "0");
-    const m = Math.floor((seconds % 3600) / 60)
-      .toString()
-      .padStart(2, "0");
-    const s = Math.floor(seconds % 60)
-      .toString()
-      .padStart(2, "0");
-    return `${h}:${m}:${s}`;
-  };
-
-  // helper: chuẩn hoá config value -> minutes (1..1440)
-  const normalizeVoteDurationMinutes = (configValue: any, defaultMinutes = 30): number => {
-    if (configValue == null) return defaultMinutes;
-
-    let rawNumber: number | null = null;
-
-    if (typeof configValue === 'number') {
-      rawNumber = configValue;
-    } else if (typeof configValue === 'string') {
-      const p = parseFloat(configValue);
-      rawNumber = isNaN(p) ? null : p;
-    } else if (typeof configValue === 'object' && configValue !== null) {
-      if (typeof configValue.value === 'number') rawNumber = configValue.value;
-      else if (typeof configValue.minutes === 'number') rawNumber = configValue.minutes;
-      else if (typeof configValue.amount === 'number') rawNumber = configValue.amount;
-      else if (typeof configValue.total === 'number') rawNumber = configValue.total;
-      else {
-        const first = Object.values(configValue)[0];
-        if (typeof first === 'number') rawNumber = first;
-        else if (typeof first === 'string') {
-          const p = parseFloat(first as string);
-          rawNumber = isNaN(p) ? null : p;
-        }
-      }
-    }
-
-    if (rawNumber == null) return defaultMinutes;
-
-    // Detect units robustly:
-    // - If value is very large (> 86400) assume milliseconds -> convert to minutes
-    // - Else if value between 1000 and 86400 assume seconds -> convert to minutes
-    // - Else treat as minutes
-    if (rawNumber > 86400) {
-      // milliseconds -> minutes
-      rawNumber = rawNumber / 60000;
-    } else if (rawNumber >= 1000 && rawNumber <= 86400) {
-      // seconds -> minutes
-      rawNumber = rawNumber / 60;
-    }
-
-    const minutes = Math.max(1, Math.min(Math.round(rawNumber), 1440));
-    return minutes;
-  };
-
-  // Hàm tính toán thời gian còn lại từ thời gian thực
   const calculateTimeRemaining = useCallback((): number => {
     if (isVotingCompleted || !votingEndTimeRef.current) return 0;
     const now = Date.now();
@@ -108,7 +97,7 @@ export default function VotingDashboardPage() {
     return 0;
   }, [isVotingCompleted]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const electionId = localStorage.getItem("currentElectionId");
@@ -254,19 +243,15 @@ export default function VotingDashboardPage() {
         setCandidates(candidatesList);
       } catch (error: any) {
         console.error("Error loading results:", error);
-        // Nếu không có results, có thể thử lấy từ cumulative hoặc yes/no
       }
 
-      // Lấy danh sách ballots đã cast để tạo vote logs
       try {
         const ballotsResponse: any = await BallotService.getAllBallotsByElectionId(electionId);
-        // Xử lý cả 2 trường hợp: ballotsResponse có thể là Ballot[] hoặc BaseResponse<Ballot[]>
         const ballotsData = Array.isArray(ballotsResponse)
             ? ballotsResponse
             : (ballotsResponse?.data || ballotsResponse || []);
         const ballotsList = Array.isArray(ballotsData) ? ballotsData : [];
 
-        // Filter chỉ lấy ballots đã cast và có castAt
         const castBallots = ballotsList
           .filter((ballot: any) => ballot.status === "CAST" && ballot.castAt)
           .sort((a: any, b: any) => {
@@ -276,7 +261,6 @@ export default function VotingDashboardPage() {
           })
           .slice(0, 20); // Lấy 20 mục gần nhất
 
-        // Map thành vote logs
         const logs: VoteLog[] = castBallots.map((ballot: any, index: number) => {
           const castTime = ballot.castAt ? new Date(ballot.castAt).toLocaleTimeString("vi-VN", {
             hour: "2-digit",
@@ -301,13 +285,40 @@ export default function VotingDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [calculateTimeRemaining]);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // Tự động kết thúc giai đoạn bỏ phiếu khi hết thời gian
+  useEffect(() => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) return;
+
+    const socket: Socket = io(SOCKET_URL, { transports: ["websocket"] });
+    socket.on("connect", () => socket.emit("join", electionId));
+
+    const handleRealtime = (data: any) => {
+      console.log("[SOCKET transferData]", data);
+      if (data.type === "ballot-cast" || data.type === "stage-started" || data.type === "stage-ended") {
+        loadData();
+      }
+    };
+
+    socket.on("transferData", handleRealtime);
+    socket.on("transferStateDataRT", (data: any) => {
+      console.log("[SOCKET transferStateDataRT]", data);
+      if (data.type === "meeting-status-changed") {
+        loadData();
+      }
+    });
+
+    return () => {
+      socket.off("transferData", handleRealtime);
+      socket.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     const autoEndVoting = async () => {
       if (isVotingCompleted || autoEndTriggered || timeLeftSeconds > 0) {
@@ -319,8 +330,6 @@ export default function VotingDashboardPage() {
         return;
       }
 
-      // Kiểm tra xem voting stage có thực sự đã bắt đầu chưa
-      // Lấy lại election data để kiểm tra timeline.votingAt
       try {
         const eventStatsResponse = await MeetingService.getEventManagementStats(electionId);
         const eventStats = eventStatsResponse?.data || eventStatsResponse;
@@ -328,26 +337,21 @@ export default function VotingDashboardPage() {
         const timeline = election.timeline || {};
 
         if (!timeline.votingAt) {
-          // Chưa bắt đầu voting stage, không tự động kết thúc
           console.log("Voting stage chưa bắt đầu, không tự động kết thúc");
           return;
         }
 
-        // Chỉ tự động kết thúc nếu thời gian đã thực sự hết (đợi ít nhất 2 giây sau khi bắt đầu để tránh race condition)
         const votingStartTime = new Date(timeline.votingAt).getTime();
         const now = new Date().getTime();
         const timeSinceStart = (now - votingStartTime) / 1000; // seconds
 
-        // Nếu mới bắt đầu (< 2 giây), không tự động kết thúc (có thể do tính toán sai)
         if (timeSinceStart < 2) {
           console.warn("Voting just started, skipping auto-end to avoid race condition");
           return;
         }
 
-        // Lấy lại config để tính toán lại thời gian còn lại
         const configResponse = await SystemConfigService.getByKey('TIME_VOTE_ELECTION');
         const config: any = configResponse?.data || configResponse;
-        // Xử lý cả 2 trường hợp: config có thể là SystemConfig hoặc BaseResponse<SystemConfig>
         const configValue = (config?.data?.configValue !== undefined)
             ? config.data.configValue
             : config?.configValue;
@@ -361,7 +365,6 @@ export default function VotingDashboardPage() {
           const votingEndTime = votingStartTime + (voteDurationSeconds * 1000);
           const timeRemaining = votingEndTime - now;
 
-          // Nếu vẫn còn thời gian (> 5 giây), không tự động kết thúc
           if (timeRemaining > 5000) {
             console.log("Vẫn còn thời gian, không tự động kết thúc");
             return;
@@ -375,40 +378,32 @@ export default function VotingDashboardPage() {
           setIsVotingCompleted(true);
           setTimeLeft("00:00:00");
           setTimeLeftSeconds(0);
-          // Reload data để cập nhật trạng thái
           loadData();
         } catch (error: any) {
           console.error("Error auto-ending voting stage:", error);
           message.error(error?.response?.data?.message || "Không thể tự động kết thúc giai đoạn bỏ phiếu");
-          setAutoEndTriggered(false); // Reset để có thể thử lại
+          setAutoEndTriggered(false);
         }
       } catch (error: any) {
         console.error("Error checking voting status:", error);
-        // Không tự động kết thúc nếu có lỗi khi kiểm tra
       }
     };
 
-    // Chỉ tự động kết thúc nếu đã load data xong và thời gian = 0
     if (timeLeftSeconds === 0 && !isVotingCompleted && !autoEndTriggered && !loading) {
-      // Delay một chút để đảm bảo data đã load xong
       const timeoutId = setTimeout(() => {
         autoEndVoting();
       }, 1000);
 
       return () => clearTimeout(timeoutId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeftSeconds, isVotingCompleted, autoEndTriggered, loading]);
 
-  // Timer đếm ngược mỗi giây - tính lại từ thời gian thực
   useEffect(() => {
-    // Nếu không có end time, hiển thị 00:00:00
     if (isVotingCompleted || !votingEndAt) {
       if (timeLeftSeconds <= 0) setTimeLeft("00:00:00");
       return;
     }
 
-    // Tính toán lại thời gian còn lại từ votingEndTimeRef mỗi giây
     const updateTimer = () => {
       const seconds = calculateTimeRemaining();
       if (seconds > 0) {

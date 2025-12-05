@@ -48,17 +48,19 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
 
     // Tính thời gian đã trôi qua từ khi meeting bắt đầu
     useEffect(() => {
+        const statusRunning = meeting?.status === "ONGOING";
         if (stats) {
-            setIsRunning(stats.isRunning);
+            setIsRunning(stats.isRunning || statusRunning);
+        } else {
+            setIsRunning(statusRunning);
         }
 
         // Tìm thời điểm bắt đầu meeting (từ timeline hoặc createdAt)
         if (meeting) {
-            // Ưu tiên lấy từ timeline (checkinAt là giai đoạn đầu tiên)
             const timeline = election?.timeline || {};
             let startTime: Date | null = null;
 
-            // Tìm giai đoạn đầu tiên đã bắt đầu
+            // Ưu tiên lấy từ timeline (checkinAt là giai đoạn đầu tiên)
             if (timeline.checkinAt) {
                 startTime = new Date(timeline.checkinAt);
             } else if (timeline.reportAt) {
@@ -69,9 +71,13 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                 startTime = new Date(meeting.createdAt);
             }
 
+            // Nếu đang ONGOING mà chưa có mốc, dùng thời điểm hiện tại làm mốc
+            if (!startTime && statusRunning) {
+                startTime = new Date();
+            }
+
             if (startTime) {
                 setMeetingStartTime(startTime.getTime());
-                // Tính thời gian đã trôi qua
                 const now = new Date().getTime();
                 const elapsed = Math.floor((now - startTime.getTime()) / 1000);
                 setTimeElapsed(Math.max(0, elapsed));

@@ -1,6 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { message } from "antd";
 import { useNotification } from "@/contexts/NotificationContext";
 import { SOCKET_URL } from "@/config/socket";
 
@@ -23,6 +22,12 @@ const NotificationListener: React.FC<NotificationListenerProps> = ({
   onNewNotification,
 }) => {
   const { notify } = useNotification();
+  const callbackRef = useRef<typeof onNewNotification>();
+
+  // keep latest callback without re-subscribing socket
+  useEffect(() => {
+    callbackRef.current = onNewNotification;
+  }, [onNewNotification]);
 
   useEffect(() => {
     if (!userId) return;
@@ -43,14 +48,14 @@ const NotificationListener: React.FC<NotificationListenerProps> = ({
     socket.on("notification", (data: INotification) => {
       console.log("Notification received:", data);
       notify(data.message, "info");
-      onNewNotification?.(data);
+      callbackRef.current?.(data);
     });
 
     return () => {
       socket.disconnect();
       console.log("Socket disconnected");
     };
-  }, [userId, onNewNotification, notify]);
+  }, [userId, notify]);
 
   return null;
 };

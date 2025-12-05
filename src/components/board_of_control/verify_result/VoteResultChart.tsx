@@ -9,11 +9,11 @@ export default function VoteResultChart({ data }: { data: CandidateResult[] }) {
       <div className="ev-result-list">
         {data.map((item, index) => {
           // Xử lý cả 2 trường hợp: entityTitle có thể là string hoặc number
-          const candidateName = typeof item.entityTitle === 'string'
-            ? item.entityTitle
+          const candidateName = typeof item.name === 'string'
+            ? item.name
             : `Ứng viên ${index + 1}`;
-          const votes = item.totalVotes || (typeof item.entityTitle === 'number' ? item.entityTitle : 0);
-          const percent = item.percentage || 0;
+          const votes = item.votes;
+          const percent = item.percent || 0;
 
           return (
             <div key={index} className="ev-result-row">

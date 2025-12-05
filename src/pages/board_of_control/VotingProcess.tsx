@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Col, Row } from "antd";
 import CountdownControl from "../../components/board_of_control/voting_process/CountdownControl";
 import LiveResult from "../../components/board_of_control/voting_process/LiveResult";
@@ -9,6 +9,8 @@ import BoardControlService from "@/services/BoardControlService";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import { formatSecondsToClock } from "@/utils/format";
+import { io, Socket } from "socket.io-client";
+import { SOCKET_URL } from "@/config/socket";
 
 const defaultStats: SummaryData = {
   percent: 0,
@@ -24,37 +26,57 @@ export default function VotingProcess() {
   const [timeLeft, setTimeLeft] = useState("--:--:--");
   const [stats, setStats] = useState<SummaryData>(defaultStats);
 
-  useEffect(() => {
-    const loadOverview = async () => {
-      const electionId = localStorage.getItem("currentElectionId");
-      if (!electionId) {
-        notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
-        return;
+  const loadOverview = useCallback(async () => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) {
+      notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
+      return;
+    }
+    try {
+      showLoading();
+      const response = await BoardControlService.getVotingOverview(electionId);
+      if (response.success && response.data) {
+        const data = response.data;
+        setStats(data.summary || defaultStats);
+        const timeLeftSeconds = data.timer?.timeLeftSeconds || 0;
+        setTimeLeft(formatSecondsToClock(timeLeftSeconds));
+      } else {
+        notify(response.message || "Không thể tải dữ liệu giám sát", "error");
       }
-      try {
-        showLoading();
-        const response = await BoardControlService.getVotingOverview(electionId);
-        if (response.success && response.data) {
-          const data = response.data;
-          setStats(data.summary || defaultStats);
-          const timeLeftSeconds = data.timer?.timeLeftSeconds || 0;
-          setTimeLeft(formatSecondsToClock(timeLeftSeconds));
-        } else {
-          notify(response.message || "Không thể tải dữ liệu giám sát", "error");
-        }
-      } catch (error) {
-        console.error(error);
-        notify("Không thể tải dữ liệu giám sát", "error");
-      } finally {
-        hideLoading();
+    } catch (error) {
+      console.error(error);
+      notify("Không thể tải dữ liệu giám sát", "error");
+    } finally {
+      hideLoading();
+    }
+  }, [hideLoading, notify, showLoading]);
+
+  useEffect(() => {
+    loadOverview();
+    const interval = setInterval(loadOverview, 5000);
+    return () => clearInterval(interval);
+  }, [loadOverview]);
+
+  useEffect(() => {
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) return;
+
+    const socket: Socket = io(SOCKET_URL, { transports: ["websocket"] });
+    socket.on("connect", () => socket.emit("join", electionId));
+
+    const handleRealtimeUpdate = (data: any) => {
+      if (data.type === "ballot-cast" || data.type === "stage-started" || data.type === "stage-ended") {
+        loadOverview();
       }
     };
 
-    loadOverview();
-    // Cập nhật timer mỗi 5 giây
-    const interval = setInterval(loadOverview, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    socket.on("transferData", handleRealtimeUpdate);
+
+    return () => {
+      socket.off("transferData", handleRealtimeUpdate);
+      socket.disconnect();
+    };
+  }, [loadOverview]);
 
   return (
     <div className="vd-page">

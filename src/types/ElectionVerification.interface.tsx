@@ -4,9 +4,9 @@
 
 export interface CandidateResult {
   id: string;
-  entityTitle: number;       // Số phiếu
-  percentage: number;
-  totalVotes: number;  // Tỷ lệ %
+  name: number;       // Số phiếu
+  percent: number;
+  votes: number;  // Tỷ lệ %
 }
 
 export interface VoteSummaryCard {

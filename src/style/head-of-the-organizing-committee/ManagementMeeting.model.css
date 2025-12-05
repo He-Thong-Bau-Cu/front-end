@@ -395,3 +395,75 @@
 .ant-layout {
   background: transparent !important;
 }
+
+/* Responsive tweaks */
+@media (max-width: 1024px) {
+  .event-status-card,
+  .stage-card,
+  .announcement-card,
+  .support-card {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .event-status-card .event-status-buttons button,
+  .stage-card .ant-btn,
+  .announcement-button,
+  .support-card .ant-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .event-status-card,
+  .stage-card,
+  .announcement-card,
+  .support-card {
+    padding: 0 16px !important;
+  }
+
+  .event-status-buttons {
+    gap: 6px;
+  }
+
+  .progress-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 576px) {
+  .event-status-card,
+  .stage-card,
+  .announcement-card,
+  .support-card {
+    border-radius: 12px !important;
+  }
+
+  .event-status-card .ant-card-body,
+  .stage-card .ant-card-body,
+  .announcement-card .ant-card-body,
+  .support-card .ant-card-body {
+    padding: 16px !important;
+  }
+
+  .event-status-timer {
+    font-size: 22px;
+  }
+
+  .stage-timeline {
+    margin-left: 12px;
+    padding-left: 16px;
+  }
+
+  .stage-item {
+    flex-direction: column;
+  }
+
+  .event-status-buttons button,
+  .stage-card .ant-btn,
+  .end-vote-btn {
+    height: 44px;
+  }
+}

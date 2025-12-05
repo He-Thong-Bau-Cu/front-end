@@ -443,3 +443,71 @@
 .location-icon {
   font-size: 14px;
 }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .checkin-card,
+  .verification-card,
+  .delegate-card,
+  .statistics-card {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 992px) {
+  .qr-area {
+    padding: 20px;
+    height: auto;
+  }
+
+  .qr-placeholder {
+    font-size: 13px;
+  }
+
+  .stat-card .ant-card-body {
+    padding: 20px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .checkin-card,
+  .verification-card,
+  .delegate-card,
+  .statistics-card {
+    margin: 0 0 20px 0;
+  }
+
+  .qr-area {
+    margin-bottom: 24px;
+  }
+
+  .qr-placeholder .qr-icon {
+    font-size: 32px;
+  }
+
+  .stat-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .qr-area {
+    padding: 16px;
+  }
+
+  .checkin-title,
+  .verification-title,
+  .delegate-title,
+  .statistics-title {
+    padding-left: 0;
+  }
+
+  .stat-card .ant-card-body {
+    padding: 16px !important;
+  }
+
+  .scan-btn {
+    font-size: 14px;
+  }
+}

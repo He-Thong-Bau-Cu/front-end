@@ -10,14 +10,16 @@ interface Props {
   votes: number;
   maxVotes: number;
   onVoteChange: (entity: ElectionEntities, value: number) => void;
+  disabled?: boolean;
 }
 
 
-const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange }) => {
+const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange, disabled = false }) => {
   // const [votes, setVotes] = useState(0);
 
 
   const handleChange = (value: number) => {
+    if (disabled) return;
     const realValue = Math.min(maxVotes, Math.max(0, value));
     onVoteChange(entity, realValue);
   };
@@ -53,14 +55,14 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange 
               shape="circle"
               icon={<MinusOutlined />}
               onClick={() => handleChange(votes - 1)}
-              disabled={votes === 0}
+              disabled={disabled || votes === 0}
             />
             <Text style={{ fontSize: 18, fontWeight: 600 }}>{votes}</Text>
             <Button
               shape="circle"
               icon={<PlusOutlined />}
               onClick={() => handleChange(votes + 1)}
-              disabled={votes >= maxVotes}
+              disabled={disabled || votes >= maxVotes}
             />
           </Space>
 
@@ -72,6 +74,7 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange 
           max={maxVotes}
           value={votes}
           onChange={handleChange}
+          disabled={disabled}
         />
       </div>
     </Card>
