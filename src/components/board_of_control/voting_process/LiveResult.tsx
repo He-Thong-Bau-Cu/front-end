@@ -8,7 +8,7 @@ import "@/style/board-of-control/VotingProcess.model.css";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import { useEffect, useState } from "react";
-import { formatDate } from "@/utils/format";
+import { formatDate, formatDateNoOffset } from "@/utils/format";
 
 dayjs.locale("vi");
 
@@ -52,7 +52,7 @@ export default function VotingProcess() {
     name: b.voterId?.userId?.fullName || "Không xác định",
     email: b.voterId?.userId?.email || "—",
     status: b.status,
-    voteTime: b.castAt ? formatDate(new Date(b.castAt)) : "--",
+    voteTime: b.castAt ? formatDateNoOffset(new Date(b.castAt)) : "--",
   }));
 
   const statusColorMap: Record<string, { color: string; label: string }> = {

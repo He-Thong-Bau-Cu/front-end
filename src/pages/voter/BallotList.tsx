@@ -24,6 +24,9 @@ import { formatServerDate } from "@/utils/date";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../style/voter/BallotList.model.css";
+import { io, Socket } from "socket.io-client";
+import { SOCKET_URL } from "@/config/socket";
+import ElectionService from "@/services/ElectionService";
 
 const { Text, Title } = Typography;
 
@@ -32,6 +35,7 @@ export default function BallotList() {
   const [ballots, setBallots] = useState<Ballot[]>([]);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
+  const [canVoting, setCanVoting] = useState(false);
 
   const voterId = localStorage.getItem("voterId") || "";
 
@@ -57,22 +61,78 @@ export default function BallotList() {
   const formatDate = (date: string | null | undefined) =>
     formatServerDate(date, "DD/MM/YYYY HH:mm", { fallback: "Không xác định" });
 
-
   useEffect(() => {
-    const fetchBallots = async () => {
-      try {
-        showLoading();
-        const data = await BallotService.getBallotByVoterId(voterId);
-        setBallots(data);
-      } catch {
-        notify("Không thể tải danh sách phiếu bầu", "error");
-      } finally {
-        hideLoading();
+    const electionId = localStorage.getItem("currentElectionId");
+    if (!electionId) return;
+
+    const socket: Socket = io(SOCKET_URL, {
+      transports: ["websocket"],
+    });
+
+    socket.on("connect", () => {
+      console.log("Socket connected for checkin stage:", socket.id);
+      socket.emit("join", electionId);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err.message);
+    });
+
+    socket.on("transferData", (data: any) => {
+      if (data.type === "stage-started" || data.type === "stage-ended") {
+        console.log("📊 Received stage update:", data);
+        checkVotingStage();
+        fetchBallots();
       }
+    });
+
+
+    return () => {
+      socket.disconnect();
+      console.log("Socket disconnected for checkin stage");
     };
-    fetchBallots();
   }, []);
 
+  const checkVotingStage = async () => {
+    try {
+      const electionId = localStorage.getItem("currentElectionId");
+      if (!electionId) {
+        return;
+      }
+
+      const stageResponse = await ElectionService.getCurrentStage(electionId);
+      const stageData = stageResponse?.data || stageResponse;
+
+      updateStageState(stageData);
+    } catch (error: any) {
+      console.error("Error checking voting stage:", error);
+    }
+  };
+
+  const updateStageState = (stageData: any) => {
+    const isCheckinActive =
+      stageData?.currentStage === 'voting' &&
+      stageData?.stageStatus === 'STARTED';
+
+    setCanVoting(isCheckinActive);
+  };
+
+  useEffect(() => {
+    fetchBallots();
+    checkVotingStage();
+  }, []);
+
+  const fetchBallots = async () => {
+    try {
+      showLoading();
+      const data = await BallotService.getBallotByVoterId(voterId);
+      setBallots(data);
+    } catch {
+      notify("Không thể tải danh sách phiếu bầu", "error");
+    } finally {
+      hideLoading();
+    }
+  };
 
   const handleCardClick = (ballot: Ballot) => {
     const status = ballot.status;
@@ -116,7 +176,6 @@ export default function BallotList() {
       }
     }
 
-    // 🟢 ACTIVE → VOTE
     const methodCode = ballot.electionId?.votingMethodId?.methodCode;
 
     if (!methodCode) {
@@ -214,10 +273,10 @@ export default function BallotList() {
                     showIcon
                     style={{ borderRadius: 8 }}
                   />
-                ) : ballots.some((b) => b.status === "PENDING") ? (
+                ) : ballots.some((b) => b.status === "PENDING" || !canVoting) ? (
                   <Alert
                     message="Chưa bắt đầu"
-                    description="Cuộc bầu cử chưa bắt đầu."
+                    description="Chưa đến giai đoạn bỏ phiếu."
                     type="warning"
                     icon={<ExclamationCircleOutlined />}
                     showIcon

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Card, Button, Input, message } from "antd";
+import { NotificationOutlined } from "@ant-design/icons";
 import NotificationService from "@/services/NotificationService";
 
 interface AnnouncementCardProps {
@@ -53,8 +54,9 @@ const AnnouncementCard: React.FC<AnnouncementCardProps> = ({ electionId, meeting
                 className="announcement-button"
                 onClick={handleSendAnnouncement}
                 loading={loading}
+                icon={<NotificationOutlined />}
             >
-                📢 Gửi ngay
+                Gửi ngay
             </Button>
         </Card>
     );

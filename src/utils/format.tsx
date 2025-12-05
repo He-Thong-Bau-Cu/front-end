@@ -18,6 +18,13 @@ export const formatDateOfBirth = (date: Date) => {
   return withTargetOffset(date).format('DD-MM-YYYY');
 };
 
+export const formatDatePlain = (date: Date, format = 'DD-MM-YYYY HH:mm:ss') => {
+  return moment.utc(date).format(format);
+};
+
+export const formatDateNoOffset = (date: any) => formatDatePlain(date, 'DD-MM-YYYY HH:mm:ss');
+
+export const formatDateNoOffset2 = (date: any) => formatDatePlain(date, 'DD/MM/YYYY');
 export const formatSecondsToClock = (seconds?: number | null) => {
   if (seconds === undefined || seconds === null || Number.isNaN(seconds)) {
     return "--:--:--";

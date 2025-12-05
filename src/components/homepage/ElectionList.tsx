@@ -1,9 +1,10 @@
-import { formatDate } from "@/utils/format";
+import { formatDate, formatDateNoOffset } from "@/utils/format";
 import {
     CalendarOutlined,
     CheckCircleOutlined,
     ClockCircleOutlined,
     FireOutlined,
+    RightOutlined,
     UserOutlined
 } from "@ant-design/icons";
 import { Card, List, Progress, Space, Tag, Tooltip, Typography } from "antd";
@@ -112,17 +113,18 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                                         </Space>
                                     </div>
                                     <Tag
-                                        className={`status-tag ${item.status === "upcoming" ? "tag-upcoming" :
+                                        className={`status-tag ${
+                                            item.status === "upcoming" ? "tag-upcoming" :
                                             item.status === "completed" ? "tag-completed" :
-                                                item.status === "ongoing" ? "tag-ongoing" :
-                                                    "tag-undefined"
-                                            }`}
+                                            item.status === "ongoing" ? "tag-ongoing" :
+                                            "tag-undefined"
+                                        }`}
                                         icon={getStatusIcon(item.status)}
                                     >
                                         {item.status === "upcoming" ? "Sắp diễn ra" :
-                                            item.status === "completed" ? "Đã hoàn thành" :
-                                                item.status === "ongoing" ? "Đang diễn ra" :
-                                                    "Chưa có meeting"}
+                                         item.status === "completed" ? "Đã hoàn thành" :
+                                         item.status === "ongoing" ? "Đang diễn ra" :
+                                         "Chưa có cuộc họp"}
                                     </Tag>
                                 </div>
 
@@ -131,14 +133,14 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                                         <div className="election-meta">
                                             <CalendarOutlined className="calendar-icon" />
                                             <Text type="secondary" className="election-date">
-                                                Ngày bắt đầu: {formatDateTime(item.startDate)}
+                                                Ngày bắt đầu: {formatDateNoOffset(item.startDate as any)}
                                             </Text>
 
                                             {item.endDate && (
                                                 <>
                                                     <Text type="secondary" style={{ margin: "0 4px" }}>•</Text>
                                                     <Text type="secondary" className="election-date">
-                                                        Kết thúc: {formatDateTime(item.endDate)}
+                                                        Kết thúc: {formatDateNoOffset(item.endDate as any)}
                                                     </Text>
                                                 </>
                                             )}

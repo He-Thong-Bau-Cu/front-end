@@ -6,6 +6,7 @@ import MeetingService from "@/services/MeetingService";
 import { BaseResponse } from "@/types/BaseResponse.interface";
 import type { ColumnsType } from "antd/es/table";
 import { useNotification } from "@/contexts/NotificationContext";
+import { formatDateNoOffset } from "@/utils/format";
 
 const { Title, Text } = Typography;
 
@@ -212,7 +213,7 @@ const CreateMeetingAttendeePanel: React.FC<{ onMeetingAttendeeAdded?: () => void
         if (record.attended && record.checkInTime) {
           return (
             <span style={{ color: "#52c41a" }}>
-              {new Date(record.checkInTime).toLocaleString("vi-VN")}
+              {formatDateNoOffset(record.checkInTime)}
             </span>
           );
         }

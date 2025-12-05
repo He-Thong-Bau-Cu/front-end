@@ -26,6 +26,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
 import { set } from "react-hook-form";
+import { formatDateNoOffset, formatDateNoOffset2 } from "@/utils/format";
 const { Title, Text } = Typography;
 
 const formatDate = (dateString: string | Date | null | undefined): string => {
@@ -389,7 +390,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                     Hạn nhận ủy quyền
                                 </Text>
                                 <p style={{ marginTop: 4 }}>
-                                    {formatDate(data?.election?.delegationEnd)}
+                                    {formatDateNoOffset2(data?.election?.delegationEnd)}
                                 </p>
                             </Col>
                         </Row>

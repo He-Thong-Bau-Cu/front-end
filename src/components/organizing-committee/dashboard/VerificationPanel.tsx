@@ -1,5 +1,5 @@
 import { Card, Input, Button, Modal, Descriptions, Spin } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { UserOutlined, IdcardOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import DelegateCardService from "@/services/DelegateCardService";
 import MeetingService from "@/services/MeetingService";
@@ -243,7 +243,7 @@ const VerificationPanel: React.FC = () => {
                 className="verification-card"
                 title={
                     <span className="verification-title">
-                        <UserOutlined className="verification-icon" />
+                        <IdcardOutlined className="verification-icon" />
                         Xác thực & Hỗ trợ
                     </span>
                 }
@@ -251,6 +251,7 @@ const VerificationPanel: React.FC = () => {
             >
                 <Input
                     placeholder="Nhập ID thẻ đại biểu..."
+                    prefix={<IdcardOutlined />}
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     onPressEnter={handleOpenModal}
@@ -260,7 +261,7 @@ const VerificationPanel: React.FC = () => {
 
                 <Button
                     block
-                    icon={<UserOutlined />}
+                    icon={<IdcardOutlined />}
                     className="verification-button"
                     onClick={handleOpenModal}
                     loading={loading}

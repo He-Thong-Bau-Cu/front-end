@@ -44,14 +44,14 @@ export default function CountdownControl({ timeLeft, onRefresh, isVotingComplete
       <div className="vd-timer-text">Thời gian còn lại</div>
       <div className="vd-timer-value">{timeLeft}</div>
 
-      <Space className="vd-timer-actions">
-        <Button icon={<PlusOutlined />} className="vd-light-btn">
-          +5 phút
-        </Button>
-        <Button icon={<MailOutlined />} className="vd-light-btn">
-          Gửi nhắc nhở
-        </Button>
-      </Space>
+      {/*<Space className="vd-timer-actions">*/}
+      {/*  <Button icon={<PlusOutlined />} className="vd-light-btn">*/}
+      {/*    +5 phút*/}
+      {/*  </Button>*/}
+      {/*  <Button icon={<MailOutlined />} className="vd-light-btn">*/}
+      {/*    Gửi nhắc nhở*/}
+      {/*  </Button>*/}
+      {/*</Space>*/}
 
       <Button
         danger

@@ -6,11 +6,12 @@ import "../../../style/voter/ResolutionVoting.model.css";
 const { Title, Text } = Typography;
 
 interface Props {
-  minutes: number;
+  hours: string;
+  minutes: string;
   seconds: string;
 }
 
-const CountdownCard: React.FC<Props> = ({ minutes, seconds }) => (
+const CountdownCard: React.FC<Props> = ({ hours, minutes, seconds }) => (
   <Card bordered={false} className="countdown-card">
     <Space direction="vertical" align="center" style={{ width: "100%" }}>
       <Space>
@@ -21,9 +22,9 @@ const CountdownCard: React.FC<Props> = ({ minutes, seconds }) => (
       </Space>
 
       <Title level={2} className="time-text">
-        {minutes}:{seconds}
+        {hours}:{minutes}:{seconds}
       </Title>
-      <Text type="secondary">Phút : Giây</Text>
+      <Text type="secondary">Giờ : Phút : Giây</Text>
     </Space>
   </Card>
 );

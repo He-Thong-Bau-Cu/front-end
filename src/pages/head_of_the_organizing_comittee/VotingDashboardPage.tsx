@@ -18,6 +18,7 @@ import ElectionService from "@/services/ElectionService";
 import "../../style/head-of-the-organizing-committee/VotingDashboard.model.css";
 import { io, Socket } from "socket.io-client";
 import { SOCKET_URL } from "@/config/socket";
+import { formatDateNoOffset } from "@/utils/format";
 
 const formatSecondsToClock = (seconds: number): string => {
   if (!seconds || seconds <= 0) return "00:00:00";
@@ -262,11 +263,7 @@ export default function VotingDashboardPage() {
           .slice(0, 20); // Lấy 20 mục gần nhất
 
         const logs: VoteLog[] = castBallots.map((ballot: any, index: number) => {
-          const castTime = ballot.castAt ? new Date(ballot.castAt).toLocaleTimeString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }) : "";
+          const castTime = ballot.castAt ? formatDateNoOffset(ballot.castAt) : "";
 
           return {
             id: index + 1,
@@ -296,7 +293,10 @@ export default function VotingDashboardPage() {
     if (!electionId) return;
 
     const socket: Socket = io(SOCKET_URL, { transports: ["websocket"] });
-    socket.on("connect", () => socket.emit("join", electionId));
+    socket.on("connect", () => {
+      socket.emit("join", electionId);
+      socket.emit("join-election-room", electionId);
+    });
 
     const handleRealtime = (data: any) => {
       console.log("[SOCKET transferData]", data);

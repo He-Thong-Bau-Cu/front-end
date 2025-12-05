@@ -453,26 +453,6 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
             </Card>
 
             {/* Hoạt động gần nhất */}
-            <Card className="checkin-card" bordered={false}>
-                <h3 className="sidebar-title-pr">
-                    <HistoryOutlined /> Hoạt động gần nhất
-                </h3>
-                {recentActivities.length > 0 ? (
-                    recentActivities.map((activity, index) => (
-                        <div key={index} className={`checkin-log ${activity.type}`}>
-                            {activity.type === "success" ? <CheckCircleFilled /> : <CloseCircleFilled />}
-                            <div>
-                                <Text strong>{activity.name}</Text>
-                                <p>{activity.time}</p>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div style={{ textAlign: "center", padding: "20px 0", color: "#999" }}>
-                        Chưa có hoạt động nào
-                    </div>
-                )}
-            </Card>
 
             {/* Modal xác nhận đại biểu */}
             <Modal

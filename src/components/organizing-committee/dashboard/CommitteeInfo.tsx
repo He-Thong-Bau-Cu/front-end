@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserOutlined } from "@ant-design/icons";
+import { TeamOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Typography, Modal, Form, Input, DatePicker, Select } from "antd";
 import dayjs from "dayjs";
 import MeetingService from "@/services/MeetingService";
@@ -26,7 +26,7 @@ const CommitteeInfo = () => {
     const handleSubmit = async () => {
         try {
             const values = await form.validateFields();
-            
+
             // Validate electionId đã được nhập
             if (!values.electionId || !values.electionId.trim()) {
                 notify("Vui lòng nhập mã cuộc bầu cử!", "error");
@@ -55,7 +55,7 @@ const CommitteeInfo = () => {
             if (values.description?.trim()) {
                 payload.description = values.description.trim();
             }
-            // Status - chỉ gửi nếu là giá trị hợp lệ 
+            // Status - chỉ gửi nếu là giá trị hợp lệ
             if (values.status && ['ACTIVE', 'CLOSED', 'ARCHIVED', 'PENDING'].includes(values.status)) {
                 payload.status = values.status;
             }
@@ -79,14 +79,14 @@ const CommitteeInfo = () => {
         } catch (error: any) {
             hideLoading();
             console.error("❌ Lỗi tạo cuộc họp:", error);
-            
+
             // Xử lý error message từ backend
-            const errorMessage = error?.response?.data?.message || 
-                                error?.message || 
+            const errorMessage = error?.response?.data?.message ||
+                                error?.message ||
                                 "Không thể tạo cuộc họp!";
-            
+
             // Nếu là lỗi "Không tìm thấy cuộc bầu cử" → hướng dẫn rõ ràng hơn
-            if (errorMessage.includes("Không tìm thấy cuộc bầu cử") || 
+            if (errorMessage.includes("Không tìm thấy cuộc bầu cử") ||
                 errorMessage.includes("ELECTION_NOT_FOUND")) {
                 notify(
                     "Cuộc bầu cử không tồn tại. Vui lòng kiểm tra lại mã cuộc bầu cử!",
@@ -109,7 +109,12 @@ const CommitteeInfo = () => {
                         </p>
 
                         <div className="dashboard-header-user">
-                            <Avatar size={64} icon={<UserOutlined />} className="dashboard-avatar" />
+                            <Avatar
+                                size={64}
+                                icon={<TeamOutlined />}
+                                className="dashboard-avatar"
+                                style={{ backgroundColor: "#e8f8f2", color: "#0f9d58" }}
+                            />
                             <div className="dashboard-user-info">
                                 <Text strong className="dashboard-user-name">Nhân viên Lưu Hồng Nhật</Text>
                                 <p className="dashboard-user-role">Thành viên ban tổ chức: Hội đồng Bầu cử khóa 10</p>

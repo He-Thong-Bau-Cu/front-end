@@ -31,6 +31,20 @@ class BoardControlService extends BaseService {
     return this.api.get(`${this.endpoint}/${electionId}/audit-report`);
   }
 
+  async rejectAuditReport(
+    electionId: string,
+    reason: string
+  ): Promise<BaseResponse<any>> {
+    return this.api.post(`${this.endpoint}/${electionId}/audit-report/reject`, { reason });
+  }
+
+  async rejectVerificationReport(
+    electionId: string,
+    reason: string
+  ): Promise<BaseResponse<any>> {
+    return this.api.post(`${this.endpoint}/${electionId}/verification/reject`, { reason });
+  }
+
   async signAuditReport(electionId: string): Promise<BaseResponse<any>> {
     return this.api.post(`${this.endpoint}/${electionId}/audit-report/sign`, {});
   }

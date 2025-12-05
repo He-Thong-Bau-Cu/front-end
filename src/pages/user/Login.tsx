@@ -55,15 +55,12 @@ export default function LoginScreen() {
           }
 
           notify("Đăng nhập thành công!!!", "success");
-          console.log(decoded.role);
           if (decoded.role === USER_ROLE.ADMIN) {
             console.log("admin");
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
-              console.log('run 1')
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
             } else {
-              console.log('run 2')
               navigate(PATH.ADMIN);
             }
           } else if (decoded.role === USER_ROLE.PRESIDE) {

@@ -41,6 +41,9 @@ export interface BoardVerificationPayload {
   summaryCards: VoteSummaryCard[];
   verification: VerificationDetailData & { isConfirmed: boolean };
   logs: VoteLogItem[];
+  report: {
+    status: string;
+  };
 }
 
 export interface BoardAuditReportPayload {

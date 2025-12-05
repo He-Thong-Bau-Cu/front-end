@@ -52,7 +52,10 @@ export default function VerifyEmailScreen() {
       }
     } catch (error: any) {
       console.error("Error fetching QR code:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Đã có lỗi xảy ra. Vui lòng thử lại.";
       console.error("Error message from response:", errorMessage);
       console.error("Error response:", error?.response?.data);
       notify(errorMessage, "error");
@@ -105,6 +108,11 @@ export default function VerifyEmailScreen() {
           decoded.fullname,
           decoded.permissions || []
         );
+
+        const user = await getUserLogin();
+        if (user?.email) {
+          localStorage.setItem("email", user.email);
+        }
         if (decoded.role === USER_ROLE.ADMIN) {
           navigate(PATH.ADMIN);
         } else if (decoded.role === USER_ROLE.PRESIDE) {
@@ -122,7 +130,10 @@ export default function VerifyEmailScreen() {
       }
     } catch (error: any) {
       console.error("Error submitting OTP:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Đã có lỗi xảy ra. Vui lòng thử lại.";
       console.error("Error message from response:", errorMessage);
       console.error("Error response:", error?.response?.data);
       notify(errorMessage, "error");
