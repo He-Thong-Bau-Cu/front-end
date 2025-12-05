@@ -26,6 +26,7 @@ import { useNotification } from "@/contexts/NotificationContext";
 import { BoardAuditReportPayload } from "@/types/BoardControl.interface";
 import { downloadBlob } from "@/utils/file";
 import DigitalSignModal from "../digitalSignature/DigitalSignModal";
+import { Modal, Input } from "antd";
 
 export default function SystemAuditReportPage() {
   const { showLoading, hideLoading } = useLoading();
@@ -37,6 +38,9 @@ export default function SystemAuditReportPage() {
   const [signModalOpen, setSignModalOpen] = useState(false);
   const [canSign, setCanSign] = useState<boolean>(false);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejecting, setRejecting] = useState(false);
   const [stageInfo, setStageInfo] = useState<{
     currentStage: string;
     stageStatus: string;
@@ -376,7 +380,7 @@ export default function SystemAuditReportPage() {
             <Button icon={<FileTextOutlined />} onClick={handlePrintReport} disabled={isCompleted}>
               In Báo cáo
             </Button>
-            <Button danger icon={<CloseCircleOutlined />} disabled={isCompleted}>
+            <Button danger icon={<CloseCircleOutlined />} disabled={isCompleted} onClick={() => setRejectModalOpen(true)}>
               Từ chối & Gửi Phản hồi
             </Button>
           </Space>
@@ -412,6 +416,43 @@ export default function SystemAuditReportPage() {
             setSignModalOpen(false);
           }}
         />
+
+        <Modal
+          title="Từ chối báo cáo kiểm soát"
+          open={rejectModalOpen}
+          onOk={async () => {
+            const electionId = localStorage.getItem("currentElectionId");
+            if (!electionId) {
+              notify("Không tìm thấy cuộc bầu cử hiện tại", "warning");
+              return;
+            }
+            try {
+              setRejecting(true);
+              await BoardControlService.rejectAuditReport(electionId, rejectReason || "Không cung cấp lý do");
+              notify("Đã từ chối và tạo báo cáo bất thường", "success");
+              setRejectModalOpen(false);
+              setRejectReason("");
+              const refresh = await BoardControlService.getAuditReport(electionId);
+              const payload = refresh?.data?.data ?? refresh?.data ?? refresh ?? null;
+              if (payload) setReportData(payload);
+            } catch (error: any) {
+              notify(error?.response?.data?.message || "Không thể từ chối báo cáo", "error");
+            } finally {
+              setRejecting(false);
+            }
+          }}
+          okButtonProps={{ loading: rejecting, danger: true }}
+          onCancel={() => setRejectModalOpen(false)}
+          okText="Từ chối"
+          cancelText="Hủy"
+        >
+          <Input.TextArea
+            rows={4}
+            placeholder="Nhập lý do từ chối..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+        </Modal>
 
       </div>
     </>

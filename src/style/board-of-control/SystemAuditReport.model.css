@@ -91,9 +91,29 @@
 }
 
 .sar-status-badge {
-  color: #d48806;
   font-weight: 700;
   font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  background: #fff7e6;
+  color: #d48806;
+  border: 1px solid #ffe7ba;
+}
+.sar-status-active {
+  background: #e6f4ff;
+  color: #1677ff;
+  border-color: #bae0ff;
+}
+.sar-status-resolved {
+  background: #f6ffed;
+  color: #52c41a;
+  border-color: #b7eb8f;
+}
+.sar-status-reject {
+  background: #fff1f0;
+  color: #ff4d4f;
+  border-color: #ffccc7;
 }
 
 /* ===== SECTION HEADER TITLE (blue line left like in mock) ===== */

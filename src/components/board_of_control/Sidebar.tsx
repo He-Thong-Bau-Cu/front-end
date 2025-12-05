@@ -31,11 +31,11 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <FileTextOutlined />,
             label: "Báo cáo đã lưu trữ",
         },
-        {
-            key: "/board-of-control/control-reports",
-            icon: <FileTextOutlined />,
-            label: "Báo cáo kiểm soát",
-        },
+        // {
+        //     key: "/board-of-control/control-reports",
+        //     icon: <FileTextOutlined />,
+        //     label: "Báo cáo kiểm soát",
+        // },
         {
             key: "/board-of-control/verify-results",
             icon: <UserSwitchOutlined />,

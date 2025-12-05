@@ -4,7 +4,7 @@ import {
     UserOutlined,
     CheckCircleOutlined,
     CloseCircleOutlined,
-    CalendarOutlined,
+    BarChartOutlined,
 } from "@ant-design/icons";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
 import MeetingService from "@/services/MeetingService";
@@ -14,6 +14,7 @@ import { io, Socket } from "socket.io-client";
 import { useNotification } from "@/contexts/NotificationContext";
 import { SOCKET_URL } from "@/config/socket";
 import { USER_ROLE } from "@/enums/STATUS";
+import { formatDateNoOffset } from "@/utils/format";
 
 const StatisticsPanel: React.FC = () => {
     const { notify } = useNotification();
@@ -144,7 +145,7 @@ const StatisticsPanel: React.FC = () => {
             className="statistics-card"
             title={
                 <span className="statistics-title">
-                    <CalendarOutlined className="statistics-icon" />
+                    <BarChartOutlined className="statistics-icon" />
                     Thống kê Check-in
                 </span>
             }
@@ -160,7 +161,7 @@ const StatisticsPanel: React.FC = () => {
                         <Statistic
                             title={<span className="stat-title">Tổng số đại biểu</span>}
                             value={stats.total}
-                            prefix={<UserOutlined className="stat-icon" />}
+                            prefix={<UserOutlined className="stat-icon" style={{ color: "#fff" }} />}
                             valueStyle={{ color: "#fff", fontSize: 36, fontWeight: 700 }}
                         />
                     </Card>
@@ -173,7 +174,7 @@ const StatisticsPanel: React.FC = () => {
                         <Statistic
                             title={<span className="stat-title">Đã check-in</span>}
                             value={stats.attended}
-                            prefix={<CheckCircleOutlined className="stat-icon" />}
+                            prefix={<CheckCircleOutlined className="stat-icon" style={{ color: "#fff" }} />}
                             valueStyle={{ color: "#fff", fontSize: 36, fontWeight: 700 }}
                         />
                     </Card>
@@ -188,14 +189,7 @@ const StatisticsPanel: React.FC = () => {
                     </div>
                     {meetingInfo.meetingDate && (
                         <div className="meeting-info-date">
-                            {new Date(meetingInfo.meetingDate).toLocaleString("vi-VN", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                second: "2-digit",
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric"
-                            })}
+                            {formatDateNoOffset(meetingInfo.meetingDate)}
                         </div>
                     )}
                     {meetingInfo.location && (

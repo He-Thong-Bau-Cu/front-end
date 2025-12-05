@@ -13,6 +13,7 @@ import { USER_ROLE } from "@/enums/STATUS";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "@/enums/PATH";
 import loginBackground from "@/assets/login_background.png";
+import { getUserLogin } from "@/utils/auth";
 
 const { Title, Text, Link } = Typography;
 
@@ -44,6 +45,10 @@ export default function FirstTimeChangePasswordScreen() {
       const response = await UserService.changePassword(body);
       if (response.success) {
         notify(response.message, "success");
+        const user = await getUserLogin();
+        if (user?.email) {
+          localStorage.setItem("email", user.email);
+        }
         let role = localStorage.getItem("role");
         if (role === USER_ROLE.ADMIN) {
           navigate(PATH.ADMIN);
@@ -57,7 +62,10 @@ export default function FirstTimeChangePasswordScreen() {
       }
     } catch (error: any) {
       console.error("Error changing password:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Đã có lỗi xảy ra. Vui lòng thử lại.";
       console.error("Error message from response:", errorMessage);
       console.error("Error response:", error?.response?.data);
       notify(errorMessage, "error");

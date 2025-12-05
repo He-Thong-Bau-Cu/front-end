@@ -1,4 +1,4 @@
-import { formatDate } from "@/utils/format";
+import { formatDate, formatDateNoOffset } from "@/utils/format";
 import {
     CalendarOutlined,
     CheckCircleOutlined,
@@ -125,7 +125,7 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                                         {item.status === "upcoming" ? "Sắp diễn ra" :
                                          item.status === "completed" ? "Đã hoàn thành" :
                                          item.status === "ongoing" ? "Đang diễn ra" :
-                                         "Chưa có meeting"}
+                                         "Chưa có cuộc họp"}
                                     </Tag>
                                 </div>
 
@@ -134,14 +134,14 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                                         <div className="election-meta">
                                             <CalendarOutlined className="calendar-icon" />
                                             <Text type="secondary" className="election-date">
-                                                Ngày bắt đầu: {formatDateTime(item.startDate)}
+                                                Ngày bắt đầu: {formatDateNoOffset(item.startDate as any)}
                                             </Text>
 
                                             {item.endDate && (
                                                 <>
                                                     <Text type="secondary" style={{ margin: "0 4px" }}>•</Text>
                                                     <Text type="secondary" className="election-date">
-                                                        Kết thúc: {formatDateTime(item.endDate)}
+                                                        Kết thúc: {formatDateNoOffset(item.endDate as any)}
                                                     </Text>
                                                 </>
                                             )}

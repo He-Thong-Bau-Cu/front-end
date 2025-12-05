@@ -30,7 +30,7 @@ const BoardOfControlLayout = () => {
         const map: Record<string, string> = {
             "/board-of-control": "Tổng quan",
             "/board-of-control/achive-reports": "Bao cáo đã lưu trữ",
-            "/board-of-control/control-reports": "Báo cáo kiểm soát",
+            // "/board-of-control/control-reports": "Báo cáo kiểm soát",
             "/board-of-control/verify-results": "Xác minh kết quả",
             "/board-of-control/voting-process": "Giam sát bỏ phiếu",
         };

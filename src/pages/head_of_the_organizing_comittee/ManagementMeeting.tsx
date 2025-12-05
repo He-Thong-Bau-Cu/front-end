@@ -56,7 +56,6 @@ const ManagementMeeting: React.FC = () => {
 
     const loadData = useCallback(async () => {
         try {
-            // Lấy electionId từ localStorage
             const currentElectionId = localStorage.getItem("currentElectionId");
             if (!currentElectionId) {
                 message.error("Vui lòng chọn cuộc bầu cử từ trang chủ");
@@ -64,7 +63,6 @@ const ManagementMeeting: React.FC = () => {
             }
 
             setElectionId(currentElectionId);
-            // Chỉ set loading = true nếu chưa có data (lần đầu load)
             if (!stats) {
                 setLoading(true);
             }
@@ -84,7 +82,6 @@ const ManagementMeeting: React.FC = () => {
         loadData();
     }, [loadData]);
 
-    // Lắng nghe socket realtime cho quản lý cuộc họp (checkin-update, stage changes)
     useEffect(() => {
         if (!electionId) return;
         const socket: Socket = io(SOCKET_URL, { transports: ["websocket"] });

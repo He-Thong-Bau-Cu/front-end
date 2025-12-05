@@ -44,7 +44,7 @@
 }
 
 .checkin-icon {
-  color: #124d2d;
+  color: #0f9d58;
   font-size: 17px;
 }
 
@@ -188,7 +188,7 @@
 }
 
 .verification-icon {
-  color: #124d2d;
+  color: #0f9d58;
   font-size: 17px;
 }
 
@@ -323,7 +323,7 @@
 }
 
 .statistics-icon {
-  color: #124d2d;
+  color: #0f9d58;
   font-size: 17px;
 }
 
@@ -398,7 +398,7 @@
 }
 
 .stat-icon {
-  color: #fff;
+  color: #fff !important;
   font-size: 20px;
 }
 

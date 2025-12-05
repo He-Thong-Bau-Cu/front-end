@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Card, Button, Progress, Tag } from "antd";
+import {
+    PlayCircleOutlined,
+    StopOutlined,
+} from "@ant-design/icons";
 import MeetingService from "@/services/MeetingService";
 import { useNotification } from "@/contexts/NotificationContext";
+import { formatDateNoOffset } from "@/utils/format";
 
 interface EventStatusCardProps {
     electionId?: string;
@@ -32,6 +37,10 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
      const [isRunning, setIsRunning] = useState(stats?.isRunning || false);
      const [meetingStartTime, setMeetingStartTime] = useState<number | null>(null);
 
+    const meetingKey = meeting?._id || electionId || "meeting";
+    const startKey = `meeting_start_time_${meetingKey}`;
+    const pausedKey = `meeting_paused_elapsed_${meetingKey}`;
+
     // format về dạng HH:MM:SS
     const formatTime = (seconds: number) => {
         const h = Math.floor(seconds / 3600)
@@ -55,7 +64,6 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
             setIsRunning(statusRunning);
         }
 
-        // Tìm thời điểm bắt đầu meeting (từ timeline hoặc createdAt)
         if (meeting) {
             const timeline = election?.timeline || {};
             let startTime: Date | null = null;
@@ -71,42 +79,46 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                 startTime = new Date(meeting.createdAt);
             }
 
-            // Nếu đang ONGOING mà chưa có mốc, dùng thời điểm hiện tại làm mốc
-            if (!startTime && statusRunning) {
-                startTime = new Date();
+            if (!startTime) {
+                const stored = localStorage.getItem(startKey);
+                if (stored && !Number.isNaN(Number(stored))) {
+                    startTime = new Date(Number(stored));
+                } else if (statusRunning) {
+                    startTime = new Date();
+                }
             }
 
-            if (startTime) {
-                setMeetingStartTime(startTime.getTime());
-                const now = new Date().getTime();
+            const now = Date.now();
+            if (statusRunning && startTime) {
                 const elapsed = Math.floor((now - startTime.getTime()) / 1000);
+                setMeetingStartTime(startTime.getTime());
                 setTimeElapsed(Math.max(0, elapsed));
+                localStorage.removeItem(pausedKey);
             } else {
-                setMeetingStartTime(null);
-                setTimeElapsed(0);
+                setMeetingStartTime(startTime ? startTime.getTime() : null);
+                const pausedElapsed = Number(localStorage.getItem(pausedKey) || 0);
+                setTimeElapsed(Number.isNaN(pausedElapsed) ? timeElapsed : Math.max(0, pausedElapsed));
             }
         }
     }, [stats, meeting, election]);
 
     // Đếm thời gian từ 0 lên khi meeting đang chạy
     useEffect(() => {
-        // Tính toán và cập nhật ngay lập tức
-        const updateTime = () => {
-            if (!meetingStartTime) {
+        // Nếu chưa có mốc hoặc đang tạm dừng thì không cập nhật
+        if (!meetingStartTime || !isRunning) {
             return;
         }
 
-            const now = new Date().getTime();
+        const updateTime = () => {
+            const now = Date.now();
             const elapsed = Math.floor((now - meetingStartTime) / 1000);
             setTimeElapsed(Math.max(0, elapsed));
         };
 
-        // Cập nhật ngay lập tức lần đầu nếu có meetingStartTime
-        if (meetingStartTime) {
+        // Cập nhật ngay lập tức lần đầu
         updateTime();
-        }
 
-        // Sau đó cập nhật mỗi giây (luôn chạy để kiểm tra)
+        // Sau đó cập nhật mỗi giây
         const timer = setInterval(updateTime, 1000);
 
         return () => clearInterval(timer);
@@ -118,7 +130,7 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
     const isCompleted = meetingStatus === "COMPLETED";
 
     // Kiểm tra meetingDate có <= thời gian hiện tại không
-    const meetingDate = meeting?.meetingDate ? new Date(meeting.meetingDate) : null;
+    const meetingDate = meeting?.meetingDate ? new Date(new Date(meeting?.meetingDate).getTime() - 7 * 3600 * 1000) : null;
     const now = new Date();
     const canStartMeeting = meetingDate ? meetingDate <= now : false;
 
@@ -151,6 +163,7 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                             className="start-btn"
                             type="primary"
                             block
+                            icon={<PlayCircleOutlined />}
                             disabled={!canStartMeeting}
                             onClick={async () => {
                                 if (!meeting?._id) {
@@ -164,6 +177,11 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                                 try {
                                     await MeetingService.updateStatus(meeting._id, "ONGOING");
                                     notify("Đã bắt đầu sự kiện", "success");
+                                    const nowTs = Date.now();
+                                    localStorage.setItem(startKey, String(nowTs));
+                                    setMeetingStartTime(nowTs);
+                                    setTimeElapsed(0);
+                                    setIsRunning(true);
                                     if (onRefresh) await onRefresh();
                                 } catch (error: any) {
                                     console.error("Error starting meeting:", error);
@@ -175,7 +193,7 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                                 }
                             }}
                         >
-                            ▶️ Bắt đầu Sự kiện
+                            Bắt đầu Sự kiện
                         </Button>
                     )}
                     {isPending && !canStartMeeting && (
@@ -183,35 +201,12 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                             Chờ đến ngày họp để bắt đầu
                         </p>
                     )}
-                    {!isPending && !isCompleted && (
-                        <Button
-                            className="pause-btn"
-                            disabled={isCompleted}
-                            onClick={async () => {
-                                if (!meeting?._id) {
-                                    notify("Không tìm thấy thông tin cuộc họp", "error");
-                                    return;
-                                }
-                                try {
-                                const newStatus = isRunning ? "POSTPONED" : "ONGOING";
-                                    await MeetingService.updateStatus(meeting._id, newStatus);
-                                    notify(isRunning ? "Đã tạm dừng sự kiện" : "Đã tiếp tục sự kiện", "success");
-                                    if (onRefresh) await onRefresh();
-                                } catch (error: any) {
-                                    console.error("Error updating meeting status:", error);
-                                    notify(error?.response?.data?.message || "Không thể cập nhật trạng thái", "error");
-                                    // rollback optimistic toggle nếu thất bại
-                                    setIsRunning(prev => !prev);
-                                }
-                            }}
-                        >
-                            {isRunning ? "⏸️ Tạm dừng Sự kiện" : "▶️ Tiếp tục Sự kiện"}
-                        </Button>
-                    )}
+                    {/* Tạm dừng/tiếp tục đã được loại bỏ theo yêu cầu */}
                     {!isPending && (
                         <Button
                             className="stop-btn"
                             disabled={isCompleted || !canEndMeeting}
+                            icon={<StopOutlined />}
                             onClick={async () => {
                                 if (!meeting?._id) {
                                     notify("Không tìm thấy thông tin cuộc họp", "error");
@@ -224,6 +219,7 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                                 try {
                                     await MeetingService.updateStatus(meeting._id, "COMPLETED");
                                     notify("Đã kết thúc sự kiện", "success");
+                                    localStorage.removeItem(startKey);
                                     if (onRefresh) await onRefresh();
                                 } catch (error: any) {
                                     console.error("Error ending meeting:", error);
@@ -231,7 +227,7 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                                 }
                             }}
                         >
-                            🛑 Kết thúc Sự kiện
+                            Kết thúc Sự kiện
                         </Button>
                     )}
                 </div>

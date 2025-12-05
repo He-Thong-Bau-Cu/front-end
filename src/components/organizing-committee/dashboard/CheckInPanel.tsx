@@ -1,5 +1,5 @@
 import { Card, Button } from "antd";
-import { CameraOutlined, QrcodeOutlined } from "@ant-design/icons";
+import { QrcodeOutlined, ScanOutlined } from "@ant-design/icons";
 import QRScannerPanel from "../checkin/QRScannerPanel";
 import { useNavigate } from "react-router-dom";
 
@@ -28,7 +28,7 @@ const CheckInPanel: React.FC = () => {
 
             {/* Nút bắt đầu quét */}
             <div className="scan-btn-container">
-                <Button type="primary" icon={<CameraOutlined />} className="scan-btn" onClick={handleStartScan}>
+                <Button type="primary" icon={<ScanOutlined />} className="scan-btn" onClick={handleStartScan}>
                     Bắt đầu Quét QR
                 </Button>
             </div>

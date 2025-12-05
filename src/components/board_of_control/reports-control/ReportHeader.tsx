@@ -7,10 +7,25 @@ import {
 } from "@ant-design/icons";
 import { ReportInfo } from "../../../types/SystemAuditReport.interface";
 
+const statusClass = (status?: string) => {
+  switch ((status || "").toUpperCase()) {
+    case "RESOLVED":
+    case "SIGNED":
+      return "sar-status-badge sar-status-resolved";
+    case "REJECT":
+    case "REJECTED":
+      return "sar-status-badge sar-status-reject";
+    case "ACTIVE":
+      return "sar-status-badge sar-status-active";
+    default:
+      return "sar-status-badge";
+  }
+};
+
 export default function ReportHeader({ info }: { info: ReportInfo }) {
   return (
     <>
-     
+
 
       {/* Main header card */}
       <div className="sar-headerCard">
@@ -35,7 +50,7 @@ export default function ReportHeader({ info }: { info: ReportInfo }) {
           </div>
           <div>
             <div className="sar-infolabel">Trạng thái</div>
-            <div className="sar-status-badge">{info.status}</div>
+            <div className={statusClass(info.status)}>{info.status}</div>
           </div>
         </div>
       </div>

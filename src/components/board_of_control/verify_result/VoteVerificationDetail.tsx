@@ -8,6 +8,7 @@ interface VoteVerificationDetailProps extends VoteVerificationProps {
     onApprove?: () => Promise<void> | void;
     approving?: boolean;
     canSign?: boolean;
+    status?: string;
 }
 
 export default function VoteVerificationDetail({
@@ -17,6 +18,7 @@ export default function VoteVerificationDetail({
     onApprove,
     approving,
     canSign = true,
+    status,
 }: VoteVerificationDetailProps) {
     const [checked, setChecked] = useState<boolean>(!!initialConfirmed);
 
@@ -103,7 +105,7 @@ export default function VoteVerificationDetail({
                 </div>
 
                 {/* === Khu vực Ký số & Công bố Kết quả === */}
-                <div className="ev-sign-box">
+                {(status === "RESOLVED" || status === "REJECTED") ? "" : <div className="ev-sign-box">
                     <h4 className="ev-sign-title">Khu vực Ký số & Công bố Kết quả</h4>
                     <div>
                         <Checkbox
@@ -128,7 +130,7 @@ export default function VoteVerificationDetail({
                             {initialConfirmed ? "Đã công bố kết quả" : "Ký số & Công bố Kết quả"}
                         </Button>
                     </div>
-                </div>
+                </div>}
             </section>
         </>
     );
