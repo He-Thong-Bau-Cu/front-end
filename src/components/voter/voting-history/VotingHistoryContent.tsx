@@ -234,38 +234,73 @@ const VotingHistoryContent = () => {
                                 }}
                             >
                                 <Descriptions column={1} size="small">
-                                    {/* 👉 CUMULATIVE: hiển thị nguyên như cũ */}
-                                    {methodCode === "CUMULATIVE" &&
-                                        ballot.allocations.map((a, i) => (
+
+                                    {/* ---- CUMULATIVE ---- */}
+                                    {methodCode === "CUMULATIVE" && (() => {
+
+                                        // 1️⃣ allocations = null → phiếu trắng
+                                        if (!ballot.allocations) {
+                                            return (
+                                                <Descriptions.Item>
+                                                    <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
+                                                </Descriptions.Item>
+                                            );
+                                        }
+
+                                        // 2️⃣ tất cả voteValue đều = 0 → phiếu trắng
+                                        const allZero = ballot.allocations.every(a => a.voteValue === 0);
+
+                                        if (allZero) {
+                                            return (
+                                                <Descriptions.Item>
+                                                    <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
+                                                </Descriptions.Item>
+                                            );
+                                        }
+
+                                        // 3️⃣ có vote hợp lệ → hiển thị danh sách ứng viên + số phiếu
+                                        return ballot.allocations.map((a, i) => (
                                             <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
                                                 <Text strong style={{ color: "#52c41a" }}>
                                                     {a.entityId?.title} - Số phiếu: {a.voteValue}
                                                 </Text>
                                             </Descriptions.Item>
-                                        ))
-                                    }
+                                        ));
+                                    })()}
 
-                                    {/* 👉 YES_NO_ABSTAIN: chỉ hiển thị 1 kết quả */}
-                                    {methodCode === "YES_NO_ABSTAIN" && ballot.allocations.length > 0 && (
-                                        <Descriptions.Item>
-                                            <Text strong style={{ color: "#52c41a" }}>
-                                                {ballot.allocations[0].entityId.title} - {convertYesNo(ballot.allocations[0].voteValue)}
-                                            </Text>
-                                        </Descriptions.Item>
-                                    )}
 
-                                    {(ballot.allocations.length === 0 ||
-                                        (methodCode === "YES_NO_ABSTAIN" &&
-                                            ballot.allocations.length > 0 &&
-                                            ballot.allocations[0].voteValue === -1)
-                                    ) && (
+                                    {/* ---- YES_NO_ABSTAIN ---- */}
+                                    {methodCode === "YES_NO_ABSTAIN" && (() => {
+
+                                        // 1️⃣ allocations = null → phiếu trắng
+                                        if (!ballot.allocations) {
+                                            return (
+                                                <Descriptions.Item>
+                                                    <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
+                                                </Descriptions.Item>
+                                            );
+                                        }
+
+                                        const value = ballot.allocations[0].voteValue;
+
+                                        // 2️⃣ convert voteValue sang text
+                                        const mapYesNoAbstain: any = {
+                                            1: "Đồng ý",
+                                            0: "Không đồng ý",
+                                        };
+
+                                        return (
                                             <Descriptions.Item>
-                                                <Text strong type="warning">
-                                                    Phiếu trắng / Không bỏ phiếu
+                                                <Text strong style={{ color: "#52c41a" }}>
+                                                    {ballot.allocations[0].entityId.title} - {mapYesNoAbstain[value]}
                                                 </Text>
                                             </Descriptions.Item>
-                                        )}
+                                        );
+                                    })()}
+
+
                                 </Descriptions>
+
                             </Card>
                         </div>
                     </Col>

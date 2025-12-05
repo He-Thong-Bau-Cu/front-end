@@ -221,7 +221,7 @@ const CandidateSection = () => {
       await BallotService.updateBallot(ballotId, {
         electionId: localStorage.getItem("currentElectionId"),
         voterId: localStorage.getItem("voterId"),
-        status: "LOCKED",
+        status: "NOT_CAST",
       });
       notify("Phiếu bầu đã bị khóa do hết thời gian!", "error");
       navigate("/voter/ballots");
@@ -445,24 +445,45 @@ const CandidateSection = () => {
 
       const voterId = localStorage.getItem("voterId");
       const electionId = localStorage.getItem("currentElectionId");
-      const allocations = Object.entries(vote).map(([entityId, voteValue]) => ({
-        entityId,
-        voteValue
-      }));
 
-      await BallotService.updateBallot(ballotId, {
+      const allocations = candidates.map((entity) => {
+        const voteValue = vote[entity._id];
+
+        return {
+          entityId: entity._id,
+          voteValue: voteValue !== undefined ? voteValue : 0
+        };
+      });
+
+
+      const isBlank = allocations.every(item => item.voteValue === 0);
+
+      const updatePayload: any = {
         electionId,
         voterId,
-        allocations,
-        status: "CAST",
-      });
+      };
+
+      if (isBlank) {
+        updatePayload.status = "BLANK";
+        updatePayload.allocations = null;
+      } else {
+        updatePayload.status = "CAST";
+        updatePayload.allocations = allocations;
+      }
+
+      await BallotService.updateBallot(ballotId, updatePayload);
+
       notify("Bỏ phiếu thành công!", "success");
-      // 4️⃣ Đóng modal → quay lại danh sách
       setSignModalOpen(false);
       navigate("/voter/ballots");
 
-    } catch {
-      notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư.", "error");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc chứng thư số.";
+
+      notify(msg, "error");
     } finally {
       hideLoading();
     }
@@ -523,14 +544,14 @@ const CandidateSection = () => {
               <Title level={5} style={{ margin: 0 }}>Danh sách bầu cử</Title>
             </Space>
 
-          {!isVotingWindow && stageInfo?.message && (
-            <Alert
-              type="warning"
-              showIcon
-              message={stageInfo.message}
-              style={{ marginBottom: 16 }}
-            />
-          )}
+            {!isVotingWindow && stageInfo?.message && (
+              <Alert
+                type="warning"
+                showIcon
+                message={stageInfo.message}
+                style={{ marginBottom: 16 }}
+              />
+            )}
 
             {candidates.map((entity) => {
               const currentVotes = vote[entity._id] || 0;
@@ -544,7 +565,7 @@ const CandidateSection = () => {
                   votes={currentVotes}
                   maxVotes={maxVotesForCandidate}
                   onVoteChange={handleVoteChange}
-                disabled={!isVotingWindow}
+                  disabled={!isVotingWindow}
                 />
               );
             })}
@@ -567,7 +588,7 @@ const CandidateSection = () => {
                   boxShadow: "0 4px 12px rgba(0,0,0,0.12)"
                 }}
                 onClick={handleOpenOtp}
-              disabled={!isVotingWindow}              >
+                disabled={!isVotingWindow}              >
                 Gửi Phiếu Bầu
               </Button>
             </Row>

@@ -30,13 +30,6 @@ const ReportCard: React.FC<ReportCardProps> = ({
         >
           Chi tiết
         </Button>
-        <Button
-          className="report-btn"
-          style={{ width: "100%", marginTop: 8 }}
-          onClick={onExport}
-        >
-          Xuất báo cáo
-        </Button>
       </div>
     </div>
   </Card>

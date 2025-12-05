@@ -25,11 +25,12 @@ const VotingResultDetail: React.FC = () => {
 
                 const res = await ResultService.getByElectionId(electionId);
 
-                if (res?.data && res.data.length > 0) {
-                    setHasData(true);
-                } else {
-                    setHasData(false);
-                }
+                const results = res?.data || [];
+
+                const hasSignedResult = results.some((item: any) => item.status === "SIGNED");
+
+                setHasData(hasSignedResult);
+
             } catch {
                 setHasData(false);
             } finally {

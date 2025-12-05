@@ -5,9 +5,9 @@ import {
     UserOutlined,
     CheckCircleOutlined,
     ApartmentOutlined,
-    FileDoneOutlined
 } from "@ant-design/icons";
 import FileService from "@/services/FileService";
+import { useNotification } from "@/contexts/NotificationContext";
 
 const { Title, Text } = Typography;
 
@@ -22,20 +22,20 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
     onClose,
     data,
 }) => {
+    const { notify } = useNotification();
     if (!data) return null;
     const downloadUrlFileSign = async (data: any) => {
         try {
-            const response = await FileService.getSignedFile(data.fileUrl);
+            const response = await FileService.getSignedFile(data.documentId.fileUrl);
             const blob = new Blob([response], { type: "application/pdf" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `${data.summary || data.title || "Báo_cáo"}.pdf`;
+            a.download = `${data.summary || "Báo_cáo"}.pdf`;
             a.click();
             URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error(err);
-            message.error("Không thể tải file!");
+        } catch (err: any) {
+            notify(err.message, "error");
         }
     };
     const election = data.electionId; // thông tin cuộc bầu cử
@@ -64,7 +64,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                 }}
             >
                 <Title level={4} style={{ marginBottom: 4 }}>
-                    {data.title || "Không có tên báo cáo"}
+                    {data.summary || "Không có tên báo cáo"}
                 </Title>
 
                 <Text type="secondary">
@@ -124,32 +124,64 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                 </Col>
             </Row>
 
-            {/* ====== NGƯỜI KÝ ====== */}
             <Row gutter={16} style={{ marginBottom: 16 }}>
                 <Col span={12}>
-                    <Text strong>Người ký:</Text>
+                    <Text strong>Người phê duyệt:</Text>
                     <div>
-                        <CheckCircleOutlined />{" "}
-                        {data.signedBy?.fullName || "Chưa được ký"}
+                        <UserOutlined /> {data.reviewedBy?.fullName || "Không rõ"}
                     </div>
                 </Col>
 
                 <Col span={12}>
-                    <Text strong>File báo cáo:</Text>
+                    <Text strong>Ngày phê duyệt:</Text>
                     <div>
-                        {data.fileUrl ? (
-                            <Button
-                                type="primary"
-                                icon={<DownloadOutlined />}
-                                onClick={() => downloadUrlFileSign(data)}
-                            >
-                                Xuất báo cáo
-                            </Button>
+                        {data.reviewedAt
+                            ? new Date(data.reviewedAt).toLocaleString("vi-VN")
+                            : "Không rõ"}
+                    </div>
+                </Col>
+            </Row>
+
+            {/* ====== NGƯỜI KÝ ====== */}
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+
+                <Col span={12}>
+                    <Text strong>Loại báo cáo:</Text>
+                    <div>
+                        {data.type === "VERIFICATION" ? (
+                            <Tag icon={<CheckCircleOutlined />} color="red">
+                                Báo cáo xác thực
+                            </Tag>
+                        ) : data.type === "AUDIT" ? (
+                            <Tag icon={<CheckCircleOutlined />} color="orange">
+                                Báo cáo lưu trữ
+                            </Tag>
                         ) : (
-                            <Text type="secondary">Không có file</Text>
+                            <Tag icon={<CheckCircleOutlined />} color="green">
+                                Báo cáo khác
+                            </Tag>
                         )}
                     </div>
                 </Col>
+
+                {data.documentId && (
+                    <Col span={12}>
+                        <Text strong>File báo cáo:</Text>
+                        <div>
+                            {data.documentId?.fileUrl ? (
+                                <Button
+                                    type="primary"
+                                    icon={<DownloadOutlined />}
+                                    onClick={() => downloadUrlFileSign(data)}
+                                >
+                                    Xuất báo cáo
+                                </Button>
+                            ) : (
+                                <Text type="secondary">Không có file</Text>
+                            )}
+                        </div>
+                    </Col>
+                )}
             </Row>
 
             <Divider />

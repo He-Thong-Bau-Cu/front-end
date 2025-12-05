@@ -1,7 +1,6 @@
 /* ====== Tổng thể container ====== */
 .reports-container {
   padding: clamp(16px, 3vw, 32px);
-  min-height: 100vh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -125,5 +124,3 @@
     font-size: 13px;
   }
 }
-
-

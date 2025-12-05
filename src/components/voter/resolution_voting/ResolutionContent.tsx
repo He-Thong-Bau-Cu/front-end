@@ -4,7 +4,7 @@ import ElectionEntitiesService from "@/services/ElectionEntitiesService";
 import "../../../style/voter/ResolutionVoting.model.css";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import { SendOutlined } from "@ant-design/icons";
+import { CheckCircleFilled, CloseCircleFilled, MinusCircleFilled, SendOutlined } from "@ant-design/icons";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import OtpModal from "../otp-ballot/OtpModal";
 import BallotService from "@/services/BallotService";
@@ -98,26 +98,53 @@ const ResolutionContent: React.FC<ResolutionContentProps> = ({ isVotingWindow, s
       }
       showLoading();
       await BallotService.signBallot(ballotId, file, password);
-      const allocations = selected && entity
-        ? [{
-          entityId: entity._id,
-          voteValue: selected === "YES" ? 1 : 0,
-        }]
-        : [];
-
-      // update ballot
-      await BallotService.updateBallot(ballotId, {
+      const updatePayload: any = {
         electionId,
         voterId,
-        allocations,
-        status: "CAST",
-      });
+      };
+
+      // ====== PHIẾU TRẮNG ======
+      // - selected === null (không chọn gì)
+      // - selected === "ABSTAIN"
+      if (!selected || selected === "ABSTAIN") {
+        updatePayload.status = "BLANK";
+        updatePayload.allocations = null;
+      }
+
+      // ====== PHIẾU HỢP LỆ: YES ======
+      else if (selected === "YES") {
+        updatePayload.status = "CAST";
+        updatePayload.allocations = [
+          {
+            entityId: entity._id,
+            voteValue: 1,
+          },
+        ];
+      }
+
+      // ====== PHIẾU HỢP LỆ: NO ======
+      else if (selected === "NO") {
+        updatePayload.status = "CAST";
+        updatePayload.allocations = [
+          {
+            entityId: entity._id,
+            voteValue: 0,
+          },
+        ];
+      }
+
+      await BallotService.updateBallot(ballotId, updatePayload);
 
       notify("Bỏ phiếu thành công!", "success");
       setSignModalOpen(false);
       navigate("/voter/ballots");
-    } catch {
-      notify("Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc file chứng thư.", "error");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Ký số thất bại! Vui lòng kiểm tra mật khẩu hoặc chứng thư số.";
+
+      notify(msg, "error");
     } finally {
       hideLoading();
     }
@@ -129,13 +156,20 @@ const ResolutionContent: React.FC<ResolutionContentProps> = ({ isVotingWindow, s
       key: "YES",
       label: "Tán thành",
       description: "Tôi đồng ý với nội dung nghị quyết này",
-      icon: <span>✔</span>,
+      icon: <CheckCircleFilled style={{ color: "#52c41a", fontSize: 20 }} />,
     },
     {
       key: "NO",
       label: "Không tán thành",
       description: "Tôi không đồng ý với nội dung nghị quyết này",
-      icon: <span>✘</span>,
+      icon: <CloseCircleFilled style={{ color: "#ff4d4f", fontSize: 20 }} />,
+    },
+    {
+      key: "ABSTAIN",
+      label: "Không ý kiến",
+      description: "Tôi không có ý kiến về nội dung nghị quyết này",
+      icon: <MinusCircleFilled style={{ color: "#ffb300", fontSize: 20 }} />,
+
     },
   ];
 
@@ -205,7 +239,7 @@ const ResolutionContent: React.FC<ResolutionContentProps> = ({ isVotingWindow, s
         <Button
           icon={<SendOutlined />}
           className="confirm-btn active"
-          disabled={!isVotingWindow || !selected}
+          disabled={!isVotingWindow}
           onClick={handleSendOtp}
         >
           Gửi Phiếu Bầu

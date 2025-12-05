@@ -81,25 +81,25 @@ const ElectionOverview = () => {
     const getStatusConfig = () => {
         switch (statusVi) {
             case "Đang diễn ra":
-                return { color: "#27AE60", bg: "#E8F8F2", icon: <ClockCircleOutlined /> };
+                return { color: "#27AE60", icon: <ClockCircleOutlined /> };
             case "Sắp diễn ra":
-                return { color: "#FFB84C", bg: "#FFF7E6", icon: <ExclamationCircleOutlined /> };
+                return { color: "#666", icon: <ExclamationCircleOutlined /> };
             case "Đã kết thúc":
-                return { color: "#4C84FF", bg: "#F0F5FF", icon: <CheckCircleOutlined /> };
+                return { color: "#666", icon: <CheckCircleOutlined /> };
             case "Lưu trữ":
-                return { color: "#95A5A6", bg: "#F5F5F5", icon: <FolderOutlined /> };
+                return { color: "#999", icon: <FolderOutlined /> };
             default:
-                return { color: "#FFB84C", bg: "#FFF7E6", icon: <ExclamationCircleOutlined /> };
+                return { color: "#666", icon: <ExclamationCircleOutlined /> };
         }
     };
 
     const statusConfig = getStatusConfig();
 
     const stages = [
-        { key: 1, label: "Chuẩn bị", icon: <ExclamationCircleOutlined />, color: "#FFB84C" },
-        { key: 2, label: "Bắt đầu", icon: <PlayCircleOutlined />, color: "#27AE60" },
-        { key: 3, label: "Kết thúc", icon: <StopOutlined />, color: "#4C84FF" },
-        { key: 4, label: "Lưu trữ", icon: <FolderOutlined />, color: "#95A5A6" },
+        { key: 1, label: "Chuẩn bị", icon: <ExclamationCircleOutlined /> },
+        { key: 2, label: "Bắt đầu", icon: <PlayCircleOutlined /> },
+        { key: 3, label: "Kết thúc", icon: <StopOutlined /> },
+        { key: 4, label: "Lưu trữ", icon: <FolderOutlined /> },
     ];
 
     const currentStage =
@@ -140,7 +140,7 @@ const ElectionOverview = () => {
                 <div className="election-description-box">
                     <div className="election-info-grid">
                         <div className="election-info-item">
-                            <div className="election-info-icon-wrapper" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+                            <div className="election-info-icon-wrapper">
                                 <AppstoreOutlined className="election-info-icon" />
                             </div>
                             <div className="election-info-content">
@@ -149,7 +149,7 @@ const ElectionOverview = () => {
                             </div>
                         </div>
                         <div className="election-info-item">
-                            <div className="election-info-icon-wrapper" style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }}>
+                            <div className="election-info-icon-wrapper">
                                 <SettingOutlined className="election-info-icon" />
                             </div>
                             <div className="election-info-content">
@@ -158,7 +158,7 @@ const ElectionOverview = () => {
                             </div>
                         </div>
                         <div className="election-info-item">
-                            <div className="election-info-icon-wrapper" style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
+                            <div className="election-info-icon-wrapper">
                                 <BankOutlined className="election-info-icon" />
                             </div>
                             <div className="election-info-content">
@@ -209,19 +209,7 @@ const ElectionOverview = () => {
                                         className={`timeline-item ${isCompleted ? "completed" : isCurrent ? "current" : isUpcoming ? "upcoming" : ""
                                             }`}
                                     >
-                                        <div
-                                            className="timeline-icon"
-                                            style={{
-                                                background: isCompleted
-                                                    ? stage.color
-                                                    : isCurrent
-                                                        ? stage.color
-                                                        : "#ccc",
-                                                boxShadow: isCurrent
-                                                    ? `0 0 0 3px ${stage.color}33, 0 2px 8px ${stage.color}66`
-                                                    : "none",
-                                            }}
-                                        >
+                                        <div className="timeline-icon">
                                             {stage.icon}
                                         </div>
                                         <Text className="timeline-label">{stage.label}</Text>
@@ -229,17 +217,6 @@ const ElectionOverview = () => {
                                     {index < stages.length - 1 && (
                                         <div
                                             className={`timeline-line ${shouldActivateLine ? "active" : ""}`}
-                                            style={{
-                                                background: shouldActivateLine
-                                                    ? `linear-gradient(90deg, ${stage.color} 0%, ${stages[index + 1].color} 100%)`
-                                                    : "#e0e0e0",
-                                                opacity: shouldActivateLine ? 1 : 0.3,
-                                                height: shouldActivateLine ? "4px" : "3px",
-                                                transition: "all 0.5s ease",
-                                                boxShadow: shouldActivateLine
-                                                    ? `0 2px 4px rgba(0, 0, 0, 0.1)`
-                                                    : "none",
-                                            }}
                                         />
                                     )}
                                 </div>

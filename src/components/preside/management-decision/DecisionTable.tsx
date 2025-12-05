@@ -292,9 +292,11 @@ const DecisionTable = () => {
           (vr: any) => vr.voterId.userId === voter.userId._id
         );
         if (votingRight) {
-          voter.percent = votingRight.shares;   // <-- Thêm dòng này
+          voter.percent = votingRight.shares; 
+          voter.statusVoter = votingRight.voterId.status;   // <-- Thêm dòng này
         } else {
-          voter.percent = 0;                     // <-- hoặc null tuỳ ý bạn
+          voter.percent = 0; 
+          voter.statusVoter = "INACTIVE";                    // <-- hoặc null tuỳ ý bạn
         }
       });
       setVoters(roleId1List);

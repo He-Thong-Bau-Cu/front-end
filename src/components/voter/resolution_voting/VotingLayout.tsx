@@ -216,7 +216,7 @@ const VotingLayout: React.FC = () => {
       await BallotService.updateBallot(ballotId, {
         electionId: localStorage.getItem("currentElectionId"),
         voterId: localStorage.getItem("voterId"),
-        status: "LOCKED",
+        status: "NOT_CAST",
       });
       notify("Phiếu bầu đã bị khóa do hết thời gian!", "error");
       navigate("/voter/ballots");
@@ -311,25 +311,48 @@ const VotingLayout: React.FC = () => {
   return (
     <div className="resolution-page">
       {/* ===== HEADER ===== */}
-      <div className="resolution-header">
-        <div className="header-left">
-          <Title level={3} className="header-title">
+      <div
+        className="resolution-header"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          width: "100%",
+        }}
+      >
+        {/* LEFT SIDE */}
+        <div>
+          <Title
+            level={3}
+            className="header-title"
+            style={{
+              margin: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {election?.title}
           </Title>
 
-          <div className="header-meta">
+          <div className="header-meta" style={{ marginTop: 10 }}>
             <span className="meta-item">
               <FileTextOutlined className="meta-icon" />
               <span>
-                Nghị quyết số: <b>{election?.decisionNumber}</b>
+                Nghị quyết: <b>{election?.decisionNumber}</b>
               </span>
             </span>
-
-
           </div>
         </div>
 
+        {/* RIGHT — BADGE */}
+        <div className="status-pill">
+          <span className="pill-dot" />
+          Đang diễn ra
+        </div>
       </div>
+
+
       <Row gutter={[32, 32]}>
         <Col xs={24} lg={16}>
           <ResolutionContent isVotingWindow={isVotingWindow} stageMessage={stageInfo?.message} />

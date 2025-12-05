@@ -1,22 +1,26 @@
-import { useEffect, useState, useMemo } from "react";
-import ReportCard from "./ReportCard";
-import {
-  BarChartOutlined,
-  PieChartOutlined,
-  TeamOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
-import { Pagination, Spin, Empty, message } from "antd";
-import "../../../style/preside/Reports.model.css";
+import FileService from "@/services/FileService";
 import ReportService from "@/services/ReportService";
 import removeVietnameseTones from "@/utils/removeVietnameseTones";
+import {
+  BarChartOutlined,
+  InboxOutlined,
+  PieChartOutlined,
+  ReloadOutlined,
+  TeamOutlined
+} from "@ant-design/icons";
+import { Card, message, Pagination, Spin, Typography } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import "../../../style/preside/Reports.model.css";
+import ReportCard from "./ReportCard";
 import ReportDetailModal from "./ReportDetailModal";
-import FileService from "@/services/FileService";
 
 interface ReportListProps {
   filter: string;
   searchValue: string;
 }
+
+
+const { Title, Text } = Typography;
 
 const iconMap: Record<string, React.ReactNode> = {
   Normal: <TeamOutlined />,
@@ -89,19 +93,16 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
   // Filter + Search
   const filtered = useMemo(() => {
     return reports.filter((r) => {
-      const desc = (r.description || "").toLowerCase();
-      const title = (r.summary || r.title || "").toLowerCase();
+      const title = (r.summary || "").toLowerCase();
 
       const searchNormalized = removeVietnameseTones(searchValue.toLowerCase());
-      const descNormalized = removeVietnameseTones(desc);
       const titleNormalized = removeVietnameseTones(title);
 
       const matchType =
-        filter === "" || r.type?.toLowerCase() === filter.toLowerCase();
+        filter === "" || r.summary?.toLowerCase() === filter.toLowerCase();
 
       const matchSearch =
         searchValue === "" ||
-        descNormalized.includes(searchNormalized) ||
         titleNormalized.includes(searchNormalized);
 
       return matchType && matchSearch;
@@ -115,17 +116,34 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
   }, [filtered, currentPage, pageSize]);
 
   if (loading) return <Spin style={{ marginTop: 40 }} />;
-  if (filtered.length === 0) return <Empty description="Không có báo cáo nào" />;
+  if (filtered.length === 0) return (
+    <div className="voting-history-content">
+      <Card className="voting-single-card no-voting-card">
+        <div className="no-voting-container">
+          <div className="no-voting-icon">
+            <InboxOutlined />
+          </div>
+          <Title level={4} className="no-voting-title">
+            Không có báo cáo nào
+          </Title>
+          <Text type="secondary" className="no-voting-description">
+            Hiện tại bạn chưa có báo cáo nào.
+          </Text>
+
+        </div>
+      </Card>
+    </div>
+  );;
 
   return (
     <>
       <div className="report-grid">
         {pagedReports.map((r) => (
           <ReportCard
-            key={r._id || r.title}
+            key={r._id}
             icon={iconMap[r.type] || <BarChartOutlined />}
-            title={r.summary || r.title}
-            description={`Bầu cử: ${r.electionId?.decisionName || "Không rõ"}`}
+            title={r.summary? `Báo cáo ${r.summary}` : "Báo cáo không tiêu đề"}
+            description={`Bầu cử: ${r.electionId?.title || "Không rõ"}`}
             onViewDetail={() => openDetail(r)}
             onExport={() => exportReport(r)}
           />

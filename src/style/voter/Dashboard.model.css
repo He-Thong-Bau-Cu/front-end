@@ -57,8 +57,11 @@
 }
 
 .voter-welcome-card .ant-avatar {
-  background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.voter-welcome-card .ant-avatar:not([src]) {
+  background-color: #8ECD91 !important;
 }
 
 /* 🧑‍💼 Name and info */
@@ -463,9 +466,9 @@
 
 /* ===== ELECTION OVERVIEW ===== */
 .election-overview-card {
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
   position: relative;
@@ -473,16 +476,6 @@
 
 .election-overview-card .ant-card-body {
   transition: none !important;
-}
-
-@keyframes gradientShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
 }
 
 .election-overview-header {
@@ -505,26 +498,13 @@
 .election-icon-wrapper {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  border-radius: 12px;
+  background: #27ae60;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.15);
   position: relative;
-  animation: iconPulse 2s ease-in-out infinite;
-}
-
-@keyframes iconPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-  }
 }
 
 .election-main-icon {
@@ -545,11 +525,7 @@
   font-size: 22px;
   color: #1a1a1a;
   font-weight: 700;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: -0.3px;
 }
 
 .election-status-tag {
@@ -561,43 +537,16 @@
   font-weight: 600;
   font-size: 13px;
   border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  animation: tagGlow 2s ease-in-out infinite;
-}
-
-@keyframes tagGlow {
-  0%,
-  100% {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  50% {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  }
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .status-icon-wrapper {
   display: inline-flex;
-  animation: iconRotate 3s linear infinite;
-}
-
-@keyframes iconRotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .election-divider-line {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.08) 20%,
-    rgba(0, 0, 0, 0.08) 80%,
-    transparent 100%
-  );
+  background: rgba(0, 0, 0, 0.08);
   margin: 20px 0;
   position: relative;
 }
@@ -641,19 +590,23 @@
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  color: #fff;
+  color: #666;
   position: relative;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  background: #f5f5f5;
+  border: 2px solid #e0e0e0;
+  transition: all 0.3s ease;
 }
 
 .timeline-item.current .timeline-icon {
-  animation: iconPulse 1.5s ease-in-out infinite;
-  transform: scale(1.15);
+  background: #27ae60;
+  color: #fff;
+  border-color: #27ae60;
 }
 
 .timeline-item.completed .timeline-icon {
-  animation: none;
+  background: #27ae60;
+  color: #fff;
+  border-color: #27ae60;
 }
 
 .timeline-item.completed .timeline-icon::after {
@@ -671,7 +624,13 @@
   font-size: 10px;
   color: #fff;
   border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-item.upcoming .timeline-icon {
+  background: #f5f5f5;
+  color: #bbb;
+  border-color: #e0e0e0;
 }
 
 .timeline-label {
@@ -700,51 +659,18 @@
 
 .timeline-line {
   flex: 1;
-  height: 3px;
+  height: 2px;
   margin: 0 6px;
   border-radius: 2px;
-  transition: all 0.5s ease;
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  background: #e0e0e0;
 }
 
 .timeline-line.active {
-  animation: lineFlow 2s ease-in-out infinite;
-}
-
-.timeline-line.active::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.5),
-    transparent
-  );
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-@keyframes lineFlow {
-  0%,
-  100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
+  background: #27ae60;
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -786,7 +712,7 @@
 
 .election-title-box {
   padding: 16px 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  background: #f8f9fa;
   border-radius: 12px;
   border-left: 4px solid #27ae60;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -824,6 +750,11 @@
   border: 1px solid rgba(0, 0, 0, 0.06);
   position: relative;
   overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.election-info-item:hover {
+  border-color: rgba(39, 174, 96, 0.2);
 }
 
 .election-info-item::before {
@@ -833,16 +764,16 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  background: #27ae60;
   opacity: 0;
 }
 
 .election-info-item:nth-child(2)::before {
-  background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
+  background: #27ae60;
 }
 
 .election-info-item:nth-child(3)::before {
-  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+  background: #27ae60;
 }
 
 .election-info-icon-wrapper {
@@ -853,30 +784,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: relative;
-  overflow: hidden;
-}
-
-.election-info-icon-wrapper::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.3) 0%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background: #f5f5f5;
 }
 
 .election-info-icon {
   font-size: 24px;
-  color: #ffffff;
+  color: #666;
   z-index: 1;
   position: relative;
 }
@@ -956,28 +871,23 @@
   align-items: center;
   gap: 16px;
   padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: transparent;
+  border-radius: 12px;
+  border: none;
   position: relative;
   overflow: hidden;
 }
 
 .election-time-item::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
+  display: none;
 }
 
 .election-time-start::before {
-  background: linear-gradient(180deg, #27ae60, #2ecc71);
+  display: none;
 }
 
 .election-time-end::before {
-  background: linear-gradient(180deg, #e74c3c, #c0392b);
+  display: none;
 }
 
 .time-icon-wrapper {

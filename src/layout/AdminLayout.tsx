@@ -1,26 +1,17 @@
+import bannerContent from "@/assets/banner_content.png";
+import AdminHeader from "@/components/admin/Header";
+import Sideber from "@/components/admin/Sidebar";
+import { User } from "@/types/User.interface";
+import { getUserLogin } from "@/utils/auth";
 import { Layout } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { useEffect, useState } from "react";
-import AdminHeader from "@/components/admin/Header";
-import Sideber from "@/components/admin/Sidebar";
 import { Outlet, useLocation } from "react-router-dom";
-import { User } from "@/types/User.interface";
-import { getUserLogin } from "@/utils/auth";
-import { MenuProps } from "antd/lib";
-import {
-  IdcardOutlined,
-  LogoutOutlined,
-  SettingOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import { useLoading } from "@/contexts/LoadingContext";
-import bannerContent from "@/assets/banner_content.png";
 
 const AdminLayout = () => {
   const [pageTitle, setPageTitle] = useState("Tổng quan");
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
-  const { showLoading, hideLoading } = useLoading();
 
   useEffect(() => {
     fetchDataUser();
