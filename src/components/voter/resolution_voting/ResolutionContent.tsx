@@ -98,23 +98,42 @@ const ResolutionContent: React.FC<ResolutionContentProps> = ({ isVotingWindow, s
       }
       showLoading();
       await BallotService.signBallot(ballotId, file, password);
-      const allocations = [{
-        entityId: entity._id,
-        voteValue:
-          selected === "YES" ? 1 :
-            selected === "NO" ? 0 :
-              selected === "ABSTAIN" ? -1 :
-                -1, // không chọn → -1
-      }];
-
-
-      // update ballot
-      await BallotService.updateBallot(ballotId, {
+      const updatePayload: any = {
         electionId,
         voterId,
-        allocations,
-        status: "CAST",
-      });
+      };
+
+      // ====== PHIẾU TRẮNG ======
+      // - selected === null (không chọn gì)
+      // - selected === "ABSTAIN"
+      if (!selected || selected === "ABSTAIN") {
+        updatePayload.status = "BLANK";
+        updatePayload.allocations = null;
+      }
+
+      // ====== PHIẾU HỢP LỆ: YES ======
+      else if (selected === "YES") {
+        updatePayload.status = "CAST";
+        updatePayload.allocations = [
+          {
+            entityId: entity._id,
+            voteValue: 1,
+          },
+        ];
+      }
+
+      // ====== PHIẾU HỢP LỆ: NO ======
+      else if (selected === "NO") {
+        updatePayload.status = "CAST";
+        updatePayload.allocations = [
+          {
+            entityId: entity._id,
+            voteValue: 0,
+          },
+        ];
+      }
+
+      await BallotService.updateBallot(ballotId, updatePayload);
 
       notify("Bỏ phiếu thành công!", "success");
       setSignModalOpen(false);
@@ -220,7 +239,7 @@ const ResolutionContent: React.FC<ResolutionContentProps> = ({ isVotingWindow, s
         <Button
           icon={<SendOutlined />}
           className="confirm-btn active"
-          disabled={!isVotingWindow || !selected}
+          disabled={!isVotingWindow}
           onClick={handleSendOtp}
         >
           Gửi Phiếu Bầu

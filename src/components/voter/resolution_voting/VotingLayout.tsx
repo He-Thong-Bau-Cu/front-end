@@ -146,7 +146,7 @@ const VotingLayout: React.FC = () => {
       await BallotService.updateBallot(ballotId, {
         electionId: localStorage.getItem("currentElectionId"),
         voterId: localStorage.getItem("voterId"),
-        status: "LOCKED",
+        status: "NOT_CAST",
       });
       notify("Phiếu bầu đã bị khóa do hết thời gian!", "error");
       navigate("/voter/ballots");

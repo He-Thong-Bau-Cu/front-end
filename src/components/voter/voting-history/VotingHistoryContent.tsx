@@ -237,10 +237,9 @@ const VotingHistoryContent = () => {
 
                                     {/* ---- CUMULATIVE ---- */}
                                     {methodCode === "CUMULATIVE" && (() => {
-                                        const votedEntities = ballot.allocations.filter(a => a.voteValue >= 0);
-                                        const allBlank = votedEntities.length === 0;
 
-                                        if (allBlank) {
+                                        // 1️⃣ allocations = null → phiếu trắng
+                                        if (!ballot.allocations) {
                                             return (
                                                 <Descriptions.Item>
                                                     <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
@@ -248,7 +247,19 @@ const VotingHistoryContent = () => {
                                             );
                                         }
 
-                                        return votedEntities.map((a, i) => (
+                                        // 2️⃣ tất cả voteValue đều = 0 → phiếu trắng
+                                        const allZero = ballot.allocations.every(a => a.voteValue === 0);
+
+                                        if (allZero) {
+                                            return (
+                                                <Descriptions.Item>
+                                                    <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
+                                                </Descriptions.Item>
+                                            );
+                                        }
+
+                                        // 3️⃣ có vote hợp lệ → hiển thị danh sách ứng viên + số phiếu
+                                        return ballot.allocations.map((a, i) => (
                                             <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
                                                 <Text strong style={{ color: "#52c41a" }}>
                                                     {a.entityId?.title} - Số phiếu: {a.voteValue}
@@ -259,10 +270,10 @@ const VotingHistoryContent = () => {
 
 
                                     {/* ---- YES_NO_ABSTAIN ---- */}
-                                    {methodCode === "YES_NO_ABSTAIN" && ballot.allocations.length > 0 && (() => {
-                                        const value = ballot.allocations[0].voteValue;
+                                    {methodCode === "YES_NO_ABSTAIN" && (() => {
 
-                                        if (value === -1) {
+                                        // 1️⃣ allocations = null → phiếu trắng
+                                        if (!ballot.allocations) {
                                             return (
                                                 <Descriptions.Item>
                                                     <Text strong type="warning">Phiếu trắng / Không bỏ phiếu</Text>
@@ -270,14 +281,23 @@ const VotingHistoryContent = () => {
                                             );
                                         }
 
+                                        const value = ballot.allocations[0].voteValue;
+
+                                        // 2️⃣ convert voteValue sang text
+                                        const mapYesNoAbstain: any = {
+                                            1: "Đồng ý",
+                                            0: "Không đồng ý",
+                                        };
+
                                         return (
                                             <Descriptions.Item>
                                                 <Text strong style={{ color: "#52c41a" }}>
-                                                    {ballot.allocations[0].entityId.title} - {convertYesNo(value)}
+                                                    {ballot.allocations[0].entityId.title} - {mapYesNoAbstain[value]}
                                                 </Text>
                                             </Descriptions.Item>
                                         );
                                     })()}
+
 
                                 </Descriptions>
 
