@@ -433,8 +433,8 @@ export default function SystemAuditReportPage() {
               setRejectModalOpen(false);
               setRejectReason("");
               const refresh = await BoardControlService.getAuditReport(electionId);
-              const payload = refresh?.data ?? refresh ?? null;
-              if (payload) setReportData(payload);
+              const payload = (refresh as any)?.data ?? refresh ?? null;
+              if (payload && (payload as any).info) setReportData(payload as any);
             } catch (error: any) {
               notify(error?.response?.data?.message || "Không thể từ chối báo cáo", "error");
             } finally {
