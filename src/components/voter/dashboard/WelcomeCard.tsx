@@ -52,6 +52,7 @@ const WelcomeCard = () => {
                     size={70}
                     src={user?.image}
                     icon={user?.image ? undefined : <UserOutlined />}
+                    style={!user?.image ? { backgroundColor: '#7cb342' } : undefined}
                 />
                 <div>
                     <Text strong className="voter-user-name">
