@@ -36,31 +36,24 @@
   /* KHÔNG FULL-WIDTH | KHÔNG FIX WIDTH | CO GIÃN TỰ NHIÊN */
   grid-template-columns: repeat(auto-fit, minmax(260px, max-content));
 
-  justify-content: flex-start; /* hoặc center nếu muốn */
+  justify-content: flex-start;
+  /* hoặc center nếu muốn */
 }
 
 
 /* ====== REPORT CARD (ĐÃ GỠ FIX WIDTH/HEIGHT) ====== */
 .report-card {
-  /* XÓA: width: 280px; height: 280px; */
-  width: auto;
-  height: auto;
-background-color: #e7f7dc;
+  height: 100%;
+  background-color: #e7f7dc;
+  /* Đảm bảo card luôn giống chiều cao container */
   display: flex;
-  flex-direction: column;
-
-  border-radius: 12px;
-  transition: all 0.2s ease-in-out;
-
-  /* Cho card đẹp hơn khi co giãn */
-  padding: 16px;
 }
 
-/* Nếu muốn card không bị kéo dài theo nội dung */
 .card-content {
   display: flex;
   flex-direction: column;
   height: 100%;
+  /* Bắt buộc để marginTop:auto hoạt động */
 }
 
 /* ====== TITLE VÀ DESC VẪN GIỮ ĐÚNG CHỐT CHIỀU CAO ====== */
@@ -83,7 +76,7 @@ background-color: #e7f7dc;
 }
 
 /* ====== FOOTER (NÚT) ====== */
-.report-card .card-content > div:last-child {
+.report-card .card-content>div:last-child {
   margin-top: auto;
   margin-bottom: 20px;
 }

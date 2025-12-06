@@ -128,6 +128,7 @@ export interface DelegationSummary {
   delegate: User1;
   createdAt: string;
   endDate: string;
+  startDate: string;
   status: string;
   delegationType: string;
 }

@@ -115,7 +115,6 @@ const AuthorizationTable = () => {
             a.href = url;
             a.download = "Danh_sach_uy_quyen_da_ky.pdf";
             a.click();
-
             URL.revokeObjectURL(url);
         } catch (err: any) {
             notify(err.response?.data?.message, "error");
@@ -152,6 +151,13 @@ const AuthorizationTable = () => {
 
         return true;
     });
+
+    const statusMap: { [key: string]: string } = {
+        "PENDING": "Chờ xác nhận của thư ký",
+        "CONFIRMED": "Chờ ký",
+        "SIGNED": "Đã ký",
+        "REJECTED": "Từ chối",
+    };
     const columns = [
         {
             title: "STT",
@@ -163,31 +169,37 @@ const AuthorizationTable = () => {
         {
             title: "Số quyết định",
             render: (r: any) => (
-                <Text strong>{r.election?.decisionNumber || "—"}</Text>
+                <a>{r.election?.decisionNumber || "—"}</a>
             ),
         },
         {
             title: "Tên cuộc ủy quyền",
             render: (r: any) => (
-                <span style={{ fontWeight: 500 }}>{r.election?.decisionName}</span>
+                <span>{r.election?.decisionName}</span>
             ),
         },
         {
-            title: "Số ủy quyền",
-            align: "center" as const,
-            render: (r: any) => {
-                const total = r.delegations?.length || 0;
-                return (
-                    <Tag color="blue" style={{ fontSize: 14, padding: "4px 12px" }}>
-                        {total}
-                    </Tag>
-                );
+            title: "Trạng thái",
+            dataIndex: "status", render: (statusData: string) => {
+                const color =
+                    statusData === "PENDING"
+                        ? "gold"
+                        : statusData === "CONFIRMED"
+                            ? "orange"
+                            : statusData === "SIGNED"
+                                ? "green"
+                                : statusData === "REJECTED"
+                                    ? "red"
+                                    : "gray";
+                return <Tag 
+                style={{ padding: 10, cursor: "pointer", fontSize: 14}}
+                color={color}>{statusMap[statusData] || statusData || "Chờ duyệt"}</Tag>;
             },
         },
         {
             title: "Hạn ủy quyền",
             render: (r: any) => (
-                <Text strong className="white-nowrap">
+                <Text className="white-nowrap">
                     {formatDate(r.election?.delegationEnd) || "—"}
                 </Text>
             ),
@@ -199,19 +211,23 @@ const AuthorizationTable = () => {
 
                 return (
                     <Space>
-                        <Button
-                            icon={<EyeOutlined style={{ fontSize: 16, color: "blue" }} />}
+                        <Tag
+                            style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
+                            color="yellow"
+                            icon={<EyeOutlined />}
                             onClick={() => openDetail(record)}
                         >
                             Xem hoặc ký
-                        </Button>
+                        </Tag>
                         {record.status === "SIGNED" && (
-                            <Button
+                            <Tag
+                                style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid "}}
+                                color="blue"
                                 icon={<DownloadOutlined />}
                                 onClick={() => downloadUrlFileSign(record)}
                             >
-                                Tải tài liệu
-                            </Button>
+                                Tải tài liệu ký số
+                            </Tag>
                         )}
                     </Space>
                 );
@@ -294,6 +310,7 @@ const AuthorizationTable = () => {
                 open={detailOpen}
                 onClose={() => setDetailOpen(false)}
                 recordId={detailRecordId}
+                data1={signRecord}
                 onSelectApproved={(ids) => {
                     setSelectedDelegations(ids);
                     setSignModalOpen(true);
