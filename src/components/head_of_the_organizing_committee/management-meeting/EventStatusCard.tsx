@@ -155,7 +155,7 @@ const EventStatusCard: React.FC<EventStatusCardProps> = ({
                     {isCompleted ? "ĐÃ KẾT THÚC" : isRunning ? "ĐANG DIỄN RA" : "TẠM DỪNG"}
                 </Tag>
 
-                <h2 className="event-status-timer">{formatTime(timeElapsed)}</h2>
+                {/*<h2 className="event-status-timer">{formatTime(timeElapsed)}</h2>*/}
 
                 <div className="event-status-buttons">
                     {isPending && (
