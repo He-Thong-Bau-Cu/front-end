@@ -557,7 +557,7 @@ const DraftingDocuments: React.FC = () => {
         </div>
 
         <Space>
-          {statusData === "WAIT_ENTER_DATA" && (
+          {(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED") && (
             <>
               <Button icon={<SaveOutlined />} onClick={handleSaveDraft}>
                 Lưu nháp
@@ -580,27 +580,27 @@ const DraftingDocuments: React.FC = () => {
             data={election}
             electionentities={electionentities}
             meeting={meeting}
-            disabled={statusData !== "WAIT_ENTER_DATA"}
+            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
           />
         </div>
         <div className="meeting-right">
           <Attendees
             onChange={setAttendees}
             data={voter}
-            disabled={statusData !== "WAIT_ENTER_DATA"}
+            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
             organizationMembers={organization}
           />
           <Organization
             onChange={setOrganization}
             data={organization}
-            disabled={statusData !== "WAIT_ENTER_DATA"}
+            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
             attendeesList={attendees}
           />
           <AttachedDocuments
             onChange={setDocuments}
             electionId={electionId}
             initialDocuments={existingDocuments}
-            disabled={statusData !== "WAIT_ENTER_DATA"}
+            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
           />
         </div>
       </div>
