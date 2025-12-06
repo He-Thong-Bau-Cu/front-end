@@ -30,10 +30,9 @@ const ReportCard: React.FC<ReportCardProps> = ({
   onViewDetail,
   onExport,
 }) => (
-  <Card className="report-card">
+  <Card className="report-card" style={{ height: 320 }}>
     <div className="card-content">
 
-      {/* ICON TRÁI - TYPE PHẢI */}
       <div
         style={{
           display: "flex",
@@ -52,7 +51,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
       <div className="report-title">{title}</div>
       <div className="report-desc">{description}</div>
 
-      <div style={{ marginTop: "auto", marginBottom: 20 }}>
+      <div style={{ marginTop: "auto", paddingTop: 12}}>
         <Button
           type="default"
           style={{ width: "100%" }}
@@ -64,6 +63,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
 
     </div>
   </Card>
+
 );
 
 export default ReportCard;
