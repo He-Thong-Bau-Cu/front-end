@@ -244,7 +244,7 @@ const DecisionTable = () => {
       const secrytary = await ElectionParticipantsService.getByElectionId(record._id);
       for (const a of secrytary) {
         if (a.roleId?._id === "6904d5f7105b6a336b819be5") {
-          setSecrytary(a);
+          setSecrytary(a); 
           break;
         }
       }
