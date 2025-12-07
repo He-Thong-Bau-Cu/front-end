@@ -9,12 +9,13 @@ import {
   Divider,
   Select,
   DatePicker,
+  Tag,
 } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import "../../../style/preside/CreateDecisionModal.model.css";
 import { useNotification } from "@/contexts/NotificationContext";
 import dayjs from "dayjs";
-import ElectionService from "@/services/ElectionService";
+import UserService from "@/services/UserService";
 const { Option } = Select;
 interface CreateDecisionModalProps {
   open: boolean;
@@ -36,6 +37,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   const [form] = Form.useForm();
   const [userList, setUserList] = useState<any[]>([]);
   const { notify } = useNotification();
+  const [showAddSecretary, setShowAddSecretary] = useState(false);
   // Giờ hành chính
   const WORK_START = 8;   // 08:00
   const WORK_END = 17;    // 17:00
@@ -58,10 +60,9 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   /* ===========================================================
       LOAD USER THEO THỜI GIAN
   =========================================================== */
-  const loadUsers = async (body: { startDate: string; endDate: string }) => {
+  const loadUsers = async () => {
     try {
-      if (!body.startDate || !body.endDate) return;
-      const res = await ElectionService.getElectionUser(body);
+      const res = await UserService.getAllUser();
       setUserList(res);
     } catch (err: any) {
       notify(err.response?.data?.message, "error");
@@ -85,20 +86,17 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
           decisionNumber: initialData.decisionNumber || "",
           decisionName: initialData.decisionName || "",
           secretaryId: secrytary?.userId?._id || undefined,
+          secrytaryName: secrytary?.userId?.fullName || "",
           statusData: initialData.statusData || "",
           startDate: start,
           endDate: end,
         });
 
-        if (start && end) {
-          loadUsers({
-            startDate: start.format(FORMAT),
-            endDate: end.format(FORMAT),
-          });
-        }
+        loadUsers();
       } else {
         form.resetFields();
         setUserList([]);
+        loadUsers();
       }
     }
   }, [open, editMode, initialData, form]);
@@ -107,6 +105,28 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
       SUBMIT
   =========================================================== */
   const handleFinish = (values: any) => {
+
+    // Nếu chọn trạng thái "Chờ thư ký nhập dữ liệu" → cảnh báo trước
+    if (values.statusData === "WAIT_ENTER_DATA") {
+      Modal.confirm({
+        title: "Xác nhận tạo quyết định",
+        content:
+          "Nếu bạn tạo với trạng thái 'Chờ thư ký nhập dữ liệu' thì SAU KHI TẠO bạn sẽ không được phét chỉnh sửa lại nội dung bầu cử. Bạn có chắc chắn muốn tiếp tục không?",
+        okText: "Tiếp tục",
+        cancelText: "Hủy",
+        onOk: () => {
+          const payload = {
+            ...values,
+            startDate: values.startDate?.format(FORMAT),
+            endDate: values.endDate?.format(FORMAT),
+          };
+          onSubmit(payload, editMode, initialData?._id);
+        }
+      });
+      return;
+    }
+
+    // Trường hợp trạng thái khác → xử lý bình thường
     const payload = {
       ...values,
       startDate: values.startDate?.format(FORMAT),
@@ -115,6 +135,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 
     onSubmit(payload, editMode, initialData?._id);
   };
+
 
   /* ===========================================================
       MIN DATE = TODAY + 20 DAYS
@@ -192,14 +213,6 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                   disabledDate={(current) => current && current < todayPlus20}
                   onChange={(value) => {
                     form.setFieldsValue({ startDate: value });
-
-                    const end = form.getFieldValue("endDate");
-                    if (value && end) {
-                      loadUsers({
-                        startDate: value.format(FORMAT),
-                        endDate: end.format(FORMAT),
-                      });
-                    }
                   }}
                 />
 
@@ -247,14 +260,6 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                   }}
                   onChange={(value) => {
                     form.setFieldsValue({ endDate: value });
-
-                    const start = form.getFieldValue("startDate");
-                    if (start && value) {
-                      loadUsers({
-                        startDate: start.format(FORMAT),
-                        endDate: value.format(FORMAT),
-                      });
-                    }
                   }}
                 />
 
@@ -264,24 +269,135 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 
           {/* Thư ký */}
           <Col span={24}>
-            <Form.Item
-              name="secretaryId"
-              label="Thư ký chủ tọa"
-              rules={[{ required: true, message: "Vui lòng chọn thư ký" }]}
-            >
-              <Select
-                placeholder="Chọn thư ký"
-                allowClear
-                disabled={editMode}   // 👈 THÊM DÒNG NÀY
+            {!showAddSecretary && (
+              <>
+
+                <Form.Item
+                  name="secretaryId"
+                  label="Thư ký chủ tọa"
+                  rules={[{ required: true, message: "Vui lòng chọn thư ký" }]}
+                >
+                  <Select placeholder="Chọn thư ký" allowClear>
+                    {/* Option hiện tại (dùng khi EDIT) */}
+                    {editMode && secrytary?.userId && (
+                      <Option value={secrytary.userId._id}>
+                        {secrytary.userId.fullName} - {secrytary.userId.email}
+                      </Option>
+                    )}
+
+                    {/* Danh sách userList */}
+                    {userList.map((user) => (
+                      <Option key={user._id} value={user._id}>
+                        {user.fullName} - {user.email}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                {!editMode ? (
+                  <Tag
+                    color={"blue"}
+                    style={{
+                      fontSize: 14,
+                      padding: "8px 14px",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      marginBottom: 20
+                    }}
+                    onClick={() => setShowAddSecretary(true)}
+                  >
+                    + Thêm thư ký mới
+                  </Tag>
+                ) : null}
+              </>
+            )}
+
+            {showAddSecretary && (
+              <div
+                style={{
+                  padding: "16px",
+                  border: "1px solid #eee",
+                  borderRadius: 8,
+                  marginTop: 12,
+                  background: "#fafafa"
+                }}
               >
-                {userList.map((user) => (
-                  <Option key={user._id} value={user._id}>
-                    {user.fullName} - {user.email}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+                <Divider>Thông tin thư ký mới</Divider>
+
+                <Form.Item
+                  label="Họ và tên người được ủy quyền *"
+                  name="new_name"
+                  rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+                >
+                  <Input placeholder="Nhập họ tên đầy đủ" />
+                </Form.Item>
+
+                <Row gutter={16}>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="CCCD/CMND *"
+                      name="new_cccd"
+                      rules={[{ required: true, message: "Vui lòng nhập số CCCD" }]}
+                    >
+                      <Input placeholder="Số CCCD" />
+                    </Form.Item>
+                  </Col>
+
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Số điện thoại *"
+                      name="new_phone"
+                      rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+                    >
+                      <Input placeholder="Số điện thoại" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Row gutter={16}>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Email *"
+                      name="new_email"
+                      rules={[
+                        { required: true, message: "Vui lòng nhập email" },
+                        { type: "email", message: "Email không hợp lệ" },
+                      ]}
+                    >
+                      <Input placeholder="Email" />
+                    </Form.Item>
+                  </Col>
+
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Địa chỉ *"
+                      name="new_address"
+                      rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+                    >
+                      <Input placeholder="Địa chỉ" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Tag
+                  color={"blue"}
+                  style={{
+                    fontSize: 14,
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    cursor: "pointer"
+                  }}
+                  onClick={() => setShowAddSecretary(false)}
+                >
+                  ← Quay lại chọn từ danh sách
+                </Tag>
+              </div>
+            )}
+
           </Col>
+
+
+
 
           <Col span={24}>
             <Form.Item
@@ -304,7 +420,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
         {/* FOOTER */}
         <div className="modal-footer">
           <Button onClick={onCancel}>Hủy</Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" >
             {editMode ? "Cập nhật quyết định" : "Tạo quyết định"}
           </Button>
         </div>

@@ -45,7 +45,6 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue, electionId
   // 👉 NEW: fetch detail by ID
   const openDetail = async (item: any) => {
     try {
-      setLoading(true);
       const res = await ReportService.getReportById(item._id);
       setDetailData(res?.data || item);
       setDetailOpen(true);
@@ -190,8 +189,6 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue, electionId
           </div>
         </Card>
       </div>
-
-
       {/* Modal detail */}
       <ReportDetailModal
         open={detailOpen}
