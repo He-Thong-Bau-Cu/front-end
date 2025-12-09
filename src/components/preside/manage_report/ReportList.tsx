@@ -1,6 +1,7 @@
 import FileService from "@/services/FileService";
 import ReportService from "@/services/ReportService";
 import removeVietnameseTones from "@/utils/removeVietnameseTones";
+import { useNotification } from "@/contexts/NotificationContext";
 import {
   BarChartOutlined,
   InboxOutlined,
@@ -18,18 +19,19 @@ import { getUserLogin } from "@/utils/auth";
 interface ReportListProps {
   filter: string;
   searchValue: string;
+  electionId?: string | null;
 }
 
 
 const { Title, Text } = Typography;
 
 const iconMap: Record<string, React.ReactNode> = {
-  Normal: <TeamOutlined />,
+  Verification: <TeamOutlined />,
   Abnormal: <ReloadOutlined />,
-  Final: <PieChartOutlined />,
+  Audit: <PieChartOutlined />,
 };
 
-const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
+const ReportList: React.FC<ReportListProps> = ({ filter, searchValue, electionId }) => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSystemPreside, setIsSystemPreside] = useState(true);
@@ -74,12 +76,11 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
   // 👉 NEW: fetch detail by ID
   const openDetail = async (item: any) => {
     try {
-      setLoading(true);
       const res = await ReportService.getReportById(item._id);
       setDetailData(res?.data || item);
       setDetailOpen(true);
-    } catch (err) {
-      console.error("Không thể tải chi tiết báo cáo:", err);
+    } catch (err: any) {
+      notify(err.response?.data?.message, "error");
     } finally {
       setLoading(false);
     }
@@ -94,9 +95,8 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
       a.download = `${item.summary || item.title || "Báo_cáo"}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể tải file!");
+    } catch (err: any) {
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -126,23 +126,37 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
   }, [userFetched, isSystemPreside, currentElectionId]);
 
   // Filter + Search
+  // Filter + Search
   const filtered = useMemo(() => {
     return reports.filter((r) => {
-      const title = (r.summary || "").toLowerCase();
+      const summary = (r.summary || "").toLowerCase();
+      const description = (r.description || "").toLowerCase();
 
-      const searchNormalized = removeVietnameseTones(searchValue.toLowerCase());
-      const titleNormalized = removeVietnameseTones(title);
+      const searchNormalized = removeVietnameseTones(
+        searchValue.toLowerCase()
+      );
+      const summaryNormalized = removeVietnameseTones(summary);
+      const descNormalized = removeVietnameseTones(description);
 
+      // Lọc theo type: verification / abnormal / audit
       const matchType =
-        filter === "" || r.summary?.toLowerCase() === filter.toLowerCase();
+        !filter || (r.type && r.type.toLowerCase() === filter.toLowerCase());
 
+      // Tìm theo tiêu đề HOẶC mô tả
       const matchSearch =
-        searchValue === "" ||
-        titleNormalized.includes(searchNormalized);
+        !searchValue ||
+        summaryNormalized.includes(searchNormalized) ||
+        descNormalized.includes(searchNormalized);
 
-      return matchType && matchSearch;
+      const matchElection =
+        !electionId ||
+        r.electionId?._id === electionId ||
+        r.electionId === electionId;
+
+      return matchType && matchSearch && matchElection;
     });
-  }, [reports, filter, searchValue]);
+  }, [reports, filter, searchValue, electionId]);
+
 
   // Paging
   const pagedReports = useMemo(() => {
@@ -164,41 +178,45 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
           <Text type="secondary" className="no-voting-description">
             Hiện tại bạn chưa có báo cáo nào.
           </Text>
-
         </div>
       </Card>
     </div>
-  );;
+  );
 
   return (
     <>
-      <div className="report-grid">
-        {pagedReports.map((r) => (
-          <ReportCard
-            key={r._id}
-            icon={iconMap[r.type] || <BarChartOutlined />}
-            title={r.summary? `Báo cáo ${r.summary}` : "Báo cáo không tiêu đề"}
-            description={`Bầu cử: ${r.electionId?.title || "Không rõ"}`}
-            onViewDetail={() => openDetail(r)}
-            onExport={() => exportReport(r)}
-          />
-        ))}
-      </div>
+      <div className="voting-history-content">
+        <Card className="report-list-wrapper">
+          <div className="report-grid">
+            {pagedReports.map((r) => (
+              <ReportCard
+                key={r._id}
+                icon={iconMap[r.type] || <BarChartOutlined />}
+                title={r.summary ? `Báo cáo ${r.summary}` : "Báo cáo không tiêu đề"}
+                description={`Bầu cử: ${r.electionId?.title || "Không rõ"}`}
+                type={r.type}         // <-- thêm dòng này
+                onViewDetail={() => openDetail(r)}
+                onExport={() => exportReport(r)}
+              />
 
-      {/* Pagination */}
-      <div style={{ textAlign: "center", marginTop: 24 }}>
-        <Pagination
-          current={currentPage}
-          total={filtered.length}
-          pageSize={pageSize}
-          showSizeChanger
-          onChange={(p, s) => {
-            setCurrentPage(p);
-            setPageSize(s);
-          }}
-        />
-      </div>
+            ))}
+          </div>
 
+          {/* Pagination */}
+          <div style={{ textAlign: "center", marginTop: 24 }}>
+            <Pagination
+              current={currentPage}
+              total={filtered.length}
+              pageSize={pageSize}
+              showSizeChanger
+              onChange={(p, s) => {
+                setCurrentPage(p);
+                setPageSize(s);
+              }}
+            />
+          </div>
+        </Card>
+      </div>
       {/* Modal detail */}
       <ReportDetailModal
         open={detailOpen}
@@ -207,6 +225,7 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue }) => {
       />
     </>
   );
+
 };
 
 export default ReportList;

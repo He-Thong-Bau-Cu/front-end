@@ -12,12 +12,12 @@ import {
     Divider,
     Tag,
     Input,
+    Space,
 } from "antd";
 import {
     DownloadOutlined,
     EyeOutlined,
 } from "@ant-design/icons";
-
 import DelegationService from "@/services/DelegationService";
 import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
 import { DelegationSummary } from "@/types/Delegate.interface";
@@ -25,10 +25,9 @@ import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
-import { set } from "react-hook-form";
-import { formatDateNoOffset, formatDateNoOffset2 } from "@/utils/format";
+import { formatDateNoOffset2 } from "@/utils/format";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
 const { Title, Text } = Typography;
-
 const formatDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return "";
     try {
@@ -48,7 +47,7 @@ interface AuthorizationDetailModalProps {
     open: boolean;
     onClose: () => void;
     recordId: string | null;
-
+    data1: any | null;
     onSelectApproved?: (ids: string[]) => void;
 }
 
@@ -56,6 +55,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
     open,
     onClose,
     recordId,
+    data1,
     onSelectApproved,
 }) => {
     const [data, setData] = useState<SummaryDelegate | null>(null);
@@ -78,7 +78,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             const res = await DelegationService.getDelegationPresideByElectionId(recordId);
             setData(res[0]);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         } finally {
             setLoading(false);
         }
@@ -136,7 +136,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             setRejectModalOpen(false);
             // setSelectedDelegations([]);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         }
     };
 
@@ -163,7 +163,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             setModalOpen(true);
 
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         }
     };
     const downloadUrlFile = async () => {
@@ -182,7 +182,26 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             a.click();
             URL.revokeObjectURL(url);
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
+        }
+    };
+
+    const downloadUrlFileSign = async () => {
+        try {
+            const data2 = await ElectionDocumentService.getDocumentByElectionId(
+                data1?.election?._id
+            );
+            const signedDocuments = data2.filter((item: any) => item?.type === "delegation-summary-signed");
+            const response = await FileService.getSignedFile(signedDocuments[0]?.fileUrl);
+            const blob = new Blob([response], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err: any) {
+            notify(err.response?.data?.message, "error");
         }
     };
 
@@ -198,14 +217,14 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             });
             const res = await DelegationService.delegationApprove(formData);
             if (res.success) {
-                notify(res.message, "success");
                 loadDetail();
                 setModalOpen(false);
+                notify(res.message, "success");
             } else {
                 notify(res.message, "error");
             }
         } catch (err: any) {
-            notify(err.message, "error");
+            notify(err.response?.data?.message, "error");
         } finally {
             hideLoading();
         }
@@ -238,7 +257,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             dataIndex: ["delegate", "fullName"],
         },
         {
-            title: "Loại",
+            title: "Loại ủy quyền",
             dataIndex: "delegationType",
             render: (status: string) => {
                 let color = "";
@@ -249,15 +268,17 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         color = "yellow";
                         text = "Dài hạn";
                         break;
-                    case "LONG_TERM":
-                        color = "green";
+                    case "ELECTION":
+                        color = "pink";
                         text = "Trong cuộc bầu cử";
                         break;
                     default:
                         color = "default";
                         text = status;
                 }
-                return <Tag color={color}>{text}</Tag>;
+                return <Tag
+                    style={{ padding: 10, fontSize: 14, border: "1px solid " }}
+                    color={color}>{text}</Tag>;
             },
         },
         {
@@ -279,7 +300,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         text = "Chờ duyệt";
                         break;
                     case "SIGNED":
-                        color = "green";
+                        color = "blue";
                         text = "Đã ký duyệt";
                         break;
                     case "REJECTED":
@@ -290,7 +311,9 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         color = "default";
                         text = status;
                 }
-                return <Tag color={color}>{text}</Tag>;
+                return <Tag
+                    style={{ padding: 10, fontSize: 14, border: "1px solid " }}
+                    color={color}>{text}</Tag>;
             },
         },
         {
@@ -324,6 +347,8 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
             delegateReason: item.delegateReason,
             raw: item,
             delegationType: item.delegationType,
+            startDate: formatDate(item.startDate),
+            endDate: formatDate(item.endDate),
         })) || [];
     return (
         <>
@@ -331,13 +356,19 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                 open={open}
                 onCancel={onClose}
                 footer={null}
-                width={850}
+                width={"90vw"}
                 centered
                 styles={{
                     body: {
                         padding: 0,
                         background: "#f6f9f4",
+                        maxHeight: "85vh",   // ★ modal cao hơn
+                        overflowY: "auto",   // ★ scroll nếu vượt khung
                     },
+                    content: {
+                        borderRadius: 16,
+                        paddingBottom: 0,
+                    }
                 }}
             >
                 <Spin spinning={loading}>
@@ -419,12 +450,27 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                         <Row justify="end" style={{ marginTop: 22 }} gutter={12}>
                             {data?.status === "PENDING" || data?.status === "CONFIRMED" ? (
                                 <Col>
-                                    <Button icon={<DownloadOutlined />} onClick={downloadUrlFile}>
-                                        Tải danh sach ủy quyền
-                                    </Button>
+                                    <Tag
+                                        style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
+                                        color="blue"
+                                        icon={<DownloadOutlined />} onClick={downloadUrlFile}>
+                                        Xuất tài liệu
+                                    </Tag>
                                 </Col>
 
-                            ) : null}
+                            ) :
+                                (
+                                    <Col>
+                                        <Tag
+                                            style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
+                                            color="orange"
+                                            icon={<DownloadOutlined />} onClick={downloadUrlFileSign}>
+                                            Tải tài liệu ký số
+                                        </Tag>
+                                    </Col>
+
+                                )
+                            }
                             {check && !checkSign && (
                                 <>
                                     <Col>
@@ -454,8 +500,13 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                     </Col>
                                 </>
                             )}
+
+                            <Col>
+                                <Button onClick={onClose}>Đóng</Button>
+                            </Col>
                         </Row>
                     </Card>
+
                 </Spin>
             </Modal>
 
@@ -619,7 +670,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                 Loại ủy quyền
                             </Text>
                             <div style={{ fontSize: 16, fontWeight: 500, marginTop: 4 }}>
-                                {detailView?.delegstionType}
+                                <Tag color={"pink"}>{detailView.delegationType === "ELECTION" ? "Trong cuộc bầu cử" : "Dài hạn"}</Tag>
                             </div>
                         </div>
                         <div style={{ padding: "12px 6px" }}>

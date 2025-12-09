@@ -4,6 +4,7 @@ import BallotService from "@/services/BallotService";
 import ElectionService from "@/services/ElectionService";
 import { Election } from "@/types/Election.interface";
 import { Card, Col, Row, Spin, Typography } from "antd";
+import moment from "moment-timezone";
 import React, { useEffect, useState } from "react";
 
 const { Title, Text } = Typography;
@@ -70,7 +71,7 @@ const VotingResultSummary: React.FC = () => {
                 <div className="summary-meta">
                     <span>
                         📅 Kết thúc:{" "}
-                        {new Date(election?.endDate).toLocaleString("vi-VN", { hour12: false })}
+                        {moment.utc(election?.endDate).format("DD/MM/YYYY HH:mm")}
                     </span>
                 </div>
 

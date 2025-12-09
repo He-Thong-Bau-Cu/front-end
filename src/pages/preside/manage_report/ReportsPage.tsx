@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import ReportFilter from "../../../components/preside/manage_report/ReportFilter";
 import ReportList from "../../../components/preside/manage_report/ReportList";
 import "../../../style/preside/Reports.model.css";
-
 const ReportsPage: React.FC = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("");

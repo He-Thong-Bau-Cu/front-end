@@ -41,8 +41,8 @@ const DashboardStats = () => {
                 dataMap.push({ title: "Quyết định chờ duyệt", icon: <FileTextOutlined />, value: data.pendingApprovals !== null ? data.pendingApprovals : 0 })
                 dataMap.push({ title: "Tỷ lệ tham gia", icon: <BarChartOutlined />, value: data.participationRate !== null ? data.participationRate : 0 })
                 setStatistic(dataMap);
-            } catch (error) {
-                message.error("Không thể tải thông tin người dùng!");
+            } catch (err: any) {
+                notify(err.response?.data?.message, "error");
             }
         };
         fetchUser();

@@ -12,6 +12,7 @@ import {
   Avatar,
   Input,
   Tooltip,
+  message,
 } from "antd";
 
 import {
@@ -25,10 +26,13 @@ import {
   SearchOutlined,
   EditOutlined,
 } from "@ant-design/icons";
-import CandidateDetailModal from "./CandidateDetailModal";
 import FileService from "@/services/FileService";
 import { useNotification } from "@/contexts/NotificationContext";
 import { Col } from "antd/lib";
+import { useLoading } from "@/contexts/LoadingContext";
+import DecisionService from "@/services/DecisionService";
+import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
 const { Title, Text } = Typography;
 
 interface ViewDecisionModalProps {
@@ -47,9 +51,9 @@ interface ViewDecisionModalProps {
 const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   open,
   onClose,
+  onSign,
   data,
   loading = false,
-
   voters = [],
   organize = [],
   electionentities = [],
@@ -59,6 +63,14 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [openCandidateModal, setOpenCandidateModal] = useState(false);
   const [searchText, setSearchText] = useState<string>("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [recordId, setRecordId] = useState<string | null>(null);
+  const [rejectModal, setRejectModal] = useState({
+    open: false,
+    record: null,
+  });
+  const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
   const handleViewCandidate = (record: any) => {
     setSelectedCandidate(record);
@@ -67,17 +79,61 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
 
   const downloadUrlFileSign = async (data: any) => {
     try {
-      const response = await FileService.getSignedFile(data.fileUrl);
+      const data1 = await ElectionDocumentService.getDocumentByElectionId(
+        data?._id
+      );
+      const signedDocuments = data1.filter((item: any) => item?.type === "signed-documents");
+      const response = await FileService.getSignedFile(signedDocuments[0]?.fileUrl);
       const blob = new Blob([response], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "Danh_sach_uy_quyen_da_ky.pdf";
+      a.download = `${data.decisionName} có ký số.pdf`;
       a.click();
-
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
+    }
+  };
+
+  const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
+    try {
+      showLoading();
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("password", password);
+      formData.append("electionId", data._id || "");
+      const res = await DecisionService.SignedDecision(formData);
+      if (res.success) {
+        setModalOpen(false);
+        notify(res.message, "success");
+        onSign?.();
+      } else {
+        notify(res.message, "error");
+      }
+    } catch (err: any) {
+      notify(err.response?.data?.message, "error");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectReason.trim()) {
+      return message.error("Vui lòng nhập lý do từ chối!");
+    }
+    try {
+      // Gọi API
+      const reject = await DecisionService.RejectDecision({ electionId: rejectModal.record, rejectReason: rejectReason.trim() });
+      if (reject.success) {
+        notify(reject.message, "success");
+        onSign?.();
+      } else {
+        notify(reject.message, "error");
+      }
+      setRejectModal({ open: false, record: null });
+    } catch (err: any) {
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -90,10 +146,9 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       a.href = url;
       a.download = "Tai_lieu_lien_quan.pdf";
       a.click();
-
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      notify(err.message, "error");
+      notify(err.response?.data?.message, "error");
     }
   };
 
@@ -114,47 +169,81 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Họ tên", dataIndex: ["userId", "fullName"] },
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
-    { title: "Vai trò", dataIndex: ["roleId", "roleName"] },
+    {
+      title: "Vai trò", dataIndex: ["roleId", "roleName"],
+      render: (role: string) => {
+        return <Tag
+          style={{ padding: 8, fontSize: 14 }}
+          color={"purple"}>{role}</Tag>;
+      },
+    },
     {
       title: "Trạng Thái", dataIndex: "statusVoter",
       render: (status: string) => {
         switch (status) {
           case "ACTIVE":
-            return <Tag color="green">Hoạt động</Tag>;
+            return <Tag
+              style={{ padding: 8, fontSize: 14 }}
+              color="green">Hoạt động</Tag>;
           case "INACTIVE":
-            return <Tag color="orange">Không hoạt động</Tag>;
+            return <Tag
+              style={{ padding: 8, fontSize: 14 }}
+              color="red">Không hoạt động</Tag>;
           case "AUTHORIZED":
-            return <Tag color="red">Được ủy quyền</Tag>;
+            return <Tag
+              style={{ padding: 8, fontSize: 14 }}
+              color="blue">Được ủy quyền</Tag>;
+          case "PENDING":
+            return <Tag
+              style={{ padding: 8, fontSize: 14 }}
+              color="orange">Chờ duyệt</Tag>;
           default:
-            return <Tag color="default">Không rõ</Tag>;
+            return <Tag
+              style={{ padding: 8, fontSize: 14 }}
+              color="default">Không hoạt động</Tag>;
         }
       }
     },
     {
       title: "Cổ phần", dataIndex: "percent",
-      render: (percent: number) => (percent !== undefined ? `${percent}%` : `${0}%`),
+      render: (role: string) => {
+        return <Tag
+          style={{ padding: 8, fontSize: 14 }}
+          color={"green"}>{role !== undefined ? `${role}%` : `${0}%`}</Tag>;
+      },
     },
   ];
+  const totalPercent = voters.reduce((sum, item) => sum + (item.percent || 0), 0);
+
 
   const organizerColumns = [
     { title: "Họ tên", dataIndex: ["userId", "fullName"] },
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
-    { title: "Vai trò", dataIndex: ["roleId", "roleName"] },
+    {
+      title: "Vai trò", dataIndex: ["roleId", "roleName"],
+      render: (role: string) => {
+        return <Tag
+          style={{ padding: 8, fontSize: 14 }}
+          color={"pink"}>{role}</Tag>;
+      },
+    },
   ];
   const STATUS_MAP: any = {
     WAIT_ENTER_DATA: { label: "Chờ nhập dữ liệu", color: "gold" },
-    WAIT_APPROVAL: { label: "Chờ duyệt", color: "blue" },
-    APPROVED_SIGNED: { label: "Đã duyệt", color: "green" },
+    WAIT_APPROVAL: { label: "Chờ duyệt", color: "orange" },
+    APPROVED_SIGNED: { label: "Đã duyệt", color: "blue" },
     DRAFT: { label: "Bản nháp", color: "default" },
-    REQUEST_EDIT: { label: "Yêu cầu chỉnh sửa", color: "red" },
+    REJECTED: { label: "Từ chối", color: "red" },
   };
   const TYPE_LABELS: Record<string, string> = {
-    "signed-documents": "Tài liệu nghị quyết đã ký",
-    "delegation-delegator-signed": "Tài liệu ủy quyền cử tri đã ký",
-    "delegation-summary-signed": "Tài liệu tóm tắt ủy quyền chủ tọa đã ký",
-    "voter-signed-ballots": "Tài liệu phiếu bầu cử đã ký của cử tri",
-    "election-documents-important": "Tài liệu quan trọng về bầu cử",
+    "signed-documents": "Quyết định có chữ kí số",
+    "delegation-delegator-signed": "Phiếu uryb quyền",
+    "delegation-summary-signed": "Quyết định bầu cử",
+    // "voter-signed-ballots": "Phiếu bầu có chữ ký",
+    "election-documents-important": "Tài liệu bầu cử",
+    "report-verification-sign": "Báo cáo xác minh",
+    "election-results": "Báo cáo kết quả",
     default: "Tài liệu đính kèm",
     // Thêm bao nhiêu loại cũng được
   };
@@ -163,7 +252,12 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Tên tài liệu", dataIndex: "title" },
     {
       title: "Loại tài liệu", dataIndex: "type",
-      render: (type: string) => TYPE_LABELS[type] || "Không xác định",
+      render: (type: string) => {
+        return <Tag
+          style={{ padding: 8, fontSize: 14 }}
+          color={"blue"}>{TYPE_LABELS[type]}</Tag>;
+      },
+
     },
 
     {
@@ -181,6 +275,19 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       )
     },
   ];
+
+  const openRejectModal = (record: any) => {
+    setRejectModal({
+      open: true,
+      record: record._id,
+    });
+    setRejectReason("");
+  };
+
+  const handleOpenSign = (data: any) => {
+    setRecordId(data._id);
+    setModalOpen(true);
+  };
 
   // Lọc candidates theo search text
   const filteredCandidates = electionentities.filter((candidate) => {
@@ -206,10 +313,14 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       open={open}
       onCancel={onClose}
       footer={null}
-      width={1150}
+      width={"90vw"}
       centered
+      style={{
+        margin: 20
+      }}
       styles={{
         body: { padding: 10 },
+
       }}
     >
       <Spin spinning={loading}>
@@ -224,10 +335,42 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
               border: "1px solid #eee",
             }}
           >
-            <Title level={4} style={{ margin: 0 }}>
-              <FileTextOutlined style={{ marginRight: 8 }} />
-              {data?.decisionName || "Thông tin nghị quyết"}
-            </Title>
+            {/* ======= TIÊU ĐỀ NGHỊ QUYẾT ======= */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 18,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <FileTextOutlined style={{ fontSize: 26, color: "#52c41a" }} />
+
+                <span
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 600,
+                    color: "#333",
+                    lineHeight: "28px",
+                  }}
+                >
+                  {data?.decisionName || "Thông tin nghị quyết"}
+                </span>
+              </div>
+
+              {/* TAG TRẠNG THÁI NỔI BẬT */}
+              <Tag
+                color={STATUS_MAP[data?.statusData]?.color || "default"}
+                style={{
+                  fontSize: 14,
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                }}
+              >
+                {STATUS_MAP[data?.statusData]?.label || data?.statusData}
+              </Tag>
+            </div>
 
             <Descriptions
               column={2}
@@ -240,48 +383,36 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
               <Descriptions.Item label="Số quyết định">
                 {data?.decisionNumber}
               </Descriptions.Item>
-
-              <Descriptions.Item label="Trạng thái">
-                {STATUS_MAP[data?.statusData] ? (
-                  <Tag color={STATUS_MAP[data.statusData].color}>
-                    {STATUS_MAP[data.statusData].label}
-                  </Tag>
-                ) : (
-                  <Tag color="default">{data?.statusData}</Tag>
-                )}
-              </Descriptions.Item>
-
               <Descriptions.Item label="Thời gian bắt đầu">
                 {formatDateTime(meeting?.startDate || data?.startDate)}
               </Descriptions.Item>
-
-              <Descriptions.Item label="Thời gian kết thúc">
-                {formatDateTime(meeting?.endDate || data?.endDate)}
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Thời gian ủy quyền">
-                {formatDateTime(data?.delegationStart)}
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Kết thúc ủy quyền">
-                {formatDateTime(data?.delegationEnd)}
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Hình thức bầu cử">
-                {data?.votingMethodId?.methodName || "-"}
-              </Descriptions.Item>
-
               <Descriptions.Item label="Thể loại bầu cử">
                 {data?.typeId?.typeName || "-"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Thời gian kết thúc">
+                {formatDateTime(meeting?.endDate || data?.endDate)}
               </Descriptions.Item>
 
               <Descriptions.Item label="Ngưỡng thông qua">
                 {data?.thresholdId?.thresholdName || "-"}
               </Descriptions.Item>
 
+              <Descriptions.Item label="Thời gian ủy quyền">
+                {formatDateTime(data?.delegationStart)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Hình thức bầu cử">
+                {data?.votingMethodId?.methodName || "-"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Kết thúc ủy quyền">
+                {formatDateTime(data?.delegationEnd)}
+              </Descriptions.Item>
+
+
               <Descriptions.Item label="Địa chỉ cuộc họp">
                 {meeting?.location || "-"}
               </Descriptions.Item>
+
+
             </Descriptions>
           </div>
 
@@ -563,7 +694,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                     <Tooltip title="Có tài liệu đính kèm">
                                       <Button
                                         icon={<DownloadOutlined />}
-                                        onClick={() => downloadUrlFileSign1(selectedCandidate)}
+                                        onClick={() => downloadUrlFileSign1(record)}
                                         style={{ cursor: "pointer", color: "green" }}
                                       >
                                       </Button>
@@ -663,12 +794,39 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                   </span>
                 ),
                 children: (
-                  <Table
-                    dataSource={voters}
-                    columns={voterColumns}
-                    rowKey={(r) => r._id || r.id || r.userId}
-                    pagination={{ pageSize: 10 }}
-                  />
+                  <>
+                    {/* ⭐ HIỂN THỊ TỔNG CỔ PHẦN NGOÀI BẢNG ⭐ */}
+                    <div
+                      style={{
+                        margin: 15,
+                        textAlign: "right",
+                        fontSize: 16,
+                      }}
+                    >
+                      {(() => {
+                        const totalPercent = voters.reduce(
+                          (sum, item) => sum + (item.percent || 0),
+                          0
+                        );
+                        return (
+                          <Tag
+                            color={"yellow"}
+                            style={{ padding: 10, border: "1px solid ", fontSize: 14, fontWeight:700 }}
+                          >
+                            Tổng số cổ phần: {totalPercent}%
+                          </Tag>
+                        );
+                      })()}
+                    </div>
+                    <Table
+                      dataSource={voters}
+                      columns={voterColumns}
+                      rowKey={(r) => r._id || r.id || r.userId}
+                      pagination={{ pageSize: 10 }}
+                    />
+
+
+                  </>
                 ),
               },
 
@@ -708,19 +866,47 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
 
           {/* ================= FOOTER ================= */}
           <div style={{ marginTop: 20, textAlign: "right" }}>
+            {
+              data?.statusData === "WAIT_APPROVAL" && (
+                <>
+                  <Tag
+                    style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
+                    icon={<EditOutlined />}
+                    color="green"
+                    onClick={() => handleOpenSign(data)}
+                  >
+                    Ký số
+                  </Tag>
+                  <Tag
+                    style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
+                    color="red"
+                    onClick={() => openRejectModal(data)}
+                  >
+                    Từ chối
+                  </Tag>
+
+                </>
+              )
+            }
+            {data?.statusData === "APPROVED_SIGNED" ? (
+              <Tag
+                color={"yellow"}
+                style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
+                icon={<DownloadOutlined />}
+                onClick={() => downloadUrlFileSign(data)}
+              >
+                Tải tài liệu có chữ ký số
+              </Tag>
+            ) : null}
             <Space>
-              <Button onClick={onClose}>Đóng</Button>
+              <Tag
+                style={{ padding: 10, cursor: "pointer", fontSize: 14 }}
+                onClick={onClose}>Đóng</Tag>
             </Space>
+
           </div>
         </div>
       </Spin>
-
-      {/* MODAL CHI TIẾT ỨNG VIÊN */}
-      {/* <CandidateDetailModal
-        open={openCandidateModal}
-        onClose={() => setOpenCandidateModal(false)}
-        data={selectedCandidate}
-      /> */}
 
       <Modal
         open={openCandidateModal}
@@ -947,6 +1133,41 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
             </Descriptions>
           </div>
         )}
+      </Modal>
+
+      <DigitalSignModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleDigitalSign}
+      />
+
+      <Modal
+        title="Xác nhận từ chối"
+        open={rejectModal.open}
+        onCancel={() => setRejectModal({ open: false, record: null })}
+        footer={null}
+        centered
+      >
+        <p>Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> ủy quyền này không?</p>
+        <Input.TextArea
+          rows={4}
+          placeholder="Nhập lý do từ chối..."
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+        />
+
+        <div style={{ textAlign: "right", marginTop: 16 }}>
+          <Button
+            style={{ marginRight: 8 }}
+            onClick={() => setRejectModal({ open: false, record: null })}
+          >
+            Hủy
+          </Button>
+
+          <Button danger type="primary" onClick={handleRejectSubmit}>
+            Xác nhận từ chối
+          </Button>
+        </div>
       </Modal>
     </Modal>
   );
