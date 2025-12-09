@@ -378,24 +378,6 @@ const ExcelImport: React.FC<Props> = ({
       return;
     }
 
-    // Kiểm tra tổng % cổ phần
-    const currentTotal = participants.reduce(
-      (sum, p) => sum + (Number(p.percentage) || 0),
-      0
-    );
-    const importTotal = validData.reduce(
-      (sum, item) => sum + (Number(item.percentage) || 0),
-      0
-    );
-    const newTotal = currentTotal + importTotal;
-
-    if (newTotal > 100) {
-      message.error(
-        `Tổng cổ phần sẽ vượt quá 100%! (Hiện tại: ${currentTotal}%, Import: ${importTotal}% = ${newTotal}%)`
-      );
-      return;
-    }
-
     // Kiểm tra trùng lặp với danh sách hiện tại (theo email hoặc citizenId)
     const existingEmails = new Set(
       participants.map((p) => p.email?.toLowerCase()).filter(Boolean)
@@ -410,62 +392,77 @@ const ExcelImport: React.FC<Props> = ({
       organizationMembers.map((m) => m.citizenId).filter(Boolean)
     );
 
-    const duplicateData = validData.filter((item) => {
+    // Lọc bỏ các cử tri trùng lặp - CHỈ LẤY NHỮNG VOTER MỚI (CHƯA CÓ TRONG DANH SÁCH)
+    const newVotersData = validData.filter((item) => {
       const emailLower = item.email?.toLowerCase();
       return (
-        (emailLower && existingEmails.has(emailLower)) ||
-        (item.citizenId && existingCitizenIds.has(item.citizenId)) ||
-        (emailLower && organizationEmails.has(emailLower)) ||
-        (item.citizenId && organizationCitizenIds.has(item.citizenId))
+        !(emailLower && existingEmails.has(emailLower)) &&
+        !(item.citizenId && existingCitizenIds.has(item.citizenId)) &&
+        !(emailLower && organizationEmails.has(emailLower)) &&
+        !(item.citizenId && organizationCitizenIds.has(item.citizenId))
       );
     });
 
-    if (duplicateData.length > 0) {
+    // Kiểm tra xem có voter nào mới không
+    if (newVotersData.length === 0) {
       message.warning(
-        `Có ${duplicateData.length} cử tri đã tồn tại trong danh sách. Sẽ bỏ qua các cử tri này.`
+        "Tất cả cử tri đã tồn tại trong danh sách. Không có cử tri nào được import."
       );
-    }
-
-    // Lọc bỏ các cử tri trùng lặp
-    const newParticipants = validData
-      .filter((item) => {
-        const emailLower = item.email?.toLowerCase();
-        return (
-          !(emailLower && existingEmails.has(emailLower)) &&
-          !(item.citizenId && existingCitizenIds.has(item.citizenId)) &&
-          !(emailLower && organizationEmails.has(emailLower)) &&
-          !(item.citizenId && organizationCitizenIds.has(item.citizenId))
-        );
-      })
-      .map((item) => {
-        const user = item.user;
-        return {
-          id: Date.now() + Math.random(),
-          userId: item.userId || undefined, // Optional vì có thể không có user
-          fullName: user?.fullName || item.fullname,
-          email: user?.email || item.email,
-          position: user?.position || "",
-          status: user?.status || "PENDING",
-          phone: user?.phone || item.phone || "",
-          citizenId: user?.citizenId || item.citizenId || "",
-          address: user?.address || "",
-          department: user?.department || "",
-          percentage: item.percentage,
-          isImportedFromExcel: true, // Đánh dấu voter được import từ Excel
-        };
-      });
-
-    if (newParticipants.length === 0) {
-      message.warning("Tất cả cử tri đã tồn tại trong danh sách");
       setIsImportModalOpen(false);
       setImportData([]);
       return;
     }
 
-    // Kiểm tra xem danh sách voter có khớp với file Excel gốc không
+    // Kiểm tra tổng % cổ phần - CHỈ TÍNH CHO NHỮNG VOTER MỚI (KHÔNG DUPLICATE)
+    const currentTotal = participants.reduce(
+      (sum, p) => sum + (Number(p.percentage) || 0),
+      0
+    );
+    const importTotal = newVotersData.reduce(
+      (sum, item) => sum + (Number(item.percentage) || 0),
+      0
+    );
+    const newTotal = currentTotal + importTotal;
+
+    if (newTotal > 100) {
+      message.error(
+        `Tổng cổ phần sẽ vượt quá 100%! (Hiện tại: ${currentTotal}%, Import: ${importTotal}% = ${newTotal}%)`
+      );
+      return;
+    }
+
+    // Thông báo số lượng voter duplicate (nếu có)
+    const duplicateCount = validData.length - newVotersData.length;
+    if (duplicateCount > 0) {
+      message.warning(
+        `Có ${duplicateCount} cử tri đã tồn tại trong danh sách. Chỉ import ${newVotersData.length} cử tri mới.`
+      );
+    }
+
+    // Map sang format participants - CHỈ MAP NHỮNG VOTER MỚI
+    const newParticipants = newVotersData.map((item) => {
+      const user = item.user;
+      return {
+        id: Date.now() + Math.random(),
+        userId: item.userId || undefined, // Optional vì có thể không có user
+        fullName: user?.fullName || item.fullname,
+        email: user?.email || item.email,
+        position: user?.position || "",
+        status: user?.status || "PENDING",
+        phone: user?.phone || item.phone || "",
+        citizenId: user?.citizenId || item.citizenId || "",
+        address: user?.address || "",
+        department: user?.department || "",
+        percentage: item.percentage,
+        isImportedFromExcel: true, // Đánh dấu voter được import từ Excel
+      };
+    });
+
+    // Kiểm tra xem danh sách voter mới có khớp với file Excel gốc không
+    // (Chỉ validate những voter mới, không validate những voter duplicate)
     const validationResult = validateVotersMatchExcel(
       newParticipants,
-      validData
+      newVotersData
     );
     if (!validationResult.isValid) {
       message.warning(validationResult.message);

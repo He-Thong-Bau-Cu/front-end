@@ -41,6 +41,7 @@ const Attendees: React.FC<Props> = ({
   const [form] = Form.useForm();
   const [users, setUsers] = useState<User[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false); // Track xem data đã được load chưa
+  const [excelVotersLoaded, setExcelVotersLoaded] = useState(false); // Track xem đã load voters từ Excel chưa
 
   /* ===========================================================
         CHỌN CỬ TRI
@@ -84,16 +85,18 @@ const Attendees: React.FC<Props> = ({
       setParticipants(mapped);
       onChange(mapped);
       setDataLoaded(true); // Đánh dấu data đã được load
+      setExcelVotersLoaded(false); // Reset flag để load lại voters từ Excel sau khi data thay đổi
     } else if (data === null || (Array.isArray(data) && data.length === 0)) {
       // Nếu data là null hoặc mảng rỗng, vẫn đánh dấu đã load
       setDataLoaded(true);
+      setExcelVotersLoaded(false); // Reset flag để load lại voters từ Excel
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   // Load voters từ Excel SAU KHI data đã được load
   useEffect(() => {
-    if (electionId && dataLoaded) {
+    if (electionId && dataLoaded && !excelVotersLoaded) {
       const fetchVotersFromExcel = async () => {
         try {
           const res = await ElectionService.getVotersFromExcel(electionId);
@@ -119,10 +122,9 @@ const Attendees: React.FC<Props> = ({
               percentage: voter.percentage,
               isImportedFromExcel: true, // Đánh dấu voter được import từ Excel
               status: "PENDING", // Mặc định status
-              position: "", // Có thể để trống hoặc lấy từ user nếu có
+              position: "",
             }));
 
-            // Sử dụng functional update để đảm bảo lấy được participants mới nhất (từ data prop)
             setParticipants((currentParticipants) => {
               // Kiểm tra duplicate với participants hiện tại (theo email hoặc citizenId)
               const existingEmails = new Set(
@@ -152,15 +154,17 @@ const Attendees: React.FC<Props> = ({
               return currentParticipants;
             });
           }
+
+          setExcelVotersLoaded(true);
         } catch (error) {
           console.error("Error fetching voters from Excel:", error);
-          // Không hiển thị error nếu không tìm thấy file Excel (có thể chưa import)
+          setExcelVotersLoaded(true);
         }
       };
       fetchVotersFromExcel();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [electionId, dataLoaded]);
+  }, [electionId, dataLoaded, excelVotersLoaded]);
 
   console.log("participants", participants);
 
