@@ -2,6 +2,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import DelegationService from "@/services/DelegationService";
+import FileService from "@/services/FileService";
 import styles from "@/style/voter/AuthorizationHistory.module.css";
 import { DelegationSearch, DelegationStatus } from "@/types/Delegate.interface";
 import {
@@ -9,6 +10,7 @@ import {
     CheckCircleOutlined,
     ClockCircleOutlined,
     CloseCircleOutlined,
+    DownloadOutlined,
     EditOutlined,
     ExclamationCircleOutlined,
     EyeOutlined,
@@ -147,6 +149,25 @@ export default function AuthorizationHistory() {
     };
 
 
+    const downloadSignedFile = async (fileKey: string) => {
+        try {
+            showLoading();
+
+            const fileBlob = await FileService.getSignedFile(fileKey);
+
+            const url = URL.createObjectURL(fileBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "uy_quyen_da_ky.pdf";
+            a.click();
+
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            notify("Không thể tải file đã ký!", "error");
+        } finally {
+            hideLoading();
+        }
+    };
 
 
     // 👉 Xử lý tạo ủy quyền
@@ -303,6 +324,20 @@ export default function AuthorizationHistory() {
                             onClick={() => openSignModal(record._id)}
                         />
                     )}
+
+                    {record.documentId?.fileUrl && (
+                        <Button
+                            shape="circle"
+                            icon={<DownloadOutlined />}
+                            style={{
+                                border: "1px solid #3ca860",
+                                color: "#3ca860",
+                                background: "white",
+                            }}
+                            onClick={() => downloadSignedFile(record.documentId!.fileUrl)}
+                        />
+                    )}
+
                 </Space>
             ),
         },
