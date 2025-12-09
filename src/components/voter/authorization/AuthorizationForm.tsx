@@ -46,6 +46,8 @@ export default function AuthorizationForm() {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [tempPayload, setTempPayload] = useState<any>(null);
+    const [startText, setStartText] = useState<string>("");
+    const [endText, setEndText] = useState<string>("");
 
     const [delegationType, setDelegationType] = useState<"ELECTION" | "LONG_TERM" | "">("");
 
@@ -304,9 +306,46 @@ export default function AuthorizationForm() {
                                 <DatePicker
                                     style={{ width: "100%" }}
                                     format="DD/MM/YYYY"
-                                    disabledDate={(cur) =>
-                                        cur && cur <= dayjs().startOf("day")
-                                    }
+                                    inputReadOnly={false}
+                                    allowClear={false}
+
+                                    value={startText ? dayjs(startText, "DD/MM/YYYY", true) : null}
+
+                                    disabledDate={(cur) => cur && cur < dayjs().startOf("day")}
+
+                                    onChange={(value) => {
+                                        if (!value) return;
+                                        const formatted = value.format("DD/MM/YYYY");
+                                        setStartText(formatted);
+                                        form.setFieldValue("startDate", value);
+
+                                        if (value.isBefore(dayjs(), "day")) {
+                                            notify("Ngày bắt đầu không được nhỏ hơn ngày hiện tại!", "error");
+                                        }
+                                    }}
+
+                                    onBlur={(e) => {
+                                        const text = (e.target as HTMLInputElement).value.trim();
+                                        if (!text) return;
+
+                                        const parsed = dayjs(text, "DD/MM/YYYY", true);
+                                        setStartText(text);
+
+                                        if (!parsed.isValid()) {
+                                            notify("Ngày bắt đầu sai định dạng!", "error");
+                                            return;
+                                        }
+
+                                        form.setFieldValue("startDate", parsed);
+
+                                        if (parsed.isBefore(dayjs(), "day")) {
+                                            notify("Ngày bắt đầu không được nhỏ hơn ngày hiện tại!", "error");
+                                        }
+                                    }}
+
+                                    onInput={(e) => {
+                                        setStartText((e.target as HTMLInputElement).value);
+                                    }}
                                 />
                             </Form.Item>
                         </Col>
@@ -333,10 +372,77 @@ export default function AuthorizationForm() {
                                 <DatePicker
                                     style={{ width: "100%" }}
                                     format="DD/MM/YYYY"
+                                    inputReadOnly={false}
+                                    allowClear={false}
+
+                                    // GIỮ NGUYÊN TEXT USER NHẬP, KHÔNG TỰ NHẢY FORMAT
+                                    value={endText ? dayjs(endText, "DD/MM/YYYY", true) : null}
+
                                     disabledDate={(cur) => {
                                         const start = form.getFieldValue("startDate");
-                                        if (!start) return cur && cur <= dayjs().startOf("day");
-                                        return cur && cur <= start.startOf("day");
+                                        if (!start) return cur && cur < dayjs().startOf("day");
+                                        return cur && cur <= dayjs(start).startOf("day");
+                                    }}
+
+                                    // Khi chọn từ calendar
+                                    onChange={(value) => {
+                                        if (!value) return;
+
+                                        const formatted = value.format("DD/MM/YYYY");
+                                        setEndText(formatted);
+                                        form.setFieldValue("endDate", value);
+
+                                        const start = form.getFieldValue("startDate");
+
+                                        // Validate: end phải > start
+                                        if (start && value.isSame(start, "day")) {
+                                            notify("Ngày kết thúc không được trùng ngày bắt đầu!", "error");
+                                        }
+                                        if (start && value.isBefore(start, "day")) {
+                                            notify("Ngày kết thúc phải lớn hơn ngày bắt đầu!", "error");
+                                        }
+                                    }}
+
+                                    // Khi gõ text xong + blur
+                                    onBlur={(e) => {
+                                        const text = (e.target as HTMLInputElement).value.trim();
+                                        if (!text) return;
+
+                                        setEndText(text);
+
+                                        const parsed = dayjs(text, "DD/MM/YYYY", true);
+
+                                        // Validate định dạng
+                                        if (!parsed.isValid()) {
+                                            notify("Ngày kết thúc sai định dạng!", "error");
+                                            return;
+                                        }
+
+                                        const start = form.getFieldValue("startDate");
+
+                                        // Validate < hôm nay
+                                        if (parsed.isBefore(dayjs(), "day")) {
+                                            notify("Ngày kết thúc không được nhỏ hơn ngày hiện tại!", "error");
+                                            return;
+                                        }
+
+                                        // Validate <= start
+                                        if (start && parsed.isSame(start, "day")) {
+                                            notify("Ngày kết thúc không được trùng ngày bắt đầu!", "error");
+                                            return;
+                                        }
+                                        if (start && parsed.isBefore(start, "day")) {
+                                            notify("Ngày kết thúc phải lớn hơn ngày bắt đầu!", "error");
+                                            return;
+                                        }
+
+                                        // Set value hợp lệ vào form
+                                        form.setFieldValue("endDate", parsed);
+                                    }}
+
+                                    // Khi đang gõ input
+                                    onInput={(e) => {
+                                        setEndText((e.target as HTMLInputElement).value);
                                     }}
                                 />
                             </Form.Item>
