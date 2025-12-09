@@ -50,6 +50,10 @@ const getStatusLabel = (status: string) => {
             return "Đã thu hồi";
         case "INVALID":
             return "Không hợp lệ";
+        case "REJECTED":
+            return "Đã từ chối";
+        case "SIGNED":
+            return "Đã ký";
         default:
             return status;
     }
@@ -69,6 +73,10 @@ const getStatusColor = (status: string) => {
             return "red";
         case "INVALID":
             return "magenta";
+        case "REJECTED":
+            return "red";
+        case "SIGNED":
+            return "cyan";
         default:
             return "default";
     }
@@ -264,7 +272,9 @@ const AuthorizationDetail = () => {
                                                     status === "EXPIRED" ? <ExclamationCircleOutlined /> :
                                                         status === "REVOKED" ? <CloseCircleOutlined /> :
                                                             status === "INVALID" ? <StopOutlined /> :
-                                                                null
+                                                                status === "REJECTED" ? <CloseCircleOutlined /> :
+                                                                    status === "SIGNED" ? <CheckOutlined /> :
+                                                                        null
                                     }
                                     className={`${styles.statusTag} ${styles.statusTagCompact} ${styles[`status${status}`]}`}
                                 >
