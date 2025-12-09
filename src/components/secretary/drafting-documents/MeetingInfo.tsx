@@ -753,6 +753,37 @@ const MeetingInfo: React.FC<Props> = ({
                   values.candidates = candidates;
                   onChange(values);
                 }}
+
+                onBlur={(e) => {
+                  const raw = (e.target as HTMLInputElement).value.trim();
+                  if (!raw) return;
+
+                  const parsed = dayjs(raw, "DD/MM/YYYY", true);
+
+                  // ❌ Sai định dạng
+                  if (!parsed.isValid()) {
+                    notify("Ngày bắt đầu ủy quyền sai định dạng", "error");
+                    return;
+                  }
+
+                  // ❌ Ngày trong quá khứ
+                  if (parsed.isBefore(dayjs().startOf("day"))) {
+                    notify("Ngày bắt đầu ủy quyền không được là ngày quá khứ", "error");
+                    return;
+                  }
+
+                  // ❌ Ngày bắt đầu lớn hơn ngày start của cuộc bầu cử
+                  if (electionStartDate && parsed.isAfter(electionStartDate, "day")) {
+                    notify(
+                      `Ngày bắt đầu ủy quyền phải trước hoặc bằng ngày bắt đầu cuộc bầu cử (${electionStartDate.format(
+                        "DD/MM/YYYY"
+                      )})`,
+                      "error"
+                    );
+                    return;
+                  }
+                }}
+
               />
             </Form.Item>
           </Col>
@@ -818,6 +849,49 @@ const MeetingInfo: React.FC<Props> = ({
                   const values = form.getFieldsValue(true);
                   values.candidates = candidates;
                   onChange(values);
+                }}
+
+                onBlur={(e) => {
+                  const raw = (e.target as HTMLInputElement).value.trim();
+                  if (!raw) return;
+
+                  const start = form.getFieldValue("authorizationStart");
+
+                  const parsed = dayjs(raw, "DD/MM/YYYY", true);
+
+                  // ❌ Sai format
+                  if (!parsed.isValid()) {
+                    notify("Ngày kết thúc ủy quyền sai định dạng", "error");
+                    return;
+                  }
+
+                  // ❌ Không có ngày bắt đầu
+                  if (!start) {
+                    notify("Vui lòng chọn ngày bắt đầu ủy quyền trước", "error");
+                    return;
+                  }
+
+                  // ❌ Ngày kết thúc ≤ ngày bắt đầu
+                  if (parsed.isSame(start, "day") || parsed.isBefore(start, "day")) {
+                    notify("Ngày kết thúc phải sau ngày bắt đầu", "error");
+                    return;
+                  }
+
+                  // ❌ Ngày kết thúc < 10 ngày so với start
+                  const diff = parsed.diff(start, "day");
+                  if (diff < 10) {
+                    notify("Ngày kết thúc ủy quyền phải cách ngày bắt đầu ít nhất 10 ngày", "error");
+                    return;
+                  }
+
+                  // ❌ Vượt quá ngày kết thúc cuộc bầu cử
+                  if (electionEndDate && parsed.isAfter(electionEndDate, "day")) {
+                    notify(
+                      `Ngày kết thúc ủy quyền không được vượt quá ngày kết thúc cuộc bầu cử (${electionEndDate.format("DD/MM/YYYY")})`,
+                      "error"
+                    );
+                    return;
+                  }
                 }}
               />
             </Form.Item>
