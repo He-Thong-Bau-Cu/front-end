@@ -2,8 +2,10 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import DelegationService from "@/services/DelegationService";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
+import FileService from "@/services/FileService";
 
-import { LeftOutlined } from "@ant-design/icons";
+import { InboxOutlined, LeftOutlined } from "@ant-design/icons";
 import {
     Button,
     Card,
@@ -14,7 +16,9 @@ import {
     Input,
     Row,
     Typography,
+    Upload,
 } from "antd";
+import Dragger from "antd/es/upload/Dragger";
 import dayjs, { Dayjs } from "dayjs";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +52,8 @@ export default function AuthorizationForm() {
     const [tempPayload, setTempPayload] = useState<any>(null);
     const [startText, setStartText] = useState<string>("");
     const [endText, setEndText] = useState<string>("");
+    const [proofFile, setProofFile] = useState<File | null>(null);
+
 
     const [delegationType, setDelegationType] = useState<"ELECTION" | "LONG_TERM" | "">("");
 
@@ -59,13 +65,58 @@ export default function AuthorizationForm() {
         try {
             showLoading();
 
-            // tạo payload bản nháp
+            // Validate file upload
+            if (!proofFile) {
+                notify("Vui lòng tải lên giấy tờ chứng minh!", "error");
+                hideLoading();
+                return;
+            }
+
+            // 1) UPLOAD FILE LÊN MINIO
+            const uploadForm = new FormData();
+            uploadForm.append("file", proofFile);
+            uploadForm.append("fileType", "delegation-documents");
+            uploadForm.append("userId", delegatorId);
+
+            const uploadRes = await FileService.upfile(uploadForm);
+
+            if (!uploadRes?.key) {
+                notify("Upload file thất bại!", "error");
+                hideLoading();
+                return;
+            }
+
+            const fileUrl = uploadRes.key;
+
+            // 2) TẠO DOCUMENT TƯƠNG ỨNG
+            const docPayload = {
+                electionId,
+                title: "Giấy tờ chứng minh ủy quyền",
+                content: "",
+                fileUrl: fileUrl,
+                type: "delegation-proof",
+                preparedBy: delegatorId,
+                status: "ACTIVE",
+            };
+
+            const docRes = await ElectionDocumentService.CreateDocument(docPayload);
+
+            if (!docRes?.data?._id) {
+                notify("Không thể tạo tài liệu chứng minh!", "error");
+                hideLoading();
+                return;
+            }
+
+            const documentId = docRes.data._id;
+
+            // 3) TẠO PAYLOAD BẢN NHÁP ỦY QUYỀN
             const payload: any = {
                 delegationType: values.delegationType,
-                electionId,  // giữ nguyên
+                electionId,
                 delegatorId,
                 delegateId: null,
                 delegateReason: values.reason,
+                proofDocument: documentId,
                 signature: null,
                 status: "DRAFT",
                 delegateInfo: {
@@ -77,12 +128,13 @@ export default function AuthorizationForm() {
                 },
             };
 
-
+            // 4) CHUYỂN ĐỊNH DẠNG NGÀY — KHÔNG DÙNG toISOString ĐỂ TRÁNH LỆCH NGÀY
             if (values.delegationType === "LONG_TERM") {
                 payload.startDate = values.startDate?.format("YYYY-MM-DD");
                 payload.endDate = values.endDate?.format("YYYY-MM-DD");
             }
 
+            // 5) TẠO BẢN NHÁP
             const draft = await DelegationService.add(payload);
 
             if (!draft?._id) {
@@ -91,6 +143,7 @@ export default function AuthorizationForm() {
                 return;
             }
 
+            // Lưu ID bản nháp để sang bước ký số
             setTempPayload({ draftId: draft._id });
             setModalOpen(true);
 
@@ -98,12 +151,14 @@ export default function AuthorizationForm() {
             const msg =
                 err?.response?.data?.message ||
                 err?.message ||
-                "Lỗi khi tạo ủy quyền!";
+                "Có lỗi xảy ra khi gửi yêu cầu ủy quyền!";
             notify(msg, "error");
+
         } finally {
             hideLoading();
         }
     };
+
 
     function normalizeDelegationPayload(data: any) {
         return {
@@ -459,6 +514,44 @@ export default function AuthorizationForm() {
                 >
                     <Input.TextArea rows={3} placeholder="Nhập lý do" />
                 </Form.Item>
+
+                <Form.Item
+                    label="Tải lên giấy tờ chứng minh *"
+                    name="proofFile"
+                    rules={[
+                        {
+                            required: true,
+                            message: "Vui lòng tải lên tài liệu chứng minh!"
+                        }
+                    ]}
+                >
+                    <Dragger
+                        multiple={false}
+                        maxCount={1}
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        beforeUpload={(file) => {
+                            const isLt5M = file.size / 1024 / 1024 < 5;
+                            if (!isLt5M) {
+                                notify("File phải nhỏ hơn 5MB!", "error");
+                                return Upload.LIST_IGNORE;
+                            }
+                            setProofFile(file);
+                            form.setFieldValue("proofFile", file);
+                            return false; // Không auto upload
+                        }}
+                        onRemove={() => {
+                            setProofFile(null);
+                            form.setFieldValue("proofFile", null);
+                        }}
+                    >
+                        <p className="ant-upload-drag-icon">
+                            <InboxOutlined style={{ color: "#7ECB50" }} />
+                        </p>
+                        <p className="ant-upload-text">Nhấn để tải lên hoặc kéo thả file</p>
+                        <p className="ant-upload-hint">Chấp nhận PDF, JPG, PNG (tối đa 5MB)</p>
+                    </Dragger>
+                </Form.Item>
+
 
                 {/* Agreement */}
                 <Form.Item
