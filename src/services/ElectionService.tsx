@@ -149,13 +149,13 @@ class ElectionService extends BaseService {
   // Lấy danh sách yêu cầu tạo cuộc bầu cử của user
   async getMyElectionRequests(params?: { textSearch?: string; page?: number; limit?: number; statusData?: string }): Promise<BaseResponse<any>> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/my-requests`, {
+      const response = await this.api.post<BaseResponse<any>>(`${this.endpoint}/my-requests`, {
         textSearch: params?.textSearch || "",
         page: params?.page || 1,
         limit: params?.limit || 10,
         statusData: params?.statusData,
       });
-      return response;
+      return response as unknown as BaseResponse<any>;
     } catch (error) {
       console.error("Error get my election requests:", error);
       throw error;
@@ -166,13 +166,13 @@ class ElectionService extends BaseService {
   // Nếu có electionId thì chỉ lấy các election requests của cuộc bầu cử đó
   async getElectionRequestsForApproval(params?: { textSearch?: string; page?: number; limit?: number; electionId?: string }): Promise<BaseResponse<any>> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/requests-for-approval`, {
+      const response = await this.api.post<BaseResponse<any>>(`${this.endpoint}/requests-for-approval`, {
         textSearch: params?.textSearch || "",
         page: params?.page || 1,
         limit: params?.limit || 10,
         electionId: params?.electionId,
       });
-      return response;
+      return response as unknown as BaseResponse<any>;
     } catch (error) {
       console.error("Error get election requests for approval:", error);
       throw error;
@@ -182,12 +182,12 @@ class ElectionService extends BaseService {
   // Duyệt yêu cầu cuộc bầu cử
   async approveElectionRequest(electionId: string, secretaryId?: string, boardOfControlId?: string): Promise<BaseResponse<any>> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/approve-request`, {
+      const response = await this.api.post<BaseResponse<any>>(`${this.endpoint}/approve-request`, {
         electionId,
         secretaryId,
         boardOfControlId,
       });
-      return response;
+      return response as unknown as BaseResponse<any>;
     } catch (error) {
       console.error("Error approve election request:", error);
       throw error;
@@ -197,11 +197,11 @@ class ElectionService extends BaseService {
   // Từ chối yêu cầu cuộc bầu cử
   async rejectElectionRequest(electionId: string, rejectReason: string): Promise<BaseResponse<any>> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/reject`, {
+      const response = await this.api.post<BaseResponse<any>>(`${this.endpoint}/reject`, {
         electionId,
         rejectReason,
       });
-      return response;
+      return response as unknown as BaseResponse<any>;
     } catch (error) {
       console.error("Error reject election request:", error);
       throw error;

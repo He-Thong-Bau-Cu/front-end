@@ -64,10 +64,7 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
         const userId = localStorage.getItem("userId") || "";
         setCurrentUserId(userId); // Lưu userId hiện tại để dùng cho disable nút xóa
         const election = await DecisionService.getElectionById(electionId);
-        const res = await ElectionService.getElectionUser({
-          startData: election.startDate,
-          endDate: election.startDate,
-        });
+        const res = await ElectionService.getElectionUser();
         // Lọc bỏ user có userId trùng với userId hiện tại
         const filteredUsers = res.filter((user: User) => user._id !== userId);
         setUsers(filteredUsers);
