@@ -1,29 +1,28 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  Card,
-  Button,
-  Modal,
-  Form,
-  Upload,
-  Input,
-  message,
-  List,
-} from "antd";
-import {
-  FilePdfOutlined,
-  UploadOutlined,
-  DeleteOutlined,
-  FileExcelOutlined,
-  FilePptOutlined,
-  PaperClipOutlined,
-  EditOutlined,
-  DownloadOutlined,
-} from "@ant-design/icons";
+import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
-import ElectionDocumentService from "@/services/ElectionDocumentService";
 import { downloadBlob } from "@/utils/file";
-import { useLoading } from "@/contexts/LoadingContext";
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+  FilePptOutlined,
+  PaperClipOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  List,
+  message,
+  Modal,
+  Upload,
+} from "antd";
+import { useEffect, useRef, useState } from "react";
 
 const { TextArea } = Input;
 
@@ -116,7 +115,7 @@ const AttachedDocuments: React.FC<Props> = ({
     try {
       setUploading(true);
       console.log("file", file);
-      let formData = new FormData();
+      const formData = new FormData();
       formData.append("file", file);
       formData.append("fileType", "election-documents");
       formData.append("userId", userId);

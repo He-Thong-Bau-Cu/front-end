@@ -2,23 +2,29 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import DelegationService from "@/services/DelegationService";
-import { LeftOutlined } from "@ant-design/icons";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
+import FileService from "@/services/FileService";
+import { InboxOutlined, LeftOutlined } from "@ant-design/icons";
 import {
     Avatar, Button, Card, Checkbox, Col, DatePicker, Descriptions,
-    Form, Input, Row, Space, Typography
+    Form, Input, Row, Space, Typography,
+    Upload
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
+const { Dragger } = Upload;
+
 
 export default function AuthorizationRequestForm() {
     const { state } = useLocation();
     const navigate = useNavigate();
 
     const selectedUser = state?.selectedUser;
-    const electionId = state?.electionId;
+    const electionId = localStorage.getItem("currentElectionId") || state?.electionId;
+
     const delegatorId = state?.delegatorId;
 
     const [form] = Form.useForm();
@@ -29,6 +35,7 @@ export default function AuthorizationRequestForm() {
 
     const [startText, setStartText] = useState<string>("");
     const [endText, setEndText] = useState<string>("");
+    const [proofFile, setProofFile] = useState<File | null>(null);
 
 
 
@@ -40,31 +47,97 @@ export default function AuthorizationRequestForm() {
         return null;
     }
 
-    // --------------------- HANDLE SUBMIT ----------------------
+    if (!electionId || typeof electionId !== "string" || electionId.trim() === "") {
+        notify("Không tìm thấy thông tin cuộc bầu cử! Vui lòng quay lại trang trước.", "error");
+        navigate(-1);
+        return null;
+    }
+
+
+
     const handleSubmit = async (values: any) => {
-
-        const payload: any = {
-            delegationType: values.delegationType,
-            electionId,
-            delegatorId,
-            delegateId: selectedUser._id,
-            delegateReason: values.reason,
-            signature: null,
-            status: "DRAFT",
-        };
-
-        if (values.delegationType === "LONG_TERM") {
-            payload.startDate = values.startDate.toISOString();
-            payload.endDate = values.endDate.toISOString();
-        }
-
         try {
             showLoading();
+
+            // Validate electionId
+            if (!electionId || typeof electionId !== "string" || electionId.trim() === "") {
+                notify("Không tìm thấy thông tin cuộc bầu cử! Vui lòng thử lại.", "error");
+                hideLoading();
+                return;
+            }
+
+            // Validate delegatorId
+            if (!delegatorId || typeof delegatorId !== "string" || delegatorId.trim() === "") {
+                notify("Không tìm thấy thông tin người ủy quyền!", "error");
+                hideLoading();
+                return;
+            }
+
+            if (!proofFile) {
+                notify("Vui lòng tải lên giấy tờ chứng minh!", "error");
+                hideLoading();
+                return;
+            }
+
+            /* ============================================
+                    1) UPLOAD FILE LÊN MINIO
+            ============================================ */
+            const uploadForm = new FormData();
+            uploadForm.append("file", proofFile);
+            uploadForm.append("fileType", "election-documents");
+            uploadForm.append("userId", delegatorId);
+
+            const uploadRes = await FileService.upfile(uploadForm);
+
+            if (!uploadRes?.key) {
+                notify("Upload file thất bại!", "error");
+                hideLoading();
+                return;
+            }
+
+            const fileUrl = uploadRes.key;
+
+            const docPayload = {
+                electionId: electionId.trim(),
+                title: "Giấy tờ chứng minh ủy quyền",
+                content: "",
+                fileUrl: fileUrl,
+                type: "delegation-proof",
+                preparedBy: delegatorId.trim(),
+                status: "ACTIVE",
+            };
+
+            const docRes = await ElectionDocumentService.CreateDocument(docPayload);
+
+            if (!docRes?.data?._id) {
+                notify("Không thể tạo tài liệu chứng minh!", "error");
+                hideLoading();
+                return;
+            }
+
+            const documentId = docRes.data._id;
+
+            const payload: any = {
+                delegationType: values.delegationType,
+                electionId,
+                delegatorId,
+                delegateId: selectedUser._id,
+                delegateReason: values.reason,
+                proofDocument: documentId,
+                signature: null,
+                status: "DRAFT",
+            };
+
+            if (values.delegationType === "LONG_TERM") {
+                payload.startDate = values.startDate.format("YYYY-MM-DD");
+                payload.endDate = values.endDate.format("YYYY-MM-DD");
+
+            }
 
             const draft = await DelegationService.add(payload);
 
             if (!draft || !draft._id) {
-                notify("Không thể tạo bản nháp!", "error");
+                notify("Không thể tạo bản nháp ủy quyền!", "error");
                 hideLoading();
                 return;
             }
@@ -72,9 +145,9 @@ export default function AuthorizationRequestForm() {
             setTempPayload({ draftId: draft._id });
             setModalOpen(true);
 
-        } catch (err) {
-            console.error(err);
-            notify("Lỗi khi tạo ủy quyền bản nháp!", "error");
+
+        } catch (error: any) {
+            notify("Có lỗi xảy ra khi gửi yêu cầu ủy quyền!", "error");
         } finally {
             hideLoading();
         }
@@ -97,12 +170,21 @@ export default function AuthorizationRequestForm() {
 
             if (!tempPayload?.draftId) {
                 notify("Không tìm thấy bản nháp để ký!", "error");
+                hideLoading();
+                return;
+            }
+
+            // Validate electionId
+            if (!electionId || typeof electionId !== "string" || electionId.trim() === "") {
+                notify("Không tìm thấy thông tin cuộc bầu cử! Vui lòng thử lại.", "error");
+                hideLoading();
                 return;
             }
 
             const oldData = await DelegationService.getDelegationById(tempPayload.draftId);
             if (!oldData) {
                 notify("Không tìm thấy dữ liệu ủy quyền!", "error");
+                hideLoading();
                 return;
             }
 
@@ -111,7 +193,7 @@ export default function AuthorizationRequestForm() {
             const formData = new FormData();
             formData.append("file", file);
             formData.append("password", password);
-            formData.append("electionId", electionId);
+            formData.append("electionId", electionId.trim());
             formData.append("delegationId", tempPayload.draftId);
 
             const signRes = await DelegationService.delegationApproveVoter(formData);
@@ -147,6 +229,9 @@ export default function AuthorizationRequestForm() {
             hideLoading();
         }
     };
+
+
+
 
     // --------------------- RENDER ---------------------------
     return (
@@ -388,6 +473,44 @@ export default function AuthorizationRequestForm() {
                 >
                     <Input.TextArea rows={3} />
                 </Form.Item>
+
+                <Form.Item
+                    label="Tải lên giấy tờ chứng minh *"
+                    name="proofFile"
+                    rules={[
+                        {
+                            required: true,
+                            message: "Vui lòng tải lên tài liệu chứng minh!"
+                        }
+                    ]}
+                >
+                    <Dragger
+                        multiple={false}
+                        maxCount={1}
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        beforeUpload={(file) => {
+                            const isLt5M = file.size / 1024 / 1024 < 5;
+                            if (!isLt5M) {
+                                notify("File phải nhỏ hơn 5MB!", "error");
+                                return Upload.LIST_IGNORE;
+                            }
+                            setProofFile(file);              // Lưu vào state
+                            form.setFieldValue("proofFile", file);
+                            return false;                    // Không auto upload
+                        }}
+                        onRemove={() => {
+                            setProofFile(null);
+                            form.setFieldValue("proofFile", null);
+                        }}
+                    >
+                        <p className="ant-upload-drag-icon">
+                            <InboxOutlined style={{ color: "#7ECB50" }} />
+                        </p>
+                        <p className="ant-upload-text">Nhấn để tải lên hoặc kéo thả file</p>
+                        <p className="ant-upload-hint">Chấp nhận PDF, JPG, PNG (tối đa 5MB)</p>
+                    </Dragger>
+                </Form.Item>
+
 
                 {/* Agreement */}
                 <Form.Item
