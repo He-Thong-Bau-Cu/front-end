@@ -16,6 +16,7 @@ import "../../../style/preside/CreateDecisionModal.model.css";
 import { useNotification } from "@/contexts/NotificationContext";
 import dayjs from "dayjs";
 import UserService from "@/services/UserService";
+import ElectionService from "@/services/ElectionService";
 const { Option } = Select;
 interface CreateDecisionModalProps {
   open: boolean;
@@ -277,18 +278,38 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                 allowClear
                 disabled={editMode}
                 showSearch
-                filterOption={(input, option) =>
-                  (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
-                }
+                filterOption={(input, option) => {
+                  const label = option?.label || option?.children;
+                  if (typeof label === 'string') {
+                    return label.toLowerCase().includes(input.toLowerCase());
+                  }
+                  if (Array.isArray(label)) {
+                    return label.some((item: any) =>
+                      String(item?.props?.children || item).toLowerCase().includes(input.toLowerCase())
+                    );
+                  }
+                  return false;
+                }}
+              >
+                {userList.map((user) => (
+                  <Option key={user._id} value={user._id}>
+                    {user.fullName} - {user.email}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          {/* Thư ký */}
+          <Col span={24}>
             {!showAddSecretary && (
               <>
-
                 <Form.Item
                   name="secretaryId"
                   label="Thư ký chủ tọa"
-                  rules={[{ required: true, message: "Vui lòng chọn thư ký" }]}
+                  rules={[{ required: !editMode, message: "Vui lòng chọn thư ký" }]}
                 >
-                  <Select placeholder="Chọn thư ký" allowClear>
+                  <Select placeholder="Chọn thư ký" allowClear disabled={editMode}>
                     {/* Option hiện tại (dùng khi EDIT) */}
                     {editMode && secrytary?.userId && (
                       <Option value={secrytary.userId._id}>
@@ -404,32 +425,6 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                 </Tag>
               </div>
             )}
-
-          </Col>
-
-          {/* Thư ký */}
-          <Col span={24}>
-            <Form.Item
-              name="secretaryId"
-              label="Thư ký chủ tọa"
-              rules={[{ required: !editMode, message: "Vui lòng chọn thư ký" }]}
-            >
-              <Select
-                placeholder="Chọn thư ký"
-                allowClear
-                disabled={editMode}
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
-                }
-              >
-                {userList.map((user) => (
-                  <Option key={user._id} value={user._id}>
-                    {user.fullName} - {user.email}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
           </Col>
 
         </Row>

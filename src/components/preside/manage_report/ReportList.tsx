@@ -37,6 +37,7 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue, electionId
   const [isSystemPreside, setIsSystemPreside] = useState(true);
   const [currentElectionId, setCurrentElectionId] = useState<string | undefined>(undefined);
   const [userFetched, setUserFetched] = useState(false);
+  const { notify } = useNotification();
 
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
