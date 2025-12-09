@@ -8,6 +8,7 @@ import {
   Input,
   message,
   List,
+  Typography,
 } from "antd";
 import {
   FilePdfOutlined,
@@ -21,7 +22,6 @@ import {
 } from "@ant-design/icons";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
-import ElectionDocumentService from "@/services/ElectionDocumentService";
 import { downloadBlob } from "@/utils/file";
 import { useLoading } from "@/contexts/LoadingContext";
 
@@ -29,15 +29,15 @@ const { TextArea } = Input;
 
 interface Props {
   onChange: (data: any[]) => void;
-  electionId?: string;
   initialDocuments?: any[];
+  documents?: any[]; // Documents từ parent state (bao gồm cả documents mới thêm)
   disabled?: boolean;
 }
 
 const AttachedDocuments: React.FC<Props> = ({
   onChange,
-  electionId,
   initialDocuments,
+  documents: documentsFromParent,
   disabled = false,
 }) => {
   const [documents, setDocuments] = useState<any[]>([]);
@@ -68,12 +68,14 @@ const AttachedDocuments: React.FC<Props> = ({
     }
   };
 
-  // Load existing documents - chỉ lọc những document có type là 'election-documents-important'
+  // Load existing documents - lọc những document có type là 'election-documents-important' hoặc 'voters-import-excel'
   useEffect(() => {
     if (initialDocuments && Array.isArray(initialDocuments)) {
-      // Lọc chỉ lấy những document có type là 'election-documents-important'
+      // Lọc lấy những document có type là 'election-documents-important' hoặc 'voters-import-excel'
       const filteredDocs = initialDocuments.filter(
-        (doc: any) => doc.type === 'election-documents-important'
+        (doc: any) =>
+          doc.type === "election-documents-important" ||
+          doc.type === "voters-import-excel"
       );
 
       const mapped = filteredDocs.map((doc: any) => ({
@@ -83,7 +85,7 @@ const AttachedDocuments: React.FC<Props> = ({
         remarks: doc.remarks || "",
         fileUrl: doc.fileUrl || "",
         fileName: doc.fileUrl ? doc.fileUrl.split("/").pop() : "",
-        type: doc.type || 'election-documents-important', // Đảm bảo có type
+        type: doc.type || "election-documents-important", // Đảm bảo có type
         isNew: false, // File đã load từ server nên không phải new
       }));
       setDocuments(mapped);
@@ -115,8 +117,7 @@ const AttachedDocuments: React.FC<Props> = ({
   const handleUploadToMinio = async (file: File): Promise<string> => {
     try {
       setUploading(true);
-      console.log("file", file);
-      let formData = new FormData();
+      const formData = new FormData();
       formData.append("file", file);
       formData.append("fileType", "election-documents");
       formData.append("userId", userId);
@@ -185,7 +186,7 @@ const AttachedDocuments: React.FC<Props> = ({
         remarks: values.remarks || "",
         fileUrl: fileUrl,
         fileName: fileObj ? fileObj.name : editingDoc?.fileName || "",
-        type: 'election-documents-important', // Đảm bảo type luôn là election-documents-important
+        type: "election-documents-important", // Đảm bảo type luôn là election-documents-important
         isNew: false, // Đã save rồi nên không còn là new
       };
 
@@ -286,12 +287,16 @@ const AttachedDocuments: React.FC<Props> = ({
     try {
       showLoading();
       const blob = await FileService.downloadByKey(doc.fileUrl);
-      const fileName = doc.fileName || doc.fileUrl.split("/").pop() || "document";
+      const fileName =
+        doc.fileName || doc.fileUrl.split("/").pop() || "document";
       downloadBlob(blob, fileName);
       notify("Tải file thành công", "success");
     } catch (error: any) {
       console.error("Error downloading file:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || "Không thể tải file";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Không thể tải file";
       notify(errorMessage, "error");
     } finally {
       hideLoading();
@@ -308,7 +313,9 @@ const AttachedDocuments: React.FC<Props> = ({
               <PaperClipOutlined style={{ marginRight: 8 }} />
               Tài liệu đính kèm
             </span>
-            <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <div
+              style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+            >
               <Button
                 icon={<UploadOutlined />}
                 type="link"
@@ -333,7 +340,7 @@ const AttachedDocuments: React.FC<Props> = ({
                     color: "#52c41a",
                     marginRight: 8,
                     cursor: "pointer",
-                    fontSize: 16
+                    fontSize: 16,
                   }}
                   title="Tải xuống"
                 />,
@@ -343,7 +350,7 @@ const AttachedDocuments: React.FC<Props> = ({
                     color: disabled ? "#ccc" : "#1890ff",
                     marginRight: 8,
                     cursor: disabled ? "not-allowed" : "pointer",
-                    opacity: disabled ? 0.5 : 1
+                    opacity: disabled ? 0.5 : 1,
                   }}
                 />,
                 <DeleteOutlined
@@ -351,7 +358,7 @@ const AttachedDocuments: React.FC<Props> = ({
                   style={{
                     color: disabled ? "#ccc" : "red",
                     cursor: disabled ? "not-allowed" : "pointer",
-                    opacity: disabled ? 0.5 : 1
+                    opacity: disabled ? 0.5 : 1,
                   }}
                 />,
               ]}
@@ -359,14 +366,26 @@ const AttachedDocuments: React.FC<Props> = ({
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 {iconByType(item.fileName)}
                 <div>
-                  <p className="file-name">{item.title || item.fileName}</p>
+                  {/* <p className="file-name">{item.title || item.fileName}</p> */}
+                  <Typography.Text
+                    ellipsis={{ tooltip: item.title || item.fileName }}
+                    style={{ maxWidth: 150, display: "block", fontWeight: 500 }}
+                  >
+                    {item.title || item.fileName}
+                  </Typography.Text>
                   {item.fileName && (
-                    <span
+                    <Typography.Paragraph
+                      ellipsis={{ tooltip: item.fileName }}
                       className="file-size"
-                      style={{ color: "#888", fontSize: 12 }}
+                      style={{
+                        color: "#888",
+                        fontSize: 12,
+                        maxWidth: 150,
+                        display: "block",
+                      }}
                     >
                       {item.fileName}
-                    </span>
+                    </Typography.Paragraph>
                   )}
                 </div>
               </div>
@@ -394,12 +413,24 @@ const AttachedDocuments: React.FC<Props> = ({
           </Form.Item>
 
           <Form.Item name="content" label="Mô tả tài liệu">
-            <TextArea rows={3} placeholder="Nhập mô tả..." disabled={disabled} />
+            <TextArea
+              rows={3}
+              placeholder="Nhập mô tả..."
+              disabled={disabled}
+            />
           </Form.Item>
 
           <Form.Item label="File đính kèm">
-            <Upload beforeUpload={handleUpload} showUploadList={false} disabled={disabled}>
-              <Button icon={<UploadOutlined />} loading={uploading} disabled={disabled}>
+            <Upload
+              beforeUpload={handleUpload}
+              showUploadList={false}
+              disabled={disabled}
+            >
+              <Button
+                icon={<UploadOutlined />}
+                loading={uploading}
+                disabled={disabled}
+              >
                 {editingDoc && !fileObj
                   ? "Chọn file mới (tùy chọn)"
                   : "Chọn file"}
@@ -430,7 +461,12 @@ const AttachedDocuments: React.FC<Props> = ({
             >
               Hủy
             </Button>
-            <Button type="primary" htmlType="submit" loading={uploading} disabled={disabled}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={uploading}
+              disabled={disabled}
+            >
               {editingDoc ? "Cập nhật" : "Lưu tài liệu"}
             </Button>
           </div>

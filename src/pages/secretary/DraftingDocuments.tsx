@@ -10,6 +10,9 @@ import AttachedDocuments from "@/components/secretary/drafting-documents/Attache
 import { useNotification } from "@/contexts/NotificationContext";
 import { useLoading } from "@/contexts/LoadingContext";
 import ElectionService from "@/services/ElectionService";
+import FileService from "@/services/FileService";
+import ElectionDocumentService from "@/services/ElectionDocumentService";
+import * as XLSX from "xlsx";
 import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { Meeting } from "@/types/Meeting.interface";
 import { USER_ROLE } from "@/enums/STATUS";
@@ -139,7 +142,7 @@ const DraftingDocuments: React.FC = () => {
     }
 
     // Nếu roleId là string
-    if (typeof participant.roleId === 'string') {
+    if (typeof participant.roleId === "string") {
       return participant.roleId;
     }
 
@@ -152,17 +155,19 @@ const DraftingDocuments: React.FC = () => {
   };
 
   // Helper function để kiểm tra có đủ 3 role bắt buộc không
-  const checkRequiredRoles = (participantsList: any[]): { isValid: boolean; missingRoles: string[] } => {
+  const checkRequiredRoles = (
+    participantsList: any[]
+  ): { isValid: boolean; missingRoles: string[] } => {
     const requiredRoleIds = [
       "6906eb6a3bb016c908c61b92", // Trưởng ban tổ chức
       "6906eb903bb016c908c61b99", // Thành viên ban tổ chức
-      "6907a5b5399e3682d80a1ddf"  // Ban kiểm soát
+      "6907a5b5399e3682d80a1ddf", // Ban kiểm soát
     ];
 
     const roleIdNames: Record<string, string> = {
       "6906eb6a3bb016c908c61b92": "Trưởng ban tổ chức",
       "6906eb903bb016c908c61b99": "Thành viên ban tổ chức",
-      "6907a5b5399e3682d80a1ddf": "Ban kiểm soát"
+      "6907a5b5399e3682d80a1ddf": "Ban kiểm soát",
     };
 
     const existingRoleIds = participantsList
@@ -178,7 +183,7 @@ const DraftingDocuments: React.FC = () => {
 
     return {
       isValid: missingRoles.length === 0,
-      missingRoles
+      missingRoles,
     };
   };
 
@@ -213,27 +218,48 @@ const DraftingDocuments: React.FC = () => {
       }
 
       // Kiểm tra candidates/electionEntities
-      if (!meetingInfo.candidates || !Array.isArray(meetingInfo.candidates) || meetingInfo.candidates.length === 0) {
-        notify("Vui lòng thêm ít nhất một ứng viên/bầu chọn trước khi gửi duyệt", "warning");
+      if (
+        !meetingInfo.candidates ||
+        !Array.isArray(meetingInfo.candidates) ||
+        meetingInfo.candidates.length === 0
+      ) {
+        notify(
+          "Vui lòng thêm ít nhất một ứng viên/bầu chọn trước khi gửi duyệt",
+          "warning"
+        );
         return false;
       }
 
       // Kiểm tra nếu hình thức bầu cử là YES_NO_ABSTAIN thì chỉ cho phép 1 bản ghi
-      const methodCode = meetingInfo.methodDetails?.methodCode || election?.data?.meetingInfo?.methodDetails?.methodCode;
-      if (methodCode === "YES_NO_ABSTAIN" && meetingInfo.candidates.length > 1) {
-        notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉ nhập 1 bản ghi.", "warning");
+      const methodCode =
+        meetingInfo.methodDetails?.methodCode ||
+        election?.data?.meetingInfo?.methodDetails?.methodCode;
+      if (
+        methodCode === "YES_NO_ABSTAIN" &&
+        meetingInfo.candidates.length > 1
+      ) {
+        notify(
+          "Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉ nhập 1 bản ghi.",
+          "warning"
+        );
         return false;
       }
 
       // Kiểm tra documents
       if (!documents || !Array.isArray(documents) || documents.length === 0) {
-        notify("Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt", "warning");
+        notify(
+          "Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt",
+          "warning"
+        );
         return false;
       }
 
       // Kiểm tra voters
       if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
-        notify("Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt", "warning");
+        notify(
+          "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
+          "warning"
+        );
         return false;
       }
 
@@ -243,15 +269,23 @@ const DraftingDocuments: React.FC = () => {
         0
       );
       if (totalPercentage > 100) {
-        notify(`Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`, "warning");
+        notify(
+          `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`,
+          "warning"
+        );
         return false;
       }
 
       // Kiểm tra participants (thành viên ban tổ chức)
       const participantsList = organization || [];
-      const mapParticipants = participantsList.filter((p: any) => p?.roleId?.roleCode !== USER_ROLE.VOTER);
+      const mapParticipants = participantsList.filter(
+        (p: any) => p?.roleId?.roleCode !== USER_ROLE.VOTER
+      );
       if (!Array.isArray(mapParticipants) || mapParticipants.length === 0) {
-        notify("Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt", "warning");
+        notify(
+          "Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt",
+          "warning"
+        );
         return false;
       }
 
@@ -260,7 +294,10 @@ const DraftingDocuments: React.FC = () => {
         (p: any) => !p.userId || !p.roleId
       );
       if (invalidParticipants.length > 0) {
-        notify("Vui lòng kiểm tra lại thông tin thành viên tổ chức, một số thành viên thiếu thông tin", "warning");
+        notify(
+          "Vui lòng kiểm tra lại thông tin thành viên tổ chức, một số thành viên thiếu thông tin",
+          "warning"
+        );
         return false;
       }
 
@@ -331,9 +368,10 @@ const DraftingDocuments: React.FC = () => {
         // Thử parse để lấy error message
         console.error("Response is not a Blob:", response);
 
-        if (response && typeof response === 'object') {
+        if (response && typeof response === "object") {
           // Nếu là object, có thể là error response
-          const errorMsg = (response as any).message || "Không thể tạo preview PDF";
+          const errorMsg =
+            (response as any).message || "Không thể tạo preview PDF";
           throw new Error(errorMsg);
         }
 
@@ -341,9 +379,9 @@ const DraftingDocuments: React.FC = () => {
       }
 
       const url = window.URL.createObjectURL(actualBlob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.target = '_blank';
+      link.target = "_blank";
       link.click();
 
       // Revoke URL sau một chút để đảm bảo link đã được click
@@ -365,7 +403,10 @@ const DraftingDocuments: React.FC = () => {
         if (err.response.data instanceof Blob) {
           // Nếu là Blob, có thể là error PDF, thử parse
           errorMessage = "Không thể tạo preview PDF";
-        } else if (typeof err.response.data === 'object' && err.response.data.message) {
+        } else if (
+          typeof err.response.data === "object" &&
+          err.response.data.message
+        ) {
           errorMessage = err.response.data.message;
         }
       }
@@ -403,26 +444,40 @@ const DraftingDocuments: React.FC = () => {
       if (isSubmitForApproval) {
         // Kiểm tra candidates
         if (!Array.isArray(candidatesList) || candidatesList.length === 0) {
-          notify("Vui lòng thêm ít nhất một ứng viên/bầu chọn trước khi gửi duyệt", "warning");
+          notify(
+            "Vui lòng thêm ít nhất một ứng viên/bầu chọn trước khi gửi duyệt",
+            "warning"
+          );
           return;
         }
 
         // Kiểm tra nếu hình thức bầu cử là YES_NO_ABSTAIN thì chỉ cho phép 1 bản ghi
-        const methodCode = meetingInfo?.methodDetails?.methodCode || election?.data?.meetingInfo?.methodDetails?.methodCode;
+        const methodCode =
+          meetingInfo?.methodDetails?.methodCode ||
+          election?.data?.meetingInfo?.methodDetails?.methodCode;
         if (methodCode === "YES_NO_ABSTAIN" && candidatesList.length > 1) {
-          notify("Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉ nhập 1 bản ghi.", "warning");
+          notify(
+            "Hình thức bầu cử YES-NO chỉ cho phép 1 nội dung bầu chọn. Vui lòng chỉ nhập 1 bản ghi.",
+            "warning"
+          );
           return;
         }
 
         // Kiểm tra documents
         if (!Array.isArray(documentsList) || documentsList.length === 0) {
-          notify("Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt", "warning");
+          notify(
+            "Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt",
+            "warning"
+          );
           return;
         }
 
         // Kiểm tra voters
         if (!Array.isArray(votersList) || votersList.length === 0) {
-          notify("Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt", "warning");
+          notify(
+            "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
+            "warning"
+          );
           return;
         }
 
@@ -432,13 +487,19 @@ const DraftingDocuments: React.FC = () => {
           0
         );
         if (totalPercentage > 100) {
-          notify(`Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`, "warning");
+          notify(
+            `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`,
+            "warning"
+          );
           return;
         }
 
         // Kiểm tra participants
         if (!Array.isArray(participantsList) || participantsList.length === 0) {
-          notify("Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt", "warning");
+          notify(
+            "Vui lòng thêm ít nhất một thành viên tổ chức trước khi gửi duyệt",
+            "warning"
+          );
           return;
         }
 
@@ -459,7 +520,146 @@ const DraftingDocuments: React.FC = () => {
         }
       }
 
+      // Tách voters import từ Excel (isImportedFromExcel: true) ra khỏi voters thông thường
+      const importedVoters = votersList.filter(
+        (v: any) => v.isImportedFromExcel === true
+      );
+      const normalVoters = votersList.filter(
+        (v: any) => !v.isImportedFromExcel
+      );
+
+      let existingExcelDocument = null;
+      try {
+        const allDocuments =
+          await ElectionDocumentService.getDocumentByElectionId(electionId);
+        if (allDocuments && Array.isArray(allDocuments)) {
+          existingExcelDocument = allDocuments.find(
+            (doc: any) =>
+              doc.type === "voters-import-excel" ||
+              (doc.fileUrl && doc.fileUrl.includes("voters-import-excel"))
+          );
+        }
+      } catch (error) {
+        // Nếu không tìm thấy hoặc lỗi, coi như chưa có document
+        console.log("No existing Excel document found or error:", error);
+      }
+
+      // Xử lý document dựa trên số lượng voters import
+      if (importedVoters.length > 0) {
+        // Có voters import: Tạo file Excel mới và update/create document
+        try {
+          // 1. Tạo file Excel từ danh sách voters import
+          const excelData = [
+            ["FullName", "Email", "Phone", "CitizenId", "Shares"], // Header
+            ...importedVoters.map((voter: any) => [
+              voter.fullName || "",
+              voter.email || "",
+              voter.phone || "",
+              voter.citizenId || "",
+              voter.percentage || "",
+            ]),
+          ];
+
+          const ws = XLSX.utils.aoa_to_sheet(excelData);
+          ws["!cols"] = [
+            { wch: 25 }, // FullName
+            { wch: 30 }, // Email
+            { wch: 15 }, // Phone
+            { wch: 15 }, // CitizenId
+            { wch: 10 }, // Shares
+          ];
+
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Danh sách cử tri");
+
+          const excelBuffer = XLSX.write(wb, {
+            type: "array",
+            bookType: "xlsx",
+          });
+          const blob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const fileName = `Danh_sach_cu_tri_import_${new Date().getTime()}.xlsx`;
+          const excelFile = new File([blob], fileName, {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+
+          // 2. Upload file Excel lên MinIO
+          const formData = new FormData();
+          formData.append("file", excelFile);
+          formData.append("fileType", "voters-import-excel");
+          const userId = localStorage.getItem("userId") || "";
+          formData.append("userId", userId);
+
+          const uploadResponse = await FileService.upfile(formData);
+          if (uploadResponse && uploadResponse.key) {
+            const totalPercentage = importedVoters.reduce(
+              (sum: number, p: any) => sum + (Number(p.percentage) || 0),
+              0
+            );
+
+            // 3. Nếu đã có document, update với file mới
+            if (existingExcelDocument && existingExcelDocument._id) {
+              const updateBody = {
+                title: `Danh sách cử tri import - ${importedVoters.length} người`,
+                content: `File Excel chứa danh sách ${importedVoters.length} cử tri được import thành công vào ngày ${new Date().toLocaleDateString("vi-VN")}`,
+                fileUrl: uploadResponse.key,
+                remarks: `File Excel được tạo tự động từ danh sách cử tri đã import. Tổng số cử tri: ${importedVoters.length}. Tổng cổ phần: ${totalPercentage}%`,
+                type: "voters-import-excel",
+                status: "PENDING",
+              };
+
+              await ElectionDocumentService.UpdateDocumentById(
+                existingExcelDocument._id,
+                updateBody
+              );
+            } else {
+              // 4. Nếu chưa có document, tạo mới
+              const documentBody = {
+                electionId: electionId,
+                title: `Danh sách cử tri import - ${importedVoters.length} người`,
+                content: `File Excel chứa danh sách ${importedVoters.length} cử tri được import thành công vào ngày ${new Date().toLocaleDateString("vi-VN")}`,
+                fileUrl: uploadResponse.key,
+                remarks: `File Excel được tạo tự động từ danh sách cử tri đã import. Tổng số cử tri: ${importedVoters.length}. Tổng cổ phần: ${totalPercentage}%`,
+                type: "voters-import-excel",
+                status: "PENDING",
+              };
+
+              await ElectionDocumentService.CreateDocument(documentBody);
+            }
+          } else {
+            throw new Error("Upload file failed");
+          }
+        } catch (error) {
+          console.error(
+            "Error creating and uploading voter Excel document:",
+            error
+          );
+          notify(
+            "Lỗi khi tạo file Excel cho cử tri import. Vui lòng thử lại.",
+            "error"
+          );
+          throw error;
+        }
+      } else if (existingExcelDocument && existingExcelDocument._id) {
+        // Không còn voters import nhưng đã có document: Xóa document
+        try {
+          await ElectionDocumentService.delete(existingExcelDocument._id);
+          console.log(
+            "Deleted Excel document because no imported voters remain"
+          );
+        } catch (error) {
+          console.error("Error deleting Excel document:", error);
+          // Không throw error để không block quá trình lưu nháp
+          notify(
+            "Lỗi khi xóa file Excel cũ. Vui lòng kiểm tra lại.",
+            "warning"
+          );
+        }
+      }
+
       // Chuẩn bị body tổng hợp
+      // CHỈ GỬI VOTERS THÔNG THƯỜNG (KHÔNG BAO GỒM VOTERS IMPORT TỪ EXCEL)
       const bulkBody = {
         electionId: electionId,
         meetingInfo: {
@@ -469,14 +669,14 @@ const DraftingDocuments: React.FC = () => {
           location: meetingInfo.location,
           // Đảm bảo chuyển đổi dayjs thành ISO string đúng cách
           authorizationStart: meetingInfo.authorizationStart
-            ? (typeof meetingInfo.authorizationStart === 'string'
-                ? meetingInfo.authorizationStart
-                : dayjs(meetingInfo.authorizationStart).toISOString())
+            ? typeof meetingInfo.authorizationStart === "string"
+              ? meetingInfo.authorizationStart
+              : dayjs(meetingInfo.authorizationStart).toISOString()
             : null,
           authorizationEnd: meetingInfo.authorizationEnd
-            ? (typeof meetingInfo.authorizationEnd === 'string'
-                ? meetingInfo.authorizationEnd
-                : dayjs(meetingInfo.authorizationEnd).toISOString())
+            ? typeof meetingInfo.authorizationEnd === "string"
+              ? meetingInfo.authorizationEnd
+              : dayjs(meetingInfo.authorizationEnd).toISOString()
             : null,
         },
         electionEntities: candidatesList.map((candidate: any) => {
@@ -495,20 +695,29 @@ const DraftingDocuments: React.FC = () => {
           if (result.fileUrl) {
             console.log(`Sending candidate with fileUrl:`, {
               title: result.title,
-              fileUrl: result.fileUrl
+              fileUrl: result.fileUrl,
             });
           }
 
           return result;
         }),
-        electionDocuments: documentsList.map((doc: any) => ({
-          _id: doc._id, // Có _id nếu edit
-          title: doc.title,
-          content: doc.content || "",
-          fileUrl: doc.fileUrl || "",
-          remarks: doc.remarks || "",
-        })),
-        voters: votersList.map((v: any) => ({
+        // Lọc bỏ document Excel import (type "voters-import-excel" hoặc fileUrl chứa "voters-import-excel")
+        // Vì document Excel import đã được xử lý riêng ở trên
+        electionDocuments: documentsList
+          .filter(
+            (doc: any) =>
+              doc.type !== "voters-import-excel" &&
+              !(doc.fileUrl && doc.fileUrl.includes("voters-import-excel"))
+          )
+          .map((doc: any) => ({
+            _id: doc._id, // Có _id nếu edit
+            title: doc.title,
+            content: doc.content || "",
+            fileUrl: doc.fileUrl || "",
+            remarks: doc.remarks || "",
+          })),
+        // CHỈ GỬI VOTERS THÔNG THƯỜNG, KHÔNG GỬI VOTERS IMPORT TỪ EXCEL
+        voters: normalVoters.map((v: any) => ({
           _id: v._id,
           userId: v.userId,
           percentage: v.percentage,
@@ -539,7 +748,8 @@ const DraftingDocuments: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       // Hiển thị message từ backend nếu có
-      const errorMessage = err?.response?.data?.message || err?.message || "Có lỗi xảy ra";
+      const errorMessage =
+        err?.response?.data?.message || err?.message || "Có lỗi xảy ra";
       notify(errorMessage, "error");
       throw err;
     }
@@ -562,7 +772,11 @@ const DraftingDocuments: React.FC = () => {
               <Button icon={<SaveOutlined />} onClick={handleSaveDraft}>
                 Lưu nháp
               </Button>
-              <Button type="primary" icon={<SendOutlined />} onClick={handleSubmitAll}>
+              <Button
+                type="primary"
+                icon={<SendOutlined />}
+                onClick={handleSubmitAll}
+              >
                 Gửi duyệt
               </Button>
             </>
@@ -580,27 +794,35 @@ const DraftingDocuments: React.FC = () => {
             data={election}
             electionentities={electionentities}
             meeting={meeting}
-            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
+            disabled={
+              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+            }
           />
         </div>
         <div className="meeting-right">
           <Attendees
             onChange={setAttendees}
             data={voter}
-            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
+            disabled={
+              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+            }
             organizationMembers={organization}
+            electionId={electionId}
           />
           <Organization
             onChange={setOrganization}
             data={organization}
-            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
+            disabled={
+              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+            }
             attendeesList={attendees}
           />
           <AttachedDocuments
             onChange={setDocuments}
-            electionId={electionId}
             initialDocuments={existingDocuments}
-            disabled={!(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")}
+            disabled={
+              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+            }
           />
         </div>
       </div>
