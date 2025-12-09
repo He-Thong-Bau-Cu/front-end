@@ -15,16 +15,17 @@ const ManagementUser = () => {
 
   useEffect(() => {
     fetchStatsUser();
-    onSearch();
+    onSearch({ page: 1, limit: 10 });
   }, []);
 
   const onSearch = async (values?: any) => {
     try {
       showLoading();
-      const response = await UserService.search(values);
+      const searchParams = values || { page: 1, limit: 10 };
+      const response = await UserService.search(searchParams);
       if (response.success) {
         setUserData(response.data.content);
-        setTotal(response.data.totalElements);
+        setTotal(response.data.totalItems || 0);
         notify(response.message, "success");
       } else {
         notify(response.message, "error");

@@ -110,6 +110,11 @@ const HomePage: React.FC = () => {
           state: { electionId: electionId, voter: election.voter },
         });
         break;
+      case USER_ROLE.PRESIDE:
+        navigate(PATH.PRESIDE, {
+          state: { electionId: electionId, voter: election.voter },
+        });
+        break;
       default:
         break;
     }

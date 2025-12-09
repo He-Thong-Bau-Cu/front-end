@@ -56,15 +56,15 @@ export default function LoginScreen() {
 
           notify("Đăng nhập thành công!!!", "success");
           if (decoded.role === USER_ROLE.ADMIN) {
-            console.log("admin");
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
             } else {
               navigate(PATH.ADMIN);
             }
-          } else if (decoded.role === USER_ROLE.PRESIDE) {
-            console.log("preside");
+          } else if (decoded.role === USER_ROLE.PRESIDE && user.chairmanOfTheBoardOfDirectors) {
+            decoded.permissions.push(PATH.PRESIDE_APPROVED_REQ_FROM_USER);
+            localStorage.setItem("permissions", JSON.stringify(decoded.permissions));
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);
@@ -72,7 +72,6 @@ export default function LoginScreen() {
               navigate(PATH.PRESIDE);
             }
           } else {
-            console.log("home");
             const user = await getUserLogin();
             if (user && user.isTempPassword) {
               navigate(PATH.CHANGE_PASSWORD_FIRST_TIME);

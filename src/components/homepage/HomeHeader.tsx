@@ -4,14 +4,20 @@ import {
   HistoryOutlined,
   IdcardOutlined,
   LogoutOutlined,
-  UserOutlined
+  UserOutlined,
+  FileTextOutlined,
+  BellFilled,
 } from "@ant-design/icons";
-import { Avatar, Dropdown, Layout, message, Space, Typography } from "antd";
+import { Avatar, Badge, Dropdown, Layout, message, Popover, Space, Typography } from "antd";
 import { MenuProps } from "antd/lib";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "../../types/User.interface";
 import ProfileModal from "./ProfileModal";
+import NotificationDropdown, { INotification } from "../notification/NotificationDropdown";
+import NotificationListener from "../notification/NotificationListener";
+import NotificationService from "@/services/NotificationService";
+import { useLoading } from "@/contexts/LoadingContext";
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -19,8 +25,16 @@ const { Title, Text } = Typography;
 const HomeHeader: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) setUserId(storedUserId);
+    loadNotification();
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -33,6 +47,27 @@ const HomeHeader: React.FC = () => {
     };
     fetchUser();
   }, []);
+
+  const loadNotification = async () => {
+    try {
+      showLoading();
+      const userId = localStorage.getItem("userId") as string;
+      if (!userId) return;
+      const response = await NotificationService.getUserNotifications(userId);
+      if (response.success) {
+        const data = response.data;
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleSocketNotification = (data: any) => {
+    setNotifications((prev) => [data, ...prev]);
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -48,6 +83,12 @@ const HomeHeader: React.FC = () => {
       label: "Hồ sơ cá nhân",
       icon: <IdcardOutlined />,
       onClick: handleOpenProfile,
+    },
+    {
+      key: "myElectionRequests",
+      label: "Yêu cầu tạo cuộc bầu cử",
+      icon: <FileTextOutlined />,
+      onClick: () => navigate("/home/my-election-requests"),
     },
     {
       key: "authorization",
@@ -87,6 +128,46 @@ const HomeHeader: React.FC = () => {
         </Space>
 
         <Space size={10} align="center">
+          {userId && (
+            <NotificationListener
+              userId={userId}
+              onNewNotification={handleSocketNotification}
+            />
+          )}
+          <Popover
+            placement="bottomRight"
+            content={
+              <NotificationDropdown
+                userId={localStorage.getItem("userId") as string}
+                notifications={notifications}
+                setNotifications={setNotifications}
+              />
+            }
+            trigger="click"
+            overlayClassName="notification-popover"
+          >
+            <Badge count={notifications.filter((n) => !n.read).length} size="small">
+              <BellFilled
+                style={{
+                  fontSize: '20px',
+                  color: '#7cb342',
+                  cursor: 'pointer',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              />
+            </Badge>
+          </Popover>
           <Dropdown
             menu={{ items: menuItems }}
             placement="bottomRight"

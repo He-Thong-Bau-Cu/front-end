@@ -1,5 +1,6 @@
 import PrivateRoute from "@/components/auth/PrivateRoute";
 import AuthorizationHistory from "@/components/homepage/AuthorizationHistory";
+import MyElectionRequests from "@/pages/user/MyElectionRequests";
 import AuthorizationTable from "@/components/secretary/management-delegations/AuthorizationTable";
 import AuthorizationDetail from "@/components/voter/authorization/AuthorizationDetail";
 import AuthorizationForm from "@/components/voter/authorization/AuthorizationForm";
@@ -31,6 +32,8 @@ import CreateDelegateCardPage from "@/pages/head_of_the_organizing_comittee/Crea
 import ManagementMeeting from "@/pages/head_of_the_organizing_comittee/ManagementMeeting";
 import OrganizerDashboardPage from "@/pages/head_of_the_organizing_comittee/OrganizerDashboardPage";
 import VotingDashboardPage from "@/pages/head_of_the_organizing_comittee/VotingDashboardPage";
+import DecisionApprovalPage from "@/pages/preside/DecisionApprovalPage";
+import ElectionRequestApprovalPage from "@/pages/preside/ElectionRequestApprovalPage";
 import HomePage from "@/pages/HomePage";
 import Checkin from "@/pages/organizing-committee/Checkin";
 import CreateMeetingAttendee from "@/pages/organizing-committee/CreateMeetingAttendee";
@@ -110,6 +113,8 @@ export const privateRoutes = [
         children: [
           { index: true, element: <DashboardPreside /> },
           { path: "decision", element: <ManagementDecision /> },
+          { path: "decision-approval", element: <DecisionApprovalPage /> },
+          { path: "election-request-approval", element: <ElectionRequestApprovalPage /> },
           { path: "authorization", element: <AuthorizationPreside /> },
           { path: "reports", element: <ReportsPage /> },
           { path: "election-monitor", element: <ElectionResultsPage /> },
@@ -192,9 +197,10 @@ export const privateRoutes = [
 
       },
       { path: "authorization-history", element: <AuthorizationHistory /> },
+      { path: "my-election-requests", element: <MyElectionRequests /> },
 
     ],
   },
 
-  
+
 ];

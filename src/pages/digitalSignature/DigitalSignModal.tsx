@@ -1,21 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Typography,
-  Upload,
   Input,
   Button,
   Space,
-  Row,
-  Col,
-  message
+  message,
+  Spin,
+  Alert
 } from "antd";
 import {
-  UploadOutlined,
   CheckCircleOutlined,
-  SafetyOutlined
+  SafetyOutlined,
+  FileOutlined
 } from "@ant-design/icons";
 import "../../style/digitalSignature/DigitalSignModal.model.css";
+import { getUserLogin } from "@/utils/auth";
+import FileService from "@/services/FileService";
+import { useLoading } from "@/contexts/LoadingContext";
+import { useNotification } from "@/contexts/NotificationContext";
 
 const { Title, Text } = Typography;
 
@@ -26,18 +29,74 @@ interface Props {
 }
 
 const DigitalSignModal: React.FC<Props> = ({ open, onClose, onSubmit }) => {
-  const [fileObj, setFileObj] = React.useState<File | null>(null);
-  const [fileName, setFileName] = React.useState("Chưa chọn tệp nào...");
-  const [password, setPassword] = React.useState("");
+  const [fileObj, setFileObj] = useState<File | null>(null);
+  const [fileName, setFileName] = useState("Đang tải chứng thư số...");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasSignCa, setHasSignCa] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
 
-  const handleUpload = (file: File) => {
-    setFileObj(file);
-    setFileName(file.name);
-    return false;
+  // Load file từ signCa khi modal mở
+  useEffect(() => {
+    if (open) {
+      loadCertificateFile();
+    } else {
+      // Reset khi đóng modal
+      setFileObj(null);
+      setFileName("Đang tải chứng thư số...");
+      setPassword("");
+      setError(null);
+    }
+  }, [open]);
+
+  const loadCertificateFile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Lấy thông tin user
+      const user = await getUserLogin();
+      const signCa = (user as any)?.signCa;
+
+      if (!signCa) {
+        setHasSignCa(false);
+        setError("Bạn chưa có chứng thư số. Vui lòng truy cập vào hồ sơ cá nhân để đăng ký chứng thư số.");
+        setFileName("Không tìm thấy chứng thư số");
+        return;
+      }
+
+      setHasSignCa(true);
+
+      // Load file từ minio
+      showLoading();
+      const blob = await FileService.getSignedFile(signCa);
+      hideLoading();
+
+      // Convert Blob thành File
+      const file = new File([blob], "certificate.p12", { type: "application/x-pkcs12" });
+      setFileObj(file);
+      setFileName("certificate.p12");
+
+    } catch (err: any) {
+      console.error("Error loading certificate:", err);
+      setError("Không thể tải chứng thư số. Vui lòng thử lại sau.");
+      setFileName("Lỗi khi tải chứng thư số");
+      notify(err?.message || "Không thể tải chứng thư số", "error");
+      hideLoading();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConfirm = () => {
-    if (!fileObj) return message.warning("Vui lòng chọn file .p12");
+    if (!fileObj) {
+      if (error) {
+        return message.warning(error);
+      }
+      return message.warning("Đang tải chứng thư số, vui lòng đợi...");
+    }
     if (!password.trim()) return message.warning("Vui lòng nhập mật khẩu");
 
     onSubmit({ file: fileObj, password });
@@ -70,21 +129,47 @@ const DigitalSignModal: React.FC<Props> = ({ open, onClose, onSubmit }) => {
         {/* Chứng thư số */}
         <div className="field-group">
           <Text strong>Chứng thư số (.p12)</Text>
-          <Row gutter={10} align="middle" className="upload-row">
-            <Col flex="auto">
-              <Input value={fileName} readOnly className="file-input-display" />
-            </Col>
-            <Col>
-              <Upload beforeUpload={handleUpload} showUploadList={false}>
-                <Button icon={<UploadOutlined />} className="file-btn">
-                  Chọn tệp
-                </Button>
-              </Upload>
-            </Col>
-          </Row>
-          <Text type="secondary" className="hint">
-            Định dạng được hỗ trợ: .p12 (CA Token)
-          </Text>
+          <Spin spinning={loading}>
+            <div style={{ position: "relative" }}>
+              <Input
+                value={fileName}
+                readOnly
+                className="file-input-display"
+                prefix={<FileOutlined />}
+                style={{
+                  backgroundColor: fileObj ? "#f6ffed" : "#fff",
+                  borderColor: fileObj ? "#b7eb8f" : undefined,
+                }}
+              />
+            </div>
+          </Spin>
+          {error && (
+            <Alert
+              message={
+                <div>
+                  <div style={{ marginBottom: 8 }}>{error}</div>
+                  {!hasSignCa && (
+                    <div style={{ fontSize: 13, color: "#595959" }}>
+                      <strong>Hướng dẫn:</strong> Vui lòng truy cập vào <strong>Hồ sơ cá nhân</strong> (icon avatar ở góc phải trên) để đăng ký chứng thư số.
+                    </div>
+                  )}
+                </div>
+              }
+              type="error"
+              showIcon
+              style={{ marginTop: 8 }}
+            />
+          )}
+          {!error && !loading && fileObj && (
+            <Text type="success" className="hint" style={{ display: "block", marginTop: 8 }}>
+              ✓ Đã tải chứng thư số thành công
+            </Text>
+          )}
+          {!error && !loading && !fileObj && (
+            <Text type="secondary" className="hint">
+              Đang tải chứng thư số từ hệ thống...
+            </Text>
+          )}
         </div>
 
         {/* PASSWORD */}
@@ -95,6 +180,7 @@ const DigitalSignModal: React.FC<Props> = ({ open, onClose, onSubmit }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="password-input"
+            disabled={!fileObj || !!error}
           />
         </div>
 
@@ -117,6 +203,8 @@ const DigitalSignModal: React.FC<Props> = ({ open, onClose, onSubmit }) => {
             icon={<CheckCircleOutlined />}
             className="confirm-btn-s"
             onClick={handleConfirm}
+            disabled={!fileObj || !!error || loading}
+            title={!fileObj || !!error ? "Vui lòng đăng ký chứng thư số trong hồ sơ cá nhân trước khi ký" : ""}
           >
             Xác nhận ký
           </Button>

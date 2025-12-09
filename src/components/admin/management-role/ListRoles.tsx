@@ -458,7 +458,7 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
                 background: "#fff",
                 padding: "24px 28px",
                 boxSizing: "border-box",
-                overflowY: "auto",
+                minHeight: 0,
               }}
             >
               {selectedRole ? (
@@ -470,6 +470,9 @@ const ListRoles = ({ dataRolePermission, onSearch, total }: ListRolesProps) => {
                       gap: 18,
                       flex: 1,
                       overflowY: "auto",
+                      maxHeight: "calc(100vh - 400px)",
+                      minHeight: 0,
+                      paddingRight: "8px",
                     }}
                   >
                     {groupedPermissions.map((group) => (

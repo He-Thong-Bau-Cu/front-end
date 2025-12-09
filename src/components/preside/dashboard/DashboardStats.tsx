@@ -11,6 +11,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useEffect, useState } from "react";
 import SystemService from "@/services/StatisticsService";
+import { getUserLogin } from "@/utils/auth";
 const { Text } = Typography;
 
 
@@ -24,7 +25,16 @@ const DashboardStats = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const data = await SystemService.getDashboardStats();
+                // Lấy thông tin user để check chairmanOfTheBoardOfDirectors
+                const userData = await getUserLogin();
+                const isSystemPreside = userData?.chairmanOfTheBoardOfDirectors;
+
+                // Lấy electionId từ localStorage nếu không phải system preside
+                const electionId = !isSystemPreside
+                    ? localStorage.getItem("currentElectionId")
+                    : undefined;
+
+                const data = await SystemService.getDashboardStats(electionId || undefined);
                 let dataMap = [] as any[];
                 dataMap.push({ title: "Tổng số kỳ bầu cử", icon: <PieChartOutlined />, value: data.totalElections !== null ? data.totalElections : 0 })
                 dataMap.push({ title: "Tổng số cử tri", icon: <TeamOutlined />, value: data.totalVoters !== null ? data.totalVoters : 0 })

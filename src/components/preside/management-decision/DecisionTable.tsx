@@ -18,6 +18,7 @@ import {
   DownloadOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import type { Decision } from "@/types/Decision.interface";
 import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal";
 import ViewDecisionModal from "@/components/preside/management-decision/ViewDecisionModal";
@@ -34,6 +35,7 @@ import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import FileService from "@/services/FileService";
 import VotingRightService from "@/services/VotingRightService";
+import { getUserLogin } from "@/utils/auth";
 const { Option } = Select;
 const { confirm } = Modal;
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
@@ -61,6 +63,7 @@ const statusMap: { [key: string]: string } = {
   "DRAFT": "Lưu nháp"
 };
 const DecisionTable = () => {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [documents, setDocument] = useState<any[]>([]);
@@ -97,9 +100,42 @@ const DecisionTable = () => {
   const [secretary, setSecrytary] = useState<any | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<Decision | null>(null);
   const { notify } = useNotification();
+  const [isSystemPreside, setIsSystemPreside] = useState(true);
+  const [currentElectionId, setCurrentElectionId] = useState<string | undefined>(undefined);
+  const [userFetched, setUserFetched] = useState(false);
+
+  // Lấy thông tin user và electionId
   useEffect(() => {
+    const fetchUserAndElectionId = async () => {
+      try {
+        // Clear data trước khi fetch user để tránh hiển thị data sai
+        setData([]);
+
+        const userData = await getUserLogin();
+        const isSystemPresideValue = userData?.chairmanOfTheBoardOfDirectors === true;
+        setIsSystemPreside(isSystemPresideValue);
+
+        // Nếu không phải system preside, lấy electionId từ localStorage
+        if (!isSystemPresideValue) {
+          const electionId = localStorage.getItem("currentElectionId") || undefined;
+          setCurrentElectionId(electionId);
+        } else {
+          setCurrentElectionId(undefined);
+        }
+        setUserFetched(true);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUserFetched(true);
+      }
+    };
+    fetchUserAndElectionId();
+  }, []);
+
+  useEffect(() => {
+    // Chỉ load khi đã fetch user xong
+    if (!userFetched) return;
     loadDecisions(1, pagination.pageSize);
-  }, [statusFilter, searchText]);
+  }, [statusFilter, searchText, currentElectionId, userFetched, isSystemPreside]);
 
   useEffect(() => {
     if (searchText === "" && statusFilter === "") {
@@ -113,6 +149,9 @@ const DecisionTable = () => {
   }, [searchText]);
 
   const loadDecisions = async (page: number = 1, limit: number = 10) => {
+    // Chỉ load khi đã fetch user xong
+    if (!userFetched) return;
+
     setLoading(true);
     try {
       const response = await DecisionService.getAllDecisions({
@@ -120,6 +159,8 @@ const DecisionTable = () => {
         limit,
         textSearch: searchText.trim() || undefined,
         statusData: statusFilter || undefined,
+        // Nếu không phải system preside, chỉ lấy election hiện tại
+        electionId: !isSystemPreside ? currentElectionId : undefined,
       });
       setData(response?.content || []);
       setPagination({
@@ -292,10 +333,10 @@ const DecisionTable = () => {
           (vr: any) => vr.voterId.userId === voter.userId._id
         );
         if (votingRight) {
-          voter.percent = votingRight.shares; 
+          voter.percent = votingRight.shares;
           voter.statusVoter = votingRight.voterId.status;   // <-- Thêm dòng này
         } else {
-          voter.percent = 0; 
+          voter.percent = 0;
           voter.statusVoter = "INACTIVE";                    // <-- hoặc null tuỳ ý bạn
         }
       });
@@ -477,18 +518,20 @@ const DecisionTable = () => {
             <Option value="REJECTED">Yêu cầu chỉnh sửa</Option>
             <Option value="DRAFT">Lưu nháp</Option>
           </Select>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            className="btn-create"
-            onClick={() => {
-              setEditMode(false);
-              setEditingDecision(null);
-              setOpen(true);
-            }}
-          >
-            Tạo quyết định mới
-          </Button>
+          {isSystemPreside && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="btn-create"
+              onClick={() => {
+                setEditMode(false);
+                setEditingDecision(null);
+                setOpen(true);
+              }}
+            >
+              Tạo quyết định mới
+            </Button>
+          )}
         </div>
       </div>
 

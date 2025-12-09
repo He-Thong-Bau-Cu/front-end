@@ -52,7 +52,10 @@ export default function FirstTimeChangePasswordScreen() {
         let role = localStorage.getItem("role");
         if (role === USER_ROLE.ADMIN) {
           navigate(PATH.ADMIN);
-        } else if (role === USER_ROLE.PRESIDE) {
+        } else if (role === USER_ROLE.PRESIDE && user.chairmanOfTheBoardOfDirectors) {
+          const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
+          permissions.push(PATH.PRESIDE_APPROVED_REQ_FROM_USER);
+          localStorage.setItem("permissions", JSON.stringify(permissions));
           navigate(PATH.PRESIDE);
         } else {
           navigate(PATH.HOME);

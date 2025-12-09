@@ -26,7 +26,9 @@ export interface User {
     image: string;
     imageKey: string;
     isTempPassword: boolean;
-    issueCA: boolean;
+    issueCA?: boolean;
+    issueCa?: boolean;
+    signCa?: string;
 
 }
 

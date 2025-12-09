@@ -47,9 +47,9 @@ class ElectionService extends BaseService {
     }
   }
 
-  async getElectionUser(body: any): Promise<any> {
+  async getElectionUser(): Promise<any> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/user-organizer`, body);
+      const response = await this.api.post<any>(`${this.endpoint}/user-organizer`, {});
       return response.data;
     } catch (error) {
       console.error("Error get user:", error);
@@ -131,6 +131,79 @@ class ElectionService extends BaseService {
       return response;
     } catch (error) {
       console.error("Error getting current stage:", error);
+      throw error;
+    }
+  }
+
+  // Tạo yêu cầu cuộc bầu cử mới từ user
+  async createElectionRequest(data: any): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/user-request`, data);
+      return response;
+    } catch (error) {
+      console.error("Error create election request:", error);
+      throw error;
+    }
+  }
+
+  // Lấy danh sách yêu cầu tạo cuộc bầu cử của user
+  async getMyElectionRequests(params?: { textSearch?: string; page?: number; limit?: number; statusData?: string }): Promise<BaseResponse<any>> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/my-requests`, {
+        textSearch: params?.textSearch || "",
+        page: params?.page || 1,
+        limit: params?.limit || 10,
+        statusData: params?.statusData,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error get my election requests:", error);
+      throw error;
+    }
+  }
+
+  // Lấy danh sách yêu cầu cuộc bầu cử cần phê duyệt (cho chủ tọa)
+  // Nếu có electionId thì chỉ lấy các election requests của cuộc bầu cử đó
+  async getElectionRequestsForApproval(params?: { textSearch?: string; page?: number; limit?: number; electionId?: string }): Promise<BaseResponse<any>> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/requests-for-approval`, {
+        textSearch: params?.textSearch || "",
+        page: params?.page || 1,
+        limit: params?.limit || 10,
+        electionId: params?.electionId,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error get election requests for approval:", error);
+      throw error;
+    }
+  }
+
+  // Duyệt yêu cầu cuộc bầu cử
+  async approveElectionRequest(electionId: string, secretaryId?: string, boardOfControlId?: string): Promise<BaseResponse<any>> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/approve-request`, {
+        electionId,
+        secretaryId,
+        boardOfControlId,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error approve election request:", error);
+      throw error;
+    }
+  }
+
+  // Từ chối yêu cầu cuộc bầu cử
+  async rejectElectionRequest(electionId: string, rejectReason: string): Promise<BaseResponse<any>> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/reject`, {
+        electionId,
+        rejectReason,
+      });
+      return response;
+    } catch (error) {
+      console.error("Error reject election request:", error);
       throw error;
     }
   }

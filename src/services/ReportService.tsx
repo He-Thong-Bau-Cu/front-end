@@ -19,10 +19,12 @@ class ReportService extends BaseService {
         }
 
     }
-    async getAllReport(): Promise<any> {
+    async getAllReport(electionId?: string): Promise<any> {
         try {
-            const response = await this.api.get<any>(
-                `${this.endpoint}`);
+            const url = electionId
+                ? `${this.endpoint}?electionId=${electionId}`
+                : `${this.endpoint}`;
+            const response = await this.api.get<any>(url);
             return response;
 
         } catch (error) {
