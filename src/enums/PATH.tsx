@@ -16,4 +16,5 @@ export enum PATH {
   ORGANIZING_COMMITTEE = "/organizing-committee",
   BOARD_OF_CONTROL = "/board-of-control",
   HEAD_OF_THE_ORGANIZING_COMMITTEE = "/head_of_the_Organizing_committee",
+  PRESIDE_APPROVED_REQ_FROM_USER = "/preside/decision-approval"
 }

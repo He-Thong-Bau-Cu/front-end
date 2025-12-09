@@ -168,8 +168,9 @@ const UserList = ({
           notify(response.message, "error");
         }
       }
-    } catch (error) {
-      notify("Đã có lỗi xảy ra. Vui lòng thử lagi.", "error");
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+      notify(errorMessage, "error");
     } finally {
       handleSearch();
       setOpenModal(false);

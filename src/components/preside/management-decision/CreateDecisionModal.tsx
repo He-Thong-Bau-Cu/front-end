@@ -58,12 +58,12 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   };
 
   /* ===========================================================
-      LOAD USER THEO THỜI GIAN
+      LOAD USER (KHÔNG CẦN THỜI GIAN)
   =========================================================== */
   const loadUsers = async () => {
     try {
-      const res = await UserService.getAllUser();
-      setUserList(res);
+      const res = await ElectionService.getElectionUser();
+      setUserList(res || []);
     } catch (err: any) {
       notify(err.response?.data?.message, "error");
     }
@@ -74,6 +74,9 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   =========================================================== */
   useEffect(() => {
     if (open) {
+      // Load users ngay khi mở form
+      loadUsers();
+
       if (editMode && initialData) {
         // Convert từ string backend -> dayjs đúng format
         const start = initialData.startDate
@@ -86,17 +89,12 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
           decisionNumber: initialData.decisionNumber || "",
           decisionName: initialData.decisionName || "",
           secretaryId: secrytary?.userId?._id || undefined,
-          secrytaryName: secrytary?.userId?.fullName || "",
-          statusData: initialData.statusData || "",
+          presideId: initialData.presideId || undefined,
           startDate: start,
           endDate: end,
         });
-
-        loadUsers();
       } else {
         form.resetFields();
-        setUserList([]);
-        loadUsers();
       }
     }
   }, [open, editMode, initialData, form]);
@@ -267,8 +265,21 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
             </Col>
           </Row>
 
-          {/* Thư ký */}
+          {/* Chủ tọa */}
           <Col span={24}>
+            <Form.Item
+              name="presideId"
+              label="Chủ tọa"
+              rules={[{ required: !editMode, message: "Vui lòng chọn chủ tọa" }]}
+            >
+              <Select
+                placeholder="Chọn chủ tọa"
+                allowClear
+                disabled={editMode}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+                }
             {!showAddSecretary && (
               <>
 
@@ -396,21 +407,27 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 
           </Col>
 
-
-
-
+          {/* Thư ký */}
           <Col span={24}>
             <Form.Item
-              name="statusData"
-              label="Trạng thái quyết định"
-              rules={[{ required: true, message: "Vui lòng chọn trạng thái quyết định" }]}
+              name="secretaryId"
+              label="Thư ký chủ tọa"
+              rules={[{ required: !editMode, message: "Vui lòng chọn thư ký" }]}
             >
               <Select
-                placeholder="Chọn trạng thái quyết định"
+                placeholder="Chọn thư ký"
                 allowClear
+                disabled={editMode}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+                }
               >
-                <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu (Chờ thư ký nhập dữ liệu)</Option>
-                <Option value="DRAFT">Lưu Nháp</Option>
+                {userList.map((user) => (
+                  <Option key={user._id} value={user._id}>
+                    {user.fullName} - {user.email}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
