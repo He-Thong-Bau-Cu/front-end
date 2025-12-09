@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "../../../style/voter/Dashboard.model.css";
 import { useLoading } from "@/contexts/LoadingContext";
+import moment from "moment-timezone";
 
 
 
@@ -176,18 +177,15 @@ const ElectionOverview = () => {
                             <CalendarOutlined />{" "}
                             <Text>
                                 Bắt đầu:{" "}
-                                {new Date(election.startDate).toLocaleString("vi-VN", {
-                                    hour12: false,
-                                })}
+                                {moment.utc(election.startDate).format("DD/MM/YYYY HH:mm")}
+
                             </Text>
                         </div>
                         <div className="election-time-item">
                             <CalendarOutlined />{" "}
                             <Text>
                                 Kết thúc:{" "}
-                                {new Date(election.endDate).toLocaleString("vi-VN", {
-                                    hour12: false,
-                                })}
+                                {moment.utc(election.endDate).format("DD/MM/YYYY HH:mm")}
                             </Text>
                         </div>
                     </div>
