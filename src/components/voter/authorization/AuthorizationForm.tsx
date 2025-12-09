@@ -79,8 +79,8 @@ export default function AuthorizationForm() {
 
 
             if (values.delegationType === "LONG_TERM") {
-                payload.startDate = values.startDate?.toISOString();
-                payload.endDate = values.endDate?.toISOString();
+                payload.startDate = values.startDate?.format("YYYY-MM-DD");
+                payload.endDate = values.endDate?.format("YYYY-MM-DD");
             }
 
             const draft = await DelegationService.add(payload);

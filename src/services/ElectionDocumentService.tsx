@@ -55,6 +55,23 @@ class ElectionDocumentService extends BaseService {
 
     }
 
+    async addDocument(body: FormData): Promise<any> {
+        try {
+            const response = await this.api.post(
+                `${this.endpoint}`,
+                body,
+                {
+                    headers: { "Content-Type": "multipart/form-data" } // HOẶC bỏ luôn
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error uploading document:", error);
+            throw error;
+        }
+    }
+
+
 
 
 

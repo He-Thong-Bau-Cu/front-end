@@ -18,6 +18,7 @@ import {
     UserOutlined,
 } from "@ant-design/icons";
 import { Alert, Avatar, Button, Card, Space, Table, Tag, Typography } from "antd";
+import moment from "moment-timezone";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -268,7 +269,8 @@ export default function AuthorizationHistory() {
             render: (value: string) =>
                 <Space>
                     <CalendarOutlined />
-                    <Text>{new Date(value).toLocaleDateString("vi-VN")}</Text>
+                    <Text>{moment.utc(value).format("DD/MM/YYYY")}
+                    </Text>
                 </Space>,
         },
         {
