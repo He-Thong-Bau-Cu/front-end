@@ -16,6 +16,7 @@ import ElectionService from "@/services/ElectionService";
 import { User } from "@/types/User.interface";
 import ExcelImport from "./ExcelImport";
 import { Participant } from "@/types/Participants.interface";
+import { useNotification } from "@/contexts/NotificationContext";
 const { Text } = Typography;
 const { Option } = Select;
 
@@ -42,6 +43,7 @@ const Attendees: React.FC<Props> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false); // Track xem data đã được load chưa
   const [excelVotersLoaded, setExcelVotersLoaded] = useState(false); // Track xem đã load voters từ Excel chưa
+  const { notify } = useNotification();
 
   /* ===========================================================
         CHỌN CỬ TRI
@@ -172,6 +174,7 @@ const Attendees: React.FC<Props> = ({
     (sum, p) => sum + (Number(p.percentage) || 0),
     0
   );
+
   const handleAdd = (values: any) => {
     const userInfo = users.find((u) => u._id === values.userId);
     if (!userInfo) {

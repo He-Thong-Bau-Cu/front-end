@@ -246,31 +246,26 @@ const DraftingDocuments: React.FC = () => {
       }
 
       // Kiểm tra documents
-      if (!documents || !Array.isArray(documents) || documents.length === 0) {
-        notify(
-          "Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt",
-          "warning"
-        );
-        return false;
+      // Nếu có voters import từ Excel, file Excel sẽ được tạo tự động → không bắt buộc phải có tài liệu khác
+      const hasImportedVoters =
+        attendees &&
+        Array.isArray(attendees) &&
+        attendees.some((v: any) => v.isImportedFromExcel === true);
+      if (!hasImportedVoters) {
+        // Chỉ bắt buộc có tài liệu nếu KHÔNG có voters import từ Excel
+        if (!documents || !Array.isArray(documents) || documents.length === 0) {
+          notify(
+            "Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt",
+            "warning"
+          );
+          return false;
+        }
       }
 
       // Kiểm tra voters
       if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
         notify(
           "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
-          "warning"
-        );
-        return false;
-      }
-
-      // Kiểm tra tổng % cổ phần không vượt quá 100%
-      const totalPercentage = attendees.reduce(
-        (sum, v) => sum + (Number(v.percentage) || 0),
-        0
-      );
-      if (totalPercentage > 100) {
-        notify(
-          `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`,
           "warning"
         );
         return false;
@@ -311,7 +306,30 @@ const DraftingDocuments: React.FC = () => {
         return false;
       }
     }
-    // Lưu nháp: không bắt required
+
+    // Kiểm tra tổng % cổ phần phải lớn hơn 51% (áp dụng cho cả lưu nháp và gửi duyệt)
+    if (attendees && Array.isArray(attendees) && attendees.length > 0) {
+      const totalPercentage = attendees.reduce(
+        (sum, v) => sum + (Number(v.percentage) || 0),
+        0
+      );
+      if (totalPercentage <= 51) {
+        notify(
+          `Tổng cổ phần phải lớn hơn 51%! (Hiện tại: ${totalPercentage}%)`,
+          "warning"
+        );
+        return false;
+      }
+      if (totalPercentage > 100) {
+        notify(
+          `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`,
+          "warning"
+        );
+        return false;
+      }
+    }
+
+    // Lưu nháp: không bắt required các field khác
     return true;
   };
 
@@ -423,6 +441,7 @@ const DraftingDocuments: React.FC = () => {
     const statusMap: Record<string, { text: string; color: string }> = {
       WAIT_ENTER_DATA: { text: "Chờ nhập dữ liệu", color: "orange" },
       WAIT_APPROVAL: { text: "Chờ duyệt", color: "blue" },
+      WAIT_BKS_CONFIRMED: { text: "Chờ BKS xác nhận", color: "purple" },
       APPROVED_SIGNED: { text: "Đã duyệt và ký", color: "green" },
       REJECTED: { text: "Đã từ chối", color: "red" },
       ACTIVE: { text: "Đang hoạt động", color: "green" },
@@ -439,7 +458,8 @@ const DraftingDocuments: React.FC = () => {
       const candidatesList = meetingInfo?.candidates || [];
       const documentsList = documents || [];
       const votersList = attendees || [];
-
+      let hasDocuments = false;
+      console.log("documentsList", documentsList);
       // Validation bổ sung trước khi gửi (đặc biệt cho gửi duyệt)
       if (isSubmitForApproval) {
         // Kiểm tra candidates
@@ -464,13 +484,28 @@ const DraftingDocuments: React.FC = () => {
         }
 
         // Kiểm tra documents
-        if (!Array.isArray(documentsList) || documentsList.length === 0) {
-          notify(
-            "Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt",
-            "warning"
-          );
-          return;
+        // Nếu có voters import từ Excel, file Excel sẽ được tạo tự động → không bắt buộc phải có tài liệu khác
+        const hasImportedVoters =
+          votersList &&
+          Array.isArray(votersList) &&
+          votersList.some((v: any) => v.isImportedFromExcel === true);
+        if (!hasImportedVoters) {
+          // Chỉ bắt buộc có tài liệu nếu KHÔNG có voters import từ Excel
+          if (!Array.isArray(documentsList) || documentsList.length === 0) {
+            notify(
+              "Vui lòng thêm ít nhất một tài liệu trước khi gửi duyệt",
+              "warning"
+            );
+            return;
+          }
         }
+
+        //Đánh dấu là có tài liệu rồi để be không báo lỗi nữa, kể cả là voters import từ excel
+        hasDocuments = documentsList.some(
+          (doc: any) =>
+            doc.type === "voters-import-excel" ||
+            (doc.fileUrl && doc.fileUrl.includes("voters-import-excel"))
+        );
 
         // Kiểm tra voters
         if (!Array.isArray(votersList) || votersList.length === 0) {
@@ -481,11 +516,20 @@ const DraftingDocuments: React.FC = () => {
           return;
         }
 
-        // Kiểm tra tổng % cổ phần không vượt quá 100%
+        // Kiểm tra tổng % cổ phần
         const totalPercentage = votersList.reduce(
           (sum, v) => sum + (Number(v.percentage) || 0),
           0
         );
+        // Kiểm tra tổng % cổ phần phải lớn hơn 51%
+        if (totalPercentage <= 51) {
+          notify(
+            `Tổng cổ phần phải lớn hơn 51%! (Hiện tại: ${totalPercentage}%)`,
+            "warning"
+          );
+          return;
+        }
+        // Kiểm tra tổng % cổ phần không vượt quá 100%
         if (totalPercentage > 100) {
           notify(
             `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${totalPercentage}%)`,
@@ -701,6 +745,7 @@ const DraftingDocuments: React.FC = () => {
 
           return result;
         }),
+
         // Lọc bỏ document Excel import (type "voters-import-excel" hoặc fileUrl chứa "voters-import-excel")
         // Vì document Excel import đã được xử lý riêng ở trên
         electionDocuments: documentsList
@@ -729,6 +774,7 @@ const DraftingDocuments: React.FC = () => {
           position: p.roleName || p.position,
         })),
         isSubmitForApproval: isSubmitForApproval,
+        hasDocuments: hasDocuments,
       };
 
       const response = await ElectionService.bulkSaveDraft(bulkBody);
