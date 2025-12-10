@@ -6,7 +6,14 @@ class DecisionService extends BaseService {
     super("elections"); // Sử dụng endpoint meetings vì decisions có thể là meetings
   }
 
-  async getAllDecisions(params?: { page?: number; limit?: number; textSearch?: string; statusData?: string; decisionName?: string; decisionNumber?: string }): Promise<{
+  async getAllDecisions(params?: {
+    page?: number;
+    limit?: number;
+    textSearch?: string;
+    statusData?: string;
+    decisionName?: string;
+    decisionNumber?: string;
+  }): Promise<{
     content: Decision[];
     page: number;
     limit: number;
@@ -54,41 +61,35 @@ class DecisionService extends BaseService {
 
   async getElectionById(id: string): Promise<any> {
     try {
-      const response = await this.api.get(
-        `${this.endpoint}/get/${id}`);
+      const response = await this.api.get(`${this.endpoint}/get/${id}`);
       return response;
-
     } catch (error) {
       console.error("Error fetching decisions:", error);
       throw error;
     }
   }
 
-
-
   async createDecision(body: any): Promise<any> {
     try {
-      const response = await this.api.post<any>(
-        `${this.endpoint}`, body);
+      const response = await this.api.post<any>(`${this.endpoint}`, body);
       return response;
-
     } catch (error) {
       console.error("Error fetching decisions:", error);
       throw error;
     }
-
   }
 
   async updateDecision(id: string, body: any): Promise<any> {
     try {
-      const response = await this.api.put<any>(`${this.endpoint}/update/${id}`, body);
+      const response = await this.api.put<any>(
+        `${this.endpoint}/update/${id}`,
+        body
+      );
       return response;
-
     } catch (error) {
       console.error("Error fetching decisions:", error);
       throw error;
     }
-
   }
 
   async deleteDecision(id: string): Promise<any> {
@@ -103,7 +104,10 @@ class DecisionService extends BaseService {
 
   async SignedDecision(body: any): Promise<any> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/approve`, body);
+      const response = await this.api.post<any>(
+        `${this.endpoint}/approve`,
+        body
+      );
       return response;
     } catch (error) {
       console.error("Error deleting decision:", error);
@@ -113,14 +117,39 @@ class DecisionService extends BaseService {
 
   async RejectDecision(body: any): Promise<any> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/reject`, body);
+      const response = await this.api.post<any>(
+        `${this.endpoint}/reject`,
+        body
+      );
       return response;
     } catch (error) {
       console.error("Error deleting decision:", error);
       throw error;
     }
   }
+  async ApproveBKS(electionId: string): Promise<any> {
+    try {
+      const response = await this.api.post<any>(
+        `${this.endpoint}/${electionId}/approve-by-bks`
+      );
+      return response;
+    } catch (error) {
+      console.error("Error approving BKS:", error);
+      throw error;
+    }
+  }
+
+  async RejectBKS(electionId: string, rejectReason: string): Promise<any> {
+    try {
+      const response = await this.api.post<any>(
+        `${this.endpoint}/${electionId}/reject-by-bks`,
+        { rejectReason: rejectReason }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error rejecting BKS:", error);
+      throw error;
+    }
+  }
 }
-
 export default new DecisionService();
-

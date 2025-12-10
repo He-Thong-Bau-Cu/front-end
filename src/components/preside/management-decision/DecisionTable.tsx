@@ -22,7 +22,6 @@ import type { Decision } from "@/types/Decision.interface";
 import CreateDecisionModal from "@/components/preside/management-decision/CreateDecisionModal";
 import ViewDecisionModal from "@/components/preside/management-decision/ViewDecisionModal";
 import DecisionService from "@/services/DecisionService";
-import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import ElectionParticipantsService from "@/services/ElectionParticipantsService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 import ElectionEntitiesService from "@/services/ElectionEntitiesService";
@@ -31,9 +30,8 @@ import ResultService from "@/services/ResultService";
 import ViewDecisionResultModal from "./ViewDecisionResultModal";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
-import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
-import FileService from "@/services/FileService";
 import VotingRightService from "@/services/VotingRightService";
+import ElectionService from "@/services/ElectionService";
 const { Option } = Select;
 const { confirm } = Modal;
 // Hàm format ngày chỉ hiển thị ngày/tháng/năm
@@ -42,10 +40,10 @@ const formatDate = (dateString: string | Date | null | undefined): string => {
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "";
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   } catch {
     return "";
@@ -54,11 +52,12 @@ const formatDate = (dateString: string | Date | null | undefined): string => {
 
 // Map status từ English sang tiếng Việt
 const statusMap: { [key: string]: string } = {
-  "APPROVED_SIGNED": "Đã phê duyệt",
-  "WAIT_APPROVAL": "Chờ duyệt",
-  "REJECTED": "Từ chối",
-  "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
-  "DRAFT": "Lưu nháp"
+  APPROVED_SIGNED: "Đã phê duyệt",
+  WAIT_APPROVAL: "Chờ duyệt",
+  WAIT_BKS_CONFIRMED: "Chờ Ban Kiểm Soát xác nhận",
+  REJECTED: "Từ chối",
+  WAIT_ENTER_DATA: "Chờ nhập dữ liệu",
+  DRAFT: "Lưu nháp",
 };
 const DecisionTable = () => {
   const [open, setOpen] = useState(false);
@@ -135,7 +134,11 @@ const DecisionTable = () => {
       notify(err.response?.data?.message, "error");
     }
   };
-  const handleCreateDecision = async (values: any, isEdit?: boolean, id?: string) => {
+  const handleCreateDecision = async (
+    values: any,
+    isEdit?: boolean,
+    id?: string
+  ) => {
     try {
       showLoading();
       let response;
@@ -147,7 +150,7 @@ const DecisionTable = () => {
           title: values.decisionName,
           statusData: values.statusData,
           startDate: values.startDate,
-          endDate: values.endDate
+          endDate: values.endDate,
         };
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
@@ -163,7 +166,7 @@ const DecisionTable = () => {
           title: values.decisionName,
           statusData: values.statusData,
           startDate: values.startDate,
-          endDate: values.endDate
+          endDate: values.endDate,
         };
         response = await DecisionService.createDecision(apiData2);
         if (response.success) {
@@ -177,9 +180,10 @@ const DecisionTable = () => {
           userId: values.secretaryId,
           roleId: "6904d5f7105b6a336b819be5",
           position: "Thư ký chủ tọa",
-          status: "ACTIVE"
+          status: "ACTIVE",
         };
-        secretary = await ElectionParticipantsService.createParticipant(apiData3);
+        secretary =
+          await ElectionParticipantsService.createParticipant(apiData3);
       }
       setOpen(false);
       setEditMode(false);
@@ -192,41 +196,158 @@ const DecisionTable = () => {
     }
   };
 
-
-
   const handleViewDecision = async (record: string) => {
     try {
       setViewLoading(true);
       setViewModalOpen(true);
-      const data1 = await ElectionDocumentService.getDocumentByElectionId(record);
-      const filteredData = data1.filter((item: any) => item.type !== "voter-signed-ballots");
+      const data1 =
+        await ElectionDocumentService.getDocumentByElectionId(record);
+      const filteredData = data1.filter(
+        (item: any) => item.type !== "voter-signed-ballots"
+      );
       setDocument(filteredData);
-      const data3 = await ElectionEntitiesService.getElectionEntitiesByElectionId(record);
+      const data3 =
+        await ElectionEntitiesService.getElectionEntitiesByElectionId(record);
       setEntities(data3);
       const data4 = await ElectionParticipantsService.getByElectionId(record);
-      const roleId1List: any = data4.filter((p: any) => p.roleId.roleCode === "VOTER");
-      const otherRolesList: any = data4.filter((p: any) => p.roleId.roleCode !== "VOTER");
+      const roleId1List: any = data4.filter(
+        (p: any) => p.roleId.roleCode === "VOTER"
+      );
+      const otherRolesList: any = data4.filter(
+        (p: any) => p.roleId.roleCode !== "VOTER"
+      );
       setOrganize(otherRolesList ? otherRolesList : []);
       const data5 = await MeetingService.getByElectionId(record);
       setMeeting(data5.data[0] ? data5.data[0] : null);
       const v = await VotingRightService.getVotingRightByElectionId(record);
-      roleId1List.forEach((voter: any) => {
-        const votingRight = v.find(
-          (vr: any) => vr.voterId.userId === voter.userId
-        );
+      roleId1List.forEach((voter: unknown) => {
+        // Lấy userId từ voter (có thể là object với _id hoặc string/ObjectId)
+        const voterUserId = (voter as { userId?: string | { _id?: string } })
+          ?.userId;
+        const voterUserIdStr =
+          typeof voterUserId === "object" && voterUserId?._id
+            ? String(voterUserId._id)
+            : String(voterUserId || "");
+
+        // Tìm votingRight tương ứng
+        const votingRight = (v as unknown[]).find((vr: unknown) => {
+          const vrVoterId = (
+            vr as {
+              voterId?: { userId?: string | { _id?: string } };
+            }
+          )?.voterId;
+
+          if (vrVoterId && typeof vrVoterId === "object" && vrVoterId.userId) {
+            const vrUserId = vrVoterId.userId;
+            const vrUserIdStr =
+              typeof vrUserId === "object" && vrUserId?._id
+                ? String(vrUserId._id)
+                : String(vrUserId || "");
+            return vrUserIdStr === voterUserIdStr && vrUserIdStr !== "";
+          }
+
+          return false;
+        });
+
         if (votingRight) {
-          voter.percent = votingRight.shares;
-          voter.statusVoter = votingRight.voterId.status;   // <-- Thêm dòng này
+          (voter as { percent?: number; statusVoter?: string }).percent =
+            (votingRight as { shares?: number })?.shares || 0;
+          (voter as { percent?: number; statusVoter?: string }).statusVoter =
+            (votingRight as { voterId?: { status?: string } })?.voterId
+              ?.status || "INACTIVE";
         } else {
-          voter.percent = 0;
-          voter.statusVoter = "INACTIVE";                    // <-- hoặc null tuỳ ý bạn
+          (voter as { percent?: number; statusVoter?: string }).percent = 0;
+          (voter as { percent?: number; statusVoter?: string }).statusVoter =
+            "INACTIVE";
         }
       });
-      setVoters(roleId1List);
-      // Gọi API để lấy chi tiết decision
+      // Load election detail first to check statusData
       const decisionDetail = await DecisionService.getElectionById(record);
+      const electionData = decisionDetail.data;
+      const statusData = electionData?.statusData;
 
-      setViewDecisionData(decisionDetail.data);
+      // Only load voters from Excel if statusData is NOT APPROVED_SIGNED
+      // If APPROVED_SIGNED, all Excel voters are already in database
+      let excelVoters: unknown[] = [];
+      if (statusData !== "APPROVED_SIGNED") {
+        try {
+          const excelResponse =
+            await ElectionService.getVotersFromExcel(record);
+          if (
+            excelResponse?.data?.voters &&
+            Array.isArray(excelResponse.data.voters)
+          ) {
+            // Transform Excel voters to match the structure expected by ViewDecisionModal
+            excelVoters = excelResponse.data.voters.map(
+              (
+                excelVoter: {
+                  fullName?: string;
+                  email?: string;
+                  phone?: string;
+                  citizenId?: string;
+                  percentage?: number;
+                  isImportedFromExcel?: boolean;
+                  rowIndex?: number;
+                },
+                index: number
+              ) => ({
+                _id: `excel-voter-${record}-${excelVoter.rowIndex || index}`,
+                userId: {
+                  fullName: excelVoter.fullName || "",
+                  email: excelVoter.email || "",
+                  phone: excelVoter.phone || "",
+                  citizenId: excelVoter.citizenId || "",
+                },
+                roleId: {
+                  roleName: "Cử tri",
+                  roleCode: "VOTER",
+                },
+                percent: excelVoter.percentage || 0,
+                statusVoter: "PENDING",
+                isImportedFromExcel: true,
+                rowIndex: excelVoter.rowIndex,
+              })
+            );
+          }
+        } catch (excelErr: unknown) {
+          // If Excel API fails, just log and continue with database voters
+          console.warn("Could not load voters from Excel:", excelErr);
+        }
+      }
+
+      // Combine voters based on statusData
+      let allVoters: unknown[] = [];
+
+      if (statusData === "APPROVED_SIGNED") {
+        // If approved, only use database voters (Excel voters are already in database)
+        allVoters = roleId1List;
+      } else {
+        // If not approved, combine database and Excel voters, removing duplicates based on email
+        const voterMap = new Map<string, unknown>();
+
+        // First, add all database voters
+        roleId1List.forEach((voter: unknown) => {
+          const voterEmail = (voter as { userId?: { email?: string } })?.userId
+            ?.email;
+          if (voterEmail) {
+            voterMap.set(voterEmail.toLowerCase(), voter);
+          }
+        });
+
+        // Then, add Excel voters only if they don't exist in database (by email)
+        excelVoters.forEach((excelVoter: unknown) => {
+          const excelEmail = (excelVoter as { userId?: { email?: string } })
+            ?.userId?.email;
+          if (excelEmail && !voterMap.has(excelEmail.toLowerCase())) {
+            voterMap.set(excelEmail.toLowerCase(), excelVoter);
+          }
+        });
+
+        allVoters = Array.from(voterMap.values());
+      }
+
+      setVoters(allVoters);
+      setViewDecisionData(electionData);
     } catch (err: any) {
       notify(err.response?.data?.message, "error");
       setViewModalOpen(false);
@@ -241,10 +362,12 @@ const DecisionTable = () => {
       setEditLoading(true);
       setEditMode(true);
       const decisionDetail = await DecisionService.getElectionById(record._id);
-      const secrytary = await ElectionParticipantsService.getByElectionId(record._id);
+      const secrytary = await ElectionParticipantsService.getByElectionId(
+        record._id
+      );
       for (const a of secrytary) {
         if (a.roleId?._id === "6904d5f7105b6a336b819be5") {
-          setSecrytary(a); 
+          setSecrytary(a);
           break;
         }
       }
@@ -258,8 +381,8 @@ const DecisionTable = () => {
   };
 
   const handleView = async (id: string) => {
-    setRecordId(id)
-  }
+    setRecordId(id);
+  };
 
   const handleTableChange = (pagination: any) => {
     const { current, pageSize } = pagination;
@@ -281,14 +404,14 @@ const DecisionTable = () => {
       render: (record: Decision) => (
         <>
           <a>{record.decisionNumber}</a>
-
         </>
       ),
     },
     { title: "TÊN QUYẾT ĐỊNH", dataIndex: "decisionName" },
     {
       title: "TRẠNG THÁI",
-      dataIndex: "statusData", render: (statusData: string) => {
+      dataIndex: "statusData",
+      render: (statusData: string) => {
         const color =
           statusData === "APPROVED_SIGNED"
             ? "green"
@@ -300,16 +423,20 @@ const DecisionTable = () => {
                   ? "pink"
                   : statusData === "DRAFT"
                     ? "red"
-                    : "gray";
-        return <Tag
-          style={{ padding: 8}}
-          color={color}>{statusMap[statusData] || statusData || "Chờ duyệt"}</Tag>;
+                    : statusData === "WAIT_BKS_CONFIRMED"
+                      ? "purple"
+                      : "gray";
+        return (
+          <Tag style={{ padding: 8 }} color={color}>
+            {statusMap[statusData] || statusData || "Chờ duyệt"}
+          </Tag>
+        );
       },
     },
     {
       title: "NGÀY TẠO",
       dataIndex: "createdAt",
-      render: (date: Date | string) => formatDate(date) || "-"
+      render: (date: Date | string) => formatDate(date) || "-",
     },
     {
       title: "THAO TÁC",
@@ -321,11 +448,10 @@ const DecisionTable = () => {
               style={{ padding: 8, cursor: "pointer", border: "1px solid " }}
               icon={<EyeOutlined />}
               onClick={() => {
-                handleViewDecision(record._id)
+                handleViewDecision(record._id);
                 handleView(record._id);
-              }
-
-              }>
+              }}
+            >
               Xem và ký số
             </Tag>
           ) : (
@@ -334,11 +460,10 @@ const DecisionTable = () => {
               style={{ padding: 8, cursor: "pointer", border: "1px solid " }}
               icon={<EyeOutlined />}
               onClick={() => {
-                handleViewDecision(record._id)
+                handleViewDecision(record._id);
                 handleView(record._id);
-              }
-
-              }>
+              }}
+            >
               Xem chi tiết
             </Tag>
           )}
@@ -351,24 +476,22 @@ const DecisionTable = () => {
             />
           )}
 
-          {
-            record.status === "CLOSED" && (
-              <Button
-                size="small"
-                icon={<EyeOutlined />}
-                style={{ color: "green" }}
-                onClick={() => handleViewResult(record)}
-              >
-                Xem kết quả
-              </Button>
-            )
-          }
+          {record.status === "CLOSED" && (
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              style={{ color: "green" }}
+              onClick={() => handleViewResult(record)}
+            >
+              Xem kết quả
+            </Button>
+          )}
         </Space>
       ),
     },
   ];
   return (
-    <Card className="decision-table-card" style={{ padding: '20px' }}>
+    <Card className="decision-table-card" style={{ padding: "20px" }}>
       <div className="decision-toolbar">
         <Input
           placeholder="Tìm kiếm theo tên quyết định..."
@@ -382,7 +505,11 @@ const DecisionTable = () => {
             value={statusFilter}
             onChange={(value) => {
               setStatusFilter(value); // ✅ Khi đổi, useEffect sẽ gọi lại API
-              setPagination({ current: 1, pageSize: pagination.pageSize, total: pagination.total });
+              setPagination({
+                current: 1,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+              });
             }}
             style={{ width: 180 }}
           >
@@ -390,6 +517,9 @@ const DecisionTable = () => {
             <Option value="APPROVED_SIGNED">Đã phê duyệt</Option>
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
+            <Option value="WAIT_BKS_CONFIRMED">
+              Chờ Ban Kiểm Soát xác nhận
+            </Option>
             <Option value="REJECTED">Yêu cầu chỉnh sửa</Option>
             <Option value="DRAFT">Lưu nháp</Option>
           </Select>
@@ -428,7 +558,6 @@ const DecisionTable = () => {
             }}
             onChange={handleTableChange} // ✅ Table gửi object pagination đúng định dạng
           />
-
         )}
       </Spin>
       {/* 🧩 Modal tạo/chỉnh sửa nghị quyết */}
@@ -455,7 +584,7 @@ const DecisionTable = () => {
         }}
         onSign={() => {
           loadDecisions(pagination.current, pagination.pageSize);
-          handleViewDecision(recordId)
+          handleViewDecision(recordId);
         }}
         data={viewDecisionData}
         loading={viewLoading}
@@ -496,7 +625,6 @@ const DecisionTable = () => {
           }
         }}
       /> */}
-
     </Card>
   );
 };
