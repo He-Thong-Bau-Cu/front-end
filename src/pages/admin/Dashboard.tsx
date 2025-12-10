@@ -13,8 +13,8 @@ import { progress } from 'framer-motion';
 import { PROGRESS_STATUS, STATUS_ELECTION } from '@/enums/STATUS';
 
 const Dashboard = () => {
-  const {showLoading, hideLoading} = useLoading();
-  const {notify} = useNotification();
+  const { showLoading, hideLoading } = useLoading();
+  const { notify } = useNotification();
   const [statisticsCards, setStatisticsCards] = useState<Stats[]>([]);
   const [resultDistributionChart, setResultDistributionChart] = useState<PieData[]>([]);
   const [participationRateChart, setParticipationRateChart] = useState<LineData[]>([]);
@@ -31,7 +31,7 @@ const Dashboard = () => {
       fetchRecentActivities();
     } catch (error) {
       console.log(error);
-    }finally{
+    } finally {
       setTimeout(() => {
         hideLoading();
       }, 1000);
@@ -41,13 +41,17 @@ const Dashboard = () => {
   const fetchStatistics = async () => {
     try {
       const response = await SystemService.getStatisticsCards();
-      if(response.success){
+      if (response.success) {
         let dataSat = response.data.map((item: any) => {
           const iconKey = item.icon?.toLowerCase() as keyof typeof IconMap;
           const colorKey = item.icon?.toLowerCase() as keyof typeof IconColor;
+          const value =
+            item.unit === "%"
+              ? parseFloat(item.value.toFixed(2)) // 2 số thập phân
+              : item.value;
           return {
             title: item.title,
-            value: item.value,
+            value: value,
             icon: IconMap[iconKey],
             color: IconColor[colorKey],
           }
@@ -61,8 +65,8 @@ const Dashboard = () => {
 
   const fetchParticipationRate = async () => {
     try {
-      const response  = await SystemService.getParticipationRateChart();
-      if(response.success){
+      const response = await SystemService.getParticipationRateChart();
+      if (response.success) {
         setParticipationRateChart(response.data as LineData[]);
       }
     } catch (error) {
@@ -73,11 +77,11 @@ const Dashboard = () => {
   const fetchResultDistributionChart = async () => {
     try {
       const response = await SystemService.getResultDistributionChart();
-      if(response.success){
+      if (response.success) {
         let data = [];
         const dataResult = response.data;
-        data.push({name: "Hoạt động", value: dataResult.active})
-        data.push({name: "Chưa hoạt động", value: dataResult.inactive})
+        data.push({ name: "Hoạt động", value: dataResult.active })
+        data.push({ name: "Chưa hoạt động", value: dataResult.inactive })
         setResultDistributionChart(data as PieData[]);
       }
     } catch (error) {
@@ -87,7 +91,7 @@ const Dashboard = () => {
   const fetchOngoingPolls = async () => {
     try {
       const response = await SystemService.getOngoingPolls();
-      if(response.success){
+      if (response.success) {
         let data = response.data.map((item: any) => {
           let statusKey = item.statusData as keyof typeof STATUS_ELECTION;
           let progressKey = item.statusData as keyof typeof PROGRESS_STATUS;
@@ -108,7 +112,7 @@ const Dashboard = () => {
   const fetchRecentActivities = async () => {
     try {
       const response = await SystemService.getRecentActivities();
-      if(response.success){
+      if (response.success) {
         let data = response.data.map((item: any) => {
           return {
             title: item.activity,
@@ -122,20 +126,20 @@ const Dashboard = () => {
     }
   }
 
-    return (
-        <>
-            <DashboardStats stats={statisticsCards} />
-            <DashboardCharts lineData={participationRateChart} pieData={resultDistributionChart}/>
-            <div style={{ display: 'flex', gap: '24px' }}>
-                <div style={{ flex: 2 }}>
-                    <DashboardElections elections={ongoingPolls}/>
-                </div>
-                <div style={{ flex: 1 }}>
-                    <DashboardActivity activities={recentActivities}/>
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <>
+      <DashboardStats stats={statisticsCards} />
+      <DashboardCharts lineData={participationRateChart} pieData={resultDistributionChart} />
+      <div style={{ display: 'flex', gap: '24px' }}>
+        <div style={{ flex: 2 }}>
+          <DashboardElections elections={ongoingPolls} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <DashboardActivity activities={recentActivities} />
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Dashboard;

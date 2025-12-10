@@ -1,5 +1,5 @@
 import React, { use, useEffect, useState } from "react";
-import { Modal, Form, Input, Select, Button, Row, Col } from "antd";
+import { Modal, Form, Input, Select, Button, Row, Col, Switch } from "antd";
 import { STATUS_ROLE, USER_ROLE } from "@/enums/STATUS";
 import SystemService from "@/services/SystemService";
 
@@ -20,6 +20,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [roleData, setRoleData] = useState([]);
+  const chairmanValue = Form.useWatch("chairmanOfTheBoardOfDirectors", form);
 
   const fetchRoleData = async () => {
     try {
@@ -45,13 +46,13 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   useEffect(() => {
     fetchRoleData();
     if (initialValues) {
-      console.log('run1')
       initialValues.userId = initialValues._id;
       initialValues.role = initialValues.roleId._id;
+      initialValues.chairmanOfTheBoardOfDirectors = initialValues.chairmanOfTheBoardOfDirectors ?? false;
       form.setFieldsValue(initialValues);
     } else {
-      console.log('run2')
       form.resetFields();
+      form.setFieldsValue({ chairmanOfTheBoardOfDirectors: false });
     }
   }, [initialValues, form]);
 
@@ -187,6 +188,19 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
+
+        <Form.Item
+          label="Chủ tịch Hội đồng quản trị"
+          name="chairmanOfTheBoardOfDirectors"
+          valuePropName="checked"
+          initialValue={false}
+        >
+          <Switch
+            style={{
+              backgroundColor: chairmanValue ? "#52c41a" : undefined
+            }}
+          />
+        </Form.Item>
 
         <Form.Item
           style={{ textAlign: "right", marginTop: 24, marginBottom: 0 }}

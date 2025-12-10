@@ -13,12 +13,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const { Text, Title } = Typography;
 
+
 export default function AuthorizationRequestForm() {
     const { state } = useLocation();
     const navigate = useNavigate();
 
     const selectedUser = state?.selectedUser;
-    const electionId = state?.electionId;
+    const electionId = localStorage.getItem("currentElectionId") || state?.electionId;
+
     const delegatorId = state?.delegatorId;
 
     const [form] = Form.useForm();
@@ -26,6 +28,11 @@ export default function AuthorizationRequestForm() {
     const [tempPayload, setTempPayload] = useState<any>(null);
 
     const [delegationType, setDelegationType] = useState<"ELECTION" | "LONG_TERM">("ELECTION");
+
+    const [startText, setStartText] = useState<string>("");
+    const [endText, setEndText] = useState<string>("");
+
+
 
     const { showLoading, hideLoading } = useLoading();
     const { notify } = useNotification();
@@ -35,31 +42,50 @@ export default function AuthorizationRequestForm() {
         return null;
     }
 
-    // --------------------- HANDLE SUBMIT ----------------------
+    if (!electionId || typeof electionId !== "string" || electionId.trim() === "") {
+        notify("Không tìm thấy thông tin cuộc bầu cử! Vui lòng quay lại trang trước.", "error");
+        navigate(-1);
+        return null;
+    }
+
+
+
     const handleSubmit = async (values: any) => {
-
-        const payload: any = {
-            delegationType: values.delegationType,
-            electionId,
-            delegatorId,
-            delegateId: selectedUser._id,
-            delegateReason: values.reason,
-            signature: null,
-            status: "DRAFT",
-        };
-
-        if (values.delegationType === "LONG_TERM") {
-            payload.startDate = values.startDate.toISOString();
-            payload.endDate = values.endDate.toISOString();
-        }
-
         try {
             showLoading();
+
+            if (!electionId || typeof electionId !== "string" || electionId.trim() === "") {
+                notify("Không tìm thấy thông tin cuộc bầu cử!", "error");
+                hideLoading();
+                return;
+            }
+
+            if (!delegatorId || typeof delegatorId !== "string" || delegatorId.trim() === "") {
+                notify("Không tìm thấy thông tin người ủy quyền!", "error");
+                hideLoading();
+                return;
+            }
+
+            // Payload KHÔNG CÓ phần file chứng minh
+            const payload: any = {
+                delegationType: values.delegationType,
+                electionId,
+                delegatorId,
+                delegateId: selectedUser._id,
+                delegateReason: values.reason,
+                signature: null,
+                status: "DRAFT",
+            };
+
+            if (values.delegationType === "LONG_TERM") {
+                payload.startDate = values.startDate.format("YYYY-MM-DD");
+                payload.endDate = values.endDate.format("YYYY-MM-DD");
+            }
 
             const draft = await DelegationService.add(payload);
 
             if (!draft || !draft._id) {
-                notify("Không thể tạo bản nháp!", "error");
+                notify("Không thể tạo bản nháp ủy quyền!", "error");
                 hideLoading();
                 return;
             }
@@ -67,13 +93,13 @@ export default function AuthorizationRequestForm() {
             setTempPayload({ draftId: draft._id });
             setModalOpen(true);
 
-        } catch (err) {
-            console.error(err);
-            notify("Lỗi khi tạo ủy quyền bản nháp!", "error");
+        } catch (error: any) {
+            notify("Có lỗi xảy ra khi gửi yêu cầu ủy quyền!", "error");
         } finally {
             hideLoading();
         }
     };
+
 
     // -------------------- NORMALIZE PAYLOAD -----------------
     function normalizeDelegationPayload(data: any) {
@@ -92,12 +118,21 @@ export default function AuthorizationRequestForm() {
 
             if (!tempPayload?.draftId) {
                 notify("Không tìm thấy bản nháp để ký!", "error");
+                hideLoading();
+                return;
+            }
+
+            // Validate electionId
+            if (!electionId || typeof electionId !== "string" || electionId.trim() === "") {
+                notify("Không tìm thấy thông tin cuộc bầu cử! Vui lòng thử lại.", "error");
+                hideLoading();
                 return;
             }
 
             const oldData = await DelegationService.getDelegationById(tempPayload.draftId);
             if (!oldData) {
                 notify("Không tìm thấy dữ liệu ủy quyền!", "error");
+                hideLoading();
                 return;
             }
 
@@ -106,7 +141,7 @@ export default function AuthorizationRequestForm() {
             const formData = new FormData();
             formData.append("file", file);
             formData.append("password", password);
-            formData.append("electionId", electionId);
+            formData.append("electionId", electionId.trim());
             formData.append("delegationId", tempPayload.draftId);
 
             const signRes = await DelegationService.delegationApproveVoter(formData);
@@ -142,6 +177,9 @@ export default function AuthorizationRequestForm() {
             hideLoading();
         }
     };
+
+
+
 
     // --------------------- RENDER ---------------------------
     return (
@@ -228,9 +266,49 @@ export default function AuthorizationRequestForm() {
                                     <DatePicker
                                         style={{ width: "100%" }}
                                         format="DD/MM/YYYY"
-                                        disabledDate={(cur) => cur && cur <= dayjs().startOf("day")}
+                                        inputReadOnly={false}
+                                        allowClear={false}
+
+                                        value={startText ? dayjs(startText, "DD/MM/YYYY", true) : null}
+
+                                        disabledDate={(cur) => cur && cur < dayjs().startOf("day")}
+
+                                        onChange={(value) => {
+                                            if (!value) return;
+                                            const formatted = value.format("DD/MM/YYYY");
+                                            setStartText(formatted);
+                                            form.setFieldValue("startDate", value);
+
+                                            if (value.isBefore(dayjs(), "day")) {
+                                                notify("Ngày bắt đầu không được nhỏ hơn ngày hiện tại!", "error");
+                                            }
+                                        }}
+
+                                        onBlur={(e) => {
+                                            const text = (e.target as HTMLInputElement).value.trim();
+                                            if (!text) return;
+
+                                            const parsed = dayjs(text, "DD/MM/YYYY", true);
+                                            setStartText(text);
+
+                                            if (!parsed.isValid()) {
+                                                notify("Ngày bắt đầu sai định dạng!", "error");
+                                                return;
+                                            }
+
+                                            form.setFieldValue("startDate", parsed);
+
+                                            if (parsed.isBefore(dayjs(), "day")) {
+                                                notify("Ngày bắt đầu không được nhỏ hơn ngày hiện tại!", "error");
+                                            }
+                                        }}
+
+                                        onInput={(e) => {
+                                            setStartText((e.target as HTMLInputElement).value);
+                                        }}
                                     />
                                 </Form.Item>
+
                             </Col>
 
                             <Col xs={24} md={12}>
@@ -255,12 +333,80 @@ export default function AuthorizationRequestForm() {
                                     <DatePicker
                                         style={{ width: "100%" }}
                                         format="DD/MM/YYYY"
+                                        inputReadOnly={false}
+                                        allowClear={false}
+
+                                        // GIỮ NGUYÊN TEXT USER NHẬP, KHÔNG TỰ NHẢY FORMAT
+                                        value={endText ? dayjs(endText, "DD/MM/YYYY", true) : null}
+
                                         disabledDate={(cur) => {
                                             const start = form.getFieldValue("startDate");
-                                            if (!start) return cur && cur <= dayjs().startOf("day");
+                                            if (!start) return cur && cur < dayjs().startOf("day");
                                             return cur && cur <= dayjs(start).startOf("day");
                                         }}
+
+                                        // Khi chọn từ calendar
+                                        onChange={(value) => {
+                                            if (!value) return;
+
+                                            const formatted = value.format("DD/MM/YYYY");
+                                            setEndText(formatted);
+                                            form.setFieldValue("endDate", value);
+
+                                            const start = form.getFieldValue("startDate");
+
+                                            // Validate: end phải > start
+                                            if (start && value.isSame(start, "day")) {
+                                                notify("Ngày kết thúc không được trùng ngày bắt đầu!", "error");
+                                            }
+                                            if (start && value.isBefore(start, "day")) {
+                                                notify("Ngày kết thúc phải lớn hơn ngày bắt đầu!", "error");
+                                            }
+                                        }}
+
+                                        // Khi gõ text xong + blur
+                                        onBlur={(e) => {
+                                            const text = (e.target as HTMLInputElement).value.trim();
+                                            if (!text) return;
+
+                                            setEndText(text);
+
+                                            const parsed = dayjs(text, "DD/MM/YYYY", true);
+
+                                            // Validate định dạng
+                                            if (!parsed.isValid()) {
+                                                notify("Ngày kết thúc sai định dạng!", "error");
+                                                return;
+                                            }
+
+                                            const start = form.getFieldValue("startDate");
+
+                                            // Validate < hôm nay
+                                            if (parsed.isBefore(dayjs(), "day")) {
+                                                notify("Ngày kết thúc không được nhỏ hơn ngày hiện tại!", "error");
+                                                return;
+                                            }
+
+                                            // Validate <= start
+                                            if (start && parsed.isSame(start, "day")) {
+                                                notify("Ngày kết thúc không được trùng ngày bắt đầu!", "error");
+                                                return;
+                                            }
+                                            if (start && parsed.isBefore(start, "day")) {
+                                                notify("Ngày kết thúc phải lớn hơn ngày bắt đầu!", "error");
+                                                return;
+                                            }
+
+                                            // Set value hợp lệ vào form
+                                            form.setFieldValue("endDate", parsed);
+                                        }}
+
+                                        // Khi đang gõ input
+                                        onInput={(e) => {
+                                            setEndText((e.target as HTMLInputElement).value);
+                                        }}
                                     />
+
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -275,6 +421,7 @@ export default function AuthorizationRequestForm() {
                 >
                     <Input.TextArea rows={3} />
                 </Form.Item>
+
 
                 {/* Agreement */}
                 <Form.Item

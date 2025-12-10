@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import "../../../style/preside/Reports.model.css";
 import ReportCard from "./ReportCard";
 import ReportDetailModal from "./ReportDetailModal";
+import { getUserLogin } from "@/utils/auth";
 
 interface ReportListProps {
   filter: string;
@@ -33,7 +34,11 @@ const iconMap: Record<string, React.ReactNode> = {
 const ReportList: React.FC<ReportListProps> = ({ filter, searchValue, electionId }) => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSystemPreside, setIsSystemPreside] = useState(true);
+  const [currentElectionId, setCurrentElectionId] = useState<string | undefined>(undefined);
+  const [userFetched, setUserFetched] = useState(false);
   const { notify } = useNotification();
+
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(6);
@@ -41,6 +46,33 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue, electionId
   // Modal detail state
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailData, setDetailData] = useState<any>(null);
+
+  // Lấy thông tin user và electionId
+  useEffect(() => {
+    const fetchUserAndElectionId = async () => {
+      try {
+        // Clear data trước khi fetch user để tránh hiển thị data sai
+        setReports([]);
+
+        const userData = await getUserLogin();
+        const isSystemPresideValue = userData?.chairmanOfTheBoardOfDirectors === true;
+        setIsSystemPreside(isSystemPresideValue);
+
+        // Nếu không phải system preside, lấy electionId từ localStorage
+        if (!isSystemPresideValue) {
+          const electionId = localStorage.getItem("currentElectionId") || undefined;
+          setCurrentElectionId(electionId);
+        } else {
+          setCurrentElectionId(undefined);
+        }
+        setUserFetched(true);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUserFetched(true);
+      }
+    };
+    fetchUserAndElectionId();
+  }, []);
 
   // 👉 NEW: fetch detail by ID
   const openDetail = async (item: any) => {
@@ -76,26 +108,23 @@ const ReportList: React.FC<ReportListProps> = ({ filter, searchValue, electionId
 
   // Load report list
   useEffect(() => {
+    // Chỉ load khi đã fetch user xong
+    if (!userFetched) return;
+
     const load = async () => {
       try {
         setLoading(true);
-        if (electionId) {
-          // Sử dụng API getReportByElectionId khi có electionId
-          const res = await ReportService.getReportByElectionId(electionId);
-          setReports(res?.data || []);
-        } else {
-          // Lấy tất cả reports khi không có electionId
-          const res = await ReportService.getAllReport();
-          setReports(res?.data || []);
-        }
-      } catch (err: any) {
-        notify(err.response?.data?.message || "Lỗi khi tải danh sách báo cáo", "error");
+        // Nếu không phải system preside, truyền electionId vào API
+        const res = await ReportService.getAllReport(!isSystemPreside ? currentElectionId : undefined);
+        setReports(res?.data || []);
+      } catch (err) {
+        console.error("Không thể tải báo cáo:", err);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [electionId]);
+  }, [userFetched, isSystemPreside, currentElectionId]);
 
   // Filter + Search
   // Filter + Search

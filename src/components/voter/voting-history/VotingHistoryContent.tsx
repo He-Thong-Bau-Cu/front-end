@@ -287,6 +287,7 @@ const VotingHistoryContent = () => {
                                         const mapYesNoAbstain: any = {
                                             1: "Đồng ý",
                                             0: "Không đồng ý",
+
                                         };
 
                                         return (

@@ -115,7 +115,9 @@ export default function VerifyEmailScreen() {
         }
         if (decoded.role === USER_ROLE.ADMIN) {
           navigate(PATH.ADMIN);
-        } else if (decoded.role === USER_ROLE.PRESIDE) {
+        } else if (decoded.role === USER_ROLE.PRESIDE && user.chairmanOfTheBoardOfDirectors) {
+          decoded.permissions.push(PATH.PRESIDE_APPROVED_REQ_FROM_USER);
+          localStorage.setItem("permissions", JSON.stringify(decoded.permissions));
           navigate(PATH.PRESIDE);
         } else {
           const user = await getUserLogin();
@@ -134,8 +136,6 @@ export default function VerifyEmailScreen() {
         error?.response?.data?.message ||
         error?.message ||
         "Đã có lỗi xảy ra. Vui lòng thử lại.";
-      console.error("Error message from response:", errorMessage);
-      console.error("Error response:", error?.response?.data);
       notify(errorMessage, "error");
     } finally {
       hideLoading();
@@ -397,7 +397,7 @@ export default function VerifyEmailScreen() {
             fontWeight: "700",
           }}
         >
-          Xác thực Email
+          Xác thực tài khoản của bạn
         </Title>
 
         <Text
@@ -409,18 +409,6 @@ export default function VerifyEmailScreen() {
           }}
         >
           Nhập mã xác thực 6 chữ số từ ứng dụng xác thực
-        </Text>
-
-        <Text
-          style={{
-            color: "#7cb342",
-            fontWeight: 600,
-            marginTop: 4,
-            marginBottom: 8,
-            display: "block",
-          }}
-        >
-          {email}
         </Text>
 
         <Text

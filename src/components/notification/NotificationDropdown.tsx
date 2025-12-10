@@ -93,12 +93,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "12px 16px",
-          borderBottom: "1px solid #f0f0f0",
-          background: "#fafcff",
+          borderBottom: "1px solid rgba(124, 179, 66, 0.2)",
+          background: "linear-gradient(135deg, rgba(232, 245, 233, 0.95) 0%, rgba(241, 248, 244, 0.95) 100%)",
         }}
       >
-        <span style={{ fontWeight: 600, fontSize: 16 }}>
-          <BellOutlined style={{ color: "#1976d2", marginRight: 8 }} /> Thông báo
+        <span style={{ fontWeight: 600, fontSize: 16, color: "#124d2d" }}>
+          <BellOutlined style={{ color: "#7cb342", marginRight: 8 }} /> Thông báo
         </span>
 
         <Tooltip title="Đánh dấu tất cả là đã đọc">
@@ -107,6 +107,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             type="link"
             onClick={handleReadAllNotifications}
             disabled={unreadCount === 0}
+            style={{ color: "#7cb342" }}
           >
             Đánh dấu đã đọc tất cả
           </Button>
@@ -124,20 +125,37 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             renderItem={(item) => (
               <List.Item
                 style={{
-                  background: item.read ? "#fff" : "#e3f2fd",
+                  background: item.read ? "#fff" : "rgba(232, 245, 233, 0.5)",
                   cursor: "pointer",
                   borderLeft: item.read
                     ? "4px solid transparent"
-                    : "4px solid #1976d2",
+                    : "4px solid #7cb342",
                   paddingLeft: 12,
+                  transition: "all 0.2s ease",
                 }}
                 onClick={() => handleNotificationClick(item)}
+                onMouseEnter={(e) => {
+                  if (item.read) {
+                    e.currentTarget.style.background = "#f5f5f5";
+                  } else {
+                    e.currentTarget.style.background = "rgba(232, 245, 233, 0.8)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (item.read) {
+                    e.currentTarget.style.background = "#fff";
+                  } else {
+                    e.currentTarget.style.background = "rgba(232, 245, 233, 0.5)";
+                  }
+                }}
               >
                 <List.Item.Meta
                   avatar={
                     <Avatar
                       style={{
-                        background: item.read ? "#bdbdbd" : "#1976d2",
+                        background: item.read
+                          ? "linear-gradient(135deg, #bdbdbd 0%, #9e9e9e 100%)"
+                          : "linear-gradient(135deg, #7cb342 0%, #558b2f 100%)",
                       }}
                       icon={<BellOutlined />}
                     />
@@ -162,7 +180,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#fafcff",
+            background: "linear-gradient(135deg, rgba(232, 245, 233, 0.95) 0%, rgba(241, 248, 244, 0.95) 100%)",
+            borderTop: "1px solid rgba(124, 179, 66, 0.2)",
           }}
         >
           <Tooltip title="Xóa tất cả thông báo">

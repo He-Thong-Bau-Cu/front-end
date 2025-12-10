@@ -1,7 +1,7 @@
 import logo from "@/assets/logo.png";
 import React, { useEffect, useState } from 'react';
 import { Avatar, Badge, Button, Dropdown, Layout, message, Popover, Space, Typography } from 'antd';
-import { BellFilled, IdcardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { BellFilled, HomeOutlined, IdcardOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import '../../style/Header.model.css';
 import { getUserLogin } from '@/utils/auth';
 import { User } from '@/types/User.interface';
@@ -11,6 +11,7 @@ import NotificationDropdown, { INotification } from "../notification/Notificatio
 import NotificationListener from "../notification/NotificationListener";
 import NotificationService from "@/services/NotificationService";
 import { useLoading } from "@/contexts/LoadingContext";
+import { useNavigate } from 'react-router-dom';
 
 const { Header } = Layout;
 const { Title, Text } = Typography;
@@ -25,6 +26,8 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const { showLoading, hideLoading } = useLoading();
     const [userId, setUserId] = useState<string | null>(null);
+    const [isSystemPreside, setIsSystemPreside] = useState<boolean>(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedUserId = localStorage.getItem("userId");
@@ -36,6 +39,8 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
             try {
                 const userData = await getUserLogin();
                 setUser(userData as User);
+                // Case 2: chairmanOfTheBoardOfDirectors = false
+                setIsSystemPreside(userData?.chairmanOfTheBoardOfDirectors || false);
             } catch (error) {
                 message.error("Không thể tải thông tin người dùng!");
             }
@@ -104,6 +109,23 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
 
 
                 <Space size={10} align="center">
+                    {/* Case 2: Hiển thị icon home khi không phải system preside */}
+                    {!isSystemPreside && (
+                        <Button
+                            type="text"
+                            icon={<HomeOutlined style={{ fontSize: '20px' }} />}
+                            onClick={() => navigate('/home')}
+                            style={{
+                                width: '40px',
+                                height: '40px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#7cb342',
+                                padding: 0,
+                            }}
+                        />
+                    )}
                     <Popover
                         placement="bottomRight"
                         content={
@@ -116,7 +138,7 @@ const VoterHeader: React.FC<VoterHeaderProps> = ({ title }) => {
                         trigger="click"
                         overlayClassName="notification-popover"
                     >
-                        <Badge count={notifications.length} size="small">
+                        <Badge count={notifications.filter((n) => !n.read).length} size="small">
                             <BellFilled
                                 style={{
                                     fontSize: '20px',

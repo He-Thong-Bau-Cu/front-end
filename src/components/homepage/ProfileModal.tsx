@@ -59,6 +59,39 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [certificateForm] = Form.useForm();
   const [u, setU] = useState<User | null>(null);
+  const hasCa = !!((u as any)?.signCa && (((u as any)?.issueCa) || ((u as any)?.issueCA)));
+  useEffect(() => {
+    if (user) {
+      setU(user);
+      certificateForm.setFieldsValue({
+        ...(user as any),
+        countryName: "VN",
+      });
+    }
+  }, [user, certificateForm]);
+
+  const handleDownloadCa = async () => {
+    try {
+      if (!u?.signCa) {
+        notify("Không tìm thấy chứng thư số", "warning");
+        return;
+      }
+      showLoading();
+      const blob = await FileService.getSignedFile(u.signCa);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "certificate.p12";
+      link.click();
+      setTimeout(() => window.URL.revokeObjectURL(url), 500);
+      notify("Đang tải chứng thư số", "success");
+    } catch (error: any) {
+      console.error(error);
+      notify("Không thể tải chứng thư số", "error");
+    } finally {
+      hideLoading();
+    }
+  };
 
 
   // Tính độ mạnh của mật khẩu
@@ -102,12 +135,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
         let signerInfo = {
           commonName: values.fullName,
           organizationName: values.organizationName,
-          countryName: values.countryName,
+          countryName: 'VN',
           stateOrProvinceName: values.stateOrProvinceName,
           localityName: values.address,
           emailAddress: values.email,
         }
-        console.log(values.passwordCa)
         const password = values.passwordCa;
         const body = { signerInfo, password };
         const response = await CaService.CaIssue(body);
@@ -172,7 +204,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
     { key: "info", label: "Thông tin Cá nhân", icon: <UserOutlined /> },
     { key: "avatar", label: "Ảnh Đại diện", icon: <PictureOutlined /> },
     { key: "security", label: "Bảo mật", icon: <LockOutlined /> },
-    // { key: "certificate", label: "Đăng ký Chứng thư số", icon: <FileProtectOutlined /> },
+    { key: "certificate", label: "Đăng ký Chứng thư số", icon: <FileProtectOutlined /> },
     // { key: "notification", label: "Cài đặt Thông báo", icon: <BellOutlined /> },
   ];
 
@@ -188,7 +220,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
       open={open}
       onCancel={onClose}
       footer={null}
-      width={660}
+      width={820}
       centered
       className="profile-modal"
       style={{
@@ -259,7 +291,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                   initialValues={user || {}}
                   style={{ marginTop: 10 }}
                 >
-                  <Row gutter={16}>
+                  <Row gutter={32}>
                     <Col span={12}>
                       <Form.Item
                         label="Họ và tên"
@@ -546,82 +578,109 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                 <Title level={4} style={{ color: "#124d2d" }}>
                   Đăng ký Chứng thư số
                 </Title>
-                <Form layout="vertical" form={certificateForm}
-                  initialValues={user || {}}
-                  style={{ marginTop: 20 }}>
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        label="Họ và tên"
-                        name="fullName"
-                        rules={[{ required: true, message: "Nhập họ và tên" }]}
+
+                {!(u?.signCa && u?.issueCa) ? (
+                  <>
+                    <Form layout="vertical" form={certificateForm}
+                      initialValues={user || {}}
+                      style={{ marginTop: 20 }}>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <Form.Item
+                            label="Tên định danh"
+                            name="fullName"
+                            rules={[{ required: true, message: "Nhập họ và tên" }]}
+                          >
+                            <Input value={u?.fullName} disabled />
+                          </Form.Item>
+                          <Form.Item label="Địa chỉ email"
+                            rules={[{ required: true, message: "Nhập email" }]}
+                            name="email">
+                            <Input value={u?.email} disabled />
+                          </Form.Item>
+
+                          <Form.Item label="Địa chỉ"
+                            name="address"
+                            rules={[{ required: true, message: "Nhập địa chỉ" }]}
+                          >
+                            <Input value={u?.address} />
+                          </Form.Item>
+
+                          <Form.Item
+                            label="Quốc gia"
+                            name="countryName"
+                            rules={[{ required: true, message: "Nhập tên quốc gia!" }]}
+                            initialValue="VN"
+                          >
+                            <Input disabled />
+                          </Form.Item>
+
+                        </Col>
+
+                        <Col span={12}>
+                          <Form.Item
+                            label="Tổ chức"
+                            name="organizationName"
+                            rules={[{ required: true, message: "Nhập tên tổ chức" }]}
+                          >
+                            <Input placeholder="VD:  " />
+                          </Form.Item>
+                          <Form.Item
+                            label="Tỉnh/Thành phố"
+                            name="stateOrProvinceName"
+                            rules={[{ required: true, message: "Nhập quốc tịch" }]}
+                          >
+                            <Input placeholder="VD: Hà Nội" />
+                          </Form.Item>
+                          <Form.Item
+                            label="Quận/Huyện"
+                            name="localityName"
+                            rules={[{ required: true, message: "Nhập Quận/Huyện" }]}
+                          >
+                            <Input placeholder="VD: Thạch Thất" />
+                          </Form.Item>
+
+
+                          <Form.Item
+                            label="Mật khẩu chứng thư"
+                            name="passwordCa"
+                            rules={[{ required: true, message: "Nhập mật khẩu chứng thư!" }]}
+                          >
+                            <Input.Password placeholder="********" />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Form>
+
+                    <div style={{ textAlign: "right", marginTop: 16 }}>
+                      <Button
+                        type="primary"
+                        onClick={handleSubmit}
+                        style={{
+                          background: "#5C9D52",
+                          border: "none",
+                          fontWeight: 600,
+                        }}
                       >
-                        <Input value={u?.fullName} />
-                      </Form.Item>
-                      <Form.Item label="Đai chỉ email"
-                        rules={[{ required: true, message: "Nhập email" }]}
-                        name="email">
-                        <Input value={u?.email} />
-                      </Form.Item>
-
-                      <Form.Item label="Địa chỉ"
-                        name="address"
-                        rules={[{ required: true, message: "Nhập địa chỉ" }]}
-                      >
-                        <Input value={u?.address} />
-                      </Form.Item>
-
-                      <Form.Item
-                        label="Quốc tịch"
-                        name="countryName"
-                        rules={[{ required: true, message: "Nhập tên quốc gia!" }]}
-                      >
-                        <Input placeholder="VD: Việt Nam" />
-                      </Form.Item>
-
-                    </Col>
-
-                    <Col span={12}>
-                      <Form.Item
-                        label="Tổ chức"
-                        name="organizationName"
-                        rules={[{ required: true, message: "Nhập tên tổ chức" }]}
-                      >
-                        <Input placeholder="VD:  " />
-                      </Form.Item>
-                      <Form.Item
-                        label="Dân tộc"
-                        name="stateOrProvinceName"
-                        rules={[{ required: true, message: "Nhập quốc tịch" }]}
-                      >
-                        <Input placeholder="VD: Kinh" />
-                      </Form.Item>
-
-
-                      <Form.Item
-                        label="Mật khẩu chứng thư số"
-                        name="passwordCa"
-                        rules={[{ required: true, message: "Nhập mật khẩu chứng thư!" }]}
-                      >
-                        <Input.Password placeholder="********" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Form>
-
-                <div style={{ textAlign: "right", marginTop: 16 }}>
-                  <Button
-                    type="primary"
-                    onClick={handleSubmit}
-                    style={{
-                      background: "#5C9D52",
-                      border: "none",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Đăng ký chứng thư số
-                  </Button>
-                </div>
+                        Đăng ký chứng thư số
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: "right", marginTop: 16 }}>
+                    <Button
+                      type="primary"
+                      onClick={handleDownloadCa}
+                      style={{
+                        background: "#5C9D52",
+                        border: "none",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Tải chứng thư số
+                    </Button>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

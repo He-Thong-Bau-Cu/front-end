@@ -34,7 +34,7 @@ const ReportActivityCard: React.FC<ReportActivityCardProps> = ({
             <StarOutlined className="report-activity-card-title-icon" />
             Hoạt động gần đây
           </div>
-          <ReloadOutlined className="report-activity-card-refresh-icon" />
+          {/* <ReloadOutlined className="report-activity-card-refresh-icon" /> */}
         </div>
       }
     >

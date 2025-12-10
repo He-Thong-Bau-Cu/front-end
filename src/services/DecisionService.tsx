@@ -28,6 +28,7 @@ class DecisionService extends BaseService {
         textSearch: params?.textSearch,
         decisionName: params?.decisionName,
         decisionNumber: params?.decisionNumber,
+        electionId: params?.electionId,
       };
 
       const response = await this.api.post<any>(

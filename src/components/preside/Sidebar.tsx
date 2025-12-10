@@ -19,6 +19,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
+    const permissionsElections = JSON.parse(localStorage.getItem("permissionsElections") || "[]");
 
     const menuItems = [
         {
@@ -32,6 +33,11 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             label: "Quản lý quyết định",
         },
         {
+            key: "/preside/decision-approval",
+            icon: <FileTextOutlined />,
+            label: "Phê duyệt quyết định",
+        },
+        {
             key: "/preside/authorization",
             icon: <TeamOutlined />,
             label: "Phê duyệt ủy quyền",
@@ -41,7 +47,7 @@ const Sideber: React.FC<SideberProps> = ({ onMenuSelect }) => {
             icon: <BarChartOutlined />,
             label: "Quản lý báo cáo",
         },
-    ].filter((item) => permissions.includes(item.key));
+    ].filter((item) => permissions.includes(item.key) || permissionsElections.includes(item.key));
 
     const handleClick = (e: { key: string }) => {
         const selected = menuItems.find((item) => item.key === e.key);

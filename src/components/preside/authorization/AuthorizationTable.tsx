@@ -23,6 +23,7 @@ import { SummaryDelegate } from "@/types/SummaryDelegate.interface";
 import FileService from "@/services/FileService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 import { useNotification } from "@/contexts/NotificationContext";
+import { getUserLogin } from "@/utils/auth";
 const { Text } = Typography;
 const { Option } = Select;
 
@@ -66,12 +67,51 @@ const AuthorizationTable = () => {
     const [signRecord, setSignRecord] = useState<any>(null);
     const [selectedDelegations, setSelectedDelegations] = useState<string[]>([]);
     const [signModalOpen, setSignModalOpen] = useState(false);
+    const [isSystemPreside, setIsSystemPreside] = useState(true);
+    const [currentElectionId, setCurrentElectionId] = useState<string | undefined>(undefined);
+    const [userFetched, setUserFetched] = useState(false);
+
+    // Lấy thông tin user và electionId
+    useEffect(() => {
+        const fetchUserAndElectionId = async () => {
+            try {
+                // Clear data trước khi fetch user để tránh hiển thị data sai
+                setData([]);
+                setRawData([]);
+
+                const userData = await getUserLogin();
+                const isSystemPresideValue = userData?.chairmanOfTheBoardOfDirectors === true;
+                setIsSystemPreside(isSystemPresideValue);
+
+                // Nếu không phải system preside, lấy electionId từ localStorage
+                if (!isSystemPresideValue) {
+                    const electionId = localStorage.getItem("currentElectionId") || undefined;
+                    setCurrentElectionId(electionId);
+                } else {
+                    setCurrentElectionId(undefined);
+                }
+                setUserFetched(true);
+            } catch (error) {
+                console.error("Error fetching user:", error);
+                setUserFetched(true);
+            }
+        };
+        fetchUserAndElectionId();
+    }, []);
+
     const loadDelegation = async () => {
+        // Chỉ load khi đã fetch user xong
+        if (!userFetched) return;
+
         setLoading(true);
         try {
             const params: any = {};
             if (statusFilter) params.status = statusFilter;
             if (search.trim()) params.textSearch = search.trim();
+            // Nếu không phải system preside, chỉ lấy delegations của election hiện tại
+            if (!isSystemPreside && currentElectionId) {
+                params.electionId = currentElectionId;
+            }
             const res = await DelegationService.getAllSummaryDelegation(params);
             const list = res?.data || [];
             setRawData(list);
@@ -85,7 +125,7 @@ const AuthorizationTable = () => {
 
     useEffect(() => {
         loadDelegation();
-    }, [statusFilter]);
+    }, [statusFilter, currentElectionId, userFetched, isSystemPreside]);
 
     // debounce search
     useEffect(() => {

@@ -1,39 +1,17 @@
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import DelegationService from "@/services/DelegationService";
+import FileService from "@/services/FileService";
 import { DelegationDetail } from "@/types/Delegate.interface";
 import { CheckOutlined, ClockCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, LeftOutlined, StopOutlined, UserOutlined } from "@ant-design/icons";
 import { Avatar, Button, Card, Col, Descriptions, Divider, Row, Space, Tag, Typography } from "antd";
+import moment from "moment-timezone";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./../../../style/voter/AuthorizationHistory.module.css";
-import FileService from "@/services/FileService";
 
 
 const { Text, Title } = Typography;
-
-
-
-const formatDateOnly = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-    });
-};
-
-
-const formatDateWithTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-};
 
 
 const getStatusLabel = (status: string) => {
@@ -50,6 +28,10 @@ const getStatusLabel = (status: string) => {
             return "Đã thu hồi";
         case "INVALID":
             return "Không hợp lệ";
+        case "REJECTED":
+            return "Đã từ chối";
+        case "SIGNED":
+            return "Đã ký";
         default:
             return status;
     }
@@ -69,6 +51,10 @@ const getStatusColor = (status: string) => {
             return "red";
         case "INVALID":
             return "magenta";
+        case "REJECTED":
+            return "red";
+        case "SIGNED":
+            return "cyan";
         default:
             return "default";
     }
@@ -264,7 +250,9 @@ const AuthorizationDetail = () => {
                                                     status === "EXPIRED" ? <ExclamationCircleOutlined /> :
                                                         status === "REVOKED" ? <CloseCircleOutlined /> :
                                                             status === "INVALID" ? <StopOutlined /> :
-                                                                null
+                                                                status === "REJECTED" ? <CloseCircleOutlined /> :
+                                                                    status === "SIGNED" ? <CheckOutlined /> :
+                                                                        null
                                     }
                                     className={`${styles.statusTag} ${styles.statusTagCompact} ${styles[`status${status}`]}`}
                                 >
@@ -273,13 +261,13 @@ const AuthorizationDetail = () => {
                             </Descriptions.Item>
 
                             <Descriptions.Item label="Ngày bắt đầu">
-                                {formatDateOnly(startDate)}
+                                {moment.utc(startDate).format("DD/MM/YYYY")}
                             </Descriptions.Item>
                             <Descriptions.Item label="Ngày kết thúc">
-                                {formatDateOnly(endDate)}
+                                {moment.utc(endDate).format("DD/MM/YYYY")}
                             </Descriptions.Item>
                             <Descriptions.Item label="Ngày tạo">
-                                {formatDateWithTime(createdAt)}
+                                {moment.utc(createdAt).format("DD/MM/YYYY HH:mm:ss")}
                             </Descriptions.Item>
                             <Descriptions.Item label="Lí do ủy quyền">
                                 {delegateReason || "-"}

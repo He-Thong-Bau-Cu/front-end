@@ -15,12 +15,18 @@ const HeaderStats = () => {
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
   const [user, setUser] = useState<User | null>(null);
+  const [isSystemPreside, setIsSystemPreside] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await getUserLogin();
         setUser(userData as User);
+
+        // Check nếu không phải system preside (chairmanOfTheBoardOfDirectors = false) và có electionId
+        const electionId = localStorage.getItem("currentElectionId");
+        const isSystemPresideValue = userData?.chairmanOfTheBoardOfDirectors === true;
+        setIsSystemPreside(isSystemPresideValue);
       } catch (error) {
         message.error("Không thể tải thông tin người dùng!");
       }
@@ -107,16 +113,18 @@ const HeaderStats = () => {
           </div>
         </div>
 
-        <div className="dashboard-preside-header-actions">
-          <Button
-            icon={<FileTextOutlined />}
-            className="btn-create-decision"
-            type="primary"
-            onClick={() => setOpen(true)} // 👈 khi click sẽ mở modal
-          >
-            Tạo quyết định
-          </Button>
-        </div>
+        {isSystemPreside && (
+          <div className="dashboard-preside-header-actions">
+            <Button
+              icon={<FileTextOutlined />}
+              className="btn-create-decision"
+              type="primary"
+              onClick={() => setOpen(true)} // 👈 khi click sẽ mở modal
+            >
+              Tạo quyết định
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* 🧩 Modal nhập thông tin nghị quyết */}
