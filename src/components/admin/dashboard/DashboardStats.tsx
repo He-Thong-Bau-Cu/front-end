@@ -16,10 +16,10 @@ export interface Stats {
 }
 
 interface DashboardStatsProps {
-  stats?: Stats[]; // có thể undefined
+    stats?: Stats[]; // có thể undefined
 }
 
-const DashboardStats = ({stats = []}: DashboardStatsProps) => {
+const DashboardStats = ({ stats = [] }: DashboardStatsProps) => {
     return (
         <div className="dashboard-stats">
             {stats.map((s, i) => (
