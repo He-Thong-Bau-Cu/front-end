@@ -13,6 +13,7 @@ class DecisionService extends BaseService {
     statusData?: string;
     decisionName?: string;
     decisionNumber?: string;
+    electionId?: string;
   }): Promise<{
     content: Decision[];
     page: number;

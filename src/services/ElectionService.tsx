@@ -258,7 +258,8 @@ class ElectionService extends BaseService {
       return response as unknown as BaseResponse<any>;
     } catch (error) {
       console.error("Error clone election for reelection:", error);
-      }
+      throw error;
+    }
   }
 
   async getVotersFromExcel(electionId: string): Promise<any> {
