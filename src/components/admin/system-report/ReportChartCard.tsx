@@ -45,11 +45,11 @@ const ReportChartCard: React.FC<ReportChartCardProps> = ({
             <BarChartOutlined className="report-chart-card-title-icon" />
             Hiệu suất hệ thống
           </div>
-          <div className="report-chart-card-actions">
+          {/* <div className="report-chart-card-actions">
             <UserOutlined className="report-chart-card-action-icon" />
             <ExpandOutlined className="report-chart-card-action-icon" />
             <SettingOutlined className="report-chart-card-action-icon" />
-          </div>
+          </div> */}
         </div>
       }
     >

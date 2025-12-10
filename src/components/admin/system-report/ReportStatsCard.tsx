@@ -73,16 +73,16 @@ const ReportStatsCard: React.FC<ReportStatsCardProps> = ({
         iconColor: "#0ea5e9",
         iconBg: "#e0f2fe",
       },
-      {
-        title: "SAO LƯU GẦN NHẤT",
-        value: backupSummary?.lastBackupAt
-          ? formatDate(new Date(backupSummary.lastBackupAt))
-          : "Chưa có",
-        hint: "Thời gian backup cuối",
-        icon: <ClockCircleOutlined />,
-        iconColor: "#7c3aed",
-        iconBg: "#ede9fe",
-      },
+      // {
+      //   title: "SAO LƯU GẦN NHẤT",
+      //   value: backupSummary?.lastBackupAt
+      //     ? formatDate(new Date(backupSummary.lastBackupAt))
+      //     : "Chưa có",
+      //   hint: "Thời gian backup cuối",
+      //   icon: <ClockCircleOutlined />,
+      //   iconColor: "#7c3aed",
+      //   iconBg: "#ede9fe",
+      // },
     ],
     [summary, backupSummary]
   );
