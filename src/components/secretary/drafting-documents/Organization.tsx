@@ -219,7 +219,17 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
         {members.map((m) => {
           // Kiểm tra xem user này có phải là user hiện tại không (thư ký)
           const isCurrentUser = m.userId === currentUserId;
-          const canDelete = !disabled && !isCurrentUser;
+          // Kiểm tra xem có phải là ban kiểm soát không (roleId = "6907a5b5399e3682d80a1ddf")
+          const isBoardOfControl = m.roleId === "6907a5b5399e3682d80a1ddf";
+          const canDelete = !disabled && !isCurrentUser && !isBoardOfControl;
+
+          // Xác định title cho tooltip
+          let deleteTitle = "Xóa";
+          if (isCurrentUser) {
+            deleteTitle = "Không thể xóa chính mình";
+          } else if (isBoardOfControl) {
+            deleteTitle = "Không thể xóa ban kiểm soát";
+          }
 
           return (
             <div key={m.id} className="participant-item">
@@ -243,7 +253,7 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
                     opacity: canDelete ? 1 : 0.5,
                     marginTop: 2
                   }}
-                  title={isCurrentUser ? "Không thể xóa chính mình" : "Xóa"}
+                  title={deleteTitle}
                 />
               </div>
             </div>

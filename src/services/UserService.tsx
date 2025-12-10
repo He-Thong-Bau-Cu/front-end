@@ -52,6 +52,14 @@ class UserService extends BaseService {
     });
   }
 
+  async create(userData: any): Promise<any> {
+    return await this.api.post(`${this.endpoint}/create`, userData);
+  }
+
+  async checkExists(email?: string, phone?: string, citizenId?: string): Promise<any> {
+    return await this.api.post(`${this.endpoint}/check-exists`, { email, phone, citizenId });
+  }
+
 }
 
 export default new UserService();

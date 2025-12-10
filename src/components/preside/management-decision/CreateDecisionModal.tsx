@@ -10,8 +10,9 @@ import {
   Select,
   DatePicker,
   Tag,
+  Space,
 } from "antd";
-import { FileTextOutlined } from "@ant-design/icons";
+import { FileTextOutlined, PlusOutlined } from "@ant-design/icons";
 import "../../../style/preside/CreateDecisionModal.model.css";
 import { useNotification } from "@/contexts/NotificationContext";
 import dayjs from "dayjs";
@@ -37,8 +38,15 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [userList, setUserList] = useState<any[]>([]);
+  const [boardControlList, setBoardControlList] = useState<any[]>([]);
   const { notify } = useNotification();
   const [showAddSecretary, setShowAddSecretary] = useState(false);
+  const [addSecretaryModalOpen, setAddSecretaryModalOpen] = useState(false);
+  const [secretaryForm] = Form.useForm();
+
+  // Watch giá trị secretaryId và boardOfControlId để lọc danh sách
+  const secretaryId = Form.useWatch('secretaryId', form);
+  const boardOfControlId = Form.useWatch('boardOfControlId', form);
   // Giờ hành chính
   const WORK_START = 8;   // 08:00
   const WORK_END = 17;    // 17:00
@@ -65,6 +73,9 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
     try {
       const res = await ElectionService.getElectionUser();
       setUserList(res || []);
+      // Lọc danh sách ban kiểm soát (có thể cần API riêng hoặc filter theo role)
+      // Tạm thời dùng chung userList, có thể cần API riêng sau
+      setBoardControlList(res || []);
     } catch (err: any) {
       notify(err.response?.data?.message, "error");
     }
@@ -86,13 +97,56 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
         const end = initialData.endDate
           ? dayjs(initialData.endDate, FORMAT)
           : null;
+
+        // Xử lý tempSecretaryInfo nếu có
+        let tempSecretaryUser: any = null;
+        if (initialData.tempSecretaryInfo) {
+          tempSecretaryUser = {
+            _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            fullName: initialData.tempSecretaryInfo.fullName,
+            email: initialData.tempSecretaryInfo.email,
+            phone: initialData.tempSecretaryInfo.phone,
+            citizenId: initialData.tempSecretaryInfo.citizenId,
+            address: initialData.tempSecretaryInfo.address,
+            isTemp: true,
+          };
+          // Thêm vào userList nếu chưa có
+          setUserList((prevList) => {
+            const exists = prevList.some(u =>
+              u.isTemp &&
+              u.email === tempSecretaryUser.email
+            );
+            if (!exists) {
+              return [...prevList, tempSecretaryUser];
+            }
+            return prevList;
+          });
+        }
+
+        // Convert _id sang string nếu cần
+        // Ưu tiên lấy từ participant (nếu có), sau đó từ election.secretaryId, cuối cùng là tempSecretaryUser
+        let secretaryIdValue = undefined;
+        if (secrytary?.userId?._id) {
+          secretaryIdValue = secrytary.userId._id.toString ? secrytary.userId._id.toString() : String(secrytary.userId._id);
+        } else if (initialData.secretaryId) {
+          secretaryIdValue = initialData.secretaryId.toString ? initialData.secretaryId.toString() : String(initialData.secretaryId);
+        } else if (tempSecretaryUser) {
+          secretaryIdValue = tempSecretaryUser._id;
+        }
+
+        const boardOfControlIdValue = initialData.boardOfControlId
+          ? (initialData.boardOfControlId.toString ? initialData.boardOfControlId.toString() : String(initialData.boardOfControlId))
+          : undefined;
+
         form.setFieldsValue({
           decisionNumber: initialData.decisionNumber || "",
           decisionName: initialData.decisionName || "",
-          secretaryId: secrytary?.userId?._id || undefined,
-          presideId: initialData.presideId || undefined,
+          secretaryId: secretaryIdValue,
+          boardOfControlId: boardOfControlIdValue,
+          statusData: initialData.statusData || "DRAFT",
           startDate: start,
           endDate: end,
+          newSecretaryInfo: initialData.tempSecretaryInfo || undefined,
         });
       } else {
         form.resetFields();
@@ -103,14 +157,95 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
   /* ===========================================================
       SUBMIT
   =========================================================== */
-  const handleFinish = (values: any) => {
+  const handleFinish = async (values: any) => {
+      // Nếu có thông tin thư ký mới (từ form thêm thư ký)
+      const newSecretaryInfo = form.getFieldValue("newSecretaryInfo");
 
-    // Nếu chọn trạng thái "Chờ thư ký nhập dữ liệu" → cảnh báo trước
-    if (values.statusData === "WAIT_ENTER_DATA") {
+      // Validation: Nếu trạng thái là WAIT_ENTER_DATA thì phải có thư ký và ban kiểm soát
+      if (values.statusData === "WAIT_ENTER_DATA") {
+        if (!values.secretaryId && !newSecretaryInfo) {
+          notify("Vui lòng chọn thư ký hoặc thêm thư ký mới khi trạng thái là 'Gửi thư ký nhập dữ liệu'", "error");
+          return;
+        }
+        if (!values.boardOfControlId) {
+          notify("Vui lòng chọn ban kiểm soát khi trạng thái là 'Gửi thư ký nhập dữ liệu'", "error");
+          return;
+        }
+      }
+
+      // Nếu chọn trạng thái "Gửi thư ký nhập dữ liệu" → cảnh báo trước
+      if (values.statusData === "WAIT_ENTER_DATA") {
+        // Kiểm tra nếu secretaryId là tạm thời (bắt đầu bằng "temp_")
+        const isTempSecretary = values.secretaryId && String(values.secretaryId).startsWith("temp_");
+
+        // Nếu có thông tin thư ký mới hoặc secretaryId là tạm thời, tạo user và gửi mail
+        if (newSecretaryInfo || isTempSecretary) {
+          try {
+            // Lấy thông tin từ newSecretaryInfo hoặc từ user tạm trong list
+            let secretaryData = newSecretaryInfo;
+            if (!secretaryData && isTempSecretary) {
+              const tempUser = userList.find(u => String(u._id) === String(values.secretaryId));
+              if (tempUser && tempUser.isTemp) {
+                secretaryData = {
+                  fullName: tempUser.fullName,
+                  email: tempUser.email,
+                  phone: tempUser.phone,
+                  citizenId: tempUser.citizenId,
+                  address: tempUser.address,
+                };
+              }
+            }
+
+            if (secretaryData) {
+              // Tạo user cho thư ký mới với role mặc định là USER
+              const userResponse = await UserService.create({
+                fullName: secretaryData.fullName,
+                email: secretaryData.email,
+                phone: secretaryData.phone,
+                citizenId: secretaryData.citizenId,
+                address: secretaryData.address,
+                roleId: null, // Không truyền roleId để backend tự động dùng USER_ROLE.USER
+                position: "Thư ký chủ tọa",
+                department: "Ban tổ chức",
+                status: "ACTIVE",
+              });
+
+              // Lấy user mới tạo
+              const newUser = userResponse?.data || userResponse;
+              if (newUser?._id) {
+                // Thay thế user tạm thời bằng user thật trong list
+                if (isTempSecretary) {
+                  setUserList((prevList) =>
+                    prevList.map(u =>
+                      String(u._id) === String(values.secretaryId) ? newUser : u
+                    )
+                  );
+                } else {
+                  // Thêm user mới vào danh sách
+                  setUserList((prevList) => [...prevList, newUser]);
+                }
+
+                // Set secretaryId từ user mới tạo
+                values.secretaryId = newUser._id;
+
+                // Cập nhật form để hiển thị thư ký mới đã được chọn
+                form.setFieldsValue({
+                  secretaryId: newUser._id,
+                  newSecretaryInfo: undefined, // Clear thông tin tạm
+                });
+              }
+            }
+          } catch (err: any) {
+            const errorMessage = err.response?.data?.message || err.message || "Không thể tạo thư ký mới";
+            notify(errorMessage, "error");
+            return;
+          }
+        }
+
       Modal.confirm({
         title: "Xác nhận tạo quyết định",
         content:
-          "Nếu bạn tạo với trạng thái 'Chờ thư ký nhập dữ liệu' thì SAU KHI TẠO bạn sẽ không được phét chỉnh sửa lại nội dung bầu cử. Bạn có chắc chắn muốn tiếp tục không?",
+          "Nếu bạn tạo với trạng thái 'Gửi thư ký nhập dữ liệu' thì SAU KHI TẠO bạn sẽ không được phép chỉnh sửa lại nội dung bầu cử. Bạn có chắc chắn muốn tiếp tục không?",
         okText: "Tiếp tục",
         cancelText: "Hủy",
         onOk: () => {
@@ -118,6 +253,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
             ...values,
             startDate: values.startDate?.format(FORMAT),
             endDate: values.endDate?.format(FORMAT),
+            tempSecretaryInfo: undefined, // Không cần lưu tạm nữa vì đã tạo user
           };
           onSubmit(payload, editMode, initialData?._id);
         }
@@ -125,14 +261,70 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
       return;
     }
 
-    // Trường hợp trạng thái khác → xử lý bình thường
+    // Trường hợp trạng thái DRAFT → lưu tạm thông tin thư ký
+    // Nếu có secretaryId (user đã có) thì gửi secretaryId
+    // Nếu có newSecretaryInfo (thư ký mới) thì gửi tempSecretaryInfo
+    // Nếu secretaryId là temp → lấy thông tin từ userList và gửi tempSecretaryInfo
+    let tempSecretaryData = newSecretaryInfo;
+    let secretaryIdToSend = values.secretaryId && !String(values.secretaryId).startsWith("temp_")
+      ? values.secretaryId
+      : undefined;
+
+    if (!tempSecretaryData && values.secretaryId && String(values.secretaryId).startsWith("temp_")) {
+      const tempUser = userList.find(u => String(u._id) === String(values.secretaryId));
+      if (tempUser && tempUser.isTemp) {
+        tempSecretaryData = {
+          fullName: tempUser.fullName,
+          email: tempUser.email,
+          phone: tempUser.phone,
+          citizenId: tempUser.citizenId,
+          address: tempUser.address,
+        };
+      }
+    }
+
     const payload = {
       ...values,
       startDate: values.startDate?.format(FORMAT),
       endDate: values.endDate?.format(FORMAT),
+      secretaryId: secretaryIdToSend,
+      tempSecretaryInfo: tempSecretaryData,
     };
 
     onSubmit(payload, editMode, initialData?._id);
+  };
+
+  /* ===========================================================
+      HANDLE ADD SECRETARY
+  =========================================================== */
+  const handleAddSecretary = () => {
+    setAddSecretaryModalOpen(true);
+  };
+
+  const handleSecretaryFormSubmit = (values: any) => {
+    // Tạo một object tạm thời với _id tạm để thêm vào danh sách
+    const tempSecretaryUser = {
+      _id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      fullName: values.fullName,
+      email: values.email,
+      phone: values.phone,
+      citizenId: values.citizenId,
+      address: values.address,
+      isTemp: true, // Đánh dấu là user tạm thời
+    };
+
+    // Thêm vào danh sách thư ký
+    setUserList((prevList) => [...prevList, tempSecretaryUser]);
+
+    // Set secretaryId và lưu thông tin thư ký mới vào form
+    form.setFieldsValue({
+      secretaryId: tempSecretaryUser._id,
+      newSecretaryInfo: values,
+    });
+
+    setAddSecretaryModalOpen(false);
+    secretaryForm.resetFields();
+    notify("Đã thêm thư ký mới vào danh sách", "success");
   };
 
 
@@ -199,7 +391,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
               <Form.Item
                 name="startDate"
                 label="Thời gian bắt đầu"
-                rules={[{ required: true }]}
+                rules={[{ required: true, message: "Vui lòng chọn thời gian bắt đầu" }]}
               >
                 <DatePicker
                   showTime={{
@@ -225,7 +417,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                 label="Thời gian kết thúc"
                 dependencies={["startDate"]}
                 rules={[
-                  { required: true },
+                  { required: true, message: "Vui lòng chọn thời gian kết thúc" },
                   ({ getFieldValue }) => ({
                     validator(_, value) {
                       const start = getFieldValue("startDate");
@@ -266,17 +458,112 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
             </Col>
           </Row>
 
-          {/* Chủ tọa */}
+          {/* Thư ký */}
           <Col span={24}>
             <Form.Item
-              name="presideId"
-              label="Chủ tọa"
-              rules={[{ required: !editMode, message: "Vui lòng chọn chủ tọa" }]}
+              name="secretaryId"
+              label="Thư ký chủ tọa"
+              rules={[
+                { required: true, message: "Vui lòng chọn thư ký hoặc thêm thư ký mới" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const newSecretaryInfo = getFieldValue("newSecretaryInfo");
+                    if (!value && !newSecretaryInfo) {
+                      return Promise.reject(new Error("Vui lòng chọn thư ký hoặc thêm thư ký mới"));
+                    }
+                    return Promise.resolve();
+                  },
+                }),
+              ]}
             >
               <Select
-                placeholder="Chọn chủ tọa"
+                placeholder="Chọn thư ký"
                 allowClear
-                disabled={editMode}
+                disabled={(() => {
+                  const secretaryId = form.getFieldValue("secretaryId");
+                  const newSecretaryInfo = form.getFieldValue("newSecretaryInfo");
+                  const tempSecretaryInfo = initialData?.tempSecretaryInfo;
+                  // Disable nếu có tempSecretaryInfo hoặc newSecretaryInfo nhưng không có secretaryId
+                  return (!secretaryId || secretaryId === null || secretaryId === undefined) && (newSecretaryInfo || tempSecretaryInfo);
+                })()}
+                dropdownRender={(menu) => (
+                  <React.Fragment>
+                    {menu}
+                    <>
+                      <Divider style={{ margin: '8px 0' }} />
+                      <Button
+                        type="link"
+                        icon={<PlusOutlined />}
+                        onClick={handleAddSecretary}
+                        style={{ width: '100%' }}
+                      >
+                        Thêm thư ký mới
+                      </Button>
+                    </>
+                  </React.Fragment>
+                )}
+              >
+                {/* Option hiện tại (dùng khi EDIT) */}
+                {editMode && secrytary?.userId && (
+                  <Option value={secrytary.userId._id}>
+                    {secrytary.userId.fullName} - {secrytary.userId.email}
+                  </Option>
+                )}
+
+                {/* Danh sách userList - lọc bỏ user đã được chọn làm ban kiểm soát */}
+                {userList
+                  .filter((user) => !boardOfControlId || String(user._id) !== String(boardOfControlId))
+                  .map((user) => (
+                    <Option key={user._id} value={user._id}>
+                      {user.fullName} - {user.email}
+                      {user.isTemp && <span style={{ color: '#999', marginLeft: 8 }}>(Mới thêm)</span>}
+                    </Option>
+                  ))}
+              </Select>
+            </Form.Item>
+
+            {/* Hiển thị thông tin thư ký mới nếu đã thêm */}
+            {(() => {
+              const secretaryId = form.getFieldValue("secretaryId");
+              const newSecretaryInfo = form.getFieldValue("newSecretaryInfo");
+              const tempSecretaryInfo = initialData?.tempSecretaryInfo;
+
+              // Nếu secretaryId == null và có tempSecretaryInfo hoặc newSecretaryInfo thì hiển thị
+              if ((!secretaryId || secretaryId === null || secretaryId === undefined) && (newSecretaryInfo || tempSecretaryInfo)) {
+                const info = newSecretaryInfo || tempSecretaryInfo;
+                return (
+                  <Tag color="green" style={{ marginTop: 8 }}>
+                    Thư ký mới thêm: {info?.fullName} - {info?.email}
+                    {!editMode && (
+                      <Button
+                        type="link"
+                        danger
+                        size="small"
+                        onClick={() => {
+                          form.setFieldsValue({ newSecretaryInfo: undefined, secretaryId: undefined });
+                        }}
+                        style={{ marginLeft: 8 }}
+                      >
+                        Xóa
+                      </Button>
+                    )}
+                  </Tag>
+                );
+              }
+              return null;
+            })()}
+          </Col>
+
+          {/* Ban kiểm soát */}
+          <Col span={24}>
+            <Form.Item
+              name="boardOfControlId"
+              label="Ban kiểm soát"
+              rules={[{ required: true, message: "Vui lòng chọn ban kiểm soát" }]}
+            >
+              <Select
+                placeholder="Chọn ban kiểm soát"
+                allowClear
                 showSearch
                 filterOption={(input, option) => {
                   const label = option?.label || option?.children;
@@ -291,140 +578,31 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                   return false;
                 }}
               >
-                {userList.map((user) => (
-                  <Option key={user._id} value={user._id}>
-                    {user.fullName} - {user.email}
-                  </Option>
-                ))}
+                {/* Danh sách boardControlList - lọc bỏ user đã được chọn làm thư ký */}
+                {boardControlList
+                  .filter((user) => !secretaryId || String(user._id) !== String(secretaryId))
+                  .map((user) => (
+                    <Option key={user._id} value={user._id}>
+                      {user.fullName} - {user.email}
+                    </Option>
+                  ))}
               </Select>
             </Form.Item>
           </Col>
 
-          {/* Thư ký */}
+          {/* Trạng thái */}
           <Col span={24}>
-            {!showAddSecretary && (
-              <>
-                <Form.Item
-                  name="secretaryId"
-                  label="Thư ký chủ tọa"
-                  rules={[{ required: !editMode, message: "Vui lòng chọn thư ký" }]}
-                >
-                  <Select placeholder="Chọn thư ký" allowClear disabled={editMode}>
-                    {/* Option hiện tại (dùng khi EDIT) */}
-                    {editMode && secrytary?.userId && (
-                      <Option value={secrytary.userId._id}>
-                        {secrytary.userId.fullName} - {secrytary.userId.email}
-                      </Option>
-                    )}
-
-                    {/* Danh sách userList */}
-                    {userList.map((user) => (
-                      <Option key={user._id} value={user._id}>
-                        {user.fullName} - {user.email}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {!editMode ? (
-                  <Tag
-                    color={"blue"}
-                    style={{
-                      fontSize: 14,
-                      padding: "8px 14px",
-                      borderRadius: 8,
-                      cursor: "pointer",
-                      marginBottom: 20
-                    }}
-                    onClick={() => setShowAddSecretary(true)}
-                  >
-                    + Thêm thư ký mới
-                  </Tag>
-                ) : null}
-              </>
-            )}
-
-            {showAddSecretary && (
-              <div
-                style={{
-                  padding: "16px",
-                  border: "1px solid #eee",
-                  borderRadius: 8,
-                  marginTop: 12,
-                  background: "#fafafa"
-                }}
-              >
-                <Divider>Thông tin thư ký mới</Divider>
-
-                <Form.Item
-                  label="Họ và tên người được ủy quyền *"
-                  name="new_name"
-                  rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-                >
-                  <Input placeholder="Nhập họ tên đầy đủ" />
-                </Form.Item>
-
-                <Row gutter={16}>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="CCCD/CMND *"
-                      name="new_cccd"
-                      rules={[{ required: true, message: "Vui lòng nhập số CCCD" }]}
-                    >
-                      <Input placeholder="Số CCCD" />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Số điện thoại *"
-                      name="new_phone"
-                      rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
-                    >
-                      <Input placeholder="Số điện thoại" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Row gutter={16}>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Email *"
-                      name="new_email"
-                      rules={[
-                        { required: true, message: "Vui lòng nhập email" },
-                        { type: "email", message: "Email không hợp lệ" },
-                      ]}
-                    >
-                      <Input placeholder="Email" />
-                    </Form.Item>
-                  </Col>
-
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      label="Địa chỉ *"
-                      name="new_address"
-                      rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
-                    >
-                      <Input placeholder="Địa chỉ" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Tag
-                  color={"blue"}
-                  style={{
-                    fontSize: 14,
-                    padding: "8px 14px",
-                    borderRadius: 8,
-                    cursor: "pointer"
-                  }}
-                  onClick={() => setShowAddSecretary(false)}
-                >
-                  ← Quay lại chọn từ danh sách
-                </Tag>
-              </div>
-            )}
+            <Form.Item
+              name="statusData"
+              label="Trạng thái"
+              rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
+              initialValue="DRAFT"
+            >
+              <Select placeholder="Chọn trạng thái" disabled={editMode && initialData?.statusData !== "DRAFT"}>
+                <Option value="DRAFT">Lưu nháp</Option>
+                <Option value="WAIT_ENTER_DATA">Gửi thư ký nhập dữ liệu</Option>
+              </Select>
+            </Form.Item>
           </Col>
 
         </Row>
@@ -437,6 +615,144 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
           </Button>
         </div>
       </Form>
+
+      {/* Modal thêm thư ký mới */}
+      <Modal
+        title="Thêm thư ký mới"
+        open={addSecretaryModalOpen}
+        onCancel={() => {
+          setAddSecretaryModalOpen(false);
+          secretaryForm.resetFields();
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={secretaryForm}
+          layout="vertical"
+          onFinish={handleSecretaryFormSubmit}
+          validateTrigger={['onChange', 'onBlur']}
+        >
+          <Form.Item
+            label="Họ và tên *"
+            name="fullName"
+            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+          >
+            <Input placeholder="Nhập họ tên đầy đủ" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="CCCD/CMND *"
+                name="citizenId"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số CCCD" },
+                  {
+                    validator: (_, value) => {
+                      if (!value) {
+                        return Promise.resolve();
+                      }
+                      // Kiểm tra phải có đúng 12 chữ số
+                      if (!/^\d{12}$/.test(value)) {
+                        return Promise.reject(new Error("Số CCCD/CMND phải có đúng 12 chữ số"));
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Số CCCD (12 chữ số)" maxLength={12} />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Số điện thoại *"
+                name="phone"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số điện thoại" },
+                  {
+                    validator: async (_, value) => {
+                      if (!value) {
+                        return Promise.resolve();
+                      }
+                      try {
+                        const response = await UserService.checkExists(undefined, value, undefined);
+                        if (response?.data?.exists && response.data.field === 'phone') {
+                          return Promise.reject(new Error(response.data.message || 'Số điện thoại đã tồn tại trong hệ thống !'));
+                        }
+                        return Promise.resolve();
+                      } catch (error: any) {
+                        // Nếu có lỗi từ API, vẫn cho phép (có thể do network)
+                        return Promise.resolve();
+                      }
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Số điện thoại" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Email *"
+                name="email"
+                rules={[
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Email không hợp lệ" },
+                  {
+                    validator: async (_, value) => {
+                      if (!value) {
+                        return Promise.resolve();
+                      }
+                      try {
+                        const response = await UserService.checkExists(value, undefined, undefined);
+                        if (response?.data?.exists && response.data.field === 'email') {
+                          return Promise.reject(new Error(response.data.message || 'Email đã tồn tại trong hệ thống !'));
+                        }
+                        return Promise.resolve();
+                      } catch (error: any) {
+                        // Nếu có lỗi từ API, vẫn cho phép (có thể do network)
+                        return Promise.resolve();
+                      }
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Email" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Địa chỉ *"
+                name="address"
+                rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
+              >
+                <Input placeholder="Địa chỉ" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item style={{ marginBottom: 0, marginTop: 20 }}>
+            <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+              <Button onClick={() => {
+                setAddSecretaryModalOpen(false);
+                secretaryForm.resetFields();
+              }}>
+                Hủy
+              </Button>
+              <Button type="primary" htmlType="submit">
+                Thêm thư ký
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Modal>
   );
 };

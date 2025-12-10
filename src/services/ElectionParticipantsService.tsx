@@ -62,6 +62,16 @@ class ElectionParticipantService extends BaseService {
         }
   }
 
+  async updateParticipant(id: string, body: any): Promise<any> {
+    try {
+      const response = await this.api.put(`${this.endpoint}/${id}`, body);
+      return response;
+    } catch (error) {
+      console.error("Error updating participant:", error);
+      throw error;
+    }
+  }
+
 }
 
 export default new ElectionParticipantService();

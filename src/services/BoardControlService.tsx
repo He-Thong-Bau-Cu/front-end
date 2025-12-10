@@ -62,6 +62,14 @@ class BoardControlService extends BaseService {
       : `${this.endpoint}/${electionId}/archive-report/download`;
     return this.api.get(url, { responseType: 'blob' });
   }
+
+  async checkRejectionStatus(electionId: string): Promise<BaseResponse<any>> {
+    return this.api.get(`${this.endpoint}/${electionId}/rejection-status`);
+  }
+
+  async getAbnormalReport(electionId: string): Promise<BaseResponse<any>> {
+    return this.api.get(`${this.endpoint}/${electionId}/abnormal-report`);
+  }
 }
 
 export default new BoardControlService();
