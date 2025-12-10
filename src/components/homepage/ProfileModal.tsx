@@ -220,7 +220,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
       open={open}
       onCancel={onClose}
       footer={null}
-      width={660}
+      width={820}
       centered
       className="profile-modal"
       style={{
@@ -291,7 +291,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                   initialValues={user || {}}
                   style={{ marginTop: 10 }}
                 >
-                  <Row gutter={16}>
+                  <Row gutter={32}>
                     <Col span={12}>
                       <Form.Item
                         label="Họ và tên"
