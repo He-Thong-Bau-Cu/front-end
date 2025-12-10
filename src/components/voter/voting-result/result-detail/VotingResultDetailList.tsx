@@ -71,22 +71,28 @@ const VotingResultDetailList: React.FC = () => {
                 else if (methodCode === "YES_NO_ABSTAIN") {
                     const result = await ResultService.getYesNoResult(electionId);
 
-                    const item = result[0]; // backend trả 1 object duy nhất
+                    const item = result[0] || {};
 
-                    const yesPercent = item.totalVotes ? (item.agree / item.totalVotes) * 100 : 0;
-                    const noPercent = item.totalVotes ? (item.disagree / item.totalVotes) * 100 : 0;
-                    const abstainPercent = item.totalVotes ? (item.abstain / item.totalVotes) * 100 : 0;
+                    const agree = item.agree ?? 0;
+                    const disagree = item.disagree ?? 0;
+                    const abstain = item.abstain ?? 0;
+                    const totalVotes = item.totalVotes ?? 0;
+
+                    const yesPercent = totalVotes ? (agree / totalVotes) * 100 : 0;
+                    const noPercent = totalVotes ? (disagree / totalVotes) * 100 : 0;
+                    const abstainPercent = totalVotes ? (abstain / totalVotes) * 100 : 0;
 
                     const mapped: YesNoResult = {
-                        id: item._id,
-                        entityTitle: item.entityTitle,
-                        yes: { count: item.agree, percent: yesPercent },
-                        no: { count: item.disagree, percent: noPercent },
-                        abstain: { count: item.abstain, percent: abstainPercent }
+                        id: item._id || "",
+                        entityTitle: item.entityTitle || "",
+                        yes: { count: agree, percent: yesPercent },
+                        no: { count: disagree, percent: noPercent },
+                        abstain: { count: abstain, percent: abstainPercent }
                     };
 
                     setCandidates([mapped]);
                 }
+
 
             } catch (error) {
                 console.error(error);
