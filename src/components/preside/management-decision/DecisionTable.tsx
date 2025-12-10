@@ -60,7 +60,8 @@ const statusMap: { [key: string]: string } = {
   "WAIT_APPROVAL": "Chờ duyệt",
   "REJECTED": "Từ chối",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
-  "DRAFT": "Lưu nháp"
+  "DRAFT": "Lưu nháp",
+  "WAIT_BKS_CONFIRMED": "Chờ ban kiểm soát xác nhận"
 };
 const DecisionTable = () => {
   const location = useLocation();
@@ -163,6 +164,7 @@ const DecisionTable = () => {
     } catch (err: any) {
       notify(err.response?.data?.message, "error");
     } finally {
+      setLoading(false)
       hideLoading();
     }
   };
@@ -180,7 +182,7 @@ const DecisionTable = () => {
     try {
       showLoading();
       let response;
-      let secretary;
+
       if (isEdit && id) {
         const apiData: any = {
           decisionNumber: values.decisionNumber,
@@ -188,7 +190,10 @@ const DecisionTable = () => {
           title: values.decisionName,
           statusData: values.statusData,
           startDate: values.startDate,
-          endDate: values.endDate
+          endDate: values.endDate,
+          tempSecretaryInfo: values.tempSecretaryInfo,
+          boardOfControlId: values.boardOfControlId,
+          secretaryId: values.secretaryId && !String(values.secretaryId).startsWith("temp_") ? values.secretaryId : undefined
         };
         response = await DecisionService.updateDecision(id, apiData);
         if (response.status === 200 && response.success) {
@@ -198,29 +203,24 @@ const DecisionTable = () => {
           notify(response.message, "error");
         }
       } else {
-        const apiData2: any = {
+        const apiData: any = {
           decisionNumber: values.decisionNumber,
           decisionName: values.decisionName,
           title: values.decisionName,
           statusData: values.statusData,
           startDate: values.startDate,
-          endDate: values.endDate
+          endDate: values.endDate,
+          tempSecretaryInfo: values.tempSecretaryInfo,
+          boardOfControlId: values.boardOfControlId,
+          secretaryId: values.secretaryId && !String(values.secretaryId).startsWith("temp_") ? values.secretaryId : undefined
         };
-        response = await DecisionService.createDecision(apiData2);
+        response = await DecisionService.createDecision(apiData);
         if (response.success) {
           setOpen(false);
           notify(response.message, "success");
         } else {
           notify(response.message, "error");
         }
-        const apiData3: any = {
-          electionId: response.data?._id,
-          userId: values.secretaryId,
-          roleId: "6904d5f7105b6a336b819be5",
-          position: "Thư ký chủ tọa",
-          status: "ACTIVE"
-        };
-        secretary = await ElectionParticipantsService.createParticipant(apiData3);
       }
       setOpen(false);
       setEditMode(false);
@@ -253,7 +253,7 @@ const DecisionTable = () => {
       const v = await VotingRightService.getVotingRightByElectionId(record);
       roleId1List.forEach((voter: any) => {
         const votingRight = v.find(
-          (vr: any) => vr.voterId.userId === voter.userId
+          (vr: any) => vr.voterId.userId === voter.userId._id
         );
         if (votingRight) {
           voter.percent = votingRight.shares;
@@ -282,13 +282,37 @@ const DecisionTable = () => {
       setEditLoading(true);
       setEditMode(true);
       const decisionDetail = await DecisionService.getElectionById(record._id);
-      const secrytary = await ElectionParticipantsService.getByElectionId(record._id);
-      for (const a of secrytary) {
-        if (a.roleId?._id === "6904d5f7105b6a336b819be5") {
-          setSecrytary(a); 
+      const participants = await ElectionParticipantsService.getByElectionId(record._id);
+
+      // Tìm thư ký
+      for (const a of participants) {
+        const roleIdStr = a.roleId?._id?.toString() || a.roleId?._id || a.roleId;
+        if (String(roleIdStr) === "6904d5f7105b6a336b819be5" || a.roleId?.roleCode === "PRESIDE_SECRETARY") {
+          setSecrytary(a);
           break;
         }
       }
+
+      // Tìm ban kiểm soát từ participants
+      let boardOfControlFound = false;
+      for (const a of participants) {
+        const roleIdStr = a.roleId?._id?.toString() || a.roleId?._id || a.roleId;
+        if (String(roleIdStr) === "6904d5f7105b6a336b819be6" || a.roleId?.roleCode === "BOARD_OF_CONTROL") {
+          const userIdStr = a.userId?._id?.toString() || a.userId?._id || a.userId;
+          decisionDetail.data.boardOfControlId = userIdStr;
+          boardOfControlFound = true;
+          break;
+        }
+      }
+
+      // Nếu không tìm thấy trong participants, lấy từ election record (trường hợp DRAFT)
+      if (!boardOfControlFound && decisionDetail.data.boardOfControlId) {
+        const boardOfControlIdStr = decisionDetail.data.boardOfControlId.toString
+          ? decisionDetail.data.boardOfControlId.toString()
+          : String(decisionDetail.data.boardOfControlId);
+        decisionDetail.data.boardOfControlId = boardOfControlIdStr;
+      }
+
       setEditingDecision(decisionDetail.data);
       setOpen(true);
     } catch (err: any) {
@@ -337,6 +361,8 @@ const DecisionTable = () => {
               ? "orange"
               : statusData === "WAIT_APPROVAL"
                 ? "yellow"
+                : statusData === "WAIT_BKS_CONFIRMED"
+                  ? "cyan"
                 : statusData === "REJECTED"
                   ? "pink"
                   : statusData === "DRAFT"
@@ -431,6 +457,7 @@ const DecisionTable = () => {
             <Option value="APPROVED_SIGNED">Đã phê duyệt</Option>
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
+            <Option value="WAIT_BKS_CONFIRMED">Chờ ban kiểm soát xác nhận</Option>
             <Option value="REJECTED">Yêu cầu chỉnh sửa</Option>
             <Option value="DRAFT">Lưu nháp</Option>
           </Select>
