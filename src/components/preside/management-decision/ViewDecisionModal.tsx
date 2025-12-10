@@ -33,7 +33,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import DecisionService from "@/services/DecisionService";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface ViewDecisionModalProps {
   open: boolean;
@@ -82,8 +82,12 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       const data1 = await ElectionDocumentService.getDocumentByElectionId(
         data?._id
       );
-      const signedDocuments = data1.filter((item: any) => item?.type === "signed-documents");
-      const response = await FileService.getSignedFile(signedDocuments[0]?.fileUrl);
+      const signedDocuments = data1.filter(
+        (item: any) => item?.type === "signed-documents"
+      );
+      const response = await FileService.getSignedFile(
+        signedDocuments[0]?.fileUrl
+      );
       const blob = new Blob([response], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -96,7 +100,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     }
   };
 
-  const handleDigitalSign = async ({ file, password }: { file: File; password: string }) => {
+  const handleDigitalSign = async ({
+    file,
+    password,
+  }: {
+    file: File;
+    password: string;
+  }) => {
     try {
       showLoading();
       const formData = new FormData();
@@ -124,7 +134,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     }
     try {
       // Gọi API
-      const reject = await DecisionService.RejectDecision({ electionId: rejectModal.record, rejectReason: rejectReason.trim() });
+      const reject = await DecisionService.RejectDecision({
+        electionId: rejectModal.record,
+        rejectReason: rejectReason.trim(),
+      });
       if (reject.success) {
         notify(reject.message, "success");
         onSign?.();
@@ -152,7 +165,6 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     }
   };
 
-
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleString("vi-VN", {
@@ -170,68 +182,90 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
     {
-      title: "Vai trò", dataIndex: ["roleId", "roleName"],
+      title: "Vai trò",
+      dataIndex: ["roleId", "roleName"],
       render: (role: string) => {
-        return <Tag
-          style={{ padding: 8, fontSize: 14 }}
-          color={"purple"}>{role}</Tag>;
+        return (
+          <Tag style={{ padding: 8, fontSize: 14 }} color={"purple"}>
+            {role}
+          </Tag>
+        );
       },
     },
     {
-      title: "Trạng Thái", dataIndex: "statusVoter",
+      title: "Trạng Thái",
+      dataIndex: "statusVoter",
       render: (status: string) => {
         switch (status) {
           case "ACTIVE":
-            return <Tag
-              style={{ padding: 8, fontSize: 14 }}
-              color="green">Hoạt động</Tag>;
+            return (
+              <Tag style={{ padding: 8, fontSize: 14 }} color="green">
+                Hoạt động
+              </Tag>
+            );
           case "INACTIVE":
-            return <Tag
-              style={{ padding: 8, fontSize: 14 }}
-              color="red">Không hoạt động</Tag>;
+            return (
+              <Tag style={{ padding: 8, fontSize: 14 }} color="red">
+                Không hoạt động
+              </Tag>
+            );
           case "AUTHORIZED":
-            return <Tag
-              style={{ padding: 8, fontSize: 14 }}
-              color="blue">Được ủy quyền</Tag>;
+            return (
+              <Tag style={{ padding: 8, fontSize: 14 }} color="blue">
+                Được ủy quyền
+              </Tag>
+            );
           case "PENDING":
-            return <Tag
-              style={{ padding: 8, fontSize: 14 }}
-              color="orange">Chờ duyệt</Tag>;
+            return (
+              <Tag style={{ padding: 8, fontSize: 14 }} color="orange">
+                Chờ duyệt
+              </Tag>
+            );
           default:
-            return <Tag
-              style={{ padding: 8, fontSize: 14 }}
-              color="default">Không hoạt động</Tag>;
+            return (
+              <Tag style={{ padding: 8, fontSize: 14 }} color="default">
+                Không hoạt động
+              </Tag>
+            );
         }
-      }
+      },
     },
     {
-      title: "Cổ phần", dataIndex: "percent",
+      title: "Cổ phần",
+      dataIndex: "percent",
       render: (role: string) => {
-        return <Tag
-          style={{ padding: 8, fontSize: 14 }}
-          color={"green"}>{role !== undefined ? `${role}%` : `${0}%`}</Tag>;
+        return (
+          <Tag style={{ padding: 8, fontSize: 14 }} color={"green"}>
+            {role !== undefined ? `${role}%` : `${0}%`}
+          </Tag>
+        );
       },
     },
   ];
-  const totalPercent = voters.reduce((sum, item) => sum + (item.percent || 0), 0);
-
 
   const organizerColumns = [
     { title: "Họ tên", dataIndex: ["userId", "fullName"] },
     { title: "Email", dataIndex: ["userId", "email"] },
     { title: "Số điện thoại", dataIndex: ["userId", "phone"] },
     {
-      title: "Vai trò", dataIndex: ["roleId", "roleName"],
+      title: "Vai trò",
+      dataIndex: ["roleId", "roleName"],
       render: (role: string) => {
-        return <Tag
-          style={{ padding: 8, fontSize: 14 }}
-          color={"pink"}>{role}</Tag>;
+        return (
+          <Tag style={{ padding: 8, fontSize: 14 }} color={"pink"}>
+            {role}
+          </Tag>
+        );
       },
     },
   ];
   const STATUS_MAP: any = {
     WAIT_ENTER_DATA: { label: "Chờ nhập dữ liệu", color: "gold" },
     WAIT_APPROVAL: { label: "Chờ duyệt", color: "orange" },
+    WAIT_BKS_CONFIRMED: {
+      label: "Chờ Ban Kiểm Soát xác nhận",
+      color: "purple",
+    },
     APPROVED_SIGNED: { label: "Đã duyệt", color: "blue" },
     DRAFT: { label: "Bản nháp", color: "default" },
     REJECTED: { label: "Từ chối", color: "red" },
@@ -244,6 +278,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     "election-documents-important": "Tài liệu bầu cử",
     "report-verification-sign": "Báo cáo xác minh",
     "election-results": "Báo cáo kết quả",
+    "voters-import-excel": "Danh sách cử tri import từ Excel",
     default: "Tài liệu đính kèm",
     // Thêm bao nhiêu loại cũng được
   };
@@ -251,13 +286,15 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   const attachmentColumns = [
     { title: "Tên tài liệu", dataIndex: "title" },
     {
-      title: "Loại tài liệu", dataIndex: "type",
+      title: "Loại tài liệu",
+      dataIndex: "type",
       render: (type: string) => {
-        return <Tag
-          style={{ padding: 8, fontSize: 14 }}
-          color={"blue"}>{TYPE_LABELS[type]}</Tag>;
+        return (
+          <Tag style={{ padding: 8, fontSize: 14 }} color={"blue"}>
+            {TYPE_LABELS[type]}
+          </Tag>
+        );
       },
-
     },
 
     {
@@ -268,11 +305,8 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
           icon={<DownloadOutlined />}
           onClick={() => downloadUrlFileSign(record)}
           style={{ cursor: "pointer" }}
-        >
-
-        </Button>
-
-      )
+        ></Button>
+      ),
     },
   ];
 
@@ -316,11 +350,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       width={"90vw"}
       centered
       style={{
-        margin: 20
+        margin: 20,
       }}
       styles={{
         body: { padding: 10 },
-
       }}
     >
       <Spin spinning={loading}>
@@ -407,12 +440,9 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                 {formatDateTime(data?.delegationEnd)}
               </Descriptions.Item>
 
-
               <Descriptions.Item label="Địa chỉ cuộc họp">
                 {meeting?.location || "-"}
               </Descriptions.Item>
-
-
             </Descriptions>
           </div>
 
@@ -440,16 +470,21 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                           }}
                         >
                           <div style={{ flex: 1 }}>
-
-                            {data?.votingMethodId?._id && electionentities.length > 0 && (
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                Tổng: {electionentities.length} nội dung bầu chọn
-                              </Text>
-                            )}
+                            {data?.votingMethodId?._id &&
+                              electionentities.length > 0 && (
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                  Tổng: {electionentities.length} nội dung bầu
+                                  chọn
+                                </Text>
+                              )}
                           </div>
                           {data?.votingMethodId?._id && (
                             <div
-                              style={{ display: "flex", alignItems: "center", gap: 12 }}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                              }}
                             >
                               <Input
                                 placeholder="Tìm kiếm..."
@@ -473,9 +508,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                               (c) => c.metaData?.fullName
                             );
                             const hasDetails = filteredCandidates.some(
-                              (c) => c.metaData?.experience || c.metaData?.achievements
+                              (c) =>
+                                c.metaData?.experience ||
+                                c.metaData?.achievements
                             );
-                            const hasFile = filteredCandidates.some((c) => c.fileUrl && c.fileUrl.trim() !== "");
+                            const hasFile = filteredCandidates.some(
+                              (c) => c.fileUrl && c.fileUrl.trim() !== ""
+                            );
 
                             const columns: any[] = [
                               {
@@ -505,7 +544,11 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                 dataIndex: "title",
                                 key: "title",
                                 width: 250,
-                                render: (text: string, record: any, index: number) => (
+                                render: (
+                                  text: string,
+                                  record: any,
+                                  index: number
+                                ) => (
                                   <div>
                                     <Text
                                       strong
@@ -520,8 +563,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                     {record.description && (
                                       <Text
                                         type="secondary"
-                                        ellipsis={{ tooltip: record.description }}
-                                        style={{ fontSize: 12, display: "block" }}
+                                        ellipsis={{
+                                          tooltip: record.description,
+                                        }}
+                                        style={{
+                                          fontSize: 12,
+                                          display: "block",
+                                        }}
                                       >
                                         {record.description}
                                       </Text>
@@ -586,7 +634,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                           {record.metaData.age && (
                                             <Tag
                                               color="green"
-                                              style={{ margin: 0, fontSize: 11 }}
+                                              style={{
+                                                margin: 0,
+                                                fontSize: 11,
+                                              }}
                                             >
                                               {record.metaData.age} tuổi
                                             </Tag>
@@ -594,7 +645,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                           {record.metaData.department && (
                                             <Tag
                                               color="green"
-                                              style={{ margin: 0, fontSize: 11 }}
+                                              style={{
+                                                margin: 0,
+                                                fontSize: 11,
+                                              }}
                                             >
                                               {record.metaData.department}
                                             </Tag>
@@ -602,7 +656,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                           {record.metaData.position && (
                                             <Tag
                                               color="orange"
-                                              style={{ margin: 0, fontSize: 11 }}
+                                              style={{
+                                                margin: 0,
+                                                fontSize: 11,
+                                              }}
                                             >
                                               {record.metaData.position}
                                             </Tag>
@@ -622,13 +679,18 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                 key: "details",
                                 width: 250,
                                 render: (_: any, record: any) => {
-                                  const hasExperience = record.metaData?.experience;
-                                  const hasAchievements = record.metaData?.achievements;
+                                  const hasExperience =
+                                    record.metaData?.experience;
+                                  const hasAchievements =
+                                    record.metaData?.achievements;
                                   if (!hasExperience && !hasAchievements) {
                                     return (
                                       <Text
                                         type="secondary"
-                                        style={{ fontStyle: "italic", fontSize: 12 }}
+                                        style={{
+                                          fontStyle: "italic",
+                                          fontSize: 12,
+                                        }}
                                       >
                                         -
                                       </Text>
@@ -640,16 +702,23 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                         <div style={{ marginBottom: 8 }}>
                                           <Tag
                                             color="purple"
-                                            style={{ marginBottom: 4, fontSize: 11 }}
+                                            style={{
+                                              marginBottom: 4,
+                                              fontSize: 11,
+                                            }}
                                           >
                                             Kinh nghiệm
                                           </Tag>
                                           <div>
                                             <Text
                                               ellipsis={{
-                                                tooltip: record.metaData.experience,
+                                                tooltip:
+                                                  record.metaData.experience,
                                               }}
-                                              style={{ fontSize: 12, display: "block" }}
+                                              style={{
+                                                fontSize: 12,
+                                                display: "block",
+                                              }}
                                             >
                                               {record.metaData.experience}
                                             </Text>
@@ -660,16 +729,23 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                         <div>
                                           <Tag
                                             color="cyan"
-                                            style={{ marginBottom: 4, fontSize: 11 }}
+                                            style={{
+                                              marginBottom: 4,
+                                              fontSize: 11,
+                                            }}
                                           >
                                             Thành tích
                                           </Tag>
                                           <div>
                                             <Text
                                               ellipsis={{
-                                                tooltip: record.metaData.achievements,
+                                                tooltip:
+                                                  record.metaData.achievements,
                                               }}
-                                              style={{ fontSize: 12, display: "block" }}
+                                              style={{
+                                                fontSize: 12,
+                                                display: "block",
+                                              }}
                                             >
                                               {record.metaData.achievements}
                                             </Text>
@@ -690,17 +766,25 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                 width: 100,
                                 align: "center" as const,
                                 render: (_: any, record: any) =>
-                                  record.fileUrl && record.fileUrl.trim() !== "" ? (
+                                  record.fileUrl &&
+                                  record.fileUrl.trim() !== "" ? (
                                     <Tooltip title="Có tài liệu đính kèm">
                                       <Button
                                         icon={<DownloadOutlined />}
-                                        onClick={() => downloadUrlFileSign1(record)}
-                                        style={{ cursor: "pointer", color: "green" }}
-                                      >
-                                      </Button>
+                                        onClick={() =>
+                                          downloadUrlFileSign1(record)
+                                        }
+                                        style={{
+                                          cursor: "pointer",
+                                          color: "green",
+                                        }}
+                                      ></Button>
                                     </Tooltip>
                                   ) : (
-                                    <Text type="secondary" style={{ fontSize: 12 }}>
+                                    <Text
+                                      type="secondary"
+                                      style={{ fontSize: 12 }}
+                                    >
                                       -
                                     </Text>
                                   ),
@@ -722,13 +806,14 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                         type="text"
                                         icon={<EyeOutlined />}
                                         size="small"
-                                        onClick={() => handleViewCandidate(record)}
+                                        onClick={() =>
+                                          handleViewCandidate(record)
+                                        }
                                         style={{
                                           color: "#52c41a",
                                         }}
                                       />
                                     </Tooltip>
-
                                   </Space>
                                 );
                               },
@@ -739,7 +824,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                           dataSource={filteredCandidates}
                           rowKey={(record) => {
                             // Use _id if available, otherwise create unique key
-                            return record._id || `candidate-${record.title || Math.random()}`;
+                            return (
+                              record._id ||
+                              `candidate-${record.title || Math.random()}`
+                            );
                           }}
                           pagination={{
                             pageSize: 10,
@@ -753,12 +841,28 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                           scroll={{ x: "max-content" }}
                           locale={{
                             emptyText: searchText ? (
-                              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                              <div
+                                style={{
+                                  textAlign: "center",
+                                  padding: "40px 20px",
+                                }}
+                              >
                                 <SearchOutlined
-                                  style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+                                  style={{
+                                    fontSize: 48,
+                                    color: "#d9d9d9",
+                                    marginBottom: 16,
+                                  }}
                                 />
-                                <p style={{ color: "#999", margin: 0, fontSize: 14 }}>
-                                  Không tìm thấy kết quả phù hợp với "{searchText}"
+                                <p
+                                  style={{
+                                    color: "#999",
+                                    margin: 0,
+                                    fontSize: 14,
+                                  }}
+                                >
+                                  Không tìm thấy kết quả phù hợp với "
+                                  {searchText}"
                                 </p>
                                 <Button
                                   type="link"
@@ -769,11 +873,26 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                                 </Button>
                               </div>
                             ) : (
-                              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                              <div
+                                style={{
+                                  textAlign: "center",
+                                  padding: "40px 20px",
+                                }}
+                              >
                                 <FileTextOutlined
-                                  style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+                                  style={{
+                                    fontSize: 48,
+                                    color: "#d9d9d9",
+                                    marginBottom: 16,
+                                  }}
                                 />
-                                <p style={{ color: "#999", margin: 0, fontSize: 14 }}>
+                                <p
+                                  style={{
+                                    color: "#999",
+                                    margin: 0,
+                                    fontSize: 14,
+                                  }}
+                                >
                                   Chưa có nội dung bầu chọn.
                                 </p>
                               </div>
@@ -808,13 +927,33 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                           (sum, item) => sum + (item.percent || 0),
                           0
                         );
+                        const isValid = totalPercent >= 51;
                         return (
-                          <Tag
-                            color={"yellow"}
-                            style={{ padding: 10, border: "1px solid ", fontSize: 14, fontWeight:700 }}
-                          >
-                            Tổng số cổ phần: {totalPercent}%
-                          </Tag>
+                          <Space direction="vertical" align="end" size="small">
+                            <Tag
+                              color={isValid ? "green" : "red"}
+                              style={{
+                                padding: 10,
+                                border: "1px solid ",
+                                fontSize: 14,
+                                fontWeight: 700,
+                              }}
+                            >
+                              Tổng số cổ phần: {totalPercent}%
+                            </Tag>
+                            {!isValid && (
+                              <Tag
+                                color="red"
+                                style={{
+                                  padding: 8,
+                                  fontSize: 13,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                ⚠ Không hợp lệ (Yêu cầu ≥ 51%)
+                              </Tag>
+                            )}
+                          </Space>
                         );
                       })()}
                     </div>
@@ -824,8 +963,6 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                       rowKey={(r) => r._id || r.id || r.userId}
                       pagination={{ pageSize: 10 }}
                     />
-
-
                   </>
                 ),
               },
@@ -866,32 +1003,44 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
 
           {/* ================= FOOTER ================= */}
           <div style={{ marginTop: 20, textAlign: "right" }}>
-            {
-              data?.statusData === "WAIT_APPROVAL" && (
-                <>
-                  <Tag
-                    style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
-                    icon={<EditOutlined />}
-                    color="green"
-                    onClick={() => handleOpenSign(data)}
-                  >
-                    Ký số
-                  </Tag>
-                  <Tag
-                    style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
-                    color="red"
-                    onClick={() => openRejectModal(data)}
-                  >
-                    Từ chối
-                  </Tag>
-
-                </>
-              )
-            }
+            {data?.statusData === "WAIT_APPROVAL" && (
+              <>
+                <Tag
+                  style={{
+                    padding: 10,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    border: "1px solid ",
+                  }}
+                  icon={<EditOutlined />}
+                  color="green"
+                  onClick={() => handleOpenSign(data)}
+                >
+                  Ký số
+                </Tag>
+                <Tag
+                  style={{
+                    padding: 10,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    border: "1px solid ",
+                  }}
+                  color="red"
+                  onClick={() => openRejectModal(data)}
+                >
+                  Từ chối
+                </Tag>
+              </>
+            )}
             {data?.statusData === "APPROVED_SIGNED" ? (
               <Tag
                 color={"yellow"}
-                style={{ padding: 10, cursor: "pointer", fontSize: 14, border: "1px solid " }}
+                style={{
+                  padding: 10,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  border: "1px solid ",
+                }}
                 icon={<DownloadOutlined />}
                 onClick={() => downloadUrlFileSign(data)}
               >
@@ -901,9 +1050,11 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
             <Space>
               <Tag
                 style={{ padding: 10, cursor: "pointer", fontSize: 14 }}
-                onClick={onClose}>Đóng</Tag>
+                onClick={onClose}
+              >
+                Đóng
+              </Tag>
             </Space>
-
           </div>
         </div>
       </Spin>
@@ -917,10 +1068,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
         }
         onCancel={() => setOpenCandidateModal(false)}
         footer={[
-          <Button
-            key="close"
-            onClick={() => setOpenCandidateModal(false)}
-          >
+          <Button key="close" onClick={() => setOpenCandidateModal(false)}>
             Đóng
           </Button>,
         ]}
@@ -941,7 +1089,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
 
               {/* Hiển thị theo type */}
               {(() => {
-                const formType = selectedCandidate.formType || selectedCandidate.metaData?.type || "other";
+                const formType =
+                  selectedCandidate.formType ||
+                  selectedCandidate.metaData?.type ||
+                  "other";
                 const metaData = selectedCandidate.metaData || {};
 
                 if (formType === "person") {
@@ -1124,9 +1275,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                       icon={<DownloadOutlined />}
                       onClick={() => downloadUrlFileSign1(selectedCandidate)}
                       style={{ cursor: "pointer" }}
-                    >
-                    </Button>
-
+                    ></Button>
                   )}
                 </Descriptions.Item>
               )}
@@ -1148,7 +1297,10 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
         footer={null}
         centered
       >
-        <p>Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> ủy quyền này không?</p>
+        <p>
+          Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> ủy quyền này
+          không?
+        </p>
         <Input.TextArea
           rows={4}
           placeholder="Nhập lý do từ chối..."

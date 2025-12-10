@@ -22,6 +22,7 @@ import ManagementUser from "@/pages/admin/ManagementUser";
 import Statistics from "@/pages/admin/Statistics";
 import SystemReport from "@/pages/admin/SystemReport";
 import SystemSettings from "@/pages/admin/SystemSettings";
+import ConfirmedElectionFromSecretary from "@/pages/board_of_control/ConfirmedElectionFromSecretary";
 import DashboardBoardOfControlPage from "@/pages/board_of_control/DashboardBoardOfControl";
 import ElectionVerificationPage from "@/pages/board_of_control/ElectionVerificationPage";
 import ReportArchivePage from "@/pages/board_of_control/ReportArchivePage";
@@ -48,7 +49,6 @@ import DashboardSecretary from "@/pages/secretary/Dashboard";
 import DraftingDocuments from "@/pages/secretary/DraftingDocuments";
 import NotificationCenterPage from "@/pages/secretary/NotificationCenterPage";
 import ReportCenterPage from "@/pages/secretary/ReportCenterPage";
-import FirstTimeChangePasswordScreen from "@/pages/user/ChangePasswordFirstTime";
 import Authorization from "@/pages/voter/Authorization";
 import BallotList from "@/pages/voter/BallotList";
 import CumulativeVoting from "@/pages/voter/CumulativeVoting";
@@ -183,6 +183,7 @@ export const privateRoutes = [
           { path: "voting-process", element: <VotingProcess /> },
           { path: "create-delegate-card", element: <CreateDelegateCardPage /> },
           { path: "election_tracking", element: <VotingDashboardPage /> },
+          {path:"confirmed-elections-from-secretary", element: <ConfirmedElectionFromSecretary /> }
         ],
       },
     ],
