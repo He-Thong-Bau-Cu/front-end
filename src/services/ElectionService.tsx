@@ -1,4 +1,3 @@
-
 import { ApiResponse } from "@/types/ApiResponse.interface";
 import { Election } from "@/types/Election.interface";
 import BaseService from "./BaseService";
@@ -14,12 +13,18 @@ class ElectionService extends BaseService {
   }
 
   async getElectionId(id: string | number): Promise<Election> {
-    const response = await this.api.get(`${this.endpoint}/get/${id}`) as ApiResponse<Election>;
+    const response = (await this.api.get(
+      `${this.endpoint}/get/${id}`
+    )) as ApiResponse<Election>;
     return response.data;
   }
 
   // Tìm kiếm danh sách cuộc bầu cử
-  async searchElections(params?: { textSearch?: string; page?: number; limit?: number }): Promise<BaseResponse<Election[]>> {
+  async searchElections(params?: {
+    textSearch?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<BaseResponse<Election[]>> {
     return await this.api.post(`${this.endpoint}/search`, {
       textSearch: params?.textSearch || "",
       page: params?.page || 1,
@@ -27,9 +32,12 @@ class ElectionService extends BaseService {
     });
   }
 
-   async bulkSaveDraft(body: any): Promise<any> {
+  async bulkSaveDraft(body: any): Promise<any> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/bulk-save-draft`, body);
+      const response = await this.api.post<any>(
+        `${this.endpoint}/bulk-save-draft`,
+        body
+      );
       return response;
     } catch (error) {
       console.error("Error bulk save draft:", error);
@@ -39,7 +47,10 @@ class ElectionService extends BaseService {
 
   async updateElection(id: string, body: any): Promise<any> {
     try {
-      const response = await this.api.put<any>(`${this.endpoint}/update/${id}`, body);
+      const response = await this.api.put<any>(
+        `${this.endpoint}/update/${id}`,
+        body
+      );
       return response;
     } catch (error) {
       console.error("Error create election type :", error);
@@ -59,7 +70,10 @@ class ElectionService extends BaseService {
 
   async getElectionVoter(body: any): Promise<any> {
     try {
-      const response = await this.api.post<any>(`${this.endpoint}/user-voter/valid`, body);
+      const response = await this.api.post<any>(
+        `${this.endpoint}/user-voter/valid`,
+        body
+      );
       return response.data;
     } catch (error) {
       console.error("Error get user:", error);
@@ -69,7 +83,9 @@ class ElectionService extends BaseService {
 
   async getDraftData(electionId: string): Promise<any> {
     try {
-      const response = await this.api.get<any>(`${this.endpoint}/${electionId}/draft-data`);
+      const response = await this.api.get<any>(
+        `${this.endpoint}/${electionId}/draft-data`
+      );
       return response;
     } catch (error) {
       console.error("Error get draft data:", error);
@@ -80,9 +96,12 @@ class ElectionService extends BaseService {
   async previewPdf(electionId: string): Promise<Blob> {
     try {
       // Interceptor đã unwrap response, nên response chính là response.data (đã là Blob)
-      const response = await this.api.get(`${this.endpoint}/preview-pdf/${electionId}`, {
-        responseType: 'blob',
-      });
+      const response = await this.api.get(
+        `${this.endpoint}/preview-pdf/${electionId}`,
+        {
+          responseType: "blob",
+        }
+      );
       // Interceptor trả về response.data, nên response chính là Blob
       return response as unknown as Blob;
     } catch (error) {
@@ -94,7 +113,10 @@ class ElectionService extends BaseService {
   // Kết thúc giai đoạn bỏ phiếu
   async endVotingStage(electionId: string): Promise<any> {
     try {
-      const response = await this.api.post(`${this.endpoint}/${electionId}/end-voting-stage`, {});
+      const response = await this.api.post(
+        `${this.endpoint}/${electionId}/end-voting-stage`,
+        {}
+      );
       return response;
     } catch (error) {
       console.error("Error ending voting stage:", error);
@@ -105,7 +127,10 @@ class ElectionService extends BaseService {
   // Bắt đầu một giai đoạn
   async startStage(electionId: string, stage: string): Promise<any> {
     try {
-      const response = await this.api.post(`${this.endpoint}/${electionId}/stages/${stage}/start`, {});
+      const response = await this.api.post(
+        `${this.endpoint}/${electionId}/stages/${stage}/start`,
+        {}
+      );
       return response;
     } catch (error) {
       console.error("Error starting stage:", error);
@@ -116,7 +141,10 @@ class ElectionService extends BaseService {
   // Kết thúc một giai đoạn
   async endStage(electionId: string, stage: string): Promise<any> {
     try {
-      const response = await this.api.post(`${this.endpoint}/${electionId}/stages/${stage}/end`, {});
+      const response = await this.api.post(
+        `${this.endpoint}/${electionId}/stages/${stage}/end`,
+        {}
+      );
       return response;
     } catch (error) {
       console.error("Error ending stage:", error);
@@ -127,7 +155,9 @@ class ElectionService extends BaseService {
   // Lấy giai đoạn hiện tại của cuộc bầu cử
   async getCurrentStage(electionId: string): Promise<any> {
     try {
-      const response = await this.api.get(`${this.endpoint}/${electionId}/current-stage`);
+      const response = await this.api.get(
+        `${this.endpoint}/${electionId}/current-stage`
+      );
       return response;
     } catch (error) {
       console.error("Error getting current stage:", error);
@@ -208,6 +238,7 @@ class ElectionService extends BaseService {
     }
   }
 
+
   // Clone election để bầu cử lại
   async cloneForReelection(
     electionId: string,
@@ -227,6 +258,18 @@ class ElectionService extends BaseService {
       return response as unknown as BaseResponse<any>;
     } catch (error) {
       console.error("Error clone election for reelection:", error);
+      }
+  }
+
+  async getVotersFromExcel(electionId: string): Promise<any> {
+    try {
+      const response = await this.api.get(
+        `${this.endpoint}/${electionId}/voters-from-excel`
+      );
+      return response;
+    } catch (error) {
+      console.error("Error getting voters from excel:", error);
+
       throw error;
     }
   }

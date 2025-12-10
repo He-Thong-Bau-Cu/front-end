@@ -96,7 +96,7 @@ const Statistics = () => {
   return (
     <div>
       {/* <StatisticsStats /> */}
-      <StatisticsReportSection />
+      {/* <StatisticsReportSection /> */}
       {dataChart && (
         <RealTimeData
           dataMap={dataChart}
