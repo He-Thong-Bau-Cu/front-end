@@ -161,13 +161,13 @@ const DraftingDocuments: React.FC = () => {
     const requiredRoleIds = [
       "6906eb6a3bb016c908c61b92", // Trưởng ban tổ chức
       "6906eb903bb016c908c61b99", // Thành viên ban tổ chức
-      "6907a5b5399e3682d80a1ddf", // Ban kiểm soát
+      "693a5bcc1d62567f679795e0", // Ban kiểm soát
     ];
 
     const roleIdNames: Record<string, string> = {
       "6906eb6a3bb016c908c61b92": "Trưởng ban tổ chức",
       "6906eb903bb016c908c61b99": "Thành viên ban tổ chức",
-      "6907a5b5399e3682d80a1ddf": "Ban kiểm soát",
+      "693a5bcc1d62567f679795e0": "Ban kiểm soát",
     };
 
     const existingRoleIds = participantsList
