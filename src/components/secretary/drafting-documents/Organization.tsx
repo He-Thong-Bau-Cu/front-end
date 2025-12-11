@@ -46,7 +46,12 @@ const statusColor = (status: string) => {
   }
 };
 
-const Organization: React.FC<Props> = ({ onChange, data, disabled = false, attendeesList = [] }) => {
+const Organization: React.FC<Props> = ({
+  onChange,
+  data,
+  disabled = false,
+  attendeesList = [],
+}) => {
   const [members, setMembers] = useState<Member[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
@@ -89,33 +94,36 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
 
     if (data && Array.isArray(data)) {
       // Lọc bỏ những thành viên có roleCode là VOTER
-      const filteredData = data.filter((item: any) => {
-        // Kiểm tra roleCode từ role object (được populate từ backend)
-        if (item.role?.roleCode) {
-          return item.role.roleCode !== USER_ROLE.VOTER;
-        }
-        // Nếu không có role object, kiểm tra roleId có phải là object với roleCode không
-        if (item.roleId?.roleCode) {
-          return item.roleId.roleCode !== USER_ROLE.VOTER;
-        }
-        // Nếu không có roleCode, giữ lại (có thể là roleId string chưa được populate)
-        return true;
-      }).map((item: any, index: number) => {
-        // Tạo unique ID: ưu tiên _id, nếu không có thì dùng userId + roleId, cuối cùng dùng index + timestamp
-        const uniqueId = item._id ||
-          `${item.userId || item.user?._id || 'user'}_${item.roleId?._id || item.roleId || item.role?._id || 'role'}_${index}` ||
-          `temp_${Date.now()}_${index}`;
+      const filteredData = data
+        .filter((item: any) => {
+          // Kiểm tra roleCode từ role object (được populate từ backend)
+          if (item.role?.roleCode) {
+            return item.role.roleCode !== USER_ROLE.VOTER;
+          }
+          // Nếu không có role object, kiểm tra roleId có phải là object với roleCode không
+          if (item.roleId?.roleCode) {
+            return item.roleId.roleCode !== USER_ROLE.VOTER;
+          }
+          // Nếu không có roleCode, giữ lại (có thể là roleId string chưa được populate)
+          return true;
+        })
+        .map((item: any, index: number) => {
+          // Tạo unique ID: ưu tiên _id, nếu không có thì dùng userId + roleId, cuối cùng dùng index + timestamp
+          const uniqueId =
+            item._id ||
+            `${item.userId || item.user?._id || "user"}_${item.roleId?._id || item.roleId || item.role?._id || "role"}_${index}` ||
+            `temp_${Date.now()}_${index}`;
 
-        return {
-          _id: item._id,
-          id: uniqueId,
-          userId: item.userId || item.user?._id,
-          fullName: item.fullName || item.user?.fullName,
-          roleId: item.roleId?._id || item.roleId || item.role?._id,
-          roleName: item.roleName || item.role?.roleName,
-          status: item.status,
-        };
-      });
+          return {
+            _id: item._id,
+            id: uniqueId,
+            userId: item.userId || item.user?._id,
+            fullName: item.fullName || item.user?.fullName,
+            roleId: item.roleId?._id || item.roleId || item.role?._id,
+            roleName: item.roleName || item.role?.roleName,
+            status: item.status,
+          };
+        });
 
       setMembers(filteredData);
       onChange(filteredData);
@@ -131,7 +139,6 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
     const voter = users.find((v) => v.email === email);
     setSelectedUser(voter);
   };
-
 
   const handleAdd = (values: any) => {
     const userInfo = users.find((u) => u._id === values.userId);
@@ -152,7 +159,9 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
           : values.roleId === "6906eb903bb016c908c61b99"
             ? "Thành viên ban tổ chức"
             : "Ban kiểm soát";
-      return message.error(`Vai trò "${roleName}" đã được chọn! Mỗi vai trò chỉ được chọn 1 lần.`);
+      return message.error(
+        `Vai trò "${roleName}" đã được chọn! Mỗi vai trò chỉ được chọn 1 lần.`
+      );
     }
 
     // Tạo unique ID cho member mới: userId_roleId_timestamp_counter
@@ -199,14 +208,16 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
               <TeamOutlined style={{ marginRight: 8 }} />
               Thành viên tổ chức ({members.length})
             </Text>
-            <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <div
+              style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+            >
               <a
                 className="add-link"
                 onClick={() => !disabled && setIsModalOpen(true)}
                 style={{
                   cursor: disabled ? "not-allowed" : "pointer",
                   opacity: disabled ? 0.5 : 1,
-                  pointerEvents: disabled ? "none" : "auto"
+                  pointerEvents: disabled ? "none" : "auto",
                 }}
               >
                 <PlusOutlined style={{ marginRight: 4 }} />
@@ -227,8 +238,13 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
                 <strong>{m.fullName}</strong>
                 <p>{m.roleName}</p>
               </div>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                <Tag color={statusColor(m.status || "PENDING")} style={{ margin: 0, marginTop: 2 }}>
+              <div
+                style={{ display: "flex", alignItems: "flex-start", gap: 8 }}
+              >
+                <Tag
+                  color={statusColor(m.status || "PENDING")}
+                  style={{ margin: 0, marginTop: 2 }}
+                >
                   {m.status === "ACTIVE"
                     ? "Đã xác nhận"
                     : m.status === "INACTIVE"
@@ -241,7 +257,7 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
                     color: canDelete ? "red" : "#ccc",
                     cursor: canDelete ? "pointer" : "not-allowed",
                     opacity: canDelete ? 1 : 0.5,
-                    marginTop: 2
+                    marginTop: 2,
                   }}
                   title={isCurrentUser ? "Không thể xóa chính mình" : "Xóa"}
                 />
@@ -288,7 +304,9 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
                   // Lọc bỏ user đã được chọn trong danh sách thành viên tổ chức
                   const isInMembers = members.some((m) => m.userId === u._id);
                   // Lọc bỏ user đã được chọn trong danh sách cử tri
-                  const isInAttendees = attendeesList.some((a) => a.userId === u._id);
+                  const isInAttendees = attendeesList.some(
+                    (a) => a.userId === u._id
+                  );
                   return !isInMembers && !isInAttendees;
                 })
                 .map((u) => (
@@ -305,27 +323,41 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
             name="roleId"
             rules={[{ required: true, message: "Vui lòng chọn chức vụ" }]}
           >
-            <Select placeholder="Vui lòng chọn chức vụ" disabled={disabled} allowClear showSearch>
+            <Select
+              placeholder="Vui lòng chọn chức vụ"
+              disabled={disabled}
+              allowClear
+              showSearch
+            >
               <Option
                 value="6906eb6a3bb016c908c61b92"
-                disabled={members.some((m) => m.roleId === "6906eb6a3bb016c908c61b92")}
+                disabled={members.some(
+                  (m) => m.roleId === "6906eb6a3bb016c908c61b92"
+                )}
               >
                 Trưởng ban tổ chức
-                {members.some((m) => m.roleId === "6906eb6a3bb016c908c61b92") && " (đã chọn)"}
+                {members.some((m) => m.roleId === "6906eb6a3bb016c908c61b92") &&
+                  " (đã chọn)"}
               </Option>
               <Option
                 value="6906eb903bb016c908c61b99"
-                disabled={members.some((m) => m.roleId === "6906eb903bb016c908c61b99")}
+                disabled={members.some(
+                  (m) => m.roleId === "6906eb903bb016c908c61b99"
+                )}
               >
                 Thành viên ban tổ chức
-                {members.some((m) => m.roleId === "6906eb903bb016c908c61b99") && " (đã chọn)"}
+                {members.some((m) => m.roleId === "6906eb903bb016c908c61b99") &&
+                  " (đã chọn)"}
               </Option>
               <Option
                 value="6907a5b5399e3682d80a1ddf"
-                disabled={members.some((m) => m.roleId === "6907a5b5399e3682d80a1ddf")}
+                disabled={members.some(
+                  (m) => m.roleId === "6907a5b5399e3682d80a1ddf"
+                )}
               >
                 Ban kiểm soát
-                {members.some((m) => m.roleId === "6907a5b5399e3682d80a1ddf") && " (đã chọn)"}
+                {members.some((m) => m.roleId === "6907a5b5399e3682d80a1ddf") &&
+                  " (đã chọn)"}
               </Option>
             </Select>
           </Form.Item>

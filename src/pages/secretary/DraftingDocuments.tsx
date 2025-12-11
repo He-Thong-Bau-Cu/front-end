@@ -260,9 +260,18 @@ const DraftingDocuments: React.FC = () => {
           );
           return false;
         }
+      }
 
-        // Kiểm tra voters
-        if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
+      // Kiểm tra voters
+      if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
+        // Kiểm tra xem có ít nhất voters import từ Excel hoặc voters thông thường
+        const hasImportedVoters = attendees.some(
+          (v: any) => v.isImportedFromExcel === true
+        );
+        const hasNormalVoters = attendees.some(
+          (v: any) => !v.isImportedFromExcel
+        );
+        if (!hasImportedVoters && !hasNormalVoters) {
           notify(
             "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
             "warning"
@@ -509,11 +518,20 @@ const DraftingDocuments: React.FC = () => {
 
         // Kiểm tra voters
         if (!Array.isArray(votersList) || votersList.length === 0) {
-          notify(
-            "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
-            "warning"
+          // Kiểm tra xem có ít nhất voters import từ Excel hoặc voters thông thường
+          const hasImportedVoters = attendees.some(
+            (v: any) => v.isImportedFromExcel === true
           );
-          return;
+          const hasNormalVoters = attendees.some(
+            (v: any) => !v.isImportedFromExcel
+          );
+          if (!hasImportedVoters && !hasNormalVoters) {
+            notify(
+              "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
+              "warning"
+            );
+            return false;
+          }
         }
 
         // Kiểm tra tổng % cổ phần

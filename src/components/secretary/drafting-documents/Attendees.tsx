@@ -82,7 +82,7 @@ const Attendees: React.FC<Props> = ({
         percentage: item.percentage || item.shares,
         status: item.status,
         eligible: item.eligible,
-        isImportedFromExcel: false, // Voters từ server không phải từ Excel
+        isImportedFromExcel: false,
       }));
       setParticipants(mapped);
       onChange(mapped);
@@ -93,7 +93,6 @@ const Attendees: React.FC<Props> = ({
       setDataLoaded(true);
       setExcelVotersLoaded(false); // Reset flag để load lại voters từ Excel
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   // Load voters từ Excel SAU KHI data đã được load
@@ -102,7 +101,6 @@ const Attendees: React.FC<Props> = ({
       const fetchVotersFromExcel = async () => {
         try {
           const res = await ElectionService.getVotersFromExcel(electionId);
-          console.log("res voters from excel", res);
 
           // Kiểm tra xem có voters không
           if (
@@ -149,7 +147,6 @@ const Attendees: React.FC<Props> = ({
               if (newVoters.length > 0) {
                 // Merge với participants hiện tại (từ data prop)
                 const updated = [...currentParticipants, ...newVoters];
-                console.log("updatedVoters after merge:", updated);
                 onChange(updated);
                 return updated;
               }
@@ -168,9 +165,7 @@ const Attendees: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [electionId, dataLoaded, excelVotersLoaded]);
 
-  console.log("participants", participants);
-
-  const totalPercentage = participants.reduce(
+  const totalPercentage = participants?.reduce(
     (sum, p) => sum + (Number(p.percentage) || 0),
     0
   );
@@ -322,7 +317,7 @@ const Attendees: React.FC<Props> = ({
               <strong>{p.fullName}</strong>
               {p.isImportedFromExcel && (
                 <Tag color="green" style={{ marginLeft: 8, fontSize: 10 }}>
-                  Import Excel
+                  Nhập từ Excel
                 </Tag>
               )}
               <p>{p.position}</p>
