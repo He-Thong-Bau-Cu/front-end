@@ -381,7 +381,7 @@ const DecisionTable = () => {
       // Tìm thư ký
       for (const a of participants) {
         const roleIdStr = a.roleId?._id?.toString() || a.roleId?._id || a.roleId;
-        if (String(roleIdStr) === "6904d5f7105b6a336b819be5" || a.roleId?.roleCode === "PRESIDE_SECRETARY") {
+        if (String(roleIdStr) === "693a5a671d62567f679795b6" || a.roleId?.roleCode === "PRESIDE_SECRETARY") {
           setSecrytary(a);
           break;
         }
@@ -391,7 +391,7 @@ const DecisionTable = () => {
       let boardOfControlFound = false;
       for (const a of participants) {
         const roleIdStr = a.roleId?._id?.toString() || a.roleId?._id || a.roleId;
-        if (String(roleIdStr) === "6904d5f7105b6a336b819be6" || a.roleId?.roleCode === "BOARD_OF_CONTROL") {
+        if (String(roleIdStr) === "693a5bcc1d62567f679795e0" || a.roleId?.roleCode === "BOARD_OF_CONTROL") {
           const userIdStr = a.userId?._id?.toString() || a.userId?._id || a.userId;
           decisionDetail.data.boardOfControlId = userIdStr;
           boardOfControlFound = true;
