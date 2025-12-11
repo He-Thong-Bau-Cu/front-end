@@ -57,7 +57,7 @@ const Attendees: React.FC<Props> = ({
       const res = await ElectionService.getElectionVoter({});
       setUsers(res);
     } catch {
-      message.error("Không thể tải danh sách người dùng!");
+      notify("Không thể tải danh sách người dùng!", "error");
     }
   };
 
@@ -178,7 +178,7 @@ const Attendees: React.FC<Props> = ({
   const handleAdd = (values: any) => {
     const userInfo = users.find((u) => u._id === values.userId);
     if (!userInfo) {
-      return message.error("Không tìm thấy thông tin người dùng!");
+      return notify("Không tìm thấy thông tin người dùng!", "error");
     }
 
     // Kiểm tra tổng % cổ phần không vượt quá 100%
@@ -190,8 +190,9 @@ const Attendees: React.FC<Props> = ({
     const newTotal = currentTotal + percentageValue;
 
     if (newTotal > 100) {
-      return message.error(
-        `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${currentTotal}%, Thêm: ${percentageValue}% = ${newTotal}%)`
+      return notify(
+        `Tổng cổ phần không được vượt quá 100%! (Hiện tại: ${currentTotal}%, Thêm: ${percentageValue}% = ${newTotal}%)`,
+        "error"
       );
     }
 
