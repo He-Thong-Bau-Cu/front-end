@@ -260,15 +260,15 @@ const DraftingDocuments: React.FC = () => {
           );
           return false;
         }
-      }
 
-      // Kiểm tra voters
-      if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
-        notify(
-          "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
-          "warning"
-        );
-        return false;
+        // Kiểm tra voters
+        if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
+          notify(
+            "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
+            "warning"
+          );
+          return false;
+        }
       }
 
       // Kiểm tra participants (thành viên ban tổ chức)
