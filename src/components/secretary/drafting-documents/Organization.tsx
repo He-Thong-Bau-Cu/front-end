@@ -219,9 +219,10 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
         {members.map((m) => {
           // Kiểm tra xem user này có phải là user hiện tại không (thư ký)
           const isCurrentUser = m.userId === currentUserId;
-          // Kiểm tra xem có phải là ban kiểm soát không (roleId = "6907a5b5399e3682d80a1ddf")
-          const isBoardOfControl = m.roleId === "6907a5b5399e3682d80a1ddf";
-          const canDelete = !disabled && !isCurrentUser && !isBoardOfControl;
+          // Kiểm tra xem có phải là ban kiểm soát không (roleId = "693a5bcc1d62567f679795e0")
+          const isBoardOfControl = m.roleId === "693a5bcc1d62567f679795e0";
+          const isChuToa = m.roleId === "693a5b9e1d62567f679795c4"; // ID của Chữ Tòa
+          const canDelete = !disabled && !isCurrentUser && !isBoardOfControl && !isChuToa;
 
           // Xác định title cho tooltip
           let deleteTitle = "Xóa";
@@ -331,11 +332,11 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
                 {members.some((m) => m.roleId === "6906eb903bb016c908c61b99") && " (đã chọn)"}
               </Option>
               <Option
-                value="6907a5b5399e3682d80a1ddf"
-                disabled={members.some((m) => m.roleId === "6907a5b5399e3682d80a1ddf")}
+                value="693a5bcc1d62567f679795e0"
+                disabled={members.some((m) => m.roleId === "693a5bcc1d62567f679795e0")}
               >
                 Ban kiểm soát
-                {members.some((m) => m.roleId === "6907a5b5399e3682d80a1ddf") && " (đã chọn)"}
+                {members.some((m) => m.roleId === "693a5bcc1d62567f679795e0") && " (đã chọn)"}
               </Option>
             </Select>
           </Form.Item>

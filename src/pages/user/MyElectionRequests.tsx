@@ -12,7 +12,6 @@ import {
   Row,
   Col,
   Select,
-  message,
   Typography,
   Layout,
   Spin,
@@ -24,7 +23,6 @@ import {
   SearchOutlined,
   LeftOutlined,
   EditOutlined,
-  CloseOutlined,
 } from "@ant-design/icons";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
@@ -38,7 +36,6 @@ import VotingRightService from "@/services/VotingRightService";
 import DecisionService from "@/services/DecisionService";
 import ViewDecisionModal from "@/components/preside/management-decision/ViewDecisionModal";
 import dayjs from "dayjs";
-import { formatDate } from "@/utils/format";
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "@/components/homepage/HomeHeader";
 import { USER_ROLE } from "@/enums/STATUS";
@@ -162,7 +159,9 @@ const MyElectionRequests: React.FC = () => {
     };
   };
 
-  const today = dayjs().startOf("day");
+  // Logic ngày bắt đầu tối thiểu: Hiện tại + 20 ngày
+  // (Dùng startOf('day') để reset giờ về 00:00:00 cho dễ so sánh)
+  const todayPlus20 = dayjs().add(21, "day").startOf("day");
 
   useEffect(() => {
     loadMyRequests(1, pagination.pageSize);
@@ -314,7 +313,7 @@ const MyElectionRequests: React.FC = () => {
         if (response.success) {
           notify(
             response.message ||
-              "Tạo yêu cầu thành công! Đang chờ phê duyệt từ chủ tịch hội đồng quản trị.",
+            "Tạo yêu cầu thành công! Đang chờ phê duyệt từ chủ tịch hội đồng quản trị.",
             "success"
           );
         } else {
@@ -344,6 +343,7 @@ const MyElectionRequests: React.FC = () => {
     try {
       setViewLoading(true);
       setViewModalOpen(true);
+      setViewRecord(record);
 
       // Load các dữ liệu cần thiết cho ViewDecisionModal
       const data1 = await ElectionDocumentService.getDocumentByElectionId(record._id);
@@ -712,7 +712,9 @@ const MyElectionRequests: React.FC = () => {
               </Form.Item>
             </Col>
 
+            {/* DATE RANGE - ĐÃ CẬP NHẬT LOGIC */}
             <Row gutter={20} style={{ width: "100%" }}>
+              {/* Thời gian bắt đầu */}
               <Col span={12}>
                 <Form.Item
                   name="startDate"
@@ -722,18 +724,21 @@ const MyElectionRequests: React.FC = () => {
                   <DatePicker
                     showTime={{
                       format: "HH:mm",
-                      disabledTime,
+                      disabledTime,   // Áp dụng giới hạn giờ hành chính
                     }}
                     format={FORMAT}
                     style={{ width: "100%" }}
                     placeholder="Chọn thời gian bắt đầu"
-                    disabledDate={(current) =>
-                      current && current < today
-                    }
+                    // CHỈNH SỬA: Dùng todayPlus20 để chặn các ngày < hiện tại + 20 ngày
+                    disabledDate={(current) => current && current < todayPlus20}
+                    onChange={(value) => {
+                      form.setFieldsValue({ startDate: value }); // Cập nhật ngay để end date check
+                    }}
                   />
                 </Form.Item>
               </Col>
 
+              {/* Thời gian kết thúc */}
               <Col span={12}>
                 <Form.Item
                   name="endDate"
@@ -746,6 +751,7 @@ const MyElectionRequests: React.FC = () => {
                         const start = getFieldValue("startDate");
                         if (!value || !start) return Promise.resolve();
 
+                        // Cho phép cùng ngày nhưng giờ phải sau
                         if (value.isBefore(start)) {
                           return Promise.reject(
                             "Thời gian kết thúc phải sau thời gian bắt đầu"
@@ -759,15 +765,21 @@ const MyElectionRequests: React.FC = () => {
                   <DatePicker
                     showTime={{
                       format: "HH:mm",
-                      disabledTime,
+                      disabledTime, // Áp dụng giới hạn giờ hành chính
                     }}
                     format={FORMAT}
                     style={{ width: "100%" }}
                     placeholder="Chọn thời gian kết thúc"
+                    // CHỈNH SỬA: Logic chặn ngày cho endDate
                     disabledDate={(current) => {
                       const start = form.getFieldValue("startDate");
-                      if (!start) return current && current < today;
+                      // Nếu chưa chọn start thì disable ngày < todayPlus20
+                      if (!start) return current && current < todayPlus20;
+                      // Nếu đã chọn start thì disable các ngày trước start
                       return current && current < start.startOf("day");
+                    }}
+                    onChange={(value) => {
+                      form.setFieldsValue({ endDate: value });
                     }}
                   />
                 </Form.Item>
@@ -928,7 +940,3 @@ const MyElectionRequests: React.FC = () => {
 };
 
 export default MyElectionRequests;
-
-
-
-
