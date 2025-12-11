@@ -480,10 +480,6 @@ const ExcelImport: React.FC<Props> = ({
     setParticipants(updated);
     onChange(updated);
 
-    // KHÔNG TẠO DOCUMENT NGAY
-    // File Excel sẽ được tạo và gọi API create document khi user click "Lưu nháp" hoặc "Gửi duyệt"
-    // Voters import từ Excel chỉ hiển thị trong giao diện, không gửi trong API bulk-save-draft
-
     notify(
       `Đã import thành công ${newParticipants.length} cử tri từ file Excel. File Excel sẽ được tạo khi bạn click "Lưu nháp" hoặc "Gửi duyệt"`,
       "success"
@@ -497,20 +493,8 @@ const ExcelImport: React.FC<Props> = ({
     // Tạo template Excel
     const templateData = [
       ["FullName", "Email", "Phone", "CitizenId", "Shares"],
-      [
-        "Nguyễn Thị Làn",
-        "lan010603@gmail.com",
-        "0328126702",
-        "034303008552",
-        "25",
-      ],
-      [
-        "Lina Nguyễn",
-        "kimquy001623@gmail.com",
-        "0987654321",
-        "0987654321",
-        "30",
-      ],
+      ["Lan Nguyen", "lan010603@gmail.com", "0328126702", "034303008552", "25"],
+      ["Lina Nguyen", "kimquy001623@gmail.com", "034303008553", "30"],
     ];
 
     const ws = XLSX.utils.aoa_to_sheet(templateData);
@@ -526,8 +510,8 @@ const ExcelImport: React.FC<Props> = ({
       { wch: 10 }, // Shares
     ];
 
-    XLSX.writeFile(wb, "template_danh_sach_cu_tri.xlsx");
-    notify("Đã tải template thành công", "success");
+    XLSX.writeFile(wb, "ban_mau_danh_sach_cu_tri.xlsx");
+    notify("Đã tải bản mẫu thành công", "success");
   };
   return (
     <>
@@ -542,7 +526,7 @@ const ExcelImport: React.FC<Props> = ({
         />
       </Tooltip>
       {/* download template */}
-      <Tooltip title="Tải xuống template">
+      <Tooltip title="Tải xuống bản mẫu">
         <Button
           type="default"
           size="small"
