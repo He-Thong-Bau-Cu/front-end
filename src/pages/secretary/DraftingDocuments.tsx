@@ -508,12 +508,17 @@ const DraftingDocuments: React.FC = () => {
         );
 
         // Kiểm tra voters
-        if (!Array.isArray(votersList) || votersList.length === 0) {
-          notify(
-            "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
-            "warning"
-          );
-          return;
+        // Nếu có voters import từ Excel, không cần kiểm tra voters thông thường
+        // Vì voters import từ Excel đã được tính là có voters rồi
+        if (!hasImportedVoters) {
+          // Chỉ kiểm tra voters nếu KHÔNG có voters import từ Excel
+          if (!Array.isArray(votersList) || votersList.length === 0) {
+            notify(
+              "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
+              "warning"
+            );
+            return;
+          }
         }
 
         // Kiểm tra tổng % cổ phần
