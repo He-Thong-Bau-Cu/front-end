@@ -129,10 +129,11 @@ class DecisionService extends BaseService {
       throw error;
     }
   }
-  async ApproveBKS(electionId: string): Promise<any> {
+  async ApproveBKS(electionId: string, approveReason?: string): Promise<any> {
     try {
       const response = await this.api.post<any>(
-        `${this.endpoint}/${electionId}/approve-by-bks`
+        `${this.endpoint}/${electionId}/approve-by-bks`,
+        approveReason ? { approveReason: approveReason } : {}
       );
       return response;
     } catch (error) {

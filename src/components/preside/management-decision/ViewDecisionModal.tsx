@@ -46,6 +46,7 @@ interface ViewDecisionModalProps {
   electionentities?: any[];
   documents?: any[];
   meeting?: any;
+  hideSignButton?: boolean; // Ẩn button ký số (dùng cho BKS)
 }
 
 const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
@@ -59,6 +60,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   electionentities = [],
   documents = [],
   meeting = {},
+  hideSignButton = false,
 }) => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [openCandidateModal, setOpenCandidateModal] = useState(false);
@@ -1005,47 +1007,60 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
           <div style={{ marginTop: 20, textAlign: "right" }}>
             {data?.statusData === "WAIT_APPROVAL" && (
               <>
+                {!hideSignButton && (
+                  <>
+                    <Tag
+                      style={{
+                        padding: 10,
+                        cursor: "pointer",
+                        fontSize: 14,
+                        border: "1px solid ",
+                      }}
+                      icon={<EditOutlined />}
+                      color="green"
+                      onClick={() => handleOpenSign(data)}
+                    >
+                      Ký số
+                    </Tag>
+                    <Tag
+                      style={{
+                        padding: 10,
+                        cursor: "pointer",
+                        fontSize: 14,
+                        border: "1px solid ",
+                      }}
+                      color="red"
+                      onClick={() => openRejectModal(data)}
+                    >
+                      Từ chối
+                    </Tag>
+                  </>
+                )}
+              </>
+            )}
+            {data?.statusData === "APPROVED_SIGNED" ? (
+              <>
                 <Tag
+                  color={"yellow"}
                   style={{
                     padding: 10,
                     cursor: "pointer",
                     fontSize: 14,
                     border: "1px solid ",
                   }}
-                  icon={<EditOutlined />}
-                  color="green"
-                  onClick={() => handleOpenSign(data)}
+                  icon={<DownloadOutlined />}
+                  onClick={() => downloadUrlFileSign(data)}
                 >
-                  Ký số
+                  Tải tài liệu có chữ ký số
                 </Tag>
                 <Tag
-                  style={{
-                    padding: 10,
-                    cursor: "pointer",
-                    fontSize: 14,
-                    border: "1px solid ",
-                  }}
                   color="red"
+                  style={{ padding: 10, cursor: "pointer", fontSize: 14 }}
                   onClick={() => openRejectModal(data)}
                 >
                   Từ chối
                 </Tag>
               </>
-            )}
-            {data?.statusData === "APPROVED_SIGNED" ? (
-              <Tag
-                color={"yellow"}
-                style={{
-                  padding: 10,
-                  cursor: "pointer",
-                  fontSize: 14,
-                  border: "1px solid ",
-                }}
-                icon={<DownloadOutlined />}
-                onClick={() => downloadUrlFileSign(data)}
-              >
-                Tải tài liệu có chữ ký số
-              </Tag>
             ) : null}
             <Space>
               <Tag

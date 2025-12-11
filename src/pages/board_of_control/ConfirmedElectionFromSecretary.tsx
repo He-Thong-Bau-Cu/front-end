@@ -3,20 +3,20 @@ import {
   Card,
   Spin,
   Button,
-  Space,
   Tag,
   Input,
   message,
+  Descriptions,
+  Divider,
   Modal,
-  Table,
-  Tooltip,
 } from "antd";
 import {
-  SearchOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   FileTextOutlined,
-  EyeOutlined,
+  CalendarOutlined,
+  UserOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import ViewDecisionModal from "@/components/preside/management-decision/ViewDecisionModal";
 import DecisionService from "@/services/DecisionService";
@@ -31,11 +31,8 @@ import { useNotification } from "@/contexts/NotificationContext";
 import type { Decision } from "@/types/Decision.interface";
 
 const ConfirmedElectionFromSecretary: React.FC = () => {
-  const [elections, setElections] = useState<Decision[]>([]);
+  const [election, setElection] = useState<Decision | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedElection, setSelectedElection] = useState<Decision | null>(
-    null
-  );
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
   const [viewDecisionData, setViewDecisionData] = useState<Decision | null>(
@@ -46,50 +43,51 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
   const [organize, setOrganize] = useState<unknown[]>([]);
   const [entities, setEntities] = useState<unknown[]>([]);
   const [meeting, setMeeting] = useState<unknown | null>(null);
-  const [searchText, setSearchText] = useState("");
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [rejectingElectionId, setRejectingElectionId] = useState<string | null>(
-    null
-  );
-  const [confirmingElectionId, setConfirmingElectionId] = useState<
-    string | null
-  >(null);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
-  const electionId = localStorage.getItem("electionId");
-  console.log("electionId", electionId);
+  const electionId = localStorage.getItem("currentElectionId");
 
-  // Load danh sách elections có status WAIT_BKS_CONFIRMED
-  const loadElections = async () => {
+  // Load election và chi tiết
+  const loadElection = async () => {
+    if (!electionId) {
+      notify("Không tìm thấy ID cuộc bầu cử", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await DecisionService.getElectionById(electionId || "");
-      setElections(response?.data || []);
+      // Load election info
+      const response = await DecisionService.getElectionById(electionId);
+      const electionData = response?.data;
+
+      if (!electionData) {
+        notify("Không tìm thấy thông tin cuộc bầu cử", "error");
+        return;
+      }
+
+      setElection(electionData as Decision);
+
+      // Load chi tiết election
+      await loadElectionDetail(electionId);
     } catch (err: unknown) {
-      console.error("Error fetching elections:", err);
-      notify("Không thể tải danh sách cuộc bầu cử", "error");
+      console.error("Error fetching election:", err);
+      notify("Không thể tải thông tin cuộc bầu cử", "error");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadElections();
+    loadElection();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText]);
-
-  // Load chi tiết election khi chọn
-  const handleSelectElection = async (election: Decision) => {
-    setSelectedElection(election);
-    await loadElectionDetail(election._id);
-  };
+  }, []);
 
   const loadElectionDetail = async (electionId: string) => {
     try {
       setViewLoading(true);
-      setViewModalOpen(true);
 
       // Load documents
       const data1 =
@@ -273,15 +271,16 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
   };
 
   // Xác nhận cuộc bầu cử
-  const handleConfirm = async (electionId: string) => {
+  const handleConfirm = async () => {
+    if (!electionId) return;
+
     try {
       showLoading();
       const response = await DecisionService.ApproveBKS(electionId);
       if (response.success) {
         notify("Xác nhận cuộc bầu cử thành công!", "success");
         setConfirmModalOpen(false);
-        setConfirmingElectionId(null);
-        await loadElections();
+        await loadElection(); // Reload để cập nhật trạng thái
       } else {
         notify(response.message || "Xác nhận thất bại", "error");
       }
@@ -297,7 +296,9 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
   };
 
   // Từ chối cuộc bầu cử
-  const handleReject = async (electionId: string) => {
+  const handleReject = async () => {
+    if (!electionId) return;
+
     if (!rejectReason.trim()) {
       message.error("Vui lòng nhập lý do từ chối!");
       return;
@@ -313,8 +314,7 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
         notify("Từ chối cuộc bầu cử thành công!", "success");
         setRejectModalOpen(false);
         setRejectReason("");
-        setRejectingElectionId(null);
-        await loadElections();
+        await loadElection(); // Reload để cập nhật trạng thái
       } else {
         notify(response.message || "Từ chối thất bại", "error");
       }
@@ -338,110 +338,54 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch {
       return "";
     }
   };
 
-  const filteredElections = elections.filter((election) => {
-    if (!searchText.trim()) return true;
-    const search = searchText.toLowerCase();
-    return (
-      election.decisionNumber?.toLowerCase().includes(search) ||
-      election.decisionName?.toLowerCase().includes(search)
-    );
-  });
+  const getStatusTag = (status: string | null | undefined) => {
+    if (!status) return { text: "Chưa có trạng thái", color: "default" };
+    const statusMap: Record<string, { text: string; color: string }> = {
+      WAIT_ENTER_DATA: { text: "Chờ nhập dữ liệu", color: "orange" },
+      WAIT_APPROVAL: { text: "Chờ duyệt", color: "blue" },
+      WAIT_BKS_CONFIRMED: { text: "Chờ BKS xác nhận", color: "purple" },
+      APPROVED_SIGNED: { text: "Đã duyệt và ký", color: "green" },
+      REJECTED: { text: "Đã từ chối", color: "red" },
+      ACTIVE: { text: "Đang hoạt động", color: "green" },
+      INACTIVE: { text: "Không hoạt động", color: "default" },
+    };
+    return statusMap[status] || { text: status, color: "default" };
+  };
 
-  // Định nghĩa columns cho table
-  const columns = [
-    {
-      title: "STT",
-      key: "index",
-      width: 70,
-      align: "center" as const,
-      render: (_: unknown, __: unknown, index: number) => index + 1,
-    },
-    {
-      title: "Số quyết định",
-      dataIndex: "decisionNumber",
-      key: "decisionNumber",
-      width: 150,
-      render: (text: string) => (
-        <Tag color="purple" style={{ fontSize: 13, padding: "4px 8px" }}>
-          {text || "N/A"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Tên quyết định",
-      dataIndex: "decisionName",
-      key: "decisionName",
-      width: 300,
-      render: (text: string) => (
-        <span style={{ fontWeight: 600, fontSize: 14 }}>
-          {text || "Chưa có tên"}
-        </span>
-      ),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      width: 120,
-      render: (date: string) => formatDate(date),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "statusData",
-      key: "statusData",
-      width: 150,
-      render: () => (
-        <Tag color="purple" style={{ fontSize: 12, padding: "4px 8px" }}>
-          Chờ xác nhận
-        </Tag>
-      ),
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      width: 250,
-      fixed: "right" as const,
-      render: (_: unknown, record: Decision) => (
-        <Space size="small">
-          <Tooltip title="Xem chi tiết">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => handleSelectElection(record)}
-              style={{ color: "#1890ff" }}
-            />
-          </Tooltip>
-          <Button
-            type="primary"
-            icon={<CheckCircleOutlined />}
-            onClick={() => {
-              setConfirmingElectionId(record._id);
-              setConfirmModalOpen(true);
-            }}
-            style={{ background: "#52c41a", borderColor: "#52c41a" }}
-          >
-            Xác nhận
-          </Button>
-          <Button
-            danger
-            icon={<CloseCircleOutlined />}
-            onClick={() => {
-              setRejectingElectionId(record._id);
-              setRejectModalOpen(true);
-            }}
-          >
-            Từ chối
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+  if (!election) {
+    return (
+      <div
+        style={{ padding: "20px", minHeight: "100vh", background: "#f0f2f5" }}
+      >
+        <Card>
+          <Spin spinning={loading} tip="Đang tải thông tin cuộc bầu cử...">
+            <div style={{ minHeight: "200px" }} />
+          </Spin>
+        </Card>
+      </div>
+    );
+  }
+
+  const statusInfo = getStatusTag(election.statusData);
+  const electionData = election as Decision & {
+    typeId?: { typeName?: string };
+    votingMethodId?: { methodName?: string };
+    thresholdId?: { thresholdName?: string; value?: number };
+    startDate?: string | Date;
+    endDate?: string | Date;
+    delegationStart?: string | Date;
+    delegationEnd?: string | Date;
+    createdBy?: { fullName?: string; email?: string };
+    rejectReason?: string;
+  };
 
   return (
     <div style={{ padding: "20px", minHeight: "100vh", background: "#f0f2f5" }}>
@@ -450,62 +394,126 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <FileTextOutlined style={{ fontSize: 18, color: "#1890ff" }} />
             <span style={{ fontSize: 16, fontWeight: 600 }}>
-              Danh sách cuộc bầu cử chờ xác nhận
+              Chi tiết cuộc bầu cử
             </span>
           </div>
         }
         extra={
-          <Tag color="purple" style={{ fontSize: 12, padding: "4px 8px" }}>
-            {elections.length} cuộc bầu cử
+          <Tag
+            color={statusInfo.color}
+            style={{ fontSize: 12, padding: "4px 8px" }}
+          >
+            {statusInfo.text}
           </Tag>
         }
-        style={{ minHeight: "calc(100vh - 100px)" }}
+        style={{ marginBottom: 16 }}
       >
-        <div style={{ marginBottom: 16 }}>
-          <Input
-            placeholder="Tìm kiếm theo số quyết định, tên quyết định..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-            style={{ width: 400, borderRadius: 6 }}
-          />
-        </div>
         <Spin spinning={loading}>
-          <Table
-            columns={columns}
-            dataSource={filteredElections}
-            rowKey={(record) => record._id || String(Math.random())}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: (total) => `Tổng ${total} cuộc bầu cử`,
-              pageSizeOptions: ["10", "20", "50", "100"],
+          <Descriptions
+            bordered
+            column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
+          >
+            <Descriptions.Item label="Số quyết định" span={1}>
+              <Tag color="purple">{election.decisionNumber || "N/A"}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Tên quyết định" span={1}>
+              <strong>{election.decisionName || "N/A"}</strong>
+            </Descriptions.Item>
+            <Descriptions.Item label="Loại bầu cử" span={1}>
+              {electionData?.typeId?.typeName || "N/A"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Hình thức bầu cử" span={1}>
+              {electionData?.votingMethodId?.methodName || "N/A"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngưỡng thông qua" span={1}>
+              {electionData?.thresholdId?.thresholdName || "N/A"}
+              {electionData?.thresholdId?.value &&
+                ` (${electionData.thresholdId.value}%)`}
+            </Descriptions.Item>
+            <Descriptions.Item label="Trạng thái" span={1}>
+              <Tag color={statusInfo.color}>{statusInfo.text}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày bắt đầu" span={1}>
+              <CalendarOutlined style={{ marginRight: 4 }} />
+              {formatDate(electionData?.startDate)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày kết thúc" span={1}>
+              <CalendarOutlined style={{ marginRight: 4 }} />
+              {formatDate(electionData?.endDate)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Thời gian ủy quyền bắt đầu" span={1}>
+              <CalendarOutlined style={{ marginRight: 4 }} />
+              {formatDate(electionData?.delegationStart)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Thời gian ủy quyền kết thúc" span={1}>
+              <CalendarOutlined style={{ marginRight: 4 }} />
+              {formatDate(electionData?.delegationEnd)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Người tạo" span={1}>
+              <UserOutlined style={{ marginRight: 4 }} />
+              {electionData?.createdBy?.fullName || "N/A"}
+              {electionData?.createdBy?.email && (
+                <span style={{ color: "#999", marginLeft: 8 }}>
+                  ({electionData.createdBy.email})
+                </span>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Ngày tạo" span={1}>
+              <CalendarOutlined style={{ marginRight: 4 }} />
+              {formatDate(election.createdAt)}
+            </Descriptions.Item>
+            {electionData?.rejectReason && (
+              <Descriptions.Item label="Lý do từ chối" span={2}>
+                <Tag color="red">
+                  <InfoCircleOutlined style={{ marginRight: 4 }} />
+                  {electionData.rejectReason}
+                </Tag>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+
+          <Divider />
+
+          {/* Nút xác nhận và từ chối */}
+          <div
+            style={{
+              marginTop: 24,
+              display: "flex",
+              gap: 12,
+              flexWrap: "wrap",
             }}
-            scroll={{ x: "max-content" }}
-            locale={{
-              emptyText: loading ? (
-                "Đang tải..."
-              ) : searchText ? (
-                "Không tìm thấy cuộc bầu cử nào"
-              ) : (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "40px 20px",
-                    color: "#999",
-                  }}
-                >
-                  <FileTextOutlined
-                    style={{ fontSize: 48, marginBottom: 16 }}
-                  />
-                  <p style={{ margin: 0, fontSize: 14 }}>
-                    Chưa có cuộc bầu cử nào chờ xác nhận
-                  </p>
-                </div>
-              ),
-            }}
-          />
+          >
+            <Button
+              type="primary"
+              size="large"
+              icon={<CheckCircleOutlined />}
+              onClick={() => setConfirmModalOpen(true)}
+              style={{ background: "#52c41a", borderColor: "#52c41a" }}
+              disabled={election.statusData !== "WAIT_BKS_CONFIRMED"}
+            >
+              Xác nhận cuộc bầu cử
+            </Button>
+
+            <Button
+              danger
+              size="large"
+              icon={<CloseCircleOutlined />}
+              onClick={() => setRejectModalOpen(true)}
+              disabled={election.statusData !== "WAIT_BKS_CONFIRMED"}
+            >
+              Từ chối cuộc bầu cử
+            </Button>
+
+            <Button
+              icon={<FileTextOutlined />}
+              onClick={() => {
+                setViewDecisionData(election);
+                setViewModalOpen(true);
+              }}
+            >
+              Xem chi tiết đầy đủ
+            </Button>
+          </div>
         </Spin>
       </Card>
 
@@ -513,89 +521,80 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
       <Modal
         title="Xác nhận cuộc bầu cử"
         open={confirmModalOpen}
-        onOk={() => {
-          if (confirmingElectionId) {
-            handleConfirm(confirmingElectionId);
-          }
-        }}
+        onOk={handleConfirm}
         onCancel={() => {
           setConfirmModalOpen(false);
-          setConfirmingElectionId(null);
         }}
         okText="Xác nhận"
         cancelText="Hủy"
-        okButtonProps={{ icon: <CheckCircleOutlined />, type: "primary" }}
+        okButtonProps={{
+          icon: <CheckCircleOutlined />,
+          type: "primary",
+          style: { background: "#52c41a", borderColor: "#52c41a" },
+        }}
+        width={600}
       >
-        <p>
-          Bạn có chắc muốn <b style={{ color: "#52c41a" }}>xác nhận</b> cuộc bầu
-          cử này không?
-        </p>
-        <p style={{ color: "#999", fontSize: 12, marginTop: 8 }}>
-          Cuộc bầu cử:{" "}
-          <b>
-            {elections.find((e) => e._id === confirmingElectionId)
-              ?.decisionName || "N/A"}
-          </b>
-        </p>
+        <div>
+          <p>
+            Bạn có chắc muốn <b style={{ color: "#52c41a" }}>xác nhận</b> cuộc
+            bầu cử này không?
+          </p>
+          <p style={{ color: "#999", fontSize: 12, marginTop: 8 }}>
+            Cuộc bầu cử: <b>{election.decisionName || "N/A"}</b>
+          </p>
+        </div>
       </Modal>
 
       {/* Modal từ chối */}
       <Modal
         title="Từ chối cuộc bầu cử"
         open={rejectModalOpen}
-        onOk={() => {
-          if (rejectingElectionId) {
-            handleReject(rejectingElectionId);
-          }
-        }}
+        onOk={handleReject}
         onCancel={() => {
           setRejectModalOpen(false);
           setRejectReason("");
-          setRejectingElectionId(null);
         }}
         okText="Xác nhận từ chối"
         cancelText="Hủy"
-        okButtonProps={{ danger: true, icon: <CloseCircleOutlined /> }}
+        okButtonProps={{
+          danger: true,
+          icon: <CloseCircleOutlined />,
+          disabled: !rejectReason.trim(),
+        }}
+        width={600}
       >
-        <p>
-          Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> cuộc bầu cử
-          này không?
-        </p>
-        <p
-          style={{
-            color: "#999",
-            fontSize: 12,
-            marginTop: 8,
-            marginBottom: 12,
-          }}
-        >
-          Cuộc bầu cử:{" "}
-          <b>
-            {elections.find((e) => e._id === rejectingElectionId)
-              ?.decisionName || "N/A"}
-          </b>
-        </p>
-        <Input.TextArea
-          rows={4}
-          placeholder="Nhập lý do từ chối..."
-          value={rejectReason}
-          onChange={(e) => setRejectReason(e.target.value)}
-          style={{ marginTop: 12 }}
-        />
+        <div style={{ marginBottom: 16 }}>
+          <p>
+            Bạn có chắc muốn <b style={{ color: "red" }}>từ chối</b> cuộc bầu cử
+            này không?
+          </p>
+          <p style={{ color: "#999", fontSize: 12, marginTop: 8 }}>
+            Cuộc bầu cử: <b>{election.decisionName || "N/A"}</b>
+          </p>
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: 8, fontWeight: 500 }}>
+            Lý do từ chối <span style={{ color: "red" }}>*</span>
+          </label>
+          <Input.TextArea
+            rows={4}
+            placeholder="Nhập lý do từ chối..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            maxLength={500}
+            showCount
+          />
+        </div>
       </Modal>
 
-      {/* Modal xem chi tiết */}
+      {/* Modal xem chi tiết đầy đủ */}
       <ViewDecisionModal
         open={viewModalOpen}
         onClose={() => {
           setViewModalOpen(false);
-          setSelectedElection(null);
         }}
         onSign={() => {
-          loadElections();
-          if (selectedElection) {
-            loadElectionDetail(selectedElection._id);
-          }
+          loadElection();
         }}
         data={viewDecisionData}
         loading={viewLoading}
@@ -604,6 +603,7 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
         documents={documents}
         electionentities={entities}
         meeting={meeting}
+        hideSignButton={true} // Ẩn button ký số cho BKS
       />
     </div>
   );
