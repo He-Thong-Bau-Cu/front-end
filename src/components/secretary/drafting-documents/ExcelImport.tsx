@@ -491,17 +491,17 @@ const ExcelImport: React.FC<Props> = ({
     const templateData = [
       ["FullName", "Email", "Phone", "CitizenId", "Shares"],
       [
-        "Nguyễn Văn A",
-        "nguyenvana@example.com",
-        "0123456789",
-        "001234567890",
+        "Nguyễn Thị Làn",
+        "lan010603@gmail.com",
+        "0328126702",
+        "034303008552",
         "25",
       ],
       [
-        "Trần Thị B",
-        "tranthib@example.com",
+        "Lina Nguyễn",
+        "kimquy001623@gmail.com",
         "0987654321",
-        "001234567891",
+        "0987654321",
         "30",
       ],
     ];
@@ -525,7 +525,7 @@ const ExcelImport: React.FC<Props> = ({
   return (
     <>
       {/* import by excel */}
-      <Tooltip title="Import by excel">
+      <Tooltip title="Nhập từ file Excel">
         <Button
           type="default"
           size="small"
@@ -535,7 +535,7 @@ const ExcelImport: React.FC<Props> = ({
         />
       </Tooltip>
       {/* download template */}
-      <Tooltip title="Download template">
+      <Tooltip title="Tải xuống template">
         <Button
           type="default"
           size="small"
