@@ -9,6 +9,7 @@ import {
   isValidEmail,
   isValidPhone,
 } from "@/utils/validate";
+import { useNotification } from "@/contexts/NotificationContext";
 
 interface Props {
   disabled?: boolean;
@@ -33,10 +34,10 @@ const ExcelImport: React.FC<Props> = ({
   const [importData, setImportData] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const originalFileRef = useRef<File | null>(null); // Lưu file Excel gốc để upload sau
-
+  const { notify } = useNotification();
   const handleImportExcel = () => {
     if (disabled) {
-      message.warning("Không thể import khi đang ở chế độ chỉ đọc");
+      notify("Không thể import khi đang ở chế độ chỉ đọc", "warning");
       return;
     }
     fileInputRef.current?.click();
@@ -54,7 +55,7 @@ const ExcelImport: React.FC<Props> = ({
       .substring(file.name.lastIndexOf("."))
       .toLowerCase();
     if (!validExtensions.includes(fileExtension)) {
-      message.error("Vui lòng chọn file Excel (.xlsx hoặc .xls)");
+      notify("Vui lòng chọn file Excel (.xlsx hoặc .xls)", "error");
       return;
     }
 
@@ -73,7 +74,7 @@ const ExcelImport: React.FC<Props> = ({
           console.log("jsonData", jsonData);
 
           if (jsonData.length < 2) {
-            message.error("File Excel không có dữ liệu hoặc thiếu header");
+            notify("File Excel không có dữ liệu hoặc thiếu header", "error");
             return;
           }
 
@@ -124,8 +125,9 @@ const ExcelImport: React.FC<Props> = ({
             citizenIdIndex === -1 ||
             phoneIndex === -1
           ) {
-            message.error(
-              "File Excel thiếu các cột bắt buộc: FullName, Email, Shares, CitizenId, Phone"
+            notify(
+              "File Excel thiếu các cột bắt buộc: FullName, Email, Shares, CitizenId, Phone",
+              "error"
             );
             return;
           }
@@ -244,7 +246,7 @@ const ExcelImport: React.FC<Props> = ({
 
           // Nếu có bất kỳ lỗi nào, không cho phép import
           if (errors.length > 0) {
-            message.error(
+            notify(
               `File Excel có ${errors.length} lỗi. Vui lòng sửa lại trước khi import:\n${errors.slice(0, 10).join("\n")}${errors.length > 10 ? `\n... và ${errors.length - 10} lỗi khác` : ""}`
             );
             console.error("Import errors:", errors);
@@ -252,7 +254,7 @@ const ExcelImport: React.FC<Props> = ({
           }
 
           if (parsedData.length === 0) {
-            message.error("Không có dữ liệu hợp lệ trong file Excel");
+            notify("Không có dữ liệu hợp lệ trong file Excel", "error");
             return;
           }
 
@@ -261,15 +263,16 @@ const ExcelImport: React.FC<Props> = ({
           setIsImportModalOpen(true);
         } catch (error) {
           console.error("Error parsing Excel:", error);
-          message.error(
-            "Lỗi khi đọc file Excel. Vui lòng kiểm tra lại định dạng file."
+          notify(
+            "Lỗi khi đọc file Excel. Vui lòng kiểm tra lại định dạng file.",
+            "error"
           );
         }
       };
       reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error("Error reading file:", error);
-      message.error("Lỗi khi đọc file");
+      notify("Lỗi khi đọc file", "error");
     }
 
     // Reset input
@@ -374,7 +377,7 @@ const ExcelImport: React.FC<Props> = ({
     const validData = importData.filter((item) => !item.error);
 
     if (validData.length === 0) {
-      message.error("Không có dữ liệu hợp lệ để import");
+      notify("Không có dữ liệu hợp lệ để import", "error");
       return;
     }
 
@@ -405,8 +408,9 @@ const ExcelImport: React.FC<Props> = ({
 
     // Kiểm tra xem có voter nào mới không
     if (newVotersData.length === 0) {
-      message.warning(
-        "Tất cả cử tri đã tồn tại trong danh sách. Không có cử tri nào được import."
+      notify(
+        "Tất cả cử tri đã tồn tại trong danh sách. Không có cử tri nào được import.",
+        "warning"
       );
       setIsImportModalOpen(false);
       setImportData([]);
@@ -425,8 +429,9 @@ const ExcelImport: React.FC<Props> = ({
     const newTotal = currentTotal + importTotal;
 
     if (newTotal > 100) {
-      message.error(
-        `Tổng cổ phần sẽ vượt quá 100%! (Hiện tại: ${currentTotal}%, Import: ${importTotal}% = ${newTotal}%)`
+      notify(
+        `Tổng cổ phần sẽ vượt quá 100%! (Hiện tại: ${currentTotal}%, Import: ${importTotal}% = ${newTotal}%)`,
+        "error"
       );
       return;
     }
@@ -434,8 +439,9 @@ const ExcelImport: React.FC<Props> = ({
     // Thông báo số lượng voter duplicate (nếu có)
     const duplicateCount = validData.length - newVotersData.length;
     if (duplicateCount > 0) {
-      message.warning(
-        `Có ${duplicateCount} cử tri đã tồn tại trong danh sách. Chỉ import ${newVotersData.length} cử tri mới.`
+      notify(
+        `Có ${duplicateCount} cử tri đã tồn tại trong danh sách. Chỉ import ${newVotersData.length} cử tri mới.`,
+        "warning"
       );
     }
 
@@ -465,7 +471,7 @@ const ExcelImport: React.FC<Props> = ({
       newVotersData
     );
     if (!validationResult.isValid) {
-      message.warning(validationResult.message);
+      notify(validationResult.message, "warning");
       // Vẫn cho phép import nhưng cảnh báo
     }
 
@@ -478,8 +484,9 @@ const ExcelImport: React.FC<Props> = ({
     // File Excel sẽ được tạo và gọi API create document khi user click "Lưu nháp" hoặc "Gửi duyệt"
     // Voters import từ Excel chỉ hiển thị trong giao diện, không gửi trong API bulk-save-draft
 
-    message.success(
-      `Đã import thành công ${newParticipants.length} cử tri từ file Excel. File Excel sẽ được tạo khi bạn click "Lưu nháp" hoặc "Gửi duyệt"`
+    notify(
+      `Đã import thành công ${newParticipants.length} cử tri từ file Excel. File Excel sẽ được tạo khi bạn click "Lưu nháp" hoặc "Gửi duyệt"`,
+      "success"
     );
     setIsImportModalOpen(false);
     setImportData([]);
@@ -520,7 +527,7 @@ const ExcelImport: React.FC<Props> = ({
     ];
 
     XLSX.writeFile(wb, "template_danh_sach_cu_tri.xlsx");
-    message.success("Đã tải template thành công");
+    notify("Đã tải template thành công", "success");
   };
   return (
     <>

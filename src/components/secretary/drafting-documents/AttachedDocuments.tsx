@@ -25,7 +25,6 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 
-
 const { TextArea } = Input;
 
 interface Props {
@@ -163,7 +162,7 @@ const AttachedDocuments: React.FC<Props> = ({
     ============================================================ */
   const handleSaveLocal = async (values: any) => {
     if (!fileObj && !editingDoc) {
-      message.warning("Vui lòng chọn file trước!");
+      notify("Vui lòng chọn file trước!", "warning");
       return;
     }
 
