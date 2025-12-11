@@ -262,7 +262,7 @@ const VotingHistoryContent = () => {
                                         return ballot.allocations.map((a, i) => (
                                             <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
                                                 <Text strong style={{ color: "#52c41a" }}>
-                                                    {a.entityId?.title} - Số phiếu: {a.voteValue}
+                                                    {a.entityId?.title} - Quyền biểu quyết: {a.voteValue}
                                                 </Text>
                                             </Descriptions.Item>
                                         ));

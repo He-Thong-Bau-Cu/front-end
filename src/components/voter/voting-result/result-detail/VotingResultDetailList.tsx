@@ -193,7 +193,7 @@ const VotingResultDetailList: React.FC = () => {
                                 <div className="candidate-stats">
                                     <div>
                                         <Text strong className="stat-green">{c.totalVotes}</Text>
-                                        <p>Phiếu bầu</p>
+                                        <p>Quyền biểu quyết</p>
                                     </div>
                                     <div>
                                         <Text strong className="stat-green">{c.percentage}%</Text>
