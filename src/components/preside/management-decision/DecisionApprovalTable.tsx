@@ -33,19 +33,22 @@ const { Text } = Typography;
 const { Option } = Select;
 
 // Format ngày giờ từ ISO string mà không đổi múi giờ
-const formatDateTime = (dateString: string | Date | null | undefined): string => {
+const formatDateTime = (
+  dateString: string | Date | null | undefined
+): string => {
   if (!dateString) return "-";
   try {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    const date =
+      typeof dateString === "string" ? new Date(dateString) : dateString;
     if (isNaN(date.getTime())) return "-";
 
     // Format: DD-MM-YYYY HH:mm:ss (không đổi múi giờ)
     const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
 
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
   } catch {
@@ -54,10 +57,19 @@ const formatDateTime = (dateString: string | Date | null | undefined): string =>
 };
 
 const statusMap: Record<string, { text: string; color: string }> = {
-  APPROVED_SIGNED: { text: "Đã được chủ tịch hội đồng quản trị duyệt", color: "green" },
-  WAIT_APPROVAL: { text: "Đã được chủ tịch hội đồng quản trị duyệt", color: "green" },
+  APPROVED_SIGNED: {
+    text: "Đã được chủ tịch hội đồng quản trị duyệt",
+    color: "green",
+  },
+  WAIT_APPROVAL: {
+    text: "Đã được chủ tịch hội đồng quản trị duyệt",
+    color: "green",
+  },
   REJECTED: { text: "Từ chối", color: "red" },
-  WAIT_ENTER_DATA: { text: "Đã được chủ tịch hội đồng quản trị duyệt", color: "green" },
+  WAIT_ENTER_DATA: {
+    text: "Đã được chủ tịch hội đồng quản trị duyệt",
+    color: "green",
+  },
   DRAFT: { text: "Đã được chủ tịch hội đồng quản trị duyệt", color: "green" },
   REQUEST_FROM_USER: { text: "Yêu cầu từ người dùng", color: "blue" },
 };
@@ -87,7 +99,10 @@ const DecisionApprovalTable = () => {
   const userId = localStorage.getItem("userId");
 
   // Lấy electionId từ route state hoặc localStorage
-  const electionId = location.state?.electionId || localStorage.getItem("currentElectionId") || undefined;
+  const electionId =
+    location.state?.electionId ||
+    localStorage.getItem("currentElectionId") ||
+    undefined;
   const isSystemPreside = !electionId; // Nếu không có electionId thì là chủ tọa hệ thống
 
   // Load danh sách user và roleId
@@ -105,8 +120,12 @@ const DecisionApprovalTable = () => {
         });
         if (roleResponse.success && roleResponse.data) {
           const roles = roleResponse.data.content || [];
-          const boardOfControlRole = roles.find((r: any) => r.roleCode === USER_ROLE.BOARD_OF_CONTROL);
-          const secretaryRole = roles.find((r: any) => r.roleCode === USER_ROLE.PRESIDE_SECRETARY);
+          const boardOfControlRole = roles.find(
+            (r: any) => r.roleCode === USER_ROLE.BOARD_OF_CONTROL
+          );
+          const secretaryRole = roles.find(
+            (r: any) => r.roleCode === USER_ROLE.PRESIDE_SECRETARY
+          );
 
           if (boardOfControlRole) {
             setBoardOfControlRoleId(boardOfControlRole._id);
@@ -176,23 +195,34 @@ const DecisionApprovalTable = () => {
     // Tìm thư ký và ban kiểm soát từ participants
     const secretary = record.participants?.find((p: any) => {
       if (!p.roleId) return false;
-      const roleCode = typeof p.roleId === 'object' ? p.roleId.roleCode : null;
-      const roleId = typeof p.roleId === 'object' ? p.roleId._id : p.roleId;
-      return roleCode === USER_ROLE.PRESIDE_SECRETARY || roleId === secretaryRoleId;
+      const roleCode = typeof p.roleId === "object" ? p.roleId.roleCode : null;
+      const roleId = typeof p.roleId === "object" ? p.roleId._id : p.roleId;
+      return (
+        roleCode === USER_ROLE.PRESIDE_SECRETARY || roleId === secretaryRoleId
+      );
     });
     const boardOfControl = record.participants?.find((p: any) => {
       if (!p.roleId) return false;
-      const roleCode = typeof p.roleId === 'object' ? p.roleId.roleCode : null;
-      const roleId = typeof p.roleId === 'object' ? p.roleId._id : p.roleId;
-      return roleCode === USER_ROLE.BOARD_OF_CONTROL || roleId === boardOfControlRoleId;
+      const roleCode = typeof p.roleId === "object" ? p.roleId.roleCode : null;
+      const roleId = typeof p.roleId === "object" ? p.roleId._id : p.roleId;
+      return (
+        roleCode === USER_ROLE.BOARD_OF_CONTROL ||
+        roleId === boardOfControlRoleId
+      );
     });
 
     const secretaryUserId = secretary?.userId;
     const boardOfControlUserId = boardOfControl?.userId;
 
     form.setFieldsValue({
-      secretaryId: typeof secretaryUserId === 'object' ? secretaryUserId._id : secretaryUserId || undefined,
-      boardOfControlId: typeof boardOfControlUserId === 'object' ? boardOfControlUserId._id : boardOfControlUserId || undefined,
+      secretaryId:
+        typeof secretaryUserId === "object"
+          ? secretaryUserId._id
+          : secretaryUserId || undefined,
+      boardOfControlId:
+        typeof boardOfControlUserId === "object"
+          ? boardOfControlUserId._id
+          : boardOfControlUserId || undefined,
     });
   };
 
@@ -240,7 +270,10 @@ const DecisionApprovalTable = () => {
     if (!selectedRecord) return;
     try {
       showLoading();
-      const response = await ElectionService.rejectElectionRequest(selectedRecord._id, rejectReason);
+      const response = await ElectionService.rejectElectionRequest(
+        selectedRecord._id,
+        rejectReason
+      );
       if (response.success) {
         notify("Đã từ chối quyết định", "success");
         setRejectModalOpen(false);
@@ -292,7 +325,10 @@ const DecisionApprovalTable = () => {
           statusInfo = statusMap[status];
         } else {
           // Tất cả các trạng thái khác đều hiển thị "Đã được chủ tịch hội đồng quản trị duyệt"
-          statusInfo = { text: "Đã được chủ tịch hội đồng quản trị duyệt", color: "green" };
+          statusInfo = {
+            text: "Đã được chủ tịch hội đồng quản trị duyệt",
+            color: "green",
+          };
         }
         return (
           <Tag color={statusInfo?.color || "default"}>
@@ -328,7 +364,11 @@ const DecisionApprovalTable = () => {
               >
                 Phê duyệt
               </Button>
-              <Button danger icon={<CloseOutlined />} onClick={() => handleReject(record)}>
+              <Button
+                danger
+                icon={<CloseOutlined />}
+                onClick={() => handleReject(record)}
+              >
                 Từ chối
               </Button>
             </>
@@ -367,7 +407,11 @@ const DecisionApprovalTable = () => {
           allowClear
           style={{ maxWidth: 320 }}
         />
-        <Button onClick={() => loadDecisions(pagination.current, pagination.pageSize)}>Làm mới</Button>
+        <Button
+          onClick={() => loadDecisions(pagination.current, pagination.pageSize)}
+        >
+          Làm mới
+        </Button>
       </div>
 
       <Table
@@ -404,7 +448,9 @@ const DecisionApprovalTable = () => {
               <EyeOutlined style={{ fontSize: 20, color: "#fff" }} />
             </div>
             <div>
-              <div style={{ fontSize: "20px", fontWeight: 600, color: "#1890ff" }}>
+              <div
+                style={{ fontSize: "20px", fontWeight: 600, color: "#1890ff" }}
+              >
                 Chi tiết yêu cầu cuộc bầu cử
               </div>
               <div style={{ fontSize: 13, color: "#8c8c8c", marginTop: 2 }}>
@@ -467,22 +513,33 @@ const DecisionApprovalTable = () => {
               <Row gutter={[20, 20]}>
                 <Col span={12}>
                   <div style={{ marginBottom: 10 }}>
-                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 13, fontWeight: 500 }}
+                    >
                       Số quyết định
                     </Text>
                   </div>
-                  <Text strong style={{ fontSize: 18, color: "#0050b3", display: "block" }}>
+                  <Text
+                    strong
+                    style={{ fontSize: 18, color: "#0050b3", display: "block" }}
+                  >
                     {viewDecisionData.decisionNumber || "-"}
                   </Text>
                 </Col>
                 <Col span={12}>
                   <div style={{ marginBottom: 10 }}>
-                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 13, fontWeight: 500 }}
+                    >
                       Trạng thái
                     </Text>
                   </div>
                   <Tag
-                    color={statusMap[viewDecisionData.statusData]?.color || "default"}
+                    color={
+                      statusMap[viewDecisionData.statusData]?.color || "default"
+                    }
                     style={{
                       fontSize: 14,
                       padding: "6px 16px",
@@ -490,17 +547,26 @@ const DecisionApprovalTable = () => {
                       fontWeight: 500,
                     }}
                   >
-                    {statusMap[viewDecisionData.statusData]?.text || viewDecisionData.statusData}
+                    {statusMap[viewDecisionData.statusData]?.text ||
+                      viewDecisionData.statusData}
                   </Tag>
                 </Col>
                 <Col span={24}>
                   <div style={{ marginBottom: 10 }}>
-                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 13, fontWeight: 500 }}
+                    >
                       Tên nghị quyết
                     </Text>
                   </div>
-                  <Text strong style={{ fontSize: 16, color: "#0050b3", lineHeight: 1.5 }}>
-                    {viewDecisionData.decisionName || viewDecisionData.title || "-"}
+                  <Text
+                    strong
+                    style={{ fontSize: 16, color: "#0050b3", lineHeight: 1.5 }}
+                  >
+                    {viewDecisionData.decisionName ||
+                      viewDecisionData.title ||
+                      "-"}
                   </Text>
                 </Col>
               </Row>
@@ -517,12 +583,20 @@ const DecisionApprovalTable = () => {
                 boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 20,
+                }}
+              >
                 <div
                   style={{
                     width: 4,
                     height: 20,
-                    background: "linear-gradient(180deg, #1890ff 0%, #40a9ff 100%)",
+                    background:
+                      "linear-gradient(180deg, #1890ff 0%, #40a9ff 100%)",
                     borderRadius: 2,
                   }}
                 />
@@ -542,11 +616,20 @@ const DecisionApprovalTable = () => {
                     }}
                   >
                     <div style={{ marginBottom: 8 }}>
-                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                      <Text
+                        type="secondary"
+                        style={{ fontSize: 13, fontWeight: 500 }}
+                      >
                         Thời gian bắt đầu
                       </Text>
                     </div>
-                    <Text style={{ fontSize: 15, fontWeight: 600, color: "#262626" }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#262626",
+                      }}
+                    >
                       {formatDate(viewDecisionData.startDate) || "-"}
                     </Text>
                   </div>
@@ -562,11 +645,20 @@ const DecisionApprovalTable = () => {
                     }}
                   >
                     <div style={{ marginBottom: 8 }}>
-                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                      <Text
+                        type="secondary"
+                        style={{ fontSize: 13, fontWeight: 500 }}
+                      >
                         Thời gian kết thúc
                       </Text>
                     </div>
-                    <Text style={{ fontSize: 15, fontWeight: 600, color: "#262626" }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#262626",
+                      }}
+                    >
                       {formatDate(viewDecisionData.endDate) || "-"}
                     </Text>
                   </div>
@@ -582,11 +674,20 @@ const DecisionApprovalTable = () => {
                     }}
                   >
                     <div style={{ marginBottom: 8 }}>
-                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                      <Text
+                        type="secondary"
+                        style={{ fontSize: 13, fontWeight: 500 }}
+                      >
                         Ngày tạo
                       </Text>
                     </div>
-                    <Text style={{ fontSize: 15, fontWeight: 600, color: "#262626" }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#262626",
+                      }}
+                    >
                       {viewDecisionData.createdAt || "-"}
                     </Text>
                   </div>
@@ -598,7 +699,8 @@ const DecisionApprovalTable = () => {
             {viewDecisionData.rejectReason && (
               <div
                 style={{
-                  background: "linear-gradient(135deg, #fff2f0 0%, #ffe7e5 100%)",
+                  background:
+                    "linear-gradient(135deg, #fff2f0 0%, #ffe7e5 100%)",
                   padding: 20,
                   borderRadius: 16,
                   marginBottom: 24,
@@ -619,7 +721,14 @@ const DecisionApprovalTable = () => {
                     borderRadius: "50%",
                   }}
                 />
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 12,
+                  }}
+                >
                   <CloseOutlined style={{ fontSize: 18, color: "#cf1322" }} />
                   <Text strong style={{ fontSize: 16, color: "#cf1322" }}>
                     Lý do từ chối
@@ -633,7 +742,9 @@ const DecisionApprovalTable = () => {
                     border: "1px solid #ffccc7",
                   }}
                 >
-                  <Text style={{ fontSize: 14, lineHeight: 1.8, color: "#595959" }}>
+                  <Text
+                    style={{ fontSize: 14, lineHeight: 1.8, color: "#595959" }}
+                  >
                     {viewDecisionData.rejectReason}
                   </Text>
                 </div>
@@ -641,100 +752,154 @@ const DecisionApprovalTable = () => {
             )}
 
             {/* Thành viên tham gia */}
-            {viewDecisionData.participants && viewDecisionData.participants.length > 0 && (
-              <div
-                style={{
-                  background: "linear-gradient(135deg, #f6ffed 0%, #f0f9e8 100%)",
-                  padding: 24,
-                  borderRadius: 16,
-                  border: "1px solid #b7eb8f",
-                  boxShadow: "0 2px 8px rgba(82, 196, 26, 0.1)",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            {viewDecisionData.participants &&
+              viewDecisionData.participants.length > 0 && (
+                <div
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #f6ffed 0%, #f0f9e8 100%)",
+                    padding: 24,
+                    borderRadius: 16,
+                    border: "1px solid #b7eb8f",
+                    boxShadow: "0 2px 8px rgba(82, 196, 26, 0.1)",
+                  }}
+                >
                   <div
                     style={{
-                      width: 4,
-                      height: 20,
-                      background: "linear-gradient(180deg, #52c41a 0%, #73d13d 100%)",
-                      borderRadius: 2,
-                    }}
-                  />
-                  <Text strong style={{ fontSize: 17, color: "#262626" }}>
-                    Thành viên tham gia
-                  </Text>
-                  <Tag
-                    color="green"
-                    style={{
-                      marginLeft: 8,
-                      borderRadius: 12,
-                      padding: "2px 10px",
-                      fontSize: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      marginBottom: 20,
                     }}
                   >
-                    {viewDecisionData.participants.length} người
-                  </Tag>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {viewDecisionData.participants.map((p: any, index: number) => (
                     <div
-                      key={index}
                       style={{
-                        padding: 16,
-                        background: "#fff",
+                        width: 4,
+                        height: 20,
+                        background:
+                          "linear-gradient(180deg, #52c41a 0%, #73d13d 100%)",
+                        borderRadius: 2,
+                      }}
+                    />
+                    <Text strong style={{ fontSize: 17, color: "#262626" }}>
+                      Thành viên tham gia
+                    </Text>
+                    <Tag
+                      color="green"
+                      style={{
+                        marginLeft: 8,
                         borderRadius: 12,
-                        border: "1px solid #d9f7be",
-                        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.06)",
-                        transition: "all 0.2s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.06)";
+                        padding: "2px 10px",
+                        fontSize: 12,
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                      {viewDecisionData.participants.length} người
+                    </Tag>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 14,
+                    }}
+                  >
+                    {viewDecisionData.participants.map(
+                      (p: any, index: number) => (
                         <div
+                          key={index}
                           style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: "50%",
-                            background: "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#fff",
-                            fontWeight: "bold",
-                            fontSize: 18,
-                            boxShadow: "0 2px 8px rgba(82, 196, 26, 0.3)",
+                            padding: 16,
+                            background: "#fff",
+                            borderRadius: 12,
+                            border: "1px solid #d9f7be",
+                            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.06)",
+                            transition: "all 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform =
+                              "translateY(-2px)";
+                            e.currentTarget.style.boxShadow =
+                              "0 4px 12px rgba(0, 0, 0, 0.1)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow =
+                              "0 2px 6px rgba(0, 0, 0, 0.06)";
                           }}
                         >
-                          {index + 1}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <Text strong style={{ fontSize: 15, color: "#389e0d", display: "block", marginBottom: 6 }}>
-                            {p.roleId?.roleName || p.position || "Thành viên"}
-                          </Text>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                            <Text style={{ fontSize: 14, color: "#262626", fontWeight: 500 }}>
-                              {p.userId?.fullName || "-"}
-                            </Text>
-                            {p.userId?.email && (
-                              <Text type="secondary" style={{ fontSize: 13 }}>
-                                • {p.userId.email}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 16,
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: "50%",
+                                background:
+                                  "linear-gradient(135deg, #52c41a 0%, #73d13d 100%)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#fff",
+                                fontWeight: "bold",
+                                fontSize: 18,
+                                boxShadow: "0 2px 8px rgba(82, 196, 26, 0.3)",
+                              }}
+                            >
+                              {index + 1}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <Text
+                                strong
+                                style={{
+                                  fontSize: 15,
+                                  color: "#389e0d",
+                                  display: "block",
+                                  marginBottom: 6,
+                                }}
+                              >
+                                {p.roleId?.roleName ||
+                                  p.position ||
+                                  "Thành viên"}
                               </Text>
-                            )}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    fontSize: 14,
+                                    color: "#262626",
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  {p.userId?.fullName || "-"}
+                                </Text>
+                                {p.userId?.email && (
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontSize: 13 }}
+                                  >
+                                    • {p.userId.email}
+                                  </Text>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         )}
       </Modal>
@@ -790,11 +955,7 @@ const DecisionApprovalTable = () => {
               </Row>
             </div>
 
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={submitApprove}
-            >
+            <Form form={form} layout="vertical" onFinish={submitApprove}>
               <Form.Item
                 name="secretaryId"
                 label={
@@ -802,9 +963,7 @@ const DecisionApprovalTable = () => {
                     Thư ký chủ tọa <span style={{ color: "red" }}>*</span>
                   </span>
                 }
-                rules={[
-                  { required: true, message: "Vui lòng chọn thư ký" },
-                ]}
+                rules={[{ required: true, message: "Vui lòng chọn thư ký" }]}
               >
                 <Select
                   placeholder="Chọn thư ký chủ tọa"
@@ -813,14 +972,16 @@ const DecisionApprovalTable = () => {
                   size="large"
                   style={{ borderRadius: 6 }}
                   filterOption={(input, option) => {
-                    const label = typeof option?.label === 'string'
-                      ? option.label
-                      : String(option?.children || '');
+                    const label =
+                      typeof option?.label === "string"
+                        ? option.label
+                        : String(option?.children || "");
                     return label.toLowerCase().includes(input.toLowerCase());
                   }}
                   onChange={(value) => {
                     // Nếu chọn thư ký trùng với ban kiểm soát, clear ban kiểm soát
-                    const boardOfControlId = form.getFieldValue("boardOfControlId");
+                    const boardOfControlId =
+                      form.getFieldValue("boardOfControlId");
                     if (value && value === boardOfControlId) {
                       form.setFieldsValue({ boardOfControlId: undefined });
                     }
@@ -831,7 +992,8 @@ const DecisionApprovalTable = () => {
                       // Lọc bỏ user hiện tại
                       if (user._id === userId) return false;
                       // Lọc bỏ user đã chọn làm ban kiểm soát
-                      const boardOfControlId = form.getFieldValue("boardOfControlId");
+                      const boardOfControlId =
+                        form.getFieldValue("boardOfControlId");
                       return !boardOfControlId || user._id !== boardOfControlId;
                     })
                     .map((user) => (
@@ -860,9 +1022,10 @@ const DecisionApprovalTable = () => {
                   size="large"
                   style={{ borderRadius: 6 }}
                   filterOption={(input, option) => {
-                    const label = typeof option?.label === 'string'
-                      ? option.label
-                      : String(option?.children || '');
+                    const label =
+                      typeof option?.label === "string"
+                        ? option.label
+                        : String(option?.children || "");
                     return label.toLowerCase().includes(input.toLowerCase());
                   }}
                   onChange={(value) => {
@@ -889,7 +1052,14 @@ const DecisionApprovalTable = () => {
                 </Select>
               </Form.Item>
 
-              <div style={{ textAlign: "right", marginTop: 32, paddingTop: 20, borderTop: "1px solid #f0f0f0" }}>
+              <div
+                style={{
+                  textAlign: "right",
+                  marginTop: 32,
+                  paddingTop: 20,
+                  borderTop: "1px solid #f0f0f0",
+                }}
+              >
                 <Space>
                   <Button
                     size="large"
@@ -945,4 +1115,3 @@ const DecisionApprovalTable = () => {
 };
 
 export default DecisionApprovalTable;
-

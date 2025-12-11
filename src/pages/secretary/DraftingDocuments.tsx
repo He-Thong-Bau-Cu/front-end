@@ -501,7 +501,7 @@ const DraftingDocuments: React.FC = () => {
         }
 
         //Đánh dấu là có tài liệu rồi để be không báo lỗi nữa, kể cả là voters import từ excel
-        hasDocuments = documentsList.some(
+        hasDocuments = documentsList?.some(
           (doc: any) =>
             doc.type === "voters-import-excel" ||
             (doc.fileUrl && doc.fileUrl.includes("voters-import-excel"))
@@ -517,7 +517,7 @@ const DraftingDocuments: React.FC = () => {
         }
 
         // Kiểm tra tổng % cổ phần
-        const totalPercentage = votersList.reduce(
+        const totalPercentage = votersList?.reduce(
           (sum, v) => sum + (Number(v.percentage) || 0),
           0
         );
