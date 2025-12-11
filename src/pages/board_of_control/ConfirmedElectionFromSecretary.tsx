@@ -58,24 +58,18 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
   >(null);
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
+  const electionId = localStorage.getItem("electionId");
+  console.log("electionId", electionId);
 
   // Load danh sách elections có status WAIT_BKS_CONFIRMED
   const loadElections = async () => {
     setLoading(true);
     try {
-      const response = await DecisionService.getAllDecisions({
-        page: 1,
-        limit: 100,
-        statusData: "WAIT_BKS_CONFIRMED",
-        textSearch: searchText.trim() || undefined,
-      });
-      setElections(response?.content || []);
+      const response = await DecisionService.getElectionById(electionId || "");
+      setElections(response?.data || []);
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      notify(
-        error?.response?.data?.message || "Không thể tải danh sách cuộc bầu cử",
-        "error"
-      );
+      console.error("Error fetching elections:", err);
+      notify("Không thể tải danh sách cuộc bầu cử", "error");
     } finally {
       setLoading(false);
     }
