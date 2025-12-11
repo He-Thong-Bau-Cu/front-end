@@ -147,9 +147,9 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
     const roleAlreadySelected = members.some((m) => m.roleId === values.roleId);
     if (roleAlreadySelected) {
       const roleName =
-        values.roleId === "6906eb6a3bb016c908c61b92"
+        values.roleId === "693a5ba91d62567f679795cb"
           ? "Trưởng ban tổ chức"
-          : values.roleId === "6906eb903bb016c908c61b99"
+          : values.roleId === "693a5bb31d62567f679795d2"
             ? "Thành viên ban tổ chức"
             : "Ban kiểm soát";
       return message.error(`Vai trò "${roleName}" đã được chọn! Mỗi vai trò chỉ được chọn 1 lần.`);
@@ -165,9 +165,9 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
       fullName: userInfo.fullName,
       roleId: values.roleId,
       roleName:
-        values.roleId === "6906eb6a3bb016c908c61b92"
+        values.roleId === "693a5ba91d62567f679795cb"
           ? "Trưởng ban tổ chức"
-          : values.roleId === "6906eb903bb016c908c61b99"
+          : values.roleId === "693a5bb31d62567f679795d2"
             ? "Thành viên ban tổ chức"
             : "Ban kiểm soát",
       status: "PENDING",
@@ -318,18 +318,18 @@ const Organization: React.FC<Props> = ({ onChange, data, disabled = false, atten
           >
             <Select placeholder="Vui lòng chọn chức vụ" disabled={disabled} allowClear showSearch>
               <Option
-                value="6906eb6a3bb016c908c61b92"
-                disabled={members.some((m) => m.roleId === "6906eb6a3bb016c908c61b92")}
+                value="693a5ba91d62567f679795cb"
+                disabled={members.some((m) => m.roleId === "693a5ba91d62567f679795cb")}
               >
                 Trưởng ban tổ chức
-                {members.some((m) => m.roleId === "6906eb6a3bb016c908c61b92") && " (đã chọn)"}
+                {members.some((m) => m.roleId === "693a5ba91d62567f679795cb") && " (đã chọn)"}
               </Option>
               <Option
-                value="6906eb903bb016c908c61b99"
-                disabled={members.some((m) => m.roleId === "6906eb903bb016c908c61b99")}
+                value="693a5bb31d62567f679795d2"
+                disabled={members.some((m) => m.roleId === "693a5bb31d62567f679795d2")}
               >
                 Thành viên ban tổ chức
-                {members.some((m) => m.roleId === "6906eb903bb016c908c61b99") && " (đã chọn)"}
+                {members.some((m) => m.roleId === "693a5bb31d62567f679795d2") && " (đã chọn)"}
               </Option>
               <Option
                 value="693a5bcc1d62567f679795e0"
