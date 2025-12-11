@@ -47,7 +47,7 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
       </Paragraph>
 
       <div style={{ background: "#fafafa", borderRadius: 12, padding: 16, marginTop: 8 }}>
-        <Text strong>Phân bổ phiếu bầu</Text>
+        <Text strong>Phân bổ quyền biểu quyết</Text>
 
         <Row align="middle" justify="space-between" style={{ marginTop: 8 }}>
           <Space>
@@ -66,7 +66,7 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
             />
           </Space>
 
-          <Text type="success" strong>{votes} phiếu bầu</Text>
+          <Text type="success" strong>{votes} quyền biểu quyết</Text>
         </Row>
 
         <Slider
