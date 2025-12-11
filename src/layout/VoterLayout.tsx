@@ -85,7 +85,7 @@ const AdminLayout = () => {
             '/voter/authorization-form': 'Tạo ủy quyền',
             '/voter/authorization-detail': 'Chi tiết ủy quyền'
         };
-        setPageTitle(map[location.pathname] || "Bảng điều khiển");
+        setPageTitle(map[location.pathname] || "Tổng quan");
     }, [location.pathname]);
 
     return (
