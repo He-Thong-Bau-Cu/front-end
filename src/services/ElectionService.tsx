@@ -238,6 +238,30 @@ class ElectionService extends BaseService {
     }
   }
 
+
+  // Clone election để bầu cử lại
+  async cloneForReelection(
+    electionId: string,
+    startDate: Date,
+    endDate: Date,
+    startStage: string
+  ): Promise<BaseResponse<any>> {
+    try {
+      const response = await this.api.post<BaseResponse<any>>(
+        `${this.endpoint}/${electionId}/clone-for-reelection`,
+        {
+          startDate,
+          endDate,
+          startStage,
+        }
+      );
+      return response as unknown as BaseResponse<any>;
+    } catch (error) {
+      console.error("Error clone election for reelection:", error);
+      throw error;
+    }
+  }
+
   async getVotersFromExcel(electionId: string): Promise<any> {
     try {
       const response = await this.api.get(
@@ -246,6 +270,7 @@ class ElectionService extends BaseService {
       return response;
     } catch (error) {
       console.error("Error getting voters from excel:", error);
+
       throw error;
     }
   }

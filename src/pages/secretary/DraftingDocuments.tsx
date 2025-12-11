@@ -159,15 +159,13 @@ const DraftingDocuments: React.FC = () => {
     participantsList: any[]
   ): { isValid: boolean; missingRoles: string[] } => {
     const requiredRoleIds = [
-      "6906eb6a3bb016c908c61b92", // Trưởng ban tổ chức
-      "6906eb903bb016c908c61b99", // Thành viên ban tổ chức
-      "6907a5b5399e3682d80a1ddf", // Ban kiểm soát
+      "693a5ba91d62567f679795cb", // Trưởng ban tổ chức
+      "693a5bb31d62567f679795d2", // Thành viên ban tổ chức
     ];
 
     const roleIdNames: Record<string, string> = {
-      "6906eb6a3bb016c908c61b92": "Trưởng ban tổ chức",
-      "6906eb903bb016c908c61b99": "Thành viên ban tổ chức",
-      "6907a5b5399e3682d80a1ddf": "Ban kiểm soát",
+      "693a5ba91d62567f679795cb": "Trưởng ban tổ chức",
+      "693a5bb31d62567f679795d2": "Thành viên ban tổ chức",
     };
 
     const existingRoleIds = participantsList
@@ -469,6 +467,7 @@ const DraftingDocuments: React.FC = () => {
       const votersList = attendees || [];
       let hasDocuments = false;
       console.log("documentsList", documentsList);
+      console.log("participantsList before filter:", participantsList);
       // Validation bổ sung trước khi gửi (đặc biệt cho gửi duyệt)
       if (isSubmitForApproval) {
         // Kiểm tra candidates
@@ -785,12 +784,39 @@ const DraftingDocuments: React.FC = () => {
           userId: v.userId,
           percentage: v.percentage,
         })),
-        participants: participantsList.map((p: any) => ({
-          _id: p._id,
-          userId: p.userId,
-          roleId: p.roleId,
-          position: p.roleName || p.position,
-        })),
+        participants: participantsList
+          .filter((p: any) => {
+            // Lọc bỏ những participants không có đủ thông tin
+            const roleId = getRoleId(p);
+            const position = (p.roleName || p.position || "").trim();
+            const isValid = roleId && position.length > 0 && p.userId;
+            if (!isValid) {
+              console.warn("Participant filtered out:", {
+                p,
+                roleId,
+                position,
+                userId: p.userId,
+              });
+            }
+            return isValid;
+          })
+          .map((p: any) => {
+            const roleId = getRoleId(p);
+            const position = (p.roleName || p.position || "").trim();
+            console.log("Mapping participant:", {
+              _id: p._id,
+              userId: p.userId,
+              roleId,
+              position,
+              originalRoleId: p.roleId,
+            });
+            return {
+              _id: p._id,
+              userId: p.userId,
+              roleId: roleId!,
+              position,
+            };
+          }),
         isSubmitForApproval: isSubmitForApproval,
         hasDocuments: hasDocuments,
       };

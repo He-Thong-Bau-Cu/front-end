@@ -113,7 +113,7 @@ const HeaderStats = () => {
           </div>
         </div>
 
-        {isSystemPreside && (
+        {/* {isSystemPreside && (
           <div className="dashboard-preside-header-actions">
             <Button
               icon={<FileTextOutlined />}
@@ -124,7 +124,7 @@ const HeaderStats = () => {
               Tạo quyết định
             </Button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* 🧩 Modal nhập thông tin nghị quyết */}

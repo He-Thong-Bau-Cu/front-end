@@ -19,6 +19,14 @@ const PresideLayout = () => {
       setUser(dataUser);
 
       const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
+      const permissionsElections = JSON.parse(localStorage.getItem("permissionsElections") || "[]");
+      if(dataUser.chairmanOfTheBoardOfDirectors){
+        permissions.push("/preside/decision-approval");
+        localStorage.setItem("permissions", JSON.stringify(permissions));
+      }else{
+        let permissionFIltered = permissionsElections.filter((item: string) => item !== "/preside/decision-approval");
+        localStorage.setItem("permissionsElections", JSON.stringify(permissionFIltered));
+      }
 
       const map: Record<string, string> = {
         "/preside": "Tổng quan",
@@ -30,15 +38,17 @@ const PresideLayout = () => {
       };
 
         let filteredMap = { ...map };
-        if (dataUser?.chairmanOfTheBoardOfDirectors) {
+        if (dataUser.chairmanOfTheBoardOfDirectors) {
           filteredMap = map;
         } else {
           filteredMap = Object.fromEntries(
-            Object.entries(map).filter(([key]) => key !== PATH.PRESIDE_APPROVED_REQ_FROM_USER)
+            Object.entries(map).filter(([key]) => {
+              return key !== PATH.PRESIDE_APPROVED_REQ_FROM_USER;
+            })
           );
         }
 
-      setPageTitle(filteredMap[location.pathname] || map[location.pathname] || "Bảng điều khiển");
+      setPageTitle(filteredMap[location.pathname] || filteredMap[location.pathname] || "Bảng điều khiển");
     };
 
     fetchDataUser();

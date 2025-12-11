@@ -154,9 +154,9 @@ const Organization: React.FC<Props> = ({
     const roleAlreadySelected = members.some((m) => m.roleId === values.roleId);
     if (roleAlreadySelected) {
       const roleName =
-        values.roleId === "6906eb6a3bb016c908c61b92"
+        values.roleId === "693a5ba91d62567f679795cb"
           ? "Trưởng ban tổ chức"
-          : values.roleId === "6906eb903bb016c908c61b99"
+          : values.roleId === "693a5bb31d62567f679795d2"
             ? "Thành viên ban tổ chức"
             : "Ban kiểm soát";
       return message.error(
@@ -174,9 +174,9 @@ const Organization: React.FC<Props> = ({
       fullName: userInfo.fullName,
       roleId: values.roleId,
       roleName:
-        values.roleId === "6906eb6a3bb016c908c61b92"
+        values.roleId === "693a5ba91d62567f679795cb"
           ? "Trưởng ban tổ chức"
-          : values.roleId === "6906eb903bb016c908c61b99"
+          : values.roleId === "693a5bb31d62567f679795d2"
             ? "Thành viên ban tổ chức"
             : "Ban kiểm soát",
       status: "PENDING",
@@ -230,7 +230,18 @@ const Organization: React.FC<Props> = ({
         {members.map((m) => {
           // Kiểm tra xem user này có phải là user hiện tại không (thư ký)
           const isCurrentUser = m.userId === currentUserId;
-          const canDelete = !disabled && !isCurrentUser;
+          // Kiểm tra xem có phải là ban kiểm soát không (roleId = "693a5bcc1d62567f679795e0")
+          const isBoardOfControl = m.roleId === "693a5bcc1d62567f679795e0";
+          const isChuToa = m.roleId === "693a5b9e1d62567f679795c4"; // ID của Chữ Tòa
+          const canDelete = !disabled && !isCurrentUser && !isBoardOfControl && !isChuToa;
+
+          // Xác định title cho tooltip
+          let deleteTitle = "Xóa";
+          if (isCurrentUser) {
+            deleteTitle = "Không thể xóa chính mình";
+          } else if (isBoardOfControl) {
+            deleteTitle = "Không thể xóa ban kiểm soát";
+          }
 
           return (
             <div key={m.id} className="participant-item">
@@ -259,7 +270,7 @@ const Organization: React.FC<Props> = ({
                     opacity: canDelete ? 1 : 0.5,
                     marginTop: 2,
                   }}
-                  title={isCurrentUser ? "Không thể xóa chính mình" : "Xóa"}
+                  title={deleteTitle}
                 />
               </div>
             </div>
@@ -330,34 +341,25 @@ const Organization: React.FC<Props> = ({
               showSearch
             >
               <Option
-                value="6906eb6a3bb016c908c61b92"
-                disabled={members.some(
-                  (m) => m.roleId === "6906eb6a3bb016c908c61b92"
-                )}
+                value="693a5ba91d62567f679795cb"
+                disabled={members.some((m) => m.roleId === "693a5ba91d62567f679795cb")}
               >
                 Trưởng ban tổ chức
-                {members.some((m) => m.roleId === "6906eb6a3bb016c908c61b92") &&
-                  " (đã chọn)"}
+                {members.some((m) => m.roleId === "693a5ba91d62567f679795cb") && " (đã chọn)"}
               </Option>
               <Option
-                value="6906eb903bb016c908c61b99"
-                disabled={members.some(
-                  (m) => m.roleId === "6906eb903bb016c908c61b99"
-                )}
+                value="693a5bb31d62567f679795d2"
+                disabled={members.some((m) => m.roleId === "693a5bb31d62567f679795d2")}
               >
                 Thành viên ban tổ chức
-                {members.some((m) => m.roleId === "6906eb903bb016c908c61b99") &&
-                  " (đã chọn)"}
+                {members.some((m) => m.roleId === "693a5bb31d62567f679795d2") && " (đã chọn)"}
               </Option>
               <Option
-                value="6907a5b5399e3682d80a1ddf"
-                disabled={members.some(
-                  (m) => m.roleId === "6907a5b5399e3682d80a1ddf"
-                )}
+                value="693a5bcc1d62567f679795e0"
+                disabled={members.some((m) => m.roleId === "693a5bcc1d62567f679795e0")}
               >
                 Ban kiểm soát
-                {members.some((m) => m.roleId === "6907a5b5399e3682d80a1ddf") &&
-                  " (đã chọn)"}
+                {members.some((m) => m.roleId === "693a5bcc1d62567f679795e0") && " (đã chọn)"}
               </Option>
             </Select>
           </Form.Item>
