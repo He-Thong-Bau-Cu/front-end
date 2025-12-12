@@ -259,9 +259,18 @@ const DraftingDocuments: React.FC = () => {
           );
           return false;
         }
+      }
 
-        // Kiểm tra voters
-        if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
+      // Kiểm tra voters
+      if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
+        // Kiểm tra xem có ít nhất voters import từ Excel hoặc voters thông thường
+        const hasImportedVoters = attendees.some(
+          (v: any) => v.isImportedFromExcel === true
+        );
+        const hasNormalVoters = attendees.some(
+          (v: any) => !v.isImportedFromExcel
+        );
+        if (!hasImportedVoters && !hasNormalVoters) {
           notify(
             "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
             "warning"
@@ -508,16 +517,20 @@ const DraftingDocuments: React.FC = () => {
         );
 
         // Kiểm tra voters
-        // Nếu có voters import từ Excel, không cần kiểm tra voters thông thường
-        // Vì voters import từ Excel đã được tính là có voters rồi
-        if (!hasImportedVoters) {
-          // Chỉ kiểm tra voters nếu KHÔNG có voters import từ Excel
-          if (!Array.isArray(votersList) || votersList.length === 0) {
+        if (!Array.isArray(votersList) || votersList.length === 0) {
+          // Kiểm tra xem có ít nhất voters import từ Excel hoặc voters thông thường
+          const hasImportedVoters = attendees.some(
+            (v: any) => v.isImportedFromExcel === true
+          );
+          const hasNormalVoters = attendees.some(
+            (v: any) => !v.isImportedFromExcel
+          );
+          if (!hasImportedVoters && !hasNormalVoters) {
             notify(
               "Vui lòng thêm ít nhất một cử tri trước khi gửi duyệt",
               "warning"
             );
-            return;
+            return false;
           }
         }
 

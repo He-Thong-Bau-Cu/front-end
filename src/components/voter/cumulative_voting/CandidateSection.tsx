@@ -499,7 +499,7 @@ const CandidateSection = () => {
           <Col>
             <Title level={4}>{electionTitle}</Title>
 
-            <Text>Phân bổ {totalVotes} phiếu bầu của bạn cho các ứng cử viên</Text>
+            <Text>Phân bổ {totalVotes} quyền biểu quyết của bạn cho các ứng cử viên</Text>
           </Col>
 
           <Col>
@@ -515,7 +515,7 @@ const CandidateSection = () => {
                 color: "#389e0d",
               }}
             >
-              <DollarOutlined /> {remainingVotes} phiếu còn lại
+              <DollarOutlined /> {remainingVotes} quyền biểu quyết
             </div>
           </Col>
         </Row>
@@ -527,7 +527,7 @@ const CandidateSection = () => {
           <Space>
             <InfoCircleOutlined style={{ color: "#52c41a" }} />
             <Text>
-              Bạn có <b>{totalVotes} phiếu bầu</b>. Có thể dồn phiếu hoặc chia đều tuỳ ý.
+              Bạn có <b>{totalVotes} quyền biểu quyết</b>. Có thể dồn phiếu hoặc chia đều tuỳ ý.
             </Text>
           </Space>
         </Card>
