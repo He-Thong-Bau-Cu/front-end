@@ -26,6 +26,11 @@ import { SOCKET_URL } from "@/config/socket";
 
 const { Title, Text } = Typography;
 
+// Hàm format số với dấu chấm phân cách hàng nghìn
+const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 const CandidateSection = () => {
   const [totalVotes, setTotalVotes] = useState(0);
   const [remainingVotes, setRemainingVotes] = useState(0);
@@ -499,7 +504,7 @@ const CandidateSection = () => {
           <Col>
             <Title level={4}>{electionTitle}</Title>
 
-            <Text>Phân bổ {totalVotes} quyền biểu quyết của bạn cho các ứng cử viên</Text>
+            <Text>Phân bổ {formatNumber(totalVotes)} quyền biểu quyết của bạn cho các ứng cử viên</Text>
           </Col>
 
           <Col>
@@ -515,7 +520,7 @@ const CandidateSection = () => {
                 color: "#389e0d",
               }}
             >
-              <DollarOutlined /> {remainingVotes} quyền biểu quyết còn lại
+              <DollarOutlined /> {formatNumber(remainingVotes)} quyền biểu quyết còn lại
             </div>
           </Col>
         </Row>
@@ -527,7 +532,7 @@ const CandidateSection = () => {
           <Space>
             <InfoCircleOutlined style={{ color: "#52c41a" }} />
             <Text>
-              Bạn có <b>{totalVotes} quyền biểu quyết</b>. Có thể dồn phiếu hoặc chia đều tuỳ ý.
+              Bạn có <b>{formatNumber(totalVotes)} quyền biểu quyết</b>. Có thể dồn phiếu hoặc chia đều tuỳ ý.
             </Text>
           </Space>
         </Card>
