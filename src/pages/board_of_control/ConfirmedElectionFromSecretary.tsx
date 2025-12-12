@@ -86,6 +86,22 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const getStatusTag = (status: string | null | undefined) => {
+    if (!status) return { text: "Chưa có trạng thái", color: "default" };
+
+    const statusMap: Record<string, { text: string; color: string }> = {
+      WAIT_ENTER_DATA: { text: "Chờ nhập dữ liệu", color: "orange" },
+      WAIT_APPROVAL: { text: "Chờ duyệt", color: "blue" },
+      WAIT_BKS_CONFIRMED: { text: "Chờ BKS xác nhận", color: "purple" },
+      APPROVED_SIGNED: { text: "Đã duyệt và ký", color: "green" },
+      REJECTED: { text: "Đã từ chối", color: "red" },
+      ACTIVE: { text: "Đang hoạt động", color: "green" },
+      INACTIVE: { text: "Không hoạt động", color: "default" },
+    };
+
+    return statusMap[status] || { text: status, color: "default" };
+  };
+
   const loadElectionDetail = async (electionId: string) => {
     try {
       setViewLoading(true);
@@ -330,13 +346,9 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
     }
   };
 
-  const filteredElections = elections.filter((election) => {
-    if (!searchText.trim()) return true;
-    const search = searchText.toLowerCase();
+  if (!election) {
     return (
-      <div
-        style={{ padding: "20px", minHeight: "100vh", background: "#f0f2f5" }}
-      >
+      <div style={{ padding: "20px", minHeight: "100vh", background: "#f0f2f5" }}>
         <Card>
           <Spin spinning={loading} tip="Đang tải thông tin cuộc bầu cử...">
             <div style={{ minHeight: "200px" }} />
