@@ -196,6 +196,7 @@ const AttachedDocuments: React.FC<Props> = ({
     try {
       let fileUrl = editingDoc?.fileUrl || "";
       let oldFileUrl: string | null = null;
+      let fileHash = editingDoc?.fileHash || "";
 
       // Nếu có file mới, upload lên MinIO
       if (fileObj) {
