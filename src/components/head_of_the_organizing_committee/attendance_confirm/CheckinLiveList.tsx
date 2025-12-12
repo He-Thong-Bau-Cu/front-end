@@ -132,7 +132,7 @@ const CheckinLiveList: React.FC<CheckinLiveListProps> = ({
             bordered={false}
             className="checkin-live-card"
             extra={
-                <span style={{ fontSize: "12px", color: "#888" }}>
+                <span style={{ fontSize: "12px", color: "#888", paddingRight: 30 }}>
                     Tổng: {recentCheckins.length} đại biểu
                 </span>
             }
