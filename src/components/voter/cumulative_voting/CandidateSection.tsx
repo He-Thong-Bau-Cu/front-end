@@ -515,7 +515,7 @@ const CandidateSection = () => {
                 color: "#389e0d",
               }}
             >
-              <DollarOutlined /> {remainingVotes} quyền biểu quyết
+              <DollarOutlined /> {remainingVotes} quyền biểu quyết còn lại
             </div>
           </Col>
         </Row>

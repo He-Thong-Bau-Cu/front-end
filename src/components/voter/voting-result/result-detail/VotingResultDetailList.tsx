@@ -1,5 +1,5 @@
-import { FileTextOutlined } from "@ant-design/icons";
-import { Card, Progress, Typography } from "antd";
+import { FileTextOutlined, StarFilled } from "@ant-design/icons";
+import { Card, Progress, Typography, Tag } from "antd";
 import React, { useEffect, useState } from "react";
 import ElectionService from "@/services/ElectionService";
 import ResultService from "@/services/ResultService";
@@ -105,6 +105,28 @@ const VotingResultDetailList: React.FC = () => {
 
     const yesNoItem = candidates[0] as YesNoResult;
 
+    // Xác định option thắng (chỉ so sánh giữa yes và no, không tính abstain)
+    const getYesNoWinner = () => {
+        if (!yesNoItem) return null;
+        const { yes, no } = yesNoItem;
+        
+        // Chỉ so sánh yes và no, abstain không được tính là thắng
+        if (yes.percent > no.percent) return 'yes';
+        if (no.percent > yes.percent) return 'no';
+        // Nếu bằng nhau thì không có thắng
+        return null;
+    };
+
+    // Xác định candidate thắng trong CUMULATIVE (có percentage cao nhất)
+    const getCumulativeWinner = () => {
+        if (candidates.length === 0) return null;
+        const maxPercentage = Math.max(...candidates.map(c => c.percentage || 0));
+        const winner = candidates.find(c => c.percentage === maxPercentage);
+        return winner ? winner.id : null;
+    };
+
+    const yesNoWinner = methodCode === "YES_NO_ABSTAIN" ? getYesNoWinner() : null;
+    const cumulativeWinnerId = methodCode === "CUMULATIVE" ? getCumulativeWinner() : null;
 
     return (
         <div className="voting-wrapper-detail">
@@ -123,7 +145,12 @@ const VotingResultDetailList: React.FC = () => {
                     <div className="yesno-wrapper">
 
                         <h3 className="yesno-title">Bầu cử: {yesNoItem.entityTitle}</h3>
-                        <div className="yesno-row">
+                        <div className={`yesno-row ${yesNoWinner === 'yes' ? 'winner' : ''}`}>
+                            {yesNoWinner === 'yes' && (
+                                <Tag icon={<StarFilled />} color="success" className="winner-tag">
+                                    Thắng
+                                </Tag>
+                            )}
                             <span className="yesno-label">Đồng ý</span>
 
                             <span className="yesno-percent yes">{yesNoItem.yes.percent.toFixed(0)}%</span>
@@ -139,7 +166,12 @@ const VotingResultDetailList: React.FC = () => {
                             <span className="yesno-count">{yesNoItem.yes.count} phiếu</span>
                         </div>
 
-                        <div className="yesno-row">
+                        <div className={`yesno-row ${yesNoWinner === 'no' ? 'winner' : ''}`}>
+                            {yesNoWinner === 'no' && (
+                                <Tag icon={<StarFilled />} color="success" className="winner-tag">
+                                    Thắng
+                                </Tag>
+                            )}
                             <span className="yesno-label">Không đồng ý</span>
                             <span className="yesno-percent no">{yesNoItem.no.percent.toFixed(0)}%</span>
 
@@ -182,7 +214,12 @@ const VotingResultDetailList: React.FC = () => {
 
                 {methodCode === "CUMULATIVE" &&
                     candidates.map((c, index) => (
-                        <Card key={c.id} className="candidate-card">
+                        <Card key={c.id} className={`candidate-card ${cumulativeWinnerId === c.id ? 'winner' : ''}`}>
+                            {cumulativeWinnerId === c.id && (
+                                <Tag icon={<StarFilled />} color="success" className="winner-tag">
+                                    Thắng
+                                </Tag>
+                            )}
                             <div className="candidate-row">
                                 <div className="candidate-info">
                                     <div className="rank-circle">{index + 1}</div>
