@@ -129,7 +129,7 @@ const DecisionList: React.FC = () => {
                     <CalendarOutlined />{" "}
                     Ngày tạo:{" "}
                     {d.createdAt
-                      ? new Date(d.createdAt).toLocaleDateString("vi-VN")
+                      ? (() => { const date = new Date(d.createdAt); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()
                       : "Không rõ"}
                   </p>
                 </div>

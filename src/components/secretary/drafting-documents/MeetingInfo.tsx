@@ -61,6 +61,7 @@ interface Props {
   electionentities?: any;
   meeting?: any;
   disabled?: boolean;
+  electionId?: string; // ID của election để check hash
 }
 
 interface MeetingFormValues {
@@ -83,6 +84,7 @@ const MeetingInfo: React.FC<Props> = ({
   electionentities,
   meeting,
   disabled = false,
+  electionId,
 }) => {
   const { showLoading, hideLoading } = useLoading();
   const { notify } = useNotification();
@@ -1348,6 +1350,7 @@ const MeetingInfo: React.FC<Props> = ({
             : candidates // Truyền tất cả nếu thêm mới
         }
         formType={formType || undefined}
+        electionId={electionId}
       />
 
       {/* Modal xem chi tiết candidate */}

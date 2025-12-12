@@ -59,7 +59,7 @@ export default function BallotList() {
 
 
   const formatDate = (date: string | null | undefined) =>
-    formatServerDate(date, "DD/MM/YYYY HH:mm", { fallback: "Không xác định" });
+    formatServerDate(date, { fallback: "Không xác định" });
 
   useEffect(() => {
     const electionId = localStorage.getItem("currentElectionId");

@@ -39,31 +39,11 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "@/components/homepage/HomeHeader";
 import { USER_ROLE } from "@/enums/STATUS";
+import { formatDate } from "@/utils/format";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const FORMAT = "YYYY-MM-DD HH:mm:ss";
-
-// Format ngày giờ từ ISO string mà không đổi múi giờ
-const formatDateTime = (dateString: string | Date | null | undefined): string => {
-  if (!dateString) return "-";
-  try {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    if (isNaN(date.getTime())) return "-";
-
-    // Format: DD-MM-YYYY HH:mm:ss (không đổi múi giờ)
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
-
-    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
-  } catch {
-    return "-";
-  }
-};
 
 // Map status từ English sang tiếng Việt
 const statusMap: { [key: string]: { text: string; color: string } } = {
@@ -449,7 +429,7 @@ const MyElectionRequests: React.FC = () => {
       title: "NGÀY TẠO",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: Date | string) => formatDateTime(date),
+      render: (date: Date | string) => formatDate(date) || "-",
     },
     {
       title: "THAO TÁC",

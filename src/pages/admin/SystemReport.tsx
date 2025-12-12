@@ -135,8 +135,8 @@ const SystemReport: React.FC = () => {
 
   const subtitle = useMemo(() => {
     if (!overview?.range) return "Tổng quan và phân tích dữ liệu hệ thống bầu cử";
-    const from = formatServerDate(overview.range.fromDate, "DD/MM/YYYY", { fallback: "--/--/----" });
-    const to = formatServerDate(overview.range.toDate, "DD/MM/YYYY", { fallback: "--/--/----" });
+    const from = formatServerDate(overview.range.fromDate, { fallback: "--/--/----" });
+    const to = formatServerDate(overview.range.toDate, { fallback: "--/--/----" });
     return `Thống kê từ ${from} đến ${to}`;
   }, [overview?.range]);
 

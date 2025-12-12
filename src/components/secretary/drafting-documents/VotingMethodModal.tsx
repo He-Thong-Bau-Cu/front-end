@@ -16,7 +16,7 @@ import { Typography } from "antd";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
 import { useLoading } from "@/contexts/LoadingContext";
-import { downloadBlob } from "@/utils/file";
+import { downloadBlob, calculateFileHash } from "@/utils/file";
 
 const { Text } = Typography;
 
@@ -55,6 +55,7 @@ interface VotingMethodModalProps {
   selectedMethodId?: string;
   initialCandidates?: Candidate[];
   formType?: "person" | "project" | "other"; // formType từ election type (auto-determined)
+  electionId?: string; // ID của election để check hash
 }
 
 const emptyCandidate: Candidate = {
@@ -80,6 +81,7 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
   selectedMethodId,
   initialCandidates,
   formType: propFormType, // formType từ props (auto-determined từ election type)
+  electionId,
 }) => {
   const [form] = Form.useForm();
   const [selectedMethod, setSelectedMethod] = useState<string>("");
@@ -259,11 +261,29 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
         fileSize: file.size
       });
 
-      // Upload file ngay lên server (giống AttachedDocuments - sử dụng upfile)
+      // 1. Tính hash của file mới
+      const fileHash = await calculateFileHash(file);
+
+      // 2. Check hash với các file trong state (chưa lưu vào DB)
+      const currentCandidates = form.getFieldValue("candidates") || [];
+      const currentFileHashes = new Set<string>();
+      for (const candidate of currentCandidates) {
+        if (candidate.fileHash) {
+          currentFileHashes.add(candidate.fileHash);
+        }
+      }
+
+      if (currentFileHashes.has(fileHash)) {
+        notify("File này đã được thêm vào danh sách bầu chọn. Vui lòng chọn file khác.", "warning");
+        return false;
+      }
+
+      // 3. Upload file ngay lên server (giống AttachedDocuments - sử dụng upfile)
       const formData = new FormData();
       formData.append("file", file);
       formData.append("fileType", "election-entities");
       formData.append("userId", userId);
+      formData.append("fileHash", fileHash); // Gửi hash lên backend
 
       const uploadResult = await FileService.upfile(formData);
 
@@ -272,13 +292,14 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
         const fileUrl = uploadResult.key;
         console.log("File uploaded successfully, fileUrl:", fileUrl);
 
-        // Cập nhật form với fileUrl ngay
-        const currentCandidates = form.getFieldValue("candidates") || [];
-        currentCandidates[candidateIndex] = {
-          ...currentCandidates[candidateIndex],
+        // Cập nhật form với fileUrl và fileHash ngay
+        const updatedCandidates = form.getFieldValue("candidates") || [];
+        updatedCandidates[candidateIndex] = {
+          ...updatedCandidates[candidateIndex],
           fileUrl: fileUrl, // Lưu fileUrl ngay sau khi upload
+          fileHash: fileHash, // Lưu hash để check trùng
         };
-        form.setFieldsValue({ candidates: currentCandidates });
+        form.setFieldsValue({ candidates: updatedCandidates });
 
         notify("Upload file thành công", "success");
       } else {
@@ -286,7 +307,16 @@ const VotingMethodModal: React.FC<VotingMethodModalProps> = ({
       }
     } catch (error: any) {
       console.error("Error uploading file:", error);
-      notify(`Lỗi khi upload file: ${error.message || 'Unknown error'}`, "error");
+      // Ưu tiên báo lỗi từ server (response.message), fallback sang message chung
+      const serverMsg =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Unknown error";
+      // Chỉ notify nếu chưa notify ở trên
+      if (!error.message || (!error.message.includes("trùng") && !error.message.includes("duplicate"))) {
+        notify(`Lỗi khi upload file: ${serverMsg}`, "error");
+      }
     } finally {
       hideLoading();
     }

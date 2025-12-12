@@ -1,7 +1,7 @@
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
-import { downloadBlob } from "@/utils/file";
+import { downloadBlob, calculateFileHash } from "@/utils/file";
 import { useState, useEffect, useRef } from "react";
 import {
   Card,
@@ -32,6 +32,7 @@ interface Props {
   initialDocuments?: any[];
   documents?: any[]; // Documents từ parent state (bao gồm cả documents mới thêm)
   disabled?: boolean;
+  electionId?: string; // ID của election để check hash
 }
 
 const AttachedDocuments: React.FC<Props> = ({
@@ -39,6 +40,7 @@ const AttachedDocuments: React.FC<Props> = ({
   initialDocuments,
   documents: documentsFromParent,
   disabled = false,
+  electionId,
 }) => {
   const [documents, setDocuments] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -114,13 +116,32 @@ const AttachedDocuments: React.FC<Props> = ({
     return false; // không upload tự động
   };
 
-  const handleUploadToMinio = async (file: File): Promise<string> => {
+  const handleUploadToMinio = async (file: File): Promise<{ key: string; fileHash: string }> => {
     try {
       setUploading(true);
+
+      // 1. Tính hash của file mới
+      const fileHash = await calculateFileHash(file);
+
+      // 2. Check hash với các file trong state (chưa lưu vào DB)
+      const currentFileHashes = new Set<string>();
+      for (const doc of documents) {
+        if (doc.fileHash) {
+          currentFileHashes.add(doc.fileHash);
+        }
+      }
+
+      if (currentFileHashes.has(fileHash)) {
+        notify("File này đã được thêm vào danh sách tài liệu. Vui lòng chọn file khác.", "warning");
+        throw new Error("File trùng với file đã có trong danh sách");
+      }
+
+      // 3. Upload file lên MinIO
       const formData = new FormData();
       formData.append("file", file);
       formData.append("fileType", "election-documents");
       formData.append("userId", userId);
+      formData.append("fileHash", fileHash); // Gửi hash lên backend
       const response = await FileService.upfile(formData);
 
       // Response structure: { key: string }
@@ -128,15 +149,21 @@ const AttachedDocuments: React.FC<Props> = ({
         // Lưu fileUrl tạm thời để cleanup nếu không save
         uploadedFileUrlRef.current = response.key;
         isNewFileRef.current = true;
-        return response.key;
+        return { key: response.key, fileHash };
       }
       throw new Error("Upload failed - no key returned");
     } catch (error: any) {
       console.error("Error uploading file:", error);
-      notify(
-        "Lỗi khi upload file: " + (error.message || "Unknown error"),
-        "error"
-      );
+      // Ưu tiên báo lỗi từ server (response.message), fallback sang message chung
+      const serverMsg =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Unknown error";
+      // Chỉ notify nếu chưa notify ở trên
+      if (!error.message || (!error.message.includes("trùng") && !error.message.includes("duplicate"))) {
+        notify(`Lỗi khi upload file: ${serverMsg}`, "error");
+      }
       throw error;
     } finally {
       setUploading(false);
@@ -176,7 +203,9 @@ const AttachedDocuments: React.FC<Props> = ({
         if (editingDoc?.fileUrl) {
           oldFileUrl = editingDoc.fileUrl;
         }
-        fileUrl = await handleUploadToMinio(fileObj);
+        const uploaded = await handleUploadToMinio(fileObj);
+        fileUrl = uploaded.key;
+        fileHash = uploaded.fileHash;
       }
 
       const docData = {
@@ -188,6 +217,7 @@ const AttachedDocuments: React.FC<Props> = ({
         fileName: fileObj ? fileObj.name : editingDoc?.fileName || "",
         type: "election-documents-important", // Đảm bảo type luôn là election-documents-important
         isNew: false, // Đã save rồi nên không còn là new
+        fileHash: fileHash, // Lưu hash để check trùng
       };
 
       let updated: any[];

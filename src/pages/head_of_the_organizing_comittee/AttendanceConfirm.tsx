@@ -7,6 +7,7 @@ import MeetingService from "@/services/MeetingService";
 import MeetingAttendeeService from "@/services/MeetingAttendeeService";
 import BallotService from "@/services/BallotService";
 import "../../style/head-of-the-organizing-committee/AttendanceConfirm.model.css";
+import { formatDateNoOffset2 } from "@/utils/format";
 
 interface AttendanceData {
     totalAttendees: number;
@@ -100,11 +101,7 @@ const AttendanceConfirm = () => {
                         checkInTime: checkInTime,
                         hasCheckedIn: hasCheckedIn,
                         hasBallot: hasBallot,
-                        checkInTimeFormatted: checkInTime ? new Date(checkInTime).toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                        }) : "",
+                        checkInTimeFormatted: formatDateNoOffset2(checkInTime),
                     };
                 })
                 .sort((a: any, b: any) => {

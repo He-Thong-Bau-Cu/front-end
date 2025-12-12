@@ -80,11 +80,11 @@ const ViewDecisionResultModal: React.FC<Props> = ({ open, onClose, data }) => {
 
             <Descriptions.Item label="Thời gian">
               {election?.startDate
-                ? new Date(election.startDate).toLocaleString()
+                ? (() => { const date = new Date(election.startDate); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()
                 : "—"}{" "}
               →{" "}
               {election?.endDate
-                ? new Date(election.endDate).toLocaleString()
+                ? (() => { const date = new Date(election.endDate); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()
                 : "—"}
             </Descriptions.Item>
 

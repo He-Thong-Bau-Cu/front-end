@@ -124,7 +124,7 @@ export default function ElectionDocuments() {
             <tr key={doc.doc_id}>
               <td>{doc.title}</td>
               <td>{doc.status}</td>
-              <td>{new Date(doc.created_at).toLocaleString()}</td>
+              <td>{(() => { const date = new Date(doc.created_at); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()}</td>
               <td>
                 <a
                   href={doc.file_url}

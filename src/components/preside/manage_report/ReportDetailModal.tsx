@@ -102,8 +102,8 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                     <Row gutter={[16, 10]}>
                         <Col span={12}><Text strong>Tên kỳ bầu cử:</Text><br /> {election.decisionName || "Không rõ"}</Col>
                         <Col span={12}><Text strong>Số quyết định:</Text><br /> {election.decisionNumber || "Không rõ"}</Col>
-                        <Col span={12}><Text strong>Ngày bắt đầu:</Text><br /> {election.startDate ? new Date(election.startDate).toLocaleDateString("vi-VN") : "Không rõ"}</Col>
-                        <Col span={12}><Text strong>Ngày kết thúc:</Text><br /> {election.endDate ? new Date(election.endDate).toLocaleDateString("vi-VN") : "Không rõ"}</Col>
+                        <Col span={12}><Text strong>Ngày bắt đầu:</Text><br /> {election.startDate ? (() => { const date = new Date(election.startDate); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })() : "Không rõ"}</Col>
+                        <Col span={12}><Text strong>Ngày kết thúc:</Text><br /> {election.endDate ? (() => { const date = new Date(election.endDate); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })() : "Không rõ"}</Col>
                     </Row>
                 ) : (
                     <Text type="secondary">Không có thông tin cuộc bầu cử</Text>
@@ -121,7 +121,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                         <Text strong>Họ tên:</Text><br />
                         {data.createdBy?.fullName || "Không rõ"}<br />
                         <Text strong>Ngày tạo:</Text><br />
-                        {data.createdAt ? new Date(data.createdAt).toLocaleString("vi-VN") : "Không rõ"}
+                        {data.createdAt ? (() => { const date = new Date(data.createdAt); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })() : "Không rõ"}
                     </Card>
                 </Col>
 
@@ -134,7 +134,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
                         <Text strong>Họ tên:</Text><br />
                         {data.reviewedBy?.fullName || "Không rõ"}<br />
                         <Text strong>Ngày phê duyệt:</Text><br />
-                        {data.reviewedAt ? new Date(data.reviewedAt).toLocaleString("vi-VN") : "Không rõ"}
+                        {data.reviewedAt ? (() => { const date = new Date(data.reviewedAt); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })() : "Không rõ"}
                     </Card>
                 </Col>
             </Row>

@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Modal, Form, DatePicker, Select, Space } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
+import { useNavigate } from "react-router-dom";
 import ElectionService from "@/services/ElectionService";
 import { useNotification } from "@/contexts/NotificationContext";
 import { useLoading } from "@/contexts/LoadingContext";
+import { PATH } from "@/enums/PATH";
 
 const { Option } = Select;
 
@@ -25,6 +27,7 @@ const ReelectionModal: React.FC<ReelectionModalProps> = ({
   const { notify } = useNotification();
   const { showLoading, hideLoading } = useLoading();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
@@ -47,6 +50,8 @@ const ReelectionModal: React.FC<ReelectionModalProps> = ({
       form.resetFields();
       onSuccess();
       onClose();
+      // Redirect về trang home
+      navigate(PATH.HOME);
     } catch (error: any) {
       console.error("Error starting reelection:", error);
       notify(

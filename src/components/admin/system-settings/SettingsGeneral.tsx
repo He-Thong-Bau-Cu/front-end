@@ -30,6 +30,7 @@ import {
 import SystemConfigService from "@/services/SystemConfigService";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import { formatDate } from "@/utils/format";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -204,7 +205,7 @@ const GeneralSettings = forwardRef<GeneralSettingsHandle, GeneralSettingsProps>(
       title: "Cập nhật",
       dataIndex: "updatedAt",
       key: "updatedAt",
-      render: (value: string) => new Date(value).toLocaleString(),
+      render: (value: string) => formatDate(value),
     },
     {
       title: "Thao tác",

@@ -16,6 +16,7 @@ import * as XLSX from "xlsx";
 import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { Meeting } from "@/types/Meeting.interface";
 import { USER_ROLE } from "@/enums/STATUS";
+import { formatDate } from "@/utils/format";
 const DraftingDocuments: React.FC = () => {
   const [meetingInfo, setMeetingInfo] = useState<any>(null);
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -650,7 +651,7 @@ const DraftingDocuments: React.FC = () => {
             if (existingExcelDocument && existingExcelDocument._id) {
               const updateBody = {
                 title: `Danh sách cử tri import - ${importedVoters.length} người`,
-                content: `File Excel chứa danh sách ${importedVoters.length} cử tri được import thành công vào ngày ${new Date().toLocaleDateString("vi-VN")}`,
+                content: `File Excel chứa danh sách ${importedVoters.length} cử tri được import thành công vào ngày ${formatDate(new Date())}`,
                 fileUrl: uploadResponse.key,
                 remarks: `File Excel được tạo tự động từ danh sách cử tri đã import. Tổng số cử tri: ${importedVoters.length}. Tổng cổ phần: ${totalPercentage}%`,
                 type: "voters-import-excel",
@@ -666,7 +667,7 @@ const DraftingDocuments: React.FC = () => {
               const documentBody = {
                 electionId: electionId,
                 title: `Danh sách cử tri import - ${importedVoters.length} người`,
-                content: `File Excel chứa danh sách ${importedVoters.length} cử tri được import thành công vào ngày ${new Date().toLocaleDateString("vi-VN")}`,
+                content: `File Excel chứa danh sách ${importedVoters.length} cử tri được import thành công vào ngày ${formatDate(new Date())}`,
                 fileUrl: uploadResponse.key,
                 remarks: `File Excel được tạo tự động từ danh sách cử tri đã import. Tổng số cử tri: ${importedVoters.length}. Tổng cổ phần: ${totalPercentage}%`,
                 type: "voters-import-excel",
@@ -874,6 +875,7 @@ const DraftingDocuments: React.FC = () => {
             disabled={
               !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
             }
+            electionId={electionId}
           />
         </div>
         <div className="meeting-right">
@@ -900,6 +902,7 @@ const DraftingDocuments: React.FC = () => {
             disabled={
               !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
             }
+            electionId={electionId}
           />
         </div>
       </div>

@@ -28,6 +28,7 @@ import MeetingService from "@/services/MeetingService";
 import VotingRightService from "@/services/VotingRightService";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import { formatDate } from "@/utils/format";
 import type { Decision } from "@/types/Decision.interface";
 
 const ConfirmedElectionFromSecretary: React.FC = () => {
@@ -332,21 +333,6 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
       );
     } finally {
       hideLoading();
-    }
-  };
-
-  const formatDate = (dateString: string | Date | null | undefined): string => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "";
-      return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch {
-      return "";
     }
   };
 
