@@ -101,6 +101,27 @@ export class FileService extends BaseService {
     }
   }
 
+  /**
+   * Check file hash để phát hiện file trùng
+   * @param fileHash - SHA-256 hash của file
+   * @param fileType - Loại file (election-documents, election-entities)
+   * @param electionId - ID của election (optional, để check trong phạm vi election)
+   * @returns Promise<{ isDuplicate: boolean; duplicateFileUrl?: string }>
+   */
+  async checkFileHash(fileHash: string, fileType: string, electionId?: string): Promise<any> {
+    try {
+      const response = await this.api.post<any>(`${this.endpoint}/check-hash`, {
+        fileHash,
+        fileType,
+        electionId,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error checking file hash:", error);
+      throw error;
+    }
+  }
+
   async getImageFile(body: any): Promise<any> {
     try {
       const response = await this.api.post<any>(`${this.endpoint}/profile-image/url`, body)

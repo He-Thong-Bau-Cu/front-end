@@ -354,12 +354,12 @@ const ManagementMeeting: React.FC = () => {
                                 </Descriptions.Item>
                                 {abnormalReport.electionId?.startDate && (
                                     <Descriptions.Item label="Ngày bắt đầu">
-                                        {new Date(abnormalReport.electionId.startDate).toLocaleDateString('vi-VN')}
+                                        {(() => { const date = new Date(abnormalReport.electionId.startDate); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()}
                                     </Descriptions.Item>
                                 )}
                                 {abnormalReport.electionId?.endDate && (
                                     <Descriptions.Item label="Ngày kết thúc">
-                                        {new Date(abnormalReport.electionId.endDate).toLocaleDateString('vi-VN')}
+                                        {(() => { const date = new Date(abnormalReport.electionId.endDate); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()}
                                     </Descriptions.Item>
                                 )}
                             </Descriptions>
@@ -468,13 +468,7 @@ const ManagementMeeting: React.FC = () => {
                                             </span>
                                         }
                                     >
-                                        {new Date(abnormalReport.createdAt).toLocaleString('vi-VN', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        {(() => { const date = new Date(abnormalReport.createdAt); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()}
                                     </Descriptions.Item>
                                 )}
                                 {abnormalReport.updatedAt && (
@@ -486,13 +480,7 @@ const ManagementMeeting: React.FC = () => {
                                             </span>
                                         }
                                     >
-                                        {new Date(abnormalReport.updatedAt).toLocaleString('vi-VN', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        {(() => { const date = new Date(abnormalReport.updatedAt); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()}
                                     </Descriptions.Item>
                                 )}
                             </Descriptions>

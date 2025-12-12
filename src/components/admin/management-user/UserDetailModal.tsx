@@ -268,13 +268,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({
               style={{ justifyContent: "center", textAlign: "center" }}
             >
               <Descriptions.Item label="Ngày tạo">
-                {new Date(userData.createdAt).toLocaleDateString("vi-VN", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {formatDate(userData.createdAt) || "—"}
               </Descriptions.Item>
             </Descriptions>
           </>

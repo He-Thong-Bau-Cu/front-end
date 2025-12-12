@@ -24,18 +24,9 @@ import FileService from "@/services/FileService";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 import { useNotification } from "@/contexts/NotificationContext";
 import { getUserLogin } from "@/utils/auth";
+import { formatDate, formatDateNoOffset2 } from "@/utils/format";
 const { Text } = Typography;
 const { Option } = Select;
-
-const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "—";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-    });
-};
 
 // remove accents
 const removeVietnameseTones = (str: string) => {
@@ -231,7 +222,7 @@ const AuthorizationTable = () => {
                                 : statusData === "REJECTED"
                                     ? "red"
                                     : "gray";
-                return <Tag 
+                return <Tag
                 style={{ padding: 10, cursor: "pointer", fontSize: 14}}
                 color={color}>{statusMap[statusData] || statusData || "Chờ duyệt"}</Tag>;
             },

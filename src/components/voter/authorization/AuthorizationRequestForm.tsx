@@ -222,7 +222,7 @@ export default function AuthorizationRequestForm() {
                     <Descriptions column={2} bordered size="small">
                         <Descriptions.Item label="CCCD">{selectedUser.citizenId}</Descriptions.Item>
                         <Descriptions.Item label="Điện thoại">{selectedUser.phone}</Descriptions.Item>
-                        <Descriptions.Item label="Ngày sinh">{new Date(selectedUser.dateOfBirth).toLocaleDateString("vi-VN")}</Descriptions.Item>
+                        <Descriptions.Item label="Ngày sinh">{(() => { const date = new Date(selectedUser.dateOfBirth); const h = String(date.getHours()).padStart(2, '0'); const m = String(date.getMinutes()).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); const month = String(date.getMonth() + 1).padStart(2, '0'); const year = date.getFullYear(); return `${h}:${m} ${day}/${month}/${year}`; })()}</Descriptions.Item>
                         <Descriptions.Item label="Địa chỉ">{selectedUser.address}</Descriptions.Item>
                         <Descriptions.Item label="Phòng ban">{selectedUser.department}</Descriptions.Item>
                         <Descriptions.Item label="Chức vụ">{selectedUser.position}</Descriptions.Item>

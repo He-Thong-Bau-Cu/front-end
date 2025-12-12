@@ -33,6 +33,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import DecisionService from "@/services/DecisionService";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
+import { formatDate } from "@/utils/format";
 const { Text } = Typography;
 
 interface ViewDecisionModalProps {
@@ -167,16 +168,6 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     }
   };
 
-  const formatDateTime = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   /* ========= TABLE COLUMNS =========== */
   const voterColumns = [
@@ -419,13 +410,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                 {data?.decisionNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Thời gian bắt đầu">
-                {formatDateTime(meeting?.startDate || data?.startDate)}
+                {formatDate(meeting?.startDate || data?.startDate) || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Thể loại bầu cử">
                 {data?.typeId?.typeName || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Thời gian kết thúc">
-                {formatDateTime(meeting?.endDate || data?.endDate)}
+                {formatDate(meeting?.endDate || data?.endDate) || "-"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Ngưỡng thông qua">
@@ -433,13 +424,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
               </Descriptions.Item>
 
               <Descriptions.Item label="Thời gian ủy quyền">
-                {formatDateTime(data?.delegationStart)}
+                {formatDate(data?.delegationStart) || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Hình thức bầu cử">
                 {data?.votingMethodId?.methodName || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Kết thúc ủy quyền">
-                {formatDateTime(data?.delegationEnd)}
+                {formatDate(data?.delegationEnd) || "-"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Địa chỉ cuộc họp">

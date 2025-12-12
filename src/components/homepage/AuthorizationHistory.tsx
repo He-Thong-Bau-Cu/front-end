@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "./HomeHeader";
 import styles from "../../style/voter/AuthorizationHistory.module.css";
+import { formatDate } from "@/utils/format";
 
 
 const { Title, Text } = Typography;
@@ -147,7 +148,7 @@ export default function AuthorizationHistory() {
             render: (value: string) => (
                 <Space>
                     <CalendarOutlined />
-                    <Text>{new Date(value).toLocaleDateString("vi-VN")}</Text>
+                    <Text>{formatDate(value) || "—"}</Text>
                 </Space>
             ),
         },
@@ -385,15 +386,15 @@ export default function AuthorizationHistory() {
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Ngày bắt đầu">
-                                    {new Date(selectedDelegation.startDate).toLocaleDateString("vi-VN")}
+                                    {formatDate(selectedDelegation.startDate) || "—"}
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Ngày kết thúc">
-                                    {new Date(selectedDelegation.endDate).toLocaleDateString("vi-VN")}
+                                    {formatDate(selectedDelegation.endDate) || "—"}
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Ngày tạo">
-                                    {new Date(selectedDelegation.createdAt).toLocaleString("vi-VN")}
+                                    {formatDate(selectedDelegation.createdAt) || "—"}
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Lý do ủy quyền">

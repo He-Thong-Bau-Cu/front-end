@@ -25,23 +25,9 @@ import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import FileService from "@/services/FileService";
-import { formatDateNoOffset2 } from "@/utils/format";
+import { formatDate, formatDateNoOffset2 } from "@/utils/format";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
 const { Title, Text } = Typography;
-const formatDate = (dateString: string | Date | null | undefined): string => {
-    if (!dateString) return "";
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "";
-        return date.toLocaleDateString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-        });
-    } catch {
-        return "";
-    }
-};
 
 interface AuthorizationDetailModalProps {
     open: boolean;
@@ -231,7 +217,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
     };
     const isDelegationExpired = (endDate?: string) => {
         if (!endDate) return false;
-        return new Date(endDate).getTime() < Date.now();
+        return new Date(endDate).getTime() - 7 * 60 * 60 * 1000 < Date.now();
     };
     const isDelegationSigne = (status?: string) => {
         if (!status) return false;
@@ -421,7 +407,7 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                     Hạn nhận ủy quyền
                                 </Text>
                                 <p style={{ marginTop: 4 }}>
-                                    {formatDateNoOffset2(data?.election?.delegationEnd)}
+                                    {formatDate(data?.election?.delegationEnd)}
                                 </p>
                             </Col>
                         </Row>
@@ -478,6 +464,11 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                             danger
                                             disabled={selectedDelegations.length === 0}
                                             onClick={() => setRejectModalOpen(true)}
+                                            style={{
+                                                minWidth: 120,
+                                                height: 44,
+                                                fontWeight: 600,
+                                            }}
                                         >
                                             Từ chối
                                         </Button>
@@ -492,7 +483,10 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                                             style={{
                                                 background: "#52c41a",
                                                 borderColor: "#52c41a",
-                                                color: "white"
+                                                color: "white",
+                                                minWidth: 120,
+                                                height: 44,
+                                                fontWeight: 600,
                                             }}
                                         >
                                             Ký số
@@ -502,7 +496,16 @@ const AuthorizationDetailModal: React.FC<AuthorizationDetailModalProps> = ({
                             )}
 
                             <Col>
-                                <Button onClick={onClose}>Đóng</Button>
+                                <Button
+                                    onClick={onClose}
+                                    style={{
+                                        minWidth: 120,
+                                        height: 44,
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    Đóng
+                                </Button>
                             </Col>
                         </Row>
                     </Card>

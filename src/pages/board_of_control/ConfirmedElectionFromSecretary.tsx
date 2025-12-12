@@ -28,6 +28,7 @@ import MeetingService from "@/services/MeetingService";
 import VotingRightService from "@/services/VotingRightService";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
+import { formatDate } from "@/utils/format";
 import type { Decision } from "@/types/Decision.interface";
 
 const ConfirmedElectionFromSecretary: React.FC = () => {
@@ -329,38 +330,9 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string | Date | null | undefined): string => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "";
-      return date.toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return "";
-    }
-  };
-
-  const getStatusTag = (status: string | null | undefined) => {
-    if (!status) return { text: "Chưa có trạng thái", color: "default" };
-    const statusMap: Record<string, { text: string; color: string }> = {
-      WAIT_ENTER_DATA: { text: "Chờ nhập dữ liệu", color: "orange" },
-      WAIT_APPROVAL: { text: "Chờ duyệt", color: "blue" },
-      WAIT_BKS_CONFIRMED: { text: "Chờ BKS xác nhận", color: "purple" },
-      APPROVED_SIGNED: { text: "Đã duyệt và ký", color: "green" },
-      REJECTED: { text: "Đã từ chối", color: "red" },
-      ACTIVE: { text: "Đang hoạt động", color: "green" },
-      INACTIVE: { text: "Không hoạt động", color: "default" },
-    };
-    return statusMap[status] || { text: status, color: "default" };
-  };
-
-  if (!election) {
+  const filteredElections = elections.filter((election) => {
+    if (!searchText.trim()) return true;
+    const search = searchText.toLowerCase();
     return (
       <div
         style={{ padding: "20px", minHeight: "100vh", background: "#f0f2f5" }}
