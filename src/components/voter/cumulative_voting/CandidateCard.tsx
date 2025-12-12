@@ -5,6 +5,11 @@ import React from "react";
 
 const { Text, Paragraph } = Typography;
 
+// Hàm format số với dấu chấm phân cách hàng nghìn
+const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 interface Props {
   entity: ElectionEntities;
   votes: number;
@@ -57,7 +62,7 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
               onClick={() => handleChange(votes - 1)}
               disabled={disabled || votes === 0}
             />
-            <Text style={{ fontSize: 18, fontWeight: 600 }}>{votes}</Text>
+            <Text style={{ fontSize: 18, fontWeight: 600 }}>{formatNumber(votes)}</Text>
             <Button
               shape="circle"
               icon={<PlusOutlined />}
@@ -66,7 +71,7 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
             />
           </Space>
 
-          <Text type="success" strong>{votes} quyền biểu quyết</Text>
+          <Text type="success" strong>{formatNumber(votes)} quyền biểu quyết</Text>
         </Row>
 
         <Slider
