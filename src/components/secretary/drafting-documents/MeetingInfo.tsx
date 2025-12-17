@@ -18,6 +18,7 @@ import {
   Modal,
   message,
   Tooltip,
+  Alert,
 } from "antd";
 import {
   UserOutlined,
@@ -747,9 +748,16 @@ const MeetingInfo: React.FC<Props> = ({
                   if (electionStartDate && d.isAfter(electionStartDate, "day")) return true;
                   return false;
                 }}
-                onChange={() => {
+                onChange={(value) => {
                   // Reset ngày kết thúc khi thay đổi ngày bắt đầu
                   form.setFieldsValue({ authorizationEnd: null });
+                  // Hiển thị thông báo info
+                  if (value) {
+                    notify(
+                      "Chú ý: Ngày bắt đầu ủy quyền và ngày kết thúc ủy quyền phải kéo dài từ 10 ngày đổ lên nhé.",
+                      "info"
+                    );
+                  }
                   // Trigger onChange để cập nhật state
                   const values = form.getFieldsValue(true);
                   values.candidates = candidates;
@@ -845,7 +853,14 @@ const MeetingInfo: React.FC<Props> = ({
                   if (electionEndDate && d.isAfter(electionEndDate, "day")) return true;
                   return false;
                 }}
-                onChange={() => {
+                onChange={(value) => {
+                  // Hiển thị thông báo info
+                  if (value) {
+                    notify(
+                      "Chú ý: Ngày bắt đầu ủy quyền và ngày kết thúc ủy quyền phải kéo dài từ 10 ngày đổ lên nhé.",
+                      "info"
+                    );
+                  }
                   // Trigger form validation và onChange
                   form.validateFields(['authorizationEnd']);
                   const values = form.getFieldsValue(true);

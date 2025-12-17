@@ -1066,28 +1066,19 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
               </>
             )}
             {data?.statusData === "APPROVED_SIGNED" ? (
-              <>
-                <Tag
-                  color={"yellow"}
-                  style={{
-                    padding: 10,
-                    cursor: "pointer",
-                    fontSize: 14,
-                    border: "1px solid ",
-                  }}
-                  icon={<DownloadOutlined />}
-                  onClick={() => downloadUrlFileSign(data)}
-                >
-                  Tải tài liệu có chữ ký số
-                </Tag>
-                <Tag
-                  color="red"
-                  style={{ padding: 10, cursor: "pointer", fontSize: 14 }}
-                  onClick={() => openRejectModal(data)}
-                >
-                  Từ chối
-                </Tag>
-              </>
+              <Tag
+                color={"yellow"}
+                style={{
+                  padding: 10,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  border: "1px solid ",
+                }}
+                icon={<DownloadOutlined />}
+                onClick={() => downloadUrlFileSign(data)}
+              >
+                Tải tài liệu có chữ ký số
+              </Tag>
             ) : null}
             <Space>
               <Tag

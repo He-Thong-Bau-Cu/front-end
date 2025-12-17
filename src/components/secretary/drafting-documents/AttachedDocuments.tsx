@@ -70,14 +70,14 @@ const AttachedDocuments: React.FC<Props> = ({
     }
   };
 
-  // Load existing documents - lọc những document có type là 'election-documents-important' hoặc 'voters-import-excel'
+  // Load existing documents - lọc RA những document có type là 'voters-import-excel'
   useEffect(() => {
     if (initialDocuments && Array.isArray(initialDocuments)) {
-      // Lọc lấy những document có type là 'election-documents-important' hoặc 'voters-import-excel'
+      // Lọc RA (không lấy) những document có type là 'voters-import-excel'
       const filteredDocs = initialDocuments.filter(
         (doc: any) =>
-          doc.type === "election-documents-important" ||
-          doc.type === "voters-import-excel"
+          doc.type !== "voters-import-excel" &&
+          !(doc.fileUrl && doc.fileUrl.includes("voters-import-excel"))
       );
 
       const mapped = filteredDocs.map((doc: any) => ({

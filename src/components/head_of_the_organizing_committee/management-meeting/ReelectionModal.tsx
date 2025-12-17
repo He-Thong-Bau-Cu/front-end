@@ -37,7 +37,8 @@ const ReelectionModal: React.FC<ReelectionModalProps> = ({
 
       const startDate = values.startDate.toDate();
       const endDate = values.endDate.toDate();
-      const startStage = values.startStage;
+      // Mặc định bắt đầu từ giai đoạn bỏ phiếu
+      const startStage = 'voting';
 
       await ElectionService.cloneForReelection(
         electionId,
@@ -175,22 +176,6 @@ const ReelectionModal: React.FC<ReelectionModalProps> = ({
             style={{ width: "100%" }}
             placeholder="Chọn thời gian kết thúc"
           />
-        </Form.Item>
-
-        <Form.Item
-          label="Giai đoạn bắt đầu bầu cử lại"
-          name="startStage"
-          rules={[
-            { required: true, message: "Vui lòng chọn giai đoạn bắt đầu" },
-          ]}
-        >
-          <Select placeholder="Chọn giai đoạn bắt đầu">
-            <Option value="checkin">Check-in</Option>
-            <Option value="report">Phát biểu & Báo cáo</Option>
-            <Option value="voting">Bỏ phiếu</Option>
-            <Option value="result">Công bố Kết quả</Option>
-            <Option value="closing">Bế mạc</Option>
-          </Select>
         </Form.Item>
       </Form>
     </Modal>
