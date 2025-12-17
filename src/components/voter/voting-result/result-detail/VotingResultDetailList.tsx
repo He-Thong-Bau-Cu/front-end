@@ -14,11 +14,21 @@ interface YesNoResult {
     abstain: { count: number; percent: number };
 }
 
+interface EntityMetaData {
+    type: "project" | "person" | "other";
+    projectName?: string;
+    fullName?: string;
+    label?: string;
+}
+
+
 interface CumulativeItem {
     _id: string;
     totalVotes: number;
     percentage: number;
     entityTitle: string;
+    entityMetaData?: EntityMetaData;
+
 }
 
 interface CandidateResult {
@@ -26,6 +36,8 @@ interface CandidateResult {
     totalVotes?: number;
     percentage?: number;
     entityTitle: string;
+    metaData?: EntityMetaData;
+
 
     yes?: { count: number; percent: number };
     no?: { count: number; percent: number };
@@ -70,6 +82,7 @@ const VotingResultDetailList: React.FC = () => {
                         totalVotes: item.totalVotes,
                         percentage: item.percentage,
                         entityTitle: item.entityTitle,
+                        metaData: item.entityMetaData,
                     }));
 
                     setCandidates(mapped);
@@ -134,6 +147,17 @@ const VotingResultDetailList: React.FC = () => {
 
     const yesNoWinner = methodCode === "YES_NO_ABSTAIN" ? getYesNoWinner() : null;
     const cumulativeWinnerId = methodCode === "CUMULATIVE" ? getCumulativeWinner() : null;
+
+    const getAbbr = (c: CandidateResult) => {
+        if (c.metaData?.type === "person" && c.metaData.fullName) {
+            return c.metaData.fullName.trim().charAt(0).toUpperCase();
+        }
+        if (c.metaData?.type === "project" && c.metaData.projectName) {
+            return c.metaData.projectName.trim().charAt(0).toUpperCase();
+        }
+        return c.entityTitle.trim().charAt(0).toUpperCase();
+    };
+
 
     return (
         <div className="voting-wrapper-detail">
@@ -230,8 +254,20 @@ const VotingResultDetailList: React.FC = () => {
                             <div className="candidate-row">
                                 <div className="candidate-info">
                                     <div className="rank-circle">{index + 1}</div>
-                                    <div className="abbr-circle">{c.entityTitle.substring(0, 1)}</div>
-                                    <Text strong>{c.entityTitle}</Text>
+                                    {/* <div className="abbr-circle">
+                                        {getAbbr(c)}
+                                    </div> */}
+                                    <div className="candidate-text">
+                                        <Text strong>
+                                            {c.metaData?.type === "person" && c.metaData.fullName}
+                                            {c.metaData?.type === "project" && c.metaData.projectName}
+                                            {!c.metaData && c.entityTitle}
+                                        </Text>
+
+                                        <Text style={{ fontSize: 12, color: "#888" }}>
+                                            {c.entityTitle}
+                                        </Text>
+                                    </div>
                                 </div>
 
                                 <div className="candidate-stats">

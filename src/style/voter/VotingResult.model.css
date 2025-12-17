@@ -429,3 +429,15 @@
   color: #666;
   font-size: 14px;
 }
+
+.candidate-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.candidate-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
