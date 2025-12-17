@@ -2,6 +2,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import BallotService from "@/services/BallotService";
 import { BallotCast } from "@/types/Ballot.interface";
+import { formatDate } from "@/utils/format";
 import {
     AuditOutlined,
     CalendarOutlined,
@@ -13,11 +14,9 @@ import {
     UserOutlined
 } from "@ant-design/icons";
 import { Button, Card, Col, Descriptions, Divider, Row, Tag, Typography } from "antd";
-import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../../style/voter/VotingHistory.model.css";
-import { formatDate } from "@/utils/format";
 
 
 const { Text, Title } = Typography;
