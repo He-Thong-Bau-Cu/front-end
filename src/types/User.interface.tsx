@@ -29,6 +29,8 @@ export interface User {
     issueCA?: boolean;
     issueCa?: boolean;
     signCa?: string;
+    // Số cuộc bầu cử đang tham gia hiện tại (server trả về từ /elections/user-organizer)
+    currentElectionCount?: number;
 
 }
 

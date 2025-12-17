@@ -80,6 +80,42 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     setOpenCandidateModal(true);
   };
 
+  const downloadUrlFileAnyChoice = async (data: any) => {
+    try {
+      const fileData = await FileService.getSignedFile(data?.fileUrl);
+
+      const extension = data?.fileUrl?.split(".").pop()?.toLowerCase() || "";
+
+      const mimeMap: Record<string, string> = {
+        pdf: "application/pdf",
+        doc: "application/msword",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        xls: "application/vnd.ms-excel",
+        xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        png: "image/png",
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        zip: "application/zip",
+        txt: "text/plain",
+      };
+
+      const blob = new Blob([fileData], {
+        type: mimeMap[extension] || "application/octet-stream",
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${data.title}.${extension}`;
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      notify(err.response?.data?.message, "error");
+    }
+  };
+
   const downloadUrlFileSign = async (data: any) => {
     try {
       const data1 = await ElectionDocumentService.getDocumentByElectionId(
@@ -296,7 +332,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       render: (_: string, record: any) => (
         <Button
           icon={<DownloadOutlined />}
-          onClick={() => downloadUrlFileSign(record)}
+          onClick={() => downloadUrlFileAnyChoice(record)}
           style={{ cursor: "pointer" }}
         ></Button>
       ),

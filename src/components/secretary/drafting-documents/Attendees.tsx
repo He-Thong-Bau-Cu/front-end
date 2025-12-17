@@ -249,18 +249,24 @@ const Attendees: React.FC<Props> = ({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              flexDirection: "column",
+              flexWrap: "nowrap",
+              gap: 12,
             }}
           >
-            <div>
-              <Text style={{ fontSize: 16, fontWeight: 500, paddingLeft: 15 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: 500, paddingLeft: 20 }}>
                 <TeamOutlined style={{ marginRight: 8 }} />
                 Danh sách cử tri ({participants.length})
               </Text>
-              <Tag
-                color="blue"
-                style={{ margin: 0, paddingLeft: 20, marginLeft: 20 }}
-              >
+              <Tag color="blue" style={{ margin: 0 }}>
                 Tổng cổ phần: {totalPercentage}%
               </Tag>
             </div>
@@ -268,12 +274,9 @@ const Attendees: React.FC<Props> = ({
             <div
               style={{
                 display: "flex",
-                alignItems: "start",
-                gap: 12,
+                alignItems: "center",
+                gap: 8,
                 flexShrink: 0,
-                paddingLeft: 40,
-                width: "100%",
-                paddingBottom: 10,
               }}
             >
               <a
@@ -283,6 +286,7 @@ const Attendees: React.FC<Props> = ({
                   cursor: disabled ? "not-allowed" : "pointer",
                   opacity: disabled ? 0.5 : 1,
                   pointerEvents: disabled ? "none" : "auto",
+                  whiteSpace: "nowrap",
                 }}
               >
                 <PlusOutlined style={{ marginRight: 4 }} />
@@ -301,55 +305,64 @@ const Attendees: React.FC<Props> = ({
           </div>
         }
       >
-        {participants.map((p, i) => (
-          <div
-            key={i}
-            className="participant-item"
-            style={{
-              borderLeft: p.isImportedFromExcel
-                ? "4px solid #52c41a"
-                : "4px solid #1890ff",
-              paddingLeft: "8px",
-              marginBottom: "8px",
-            }}
-          >
-            <div>
-              <strong>{p.fullName}</strong>
-              {p.isImportedFromExcel && (
-                <Tag color="green" style={{ marginLeft: 8, fontSize: 10 }}>
-                  Nhập từ Excel
+        <div
+          style={{
+            maxHeight: "400px",
+            overflowY: "auto",
+            overflowX: "hidden",
+            paddingRight: "8px",
+          }}
+        >
+          {participants.map((p, i) => (
+            <div
+              key={i}
+              className="participant-item"
+              style={{
+                borderLeft: p.isImportedFromExcel
+                  ? "4px solid #52c41a"
+                  : "4px solid #1890ff",
+                paddingLeft: "8px",
+                marginBottom: "8px",
+              }}
+            >
+              <div>
+                <strong>{p.fullName}</strong>
+                {p.isImportedFromExcel && (
+                  <Tag color="green" style={{ marginLeft: 8, fontSize: 10 }}>
+                    Nhập từ Excel
+                  </Tag>
+                )}
+                <p>{p.position}</p>
+                <p>
+                  <b>% Cổ phần:</b> {p.percentage}%
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <Tag
+                  color={statusColor(p.status || "PENDING")}
+                  style={{ margin: 0, marginTop: 2 }}
+                >
+                  {p.status === "ACTIVE"
+                    ? "Đã xác nhận"
+                    : p.status === "INACTIVE"
+                      ? "Đã hủy"
+                      : p.status === "AUTHORIZED"
+                        ? "Được ủy quyền"
+                        : "Chờ duyệt"}
                 </Tag>
-              )}
-              <p>{p.position}</p>
-              <p>
-                <b>% Cổ phần:</b> {p.percentage}%
-              </p>
+                <DeleteOutlined
+                  onClick={() => !disabled && handleDelete(p)}
+                  style={{
+                    color: disabled ? "#ccc" : "red",
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    opacity: disabled ? 0.5 : 1,
+                    marginTop: 2,
+                  }}
+                />
+              </div>
             </div>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-              <Tag
-                color={statusColor(p.status || "PENDING")}
-                style={{ margin: 0, marginTop: 2 }}
-              >
-                {p.status === "ACTIVE"
-                  ? "Đã xác nhận"
-                  : p.status === "INACTIVE"
-                    ? "Đã hủy"
-                    : p.status === "AUTHORIZED"
-                      ? "Được ủy quyền"
-                      : "Chờ duyệt"}
-              </Tag>
-              <DeleteOutlined
-                onClick={() => !disabled && handleDelete(p)}
-                style={{
-                  color: disabled ? "#ccc" : "red",
-                  cursor: disabled ? "not-allowed" : "pointer",
-                  opacity: disabled ? 0.5 : 1,
-                  marginTop: 2,
-                }}
-              />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </Card>
 
       {/* ==================== MODAL CHỌN CỬ TRI ==================== */}

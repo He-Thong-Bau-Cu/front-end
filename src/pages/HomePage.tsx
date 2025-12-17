@@ -19,6 +19,7 @@ const HomePage: React.FC = () => {
   const userName = localStorage.getItem("name") || "";
   const [dataElection, setDataElection] = useState<ElectionItem[]>([]);
   const [stats, setStats] = useState<any>({});
+  const [searchText, setSearchText] = useState<string>("");
   const { notify } = useNotification();
   const { showLoading, hideLoading } = useLoading();
   const navigate = useNavigate();
@@ -58,7 +59,13 @@ const HomePage: React.FC = () => {
       const userId = localStorage.getItem("userId") || "";
       const response = await ElectionParticipantsService.getByUserId(userId);
       if (response.success) {
-        const electionItems = mapToElectionItems(response.data);
+        const electionItems = mapToElectionItems(response.data).sort(
+          (a, b) => {
+            const aTime = a.startDate ? new Date(a.startDate).getTime() : 0;
+            const bTime = b.startDate ? new Date(b.startDate).getTime() : 0;
+            return bTime - aTime; // Mới nhất (ngày lớn hơn) lên đầu
+          }
+        );
         setDataElection(electionItems);
         setStats(getElectionSummary(response.data, electionItems));
       } else {
@@ -193,6 +200,11 @@ const HomePage: React.FC = () => {
         }
       }
 
+      // Nếu election đã được đánh dấu REMAKE (bầu cử lại), luôn coi là "đã hoàn thành"
+      if (election.statusData === "REMAKE") {
+        status = "completed";
+      }
+
       return {
         id: election._id,
         title: election.title,
@@ -219,15 +231,26 @@ const HomePage: React.FC = () => {
   const pageSize = 3;
   const [currentPage, setCurrentPage] = useState<number>(1);
 
+  const filteredData = React.useMemo(() => {
+    if (!searchText.trim()) return dataElection;
+    const keyword = searchText.trim().toLowerCase();
+    return dataElection.filter((item) => {
+      return (
+        item.title.toLowerCase().includes(keyword) ||
+        item.role.toLowerCase().includes(keyword)
+      );
+    });
+  }, [dataElection, searchText]);
+
   const paginatedData = React.useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return dataElection.slice(start, start + pageSize);
-  }, [dataElection, currentPage]);
+    return filteredData.slice(start, start + pageSize);
+  }, [filteredData, currentPage]);
 
   // reset page khi dữ liệu thay đổi
   useEffect(() => {
     setCurrentPage(1);
-  }, [dataElection]);
+  }, [dataElection, searchText]);
 
   return (
     <Layout
@@ -273,6 +296,8 @@ const HomePage: React.FC = () => {
                     <ElectionList
                       data={paginatedData}
                       onSelectElection={handleRedirect}
+                      searchText={searchText}
+                      onSearchChange={setSearchText}
                     />
                     {/* Pagination */}
                     <div
@@ -285,7 +310,7 @@ const HomePage: React.FC = () => {
                       <Pagination
                         current={currentPage}
                         pageSize={pageSize}
-                        total={dataElection.length}
+                        total={filteredData.length}
                         onChange={(page) => setCurrentPage(page)}
                         showSizeChanger={false}
                       />

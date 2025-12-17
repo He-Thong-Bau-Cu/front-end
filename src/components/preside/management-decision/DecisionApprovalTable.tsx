@@ -975,6 +975,11 @@ const DecisionApprovalTable = () => {
                     .map((user) => (
                       <Option key={user._id} value={user._id}>
                         {user.fullName} - {user.email}
+                        {typeof user.currentElectionCount === "number" && (
+                          <span style={{ color: "#999", marginLeft: 8 }}>
+                            (Đang tham gia {user.currentElectionCount} kỳ)
+                          </span>
+                        )}
                       </Option>
                     ))}
                 </Select>
@@ -1023,6 +1028,11 @@ const DecisionApprovalTable = () => {
                     .map((user) => (
                       <Option key={user._id} value={user._id}>
                         {user.fullName} - {user.email}
+                        {typeof user.currentElectionCount === "number" && (
+                          <span style={{ color: "#999", marginLeft: 8 }}>
+                            (Đang tham gia {user.currentElectionCount} kỳ)
+                          </span>
+                        )}
                       </Option>
                     ))}
                 </Select>

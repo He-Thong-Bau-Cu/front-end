@@ -4,10 +4,10 @@ import {
     CheckCircleOutlined,
     ClockCircleOutlined,
     FireOutlined,
-    RightOutlined,
-    UserOutlined
+    UserOutlined,
+    SearchOutlined,
 } from "@ant-design/icons";
-import { Card, List, Progress, Space, Tag, Tooltip, Typography } from "antd";
+import { Card, Input, List, Progress, Space, Tag, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import React from "react";
@@ -34,6 +34,8 @@ export interface ElectionItem {
 interface ElectionListProps {
     data: ElectionItem[];
     onSelectElection: (electionId: string) => void;
+    searchText?: string;
+    onSearchChange?: (value: string) => void;
 }
 
 const formatDateTime = (date?: string) => {
@@ -42,7 +44,12 @@ const formatDateTime = (date?: string) => {
 };
 
 
-const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) => {
+const ElectionList: React.FC<ElectionListProps> = ({
+    data,
+    onSelectElection,
+    searchText,
+    onSearchChange,
+}) => {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -81,11 +88,19 @@ const ElectionList: React.FC<ElectionListProps> = ({ data, onSelectElection }) =
                 </div>
             }
             extra={
-                <Tooltip title="Xem tất cả cuộc bầu cử">
-                    <Text className="view-all" style={{ cursor: "pointer" }}>
-                        {/* Xem tất cả <RightOutlined /> */}
-                    </Text>
-                </Tooltip>
+                onSearchChange ? (
+                    <Tooltip title="Tìm kiếm theo tên cuộc bầu cử hoặc vai trò">
+                        <Input
+                            size="middle"
+                            placeholder="Tìm kiếm..."
+                            prefix={<SearchOutlined />}
+                            allowClear
+                            style={{ width: 260 }}
+                            value={searchText}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                        />
+                    </Tooltip>
+                ) : null
             }
             className="election-card"
             headStyle={{

@@ -348,7 +348,7 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
 
   if (!election) {
     return (
-      <div style={{ padding: "20px", minHeight: "100vh", background: "#f0f2f5" }}>
+      <div style={{ padding: "20px", minHeight: "100vh" }}>
         <Card>
           <Spin spinning={loading} tip="Đang tải thông tin cuộc bầu cử...">
             <div style={{ minHeight: "200px" }} />
@@ -372,10 +372,10 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: "20px", minHeight: "100vh", background: "#f0f2f5" }}>
+    <div style={{ padding: "20px", minHeight: "100vh" }}>
       <Card
         title={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 20 }}>
             <FileTextOutlined style={{ fontSize: 18, color: "#1890ff" }} />
             <span style={{ fontSize: 16, fontWeight: 600 }}>
               Chi tiết cuộc bầu cử
@@ -489,6 +489,7 @@ const ConfirmedElectionFromSecretary: React.FC = () => {
             </Button>
 
             <Button
+              size="large"
               icon={<FileTextOutlined />}
               onClick={() => {
                 setViewDecisionData(election);
