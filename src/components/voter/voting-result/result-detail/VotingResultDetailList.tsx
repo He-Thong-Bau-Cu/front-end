@@ -31,10 +31,17 @@ interface CandidateResult {
     no?: { count: number; percent: number };
 }
 
+const formatNumber = (value?: number) => {
+    if (value === undefined || value === null) return 0;
+    return value.toLocaleString("vi-VN");
+};
+
+
 const VotingResultDetailList: React.FC = () => {
     const [methodCode, setMethodCode] = useState<string | null>(null);
     const [candidates, setCandidates] = useState<CandidateResult[]>([]);
     const electionId = localStorage.getItem("currentElectionId") || "";
+
 
     // Load voting method
     useEffect(() => {
@@ -109,7 +116,7 @@ const VotingResultDetailList: React.FC = () => {
     const getYesNoWinner = () => {
         if (!yesNoItem) return null;
         const { yes, no } = yesNoItem;
-        
+
         // Chỉ so sánh yes và no, abstain không được tính là thắng
         if (yes.percent > no.percent) return 'yes';
         if (no.percent > yes.percent) return 'no';
@@ -229,7 +236,7 @@ const VotingResultDetailList: React.FC = () => {
 
                                 <div className="candidate-stats">
                                     <div>
-                                        <Text strong className="stat-green">{c.totalVotes}</Text>
+                                        <Text strong className="stat-green">{formatNumber(c.totalVotes)}</Text>
                                         <p>Quyền biểu quyết</p>
                                     </div>
                                     <div>

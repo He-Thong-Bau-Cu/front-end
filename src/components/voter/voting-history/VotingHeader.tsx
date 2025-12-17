@@ -43,9 +43,9 @@ const VotingHeader = () => {
     }, [fetchStats]);
 
     const displayStats = [
-        { label: "Tổng số phiếu trong cuộc bầu cử", value: stats.total },
-        { label: "Tổng số phiếu đã bỏ", value: stats.cast },
-        { label: "Tổng số phiếu chưa bỏ", value: stats.notCast },
+        { label: "Tổng số cử tri tham gia bỏ phiếu", value: stats.total },
+        { label: "Tổng số cử tri đã bỏ phiếu", value: stats.cast },
+        { label: "Tổng số cử tri chưa bỏ phiếu", value: stats.notCast },
     ];
 
     return (

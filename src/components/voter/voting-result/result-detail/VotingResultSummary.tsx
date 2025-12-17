@@ -80,17 +80,17 @@ const VotingResultSummary: React.FC = () => {
                 <Row gutter={24} className="summary-stats">
                     <Col span={6} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>{stats.total}</Title>
-                        <Text>Tổng số phiếu</Text>
+                        <Text>Tổng số cử tri tham gia bỏ phiếu</Text>
                     </Col>
 
                     <Col span={6} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>{stats.cast}</Title>
-                        <Text>Phiếu đã bỏ</Text>
+                        <Text>Tổng số cử tri đã bỏ phiếu</Text>
                     </Col>
 
                     <Col span={6} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>{stats.notCast}</Title>
-                        <Text>Phiếu chưa bỏ</Text>
+                        <Text>Tổng số cử tri chưa bỏ phiếu</Text>
                     </Col>
 
                     <Col span={6} className="stat-item">
