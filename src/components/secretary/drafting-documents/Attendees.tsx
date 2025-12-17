@@ -27,6 +27,7 @@ interface Props {
   organizationMembers?: any[]; // Danh sách thành viên tổ chức để lọc
   onAddDocument?: (document: any) => void; // Callback để thêm document vào tài liệu đính kèm
   electionId?: string; // ID của election để upload file
+  election?: any; // Thông tin election
 }
 const Attendees: React.FC<Props> = ({
   onChange,
@@ -35,6 +36,7 @@ const Attendees: React.FC<Props> = ({
   organizationMembers = [],
   onAddDocument,
   electionId,
+  election,
 }) => {
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedVoter, setSelectedVoter] = useState<any | null>(null);
@@ -160,7 +162,9 @@ const Attendees: React.FC<Props> = ({
           setExcelVotersLoaded(true);
         }
       };
+     
       fetchVotersFromExcel();
+    
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [electionId, dataLoaded, excelVotersLoaded]);
@@ -292,7 +296,8 @@ const Attendees: React.FC<Props> = ({
                 <PlusOutlined style={{ marginRight: 4 }} />
                 Thêm
               </a>
-              <ExcelImport
+              
+                <ExcelImport
                 disabled={disabled}
                 participants={participants}
                 setParticipants={setParticipants}
@@ -301,6 +306,8 @@ const Attendees: React.FC<Props> = ({
                 users={users}
                 onAddDocument={onAddDocument}
               />
+              
+             
             </div>
           </div>
         }
