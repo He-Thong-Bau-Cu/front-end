@@ -27,9 +27,15 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
 }) => {
     const meetingStatus = meeting?.status || "PENDING";
     const electionStatusData = election?.statusData || "";
-    // Khóa toàn bộ nút điều khiển khi cuộc bầu cử đã bị từ chối hoặc được đánh dấu bầu cử lại
+    const electionStatus = election?.status || "";
+    // Khóa toàn bộ nút điều khiển khi:
+    // - Cuộc bầu cử đã bị từ chối (REJECTED)
+    // - Hoặc là election cũ đã bị đánh dấu bầu cử lại (ABNORMAL_REMAKE hoặc REMAKE + INACTIVE)
+    // Cho phép election mới được tạo ra khi bầu cử lại (REMAKE + ACTIVE)
     const isElectionLocked =
-        electionStatusData === "REJECTED" || electionStatusData === "REMAKE";
+        electionStatusData === "REJECTED" ||
+        electionStatusData === "ABNORMAL_REMAKE" ||
+        (electionStatusData === "REMAKE" && electionStatus === "INACTIVE");
 
     const isMeetingStarted = meetingStatus !== "PENDING";
     const isMeetingCompleted = meetingStatus === "COMPLETED";
@@ -427,6 +433,12 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                         content: "Bạn có chắc chắn muốn kết thúc giai đoạn Check-in? Sau khi kết thúc, không thể check-in thêm.",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -495,6 +507,12 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                         content: "Bạn có chắc chắn muốn kết thúc giai đoạn Phát biểu & Báo cáo?",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -572,6 +590,12 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                         content: "Bạn có chắc chắn muốn kết thúc giai đoạn bỏ phiếu? Sau khi kết thúc, không thể bỏ phiếu thêm.",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -640,6 +664,12 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                         content: "Bạn có chắc chắn muốn kết thúc công bố kết quả?",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -708,6 +738,12 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                         content: "Bạn có chắc chắn muốn kết thúc bế mạc?",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");

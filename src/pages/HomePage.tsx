@@ -200,8 +200,8 @@ const HomePage: React.FC = () => {
         }
       }
 
-      // Nếu election đã được đánh dấu REMAKE (bầu cử lại), luôn coi là "đã hoàn thành"
-      if (election.statusData === "REMAKE") {
+      // Nếu election đã được đánh dấu REMAKE hoặc ABNORMAL_REMAKE (bầu cử lại), luôn coi là "đã hoàn thành"
+      if (election.statusData === "ABNORMAL_REMAKE") {
         status = "completed";
       }
 

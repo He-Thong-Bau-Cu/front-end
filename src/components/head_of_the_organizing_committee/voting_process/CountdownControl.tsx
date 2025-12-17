@@ -17,6 +17,12 @@ export default function CountdownControl({ timeLeft, onRefresh, isVotingComplete
       content: "Bạn có chắc chắn muốn kết thúc giai đoạn bỏ phiếu? Sau khi kết thúc, không thể bỏ phiếu thêm.",
       okText: "Xác nhận",
       cancelText: "Hủy",
+      okButtonProps: {
+        style: {
+          background: '#52c41a',
+          borderColor: '#52c41a'
+        }
+      },
       onOk: async () => {
         const electionId = localStorage.getItem("currentElectionId");
         if (!electionId) {

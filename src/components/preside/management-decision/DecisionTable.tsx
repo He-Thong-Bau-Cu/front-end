@@ -47,6 +47,7 @@ const statusMap: { [key: string]: string } = {
   "DRAFT": "Lưu nháp",
   "WAIT_BKS_CONFIRMED": "Chờ ban kiểm soát xác nhận",
   "REMAKE": "Bầu cử lại",
+  "ABNORMAL_REMAKE": "Có bất thường, bầu cử lại",
 };
 const DecisionTable = () => {
   const location = useLocation();
@@ -450,6 +451,8 @@ const DecisionTable = () => {
                       ? "purple"
                       : statusData === "REMAKE"
                       ? "blue"
+                      : statusData === "ABNORMAL_REMAKE"
+                      ? "orange"
                       : "gray";
         return (
           <Tag style={{ padding: 8 }} color={color}>
