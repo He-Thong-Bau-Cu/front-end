@@ -45,7 +45,8 @@ const statusMap: { [key: string]: string } = {
   "REJECTED": "Từ chối",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
   "DRAFT": "Lưu nháp",
-  "WAIT_BKS_CONFIRMED": "Chờ ban kiểm soát xác nhận"
+  "WAIT_BKS_CONFIRMED": "Chờ ban kiểm soát xác nhận",
+  "REMAKE": "Bầu cử lại",
 };
 const DecisionTable = () => {
   const location = useLocation();
@@ -447,6 +448,8 @@ const DecisionTable = () => {
                     ? "red"
                     : statusData === "WAIT_BKS_CONFIRMED"
                       ? "purple"
+                      : statusData === "REMAKE"
+                      ? "blue"
                       : "gray";
         return (
           <Tag style={{ padding: 8 }} color={color}>
