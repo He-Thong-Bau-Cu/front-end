@@ -1,6 +1,8 @@
 import { User } from "./User.interface";
 
 export interface ElectionEntitiesMetaData {
+    type: "project" | "person" | "other";
+    projectName?: string;
     fullName: string;
     age: number;
     department: string;

@@ -1,6 +1,6 @@
 import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Row, Slider, Space, Typography } from "antd";
+import { Avatar, Button, Card, Col, Row, Slider, Space, Typography } from "antd";
 import React from "react";
 
 const { Text, Paragraph } = Typography;
@@ -19,6 +19,8 @@ interface Props {
 }
 
 
+
+
 const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange, disabled = false }) => {
   // const [votes, setVotes] = useState(0);
 
@@ -28,6 +30,17 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
     const realValue = Math.min(maxVotes, Math.max(0, value));
     onVoteChange(entity, realValue);
   };
+
+  const getAvatarText = () => {
+    if (entity.metaData?.type === "project") {
+      return entity.metaData.projectName?.charAt(0).toUpperCase();
+    }
+    if (entity.metaData?.type === "person") {
+      return entity.metaData.fullName?.charAt(0).toUpperCase();
+    }
+    return "?";
+  };
+
 
   return (
     <Card
@@ -40,16 +53,39 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
       bodyStyle={{ padding: 24 }}
     >
       <Row gutter={[16, 8]} align="middle">
+        <Col>
+          <Avatar
+            size={48}
+            style={{
+              backgroundColor: "#a7e163",
+              color: "#fff",
+              fontWeight: 600,
+            }}
+          >
+            {getAvatarText()}
+          </Avatar>
+        </Col>
+
+
+
         <Col flex="auto">
           <Space direction="vertical" size={4}>
-            <Text strong style={{ fontSize: 16 }}>{entity.title}</Text>
+            <Paragraph style={{ marginTop: 4, marginBottom: 0 }}>
+              <Text strong style={{ fontSize: 14 }}>
+                {entity.metaData?.type === "project" && entity.metaData.projectName}
+                {entity.metaData?.type === "person" && entity.metaData.fullName}
+              </Text>
+            </Paragraph>
+
+            <Text style={{ fontSize: 13, color: "#888" }}>{entity.title}</Text>
           </Space>
         </Col>
       </Row>
 
       <Paragraph style={{ marginTop: 12, fontSize: 14, color: "#555" }}>
-        {entity.description}
+        Mô tả: {entity.description}
       </Paragraph>
+
 
       <div style={{ background: "#fafafa", borderRadius: 12, padding: 16, marginTop: 8 }}>
         <Text strong>Phân bổ quyền biểu quyết</Text>
