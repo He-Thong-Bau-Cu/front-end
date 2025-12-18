@@ -441,3 +441,13 @@
   flex-direction: column;
   line-height: 1.2;
 }
+
+.yesno-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.yesno-progress {
+  flex: 1;
+}

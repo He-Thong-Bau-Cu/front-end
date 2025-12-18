@@ -96,11 +96,20 @@ const VotingResultDetailList: React.FC = () => {
                     const agree = item.agree ?? 0;
                     const disagree = item.disagree ?? 0;
                     const abstain = item.abstain ?? 0;
-                    const totalVotes = item.totalVotes ?? 0;
+                    const totalVotingPower = agree + disagree + abstain;
 
-                    const yesPercent = totalVotes ? (agree / totalVotes) * 100 : 0;
-                    const noPercent = totalVotes ? (disagree / totalVotes) * 100 : 0;
-                    const abstainPercent = totalVotes ? (abstain / totalVotes) * 100 : 0;
+                    const yesPercent = totalVotingPower
+                        ? (agree / totalVotingPower) * 100
+                        : 0;
+
+                    const noPercent = totalVotingPower
+                        ? (disagree / totalVotingPower) * 100
+                        : 0;
+
+                    const abstainPercent = totalVotingPower
+                        ? (abstain / totalVotingPower) * 100
+                        : 0;
+
 
                     const mapped: YesNoResult = {
                         id: item._id || "",
@@ -184,7 +193,7 @@ const VotingResultDetailList: React.FC = () => {
                             )}
                             <span className="yesno-label">Đồng ý</span>
 
-                            <span className="yesno-percent yes">{yesNoItem.yes.percent.toFixed(0)}%</span>
+                            {/* <span className="yesno-percent yes">{yesNoItem.yes.percent.toFixed(0)}%</span> */}
 
                             <Progress
                                 percent={yesNoItem.yes.percent}
@@ -194,7 +203,7 @@ const VotingResultDetailList: React.FC = () => {
                                 className="yesno-progress"
                             />
 
-                            <span className="yesno-count">{yesNoItem.yes.count} phiếu</span>
+                            <span className="yesno-count">{yesNoItem.yes.count} %</span>
                         </div>
 
                         <div className={`yesno-row ${yesNoWinner === 'no' ? 'winner' : ''}`}>
@@ -204,7 +213,7 @@ const VotingResultDetailList: React.FC = () => {
                                 </Tag>
                             )}
                             <span className="yesno-label">Không đồng ý</span>
-                            <span className="yesno-percent no">{yesNoItem.no.percent.toFixed(0)}%</span>
+                            {/* <span className="yesno-percent no">{yesNoItem.no.percent.toFixed(0)}%</span> */}
 
                             <Progress
                                 percent={yesNoItem.no.percent}
@@ -214,14 +223,14 @@ const VotingResultDetailList: React.FC = () => {
                                 className="yesno-progress"
                             />
 
-                            <span className="yesno-count">{yesNoItem.no.count} phiếu</span>
+                            <span className="yesno-count">{yesNoItem.no.count} %</span>
                         </div>
 
                         <div className="yesno-row">
                             <span className="yesno-label">Không ý kiến</span>
-                            <span className="yesno-percent abstain">
+                            {/* <span className="yesno-percent abstain">
                                 {yesNoItem.abstain.percent.toFixed(0)}%
-                            </span>
+                            </span> */}
 
                             <Progress
                                 percent={yesNoItem.abstain.percent}
@@ -232,7 +241,7 @@ const VotingResultDetailList: React.FC = () => {
                             />
 
                             <span className="yesno-count">
-                                {yesNoItem.abstain.count} phiếu
+                                {yesNoItem.abstain.count} %
                             </span>
                         </div>
 

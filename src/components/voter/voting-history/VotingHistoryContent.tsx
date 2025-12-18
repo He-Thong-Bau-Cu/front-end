@@ -82,7 +82,7 @@ const VotingHistoryContent = () => {
         ? `Phiếu bầu của ${ballot.voterId.userId.fullName}`
         : "Thông tin phiếu bầu";
 
-    const status = ballot.status === "CAST" ? "Đã hoàn thành" : "Chưa bỏ phiếu";
+    const status = ballot.status === "CAST" || ballot.status === "BLANK" ? "Đã hoàn thành" : "Chưa bỏ phiếu";
     const methodCode = ballot.electionId?.votingMethodId?.methodCode;
 
     // Hàm convert voteValue → text cho YES/NO/ABSTAIN
