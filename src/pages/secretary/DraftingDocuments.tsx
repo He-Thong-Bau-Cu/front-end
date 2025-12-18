@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Space, Tag } from "antd";
+import { Button, Space, Tag, Row, Col } from "antd";
 import { SaveOutlined, SendOutlined, EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "../../style/secretary/DraftingDocuments.model.css";
@@ -848,8 +848,8 @@ const DraftingDocuments: React.FC = () => {
   return (
     <div className="meeting-container">
       <div className="meeting-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <h2 style={{ margin: 0 }}>Soạn thảo tài liệu bầu cử</h2>
+        <div className="meeting-header-title">
+          <h2 className="meeting-title">Soạn thảo tài liệu bầu cử</h2>
           {statusData && (
             <Tag color={getStatusTag(statusData).color}>
               {getStatusTag(statusData).text}
@@ -857,7 +857,7 @@ const DraftingDocuments: React.FC = () => {
           )}
         </div>
 
-        <Space>
+        <Space className="meeting-header-actions" wrap>
           {(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED") && (
             <>
               <Button icon={<SaveOutlined />} onClick={handleSaveDraft}>
@@ -878,48 +878,52 @@ const DraftingDocuments: React.FC = () => {
         </Space>
       </div>
 
-      <div className="meeting-content">
-        <div className="meeting-left">
-          <MeetingInfo
-            onChange={setMeetingInfo}
-            data={election}
-            electionentities={electionentities}
-            meeting={meeting}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-            electionId={electionId}
-          />
-        </div>
-        <div className="meeting-right">
-          <Attendees
-            onChange={setAttendees}
-            data={voter}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-            organizationMembers={organization}
-            electionId={electionId}
-            election={election}
-          />
-          <Organization
-            onChange={setOrganization}
-            data={organization}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-            attendeesList={attendees}
-          />
-          <AttachedDocuments
-            onChange={setDocuments}
-            initialDocuments={existingDocuments}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-            electionId={electionId}
-          />
-        </div>
-      </div>
+      <Row gutter={[24, 24]} className="meeting-content">
+        <Col xs={24} lg={16} className="meeting-left-col">
+          <div className="meeting-left">
+            <MeetingInfo
+              onChange={setMeetingInfo}
+              data={election}
+              electionentities={electionentities}
+              meeting={meeting}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              electionId={electionId}
+            />
+          </div>
+        </Col>
+        <Col xs={24} lg={8} className="meeting-right-col">
+          <div className="meeting-right">
+            <Attendees
+              onChange={setAttendees}
+              data={voter}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              organizationMembers={organization}
+              electionId={electionId}
+              election={election}
+            />
+            <Organization
+              onChange={setOrganization}
+              data={organization}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              attendeesList={attendees}
+            />
+            <AttachedDocuments
+              onChange={setDocuments}
+              initialDocuments={existingDocuments}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              electionId={electionId}
+            />
+          </div>
+        </Col>
+      </Row>
     </div>
   );
 };
