@@ -34,11 +34,13 @@ const DraftingDocuments: React.FC = () => {
   const userId = localStorage.getItem("userId") || "";
   const [existingDocuments, setExistingDocuments] = useState<any[]>([]);
   const [existingParticipants, setExistingParticipants] = useState<any[]>([]);
+    let hasDocuments = false;
 
   const fetchData = async () => {
     try {
       showLoading();
       const response = await ElectionService.getDraftData(electionId);
+      console.log("get draft-data", response);
 
       if (response && response.success) {
         const data = response.data;
@@ -134,6 +136,16 @@ const DraftingDocuments: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, []);
+  useEffect(() => {
+      //Đánh dấu là có tài liệu rồi để be không báo lỗi nữa, kể cả là voters import từ excel
+        hasDocuments = documents?.some(
+          (doc: any) =>
+            doc.type === "voters-import-excel" ||
+            (doc.fileUrl && doc.fileUrl.includes("voters-import-excel"))
+        );
+  console.log("documents UPDATED:", documents);
+}, [documents]);
+
 
   // Helper function để lấy roleId từ participant (hỗ trợ cả object và string)
   const getRoleId = (participant: any): string | null => {
@@ -465,7 +477,8 @@ const DraftingDocuments: React.FC = () => {
       const candidatesList = meetingInfo?.candidates || [];
       const documentsList = documents || [];
       const votersList = attendees || [];
-      let hasDocuments = false;
+    
+      
       console.log("documentsList", documentsList);
       console.log("participantsList before filter:", participantsList);
       // Validation bổ sung trước khi gửi (đặc biệt cho gửi duyệt)
@@ -508,12 +521,7 @@ const DraftingDocuments: React.FC = () => {
           }
         }
 
-        //Đánh dấu là có tài liệu rồi để be không báo lỗi nữa, kể cả là voters import từ excel
-        hasDocuments = documentsList?.some(
-          (doc: any) =>
-            doc.type === "voters-import-excel" ||
-            (doc.fileUrl && doc.fileUrl.includes("voters-import-excel"))
-        );
+      
 
         // Kiểm tra voters
         if (!Array.isArray(votersList) || votersList.length === 0) {
@@ -898,7 +906,6 @@ const DraftingDocuments: React.FC = () => {
             }
             organizationMembers={organization}
             electionId={electionId}
-            election={election}
           />
           <Organization
             onChange={setOrganization}

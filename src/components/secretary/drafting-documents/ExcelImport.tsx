@@ -5,6 +5,7 @@ import { Participant } from "@/types/Participants.interface";
 import * as XLSX from "xlsx";
 import { User } from "@/types/User.interface";
 import {
+  checkDuplicateInExcel,
   isValidateCitizenId,
   isValidEmail,
   isValidPhone,
@@ -18,7 +19,7 @@ interface Props {
   organizationMembers: any[];
   onChange: (data: Participant[]) => void;
   users: User[];
-  onAddDocument?: (document: any) => void; // Callback để thêm document vào tài liệu đính kèm
+  
 }
 
 const ExcelImport: React.FC<Props> = ({
@@ -28,7 +29,7 @@ const ExcelImport: React.FC<Props> = ({
   organizationMembers,
   onChange,
   users,
-  onAddDocument,
+  
 }) => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importData, setImportData] = useState<any[]>([]);
@@ -373,6 +374,26 @@ const ExcelImport: React.FC<Props> = ({
   };
 
   const handleConfirmImport = async () => {
+    //1. CHECK DUPLICATE TRONG EXCEL
+  const { duplicateEmails, duplicateCitizenIds } =
+    checkDuplicateInExcel(importData);
+
+  if (duplicateEmails.length > 0 || duplicateCitizenIds.length > 0) {
+    let message = "File Excel có cử tri trùng nhau:\n";
+
+    duplicateEmails.forEach(([email, rows]) => {
+      message += `- Email ${email} xuất hiện ở dòng ${rows.join(", ")}\n`;
+    });
+
+    duplicateCitizenIds.forEach(([citizenId, rows]) => {
+      message += `- CitizenId ${citizenId} xuất hiện ở dòng ${rows.join(", ")}\n`;
+    });
+
+    notify(message, "error");
+    return; 
+  }
+
+
     // Tất cả dữ liệu đã được validate trước đó, không cần lọc lỗi nữa
     const validData = importData.filter((item) => !item.error);
 
@@ -381,7 +402,7 @@ const ExcelImport: React.FC<Props> = ({
       return;
     }
 
-    // Kiểm tra trùng lặp với danh sách hiện tại (theo email hoặc citizenId)
+    //2. Kiểm tra trùng lặp với danh sách hiện tại (theo email hoặc citizenId)
     const existingEmails = new Set(
       participants.map((p) => p.email?.toLowerCase()).filter(Boolean)
     );
@@ -417,7 +438,7 @@ const ExcelImport: React.FC<Props> = ({
       return;
     }
 
-    // Kiểm tra tổng % cổ phần - CHỈ TÍNH CHO NHỮNG VOTER MỚI (KHÔNG DUPLICATE)
+    //3. Kiểm tra tổng % cổ phần - CHỈ TÍNH CHO NHỮNG VOTER MỚI (KHÔNG DUPLICATE)
     const currentTotal = participants.reduce(
       (sum, p) => sum + (Number(p.percentage) || 0),
       0
@@ -494,7 +515,7 @@ const ExcelImport: React.FC<Props> = ({
     const templateData = [
       ["FullName", "Email", "Phone", "CitizenId", "Shares"],
       ["Lan Nguyen", "lan010603@gmail.com", "0328126702", "034303008552", "25"],
-      ["Lina Nguyen", "kimquy001623@gmail.com", "034303008553", "30"],
+      ["Lina Nguyen", "kimquy001623@gmail.com","0328126609", "034303008553", "30"],
     ];
 
     const ws = XLSX.utils.aoa_to_sheet(templateData);

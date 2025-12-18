@@ -23,3 +23,34 @@ export function isValidateCitizenId(id: string): boolean {
 
   return true;
 }
+
+export const checkDuplicateInExcel = (data: any[]) => {
+  const emailMap = new Map<string, number[]>();
+  const citizenIdMap = new Map<string, number[]>();
+
+  data.forEach((item, index) => {
+    const row = index + 2; // +2 vì Excel có header
+
+    if (item.email) {
+      const emailKey = item.email.toLowerCase();
+      if (!emailMap.has(emailKey)) emailMap.set(emailKey, []);
+      emailMap.get(emailKey)!.push(row);
+    }
+
+    if (item.citizenId) {
+      const citizenKey = item.citizenId;
+      if (!citizenIdMap.has(citizenKey)) citizenIdMap.set(citizenKey, []);
+      citizenIdMap.get(citizenKey)!.push(row);
+    }
+  });
+
+  const duplicateEmails = Array.from(emailMap.entries()).filter(
+    ([_, rows]) => rows.length > 1
+  );
+
+  const duplicateCitizenIds = Array.from(citizenIdMap.entries()).filter(
+    ([_, rows]) => rows.length > 1
+  );
+
+  return { duplicateEmails, duplicateCitizenIds };
+};
