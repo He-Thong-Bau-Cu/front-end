@@ -8,7 +8,6 @@ import {
   Input,
   Select,
   Button,
-  message,
 } from "antd";
 
 import { DeleteOutlined, TeamOutlined, PlusOutlined } from "@ant-design/icons";
@@ -25,18 +24,14 @@ interface Props {
   data?: any;
   disabled?: boolean;
   organizationMembers?: any[]; // Danh sách thành viên tổ chức để lọc
-  onAddDocument?: (document: any) => void; // Callback để thêm document vào tài liệu đính kèm
   electionId?: string; // ID của election để upload file
-  election?: any; // Thông tin election
 }
 const Attendees: React.FC<Props> = ({
   onChange,
   data,
   disabled = false,
   organizationMembers = [],
-  onAddDocument,
   electionId,
-  election,
 }) => {
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedVoter, setSelectedVoter] = useState<any | null>(null);
@@ -304,7 +299,7 @@ const Attendees: React.FC<Props> = ({
                 organizationMembers={organizationMembers}
                 onChange={onChange}
                 users={users}
-                onAddDocument={onAddDocument}
+              
               />
               
              
