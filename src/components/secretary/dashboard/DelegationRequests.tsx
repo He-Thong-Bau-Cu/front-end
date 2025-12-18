@@ -4,15 +4,7 @@ import '../../../style/secretary/Dashboard.model.css'
 import DelegationService from "@/services/DelegationService";
 import { SearchOutlined, CloseCircleOutlined, FileDoneOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNotification } from "@/contexts/NotificationContext";
-// ================= FORMAT DATE =================
-const formatDate = (str?: string) => {
-    if (!str) return "—";
-    return new Date(str).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-    });
-};
+import { formatDate } from "@/utils/format";
 
 // ================= REMOVE ACCENTS =================
 const removeVietnameseTones = (str: string) => {

@@ -52,6 +52,8 @@ export default function BallotList() {
         return "Đã khóa";
       case "INVALID":
         return "Không hợp lệ";
+      case "BLANK":
+        return "Đã bỏ phiếu";
       default:
         return "Không xác định";
     }
@@ -59,7 +61,7 @@ export default function BallotList() {
 
 
   const formatDate = (date: string | null | undefined) =>
-    formatServerDate(date, "DD/MM/YYYY HH:mm", { fallback: "Không xác định" });
+    formatServerDate(date, { fallback: "Không xác định" });
 
   useEffect(() => {
     const electionId = localStorage.getItem("currentElectionId");
@@ -140,6 +142,12 @@ export default function BallotList() {
     if (status !== "ACTIVE") {
       switch (status) {
         case "CAST":
+          return notify(
+            "Phiếu đã được bỏ",
+            "error",
+            "Bạn đã hoàn thành bỏ phiếu. Hãy xem chi tiết trong lịch sử."
+          );
+        case "BLANK":
           return notify(
             "Phiếu đã được bỏ",
             "error",
@@ -255,7 +263,16 @@ export default function BallotList() {
                 />
 
                 {/* SUMMARY STATUS RIGHT PANEL */}
-                {ballots.some((b) => b.status === "CAST") ? (
+                {ballots.some((b) => b.status === "BLANK") ? (
+                  <Alert
+                    message="Phiếu bỏ trống"
+                    description="Phiếu của bạn đã được bỏ, nhưng không có lựa chọn."
+                    type="info"
+                    icon={<ExclamationCircleOutlined />}
+                    showIcon
+                    style={{ borderRadius: 8 }}
+                  />
+                ) : ballots.some((b) => b.status === "CAST") ? (
                   <Alert
                     message="Đã bỏ phiếu"
                     description="Phiếu bầu của bạn đã được ghi nhận."

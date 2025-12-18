@@ -188,7 +188,15 @@ const ElectionRequestApprovalPage: React.FC = () => {
         setApproveModalOpen(false);
         setViewModalOpen(false);
         form.resetFields();
-        loadElectionRequests(pagination.current, pagination.pageSize);
+        // Gọi lại hàm fetchData để cập nhật danh sách
+        await loadElectionRequests(pagination.current, pagination.pageSize);
+        // Cập nhật selectedRecord để ẩn nút từ chối nếu modal vẫn mở
+        if (selectedRecord) {
+          setSelectedRecord({
+            ...selectedRecord,
+            statusData: "APPROVED_SIGNED",
+          });
+        }
       } else {
         notify(response.message || "Duyệt yêu cầu thất bại", "error");
       }
@@ -284,33 +292,43 @@ const ElectionRequestApprovalPage: React.FC = () => {
     {
       title: "THAO TÁC",
       key: "actions",
-      render: (_: any, record: any) => (
-        <Space>
-          <Button
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record)}
-          >
-            Xem
-          </Button>
-          <Button
-            type="primary"
-            size="small"
-            icon={<CheckOutlined />}
-            onClick={() => handleApprove(record)}
-          >
-            Duyệt
-          </Button>
-          <Button
-            danger
-            size="small"
-            icon={<CloseOutlined />}
-            onClick={() => handleReject(record)}
-          >
-            Từ chối
-          </Button>
-        </Space>
-      ),
+      render: (_: any, record: any) => {
+        // Ẩn nút từ chối nếu đã phê duyệt
+        const isApproved = record.statusData === "APPROVED_SIGNED" ||
+                          record.statusData === "WAIT_ENTER_DATA" ||
+                          record.statusData === "WAIT_APPROVAL";
+        return (
+          <Space>
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => handleView(record)}
+            >
+              Xem
+            </Button>
+            {!isApproved && (
+              <>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<CheckOutlined />}
+                  onClick={() => handleApprove(record)}
+                >
+                  Duyệt
+                </Button>
+                <Button
+                  danger
+                  size="small"
+                  icon={<CloseOutlined />}
+                  onClick={() => handleReject(record)}
+                >
+                  Từ chối
+                </Button>
+              </>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
@@ -476,6 +494,11 @@ const ElectionRequestApprovalPage: React.FC = () => {
                       .map((user) => (
                         <Option key={user._id} value={user._id}>
                           {user.fullName} - {user.email}
+                          {typeof user.currentElectionCount === "number" && (
+                            <span style={{ color: "#999", marginLeft: 8 }}>
+                              (Đang tham gia {user.currentElectionCount} kỳ)
+                            </span>
+                          )}
                         </Option>
                       ))}
                   </Select>

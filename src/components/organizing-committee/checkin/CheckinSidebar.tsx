@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import { Card, Input, Button, Progress, Typography, Spin, Modal, Descriptions, Alert } from "antd";
 import {
     CalendarOutlined,
@@ -82,14 +83,14 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
 
                     // Cập nhật recent activities nếu có attendee mới
                     if (data.attendee && data.attendee.participantId?.userId) {
+                        const checkInTime = data.attendee?.checkInTime
+                            ? new Date(data.attendee.checkInTime)
+                            : new Date();
+
                         const newActivity: RecentActivity = {
                             type: "success",
                             name: data.attendee.participantId.userId.fullName || "Người tham gia",
-                    time: formatServerDate(
-                        data.attendee?.checkInTime || new Date(),
-                        "HH:mm:ss",
-                        { adjustTimezone: Boolean(data.attendee?.checkInTime) }
-                    ),
+                            time: dayjs(checkInTime).format("HH:mm:ss"),
                         };
                         setRecentActivities((prev) => [newActivity, ...prev].slice(0, 5));
                     }
@@ -202,7 +203,7 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
                 const activities: RecentActivity[] = sorted.map((a: any) => ({
                     type: a.attended ? "success" : "error",
                     name: a.participantId?.userId?.fullName || "Không xác định",
-                    time: formatServerDate(a.checkInTime, "HH:mm:ss"),
+                    time: formatServerDate(a.checkInTime),
                 }));
 
                 setRecentActivities(activities);
@@ -370,7 +371,7 @@ const CheckinSidebar: React.FC<CheckinSidebarProps> = ({ canCheckin }) => {
 
     const formatDate = (dateString: string) => {
         if (!dateString) return "N/A";
-        return formatServerDate(dateString, "DD/MM/YYYY | HH:mm");
+        return formatServerDate(dateString);
     };
 
     if (loading) {

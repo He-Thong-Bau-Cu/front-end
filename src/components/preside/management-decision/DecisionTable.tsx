@@ -34,23 +34,9 @@ import { useNotification } from "@/contexts/NotificationContext";
 import VotingRightService from "@/services/VotingRightService";
 import { getUserLogin } from "@/utils/auth";
 import ElectionService from "@/services/ElectionService";
+import { formatDate } from "@/utils/format";
 const { Option } = Select;
 const { confirm } = Modal;
-// Hàm format ngày chỉ hiển thị ngày/tháng/năm
-const formatDate = (dateString: string | Date | null | undefined): string => {
-  if (!dateString) return "";
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    return date.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return "";
-  }
-};
 
 // Map status từ English sang tiếng Việt
 const statusMap: { [key: string]: string } = {
@@ -59,7 +45,9 @@ const statusMap: { [key: string]: string } = {
   "REJECTED": "Từ chối",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
   "DRAFT": "Lưu nháp",
-  "WAIT_BKS_CONFIRMED": "Chờ ban kiểm soát xác nhận"
+  "WAIT_BKS_CONFIRMED": "Chờ ban kiểm soát xác nhận",
+  "REMAKE": "Bầu cử lại",
+  "ABNORMAL_REMAKE": "Có bất thường, bầu cử lại",
 };
 const DecisionTable = () => {
   const location = useLocation();
@@ -261,18 +249,16 @@ const DecisionTable = () => {
       const v = await VotingRightService.getVotingRightByElectionId(record);
       roleId1List.forEach((voter: any) => {
         const votingRight = v.find(
-          (vr: any) => vr.voterId.userId === voter.userId._id
+          (vr: any) => vr.voterId.userId._id === voter.userId._id
         );
+        console.log("votingRight", v);
+        console.log("voter", voter);
         if (votingRight) {
-          (voter as { percent?: number; statusVoter?: string }).percent =
-            (votingRight as { shares?: number })?.shares || 0;
-          (voter as { percent?: number; statusVoter?: string }).statusVoter =
-            (votingRight as { voterId?: { status?: string } })?.voterId
-              ?.status || "INACTIVE";
+          voter.percent = votingRight.shares;
+          voter.statusVoter = votingRight.voterId.status;
         } else {
-          (voter as { percent?: number; statusVoter?: string }).percent = 0;
-          (voter as { percent?: number; statusVoter?: string }).statusVoter =
-            "INACTIVE";
+          voter.percent = 0;
+          voter.statusVoter = "INACTIVE";
         }
       });
       // Load election detail first to check statusData
@@ -463,6 +449,10 @@ const DecisionTable = () => {
                     ? "red"
                     : statusData === "WAIT_BKS_CONFIRMED"
                       ? "purple"
+                      : statusData === "REMAKE"
+                      ? "blue"
+                      : statusData === "ABNORMAL_REMAKE"
+                      ? "orange"
                       : "gray";
         return (
           <Tag style={{ padding: 8 }} color={color}>

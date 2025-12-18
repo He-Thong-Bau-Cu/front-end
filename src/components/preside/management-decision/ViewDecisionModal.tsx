@@ -33,6 +33,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import DecisionService from "@/services/DecisionService";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import ElectionDocumentService from "@/services/ElectionDocumentService";
+import { formatDate } from "@/utils/format";
 const { Text } = Typography;
 
 interface ViewDecisionModalProps {
@@ -77,6 +78,42 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
   const handleViewCandidate = (record: any) => {
     setSelectedCandidate(record);
     setOpenCandidateModal(true);
+  };
+
+  const downloadUrlFileAnyChoice = async (data: any) => {
+    try {
+      const fileData = await FileService.getSignedFile(data?.fileUrl);
+
+      const extension = data?.fileUrl?.split(".").pop()?.toLowerCase() || "";
+
+      const mimeMap: Record<string, string> = {
+        pdf: "application/pdf",
+        doc: "application/msword",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        xls: "application/vnd.ms-excel",
+        xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        png: "image/png",
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        zip: "application/zip",
+        txt: "text/plain",
+      };
+
+      const blob = new Blob([fileData], {
+        type: mimeMap[extension] || "application/octet-stream",
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${data.title}.${extension}`;
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      notify(err.response?.data?.message, "error");
+    }
   };
 
   const downloadUrlFileSign = async (data: any) => {
@@ -167,16 +204,6 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     }
   };
 
-  const formatDateTime = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   /* ========= TABLE COLUMNS =========== */
   const voterColumns = [
@@ -305,7 +332,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       render: (_: string, record: any) => (
         <Button
           icon={<DownloadOutlined />}
-          onClick={() => downloadUrlFileSign(record)}
+          onClick={() => downloadUrlFileAnyChoice(record)}
           style={{ cursor: "pointer" }}
         ></Button>
       ),
@@ -419,13 +446,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
                 {data?.decisionNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Thời gian bắt đầu">
-                {formatDateTime(meeting?.startDate || data?.startDate)}
+                {formatDate(meeting?.startDate || data?.startDate) || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Thể loại bầu cử">
                 {data?.typeId?.typeName || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Thời gian kết thúc">
-                {formatDateTime(meeting?.endDate || data?.endDate)}
+                {formatDate(meeting?.endDate || data?.endDate) || "-"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Ngưỡng thông qua">
@@ -433,13 +460,13 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
               </Descriptions.Item>
 
               <Descriptions.Item label="Thời gian ủy quyền">
-                {formatDateTime(data?.delegationStart)}
+                {formatDate(data?.delegationStart) || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Hình thức bầu cử">
                 {data?.votingMethodId?.methodName || "-"}
               </Descriptions.Item>
               <Descriptions.Item label="Kết thúc ủy quyền">
-                {formatDateTime(data?.delegationEnd)}
+                {formatDate(data?.delegationEnd) || "-"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Địa chỉ cuộc họp">
@@ -1039,28 +1066,19 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
               </>
             )}
             {data?.statusData === "APPROVED_SIGNED" ? (
-              <>
-                <Tag
-                  color={"yellow"}
-                  style={{
-                    padding: 10,
-                    cursor: "pointer",
-                    fontSize: 14,
-                    border: "1px solid ",
-                  }}
-                  icon={<DownloadOutlined />}
-                  onClick={() => downloadUrlFileSign(data)}
-                >
-                  Tải tài liệu có chữ ký số
-                </Tag>
-                <Tag
-                  color="red"
-                  style={{ padding: 10, cursor: "pointer", fontSize: 14 }}
-                  onClick={() => openRejectModal(data)}
-                >
-                  Từ chối
-                </Tag>
-              </>
+              <Tag
+                color={"yellow"}
+                style={{
+                  padding: 10,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  border: "1px solid ",
+                }}
+                icon={<DownloadOutlined />}
+                onClick={() => downloadUrlFileSign(data)}
+              >
+                Tải tài liệu có chữ ký số
+              </Tag>
             ) : null}
             <Space>
               <Tag

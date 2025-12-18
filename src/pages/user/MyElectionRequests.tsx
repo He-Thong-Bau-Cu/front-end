@@ -39,31 +39,11 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "@/components/homepage/HomeHeader";
 import { USER_ROLE } from "@/enums/STATUS";
+import { formatDate } from "@/utils/format";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const FORMAT = "YYYY-MM-DD HH:mm:ss";
-
-// Format ngày giờ từ ISO string mà không đổi múi giờ
-const formatDateTime = (dateString: string | Date | null | undefined): string => {
-  if (!dateString) return "-";
-  try {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    if (isNaN(date.getTime())) return "-";
-
-    // Format: DD-MM-YYYY HH:mm:ss (không đổi múi giờ)
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
-
-    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
-  } catch {
-    return "-";
-  }
-};
 
 // Map status từ English sang tiếng Việt
 const statusMap: { [key: string]: { text: string; color: string } } = {
@@ -159,9 +139,9 @@ const MyElectionRequests: React.FC = () => {
     };
   };
 
-  // Logic ngày bắt đầu tối thiểu: Hiện tại + 20 ngày
+  // Logic ngày bắt đầu tối thiểu: Hiện tại + 30 ngày
   // (Dùng startOf('day') để reset giờ về 00:00:00 cho dễ so sánh)
-  const todayPlus20 = dayjs().add(21, "day").startOf("day");
+  const todayPlus30 = dayjs().add(30, "day").startOf("day");
 
   useEffect(() => {
     loadMyRequests(1, pagination.pageSize);
@@ -449,7 +429,7 @@ const MyElectionRequests: React.FC = () => {
       title: "NGÀY TẠO",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: Date | string) => formatDateTime(date),
+      render: (date: Date | string) => formatDate(date) || "-",
     },
     {
       title: "THAO TÁC",
@@ -729,10 +709,16 @@ const MyElectionRequests: React.FC = () => {
                     format={FORMAT}
                     style={{ width: "100%" }}
                     placeholder="Chọn thời gian bắt đầu"
-                    // CHỈNH SỬA: Dùng todayPlus20 để chặn các ngày < hiện tại + 20 ngày
-                    disabledDate={(current) => current && current < todayPlus20}
+                    // Không cho chọn ngày trước hiện tại + 30 ngày
+                    disabledDate={(current) => current && current < todayPlus30}
                     onChange={(value) => {
                       form.setFieldsValue({ startDate: value }); // Cập nhật ngay để end date check
+                      if (value) {
+                        notify(
+                          "Chú ý: Ngày bắt đầu và ngày kết thúc phải cách ngày hiện tại tối thiểu 30 ngày.",
+                          "info"
+                        );
+                      }
                     }}
                   />
                 </Form.Item>
@@ -770,15 +756,24 @@ const MyElectionRequests: React.FC = () => {
                     format={FORMAT}
                     style={{ width: "100%" }}
                     placeholder="Chọn thời gian kết thúc"
-                    // CHỈNH SỬA: Logic chặn ngày cho endDate
+                    // Logic chặn ngày cho endDate
                     disabledDate={(current) => {
                       const start = form.getFieldValue("startDate");
-                      // Nếu chưa chọn start thì disable ngày < todayPlus20
-                      if (!start) return current && current < todayPlus20;
+                      // Nếu chưa chọn start thì disable ngày < todayPlus30
+                      if (!start) return current && current < todayPlus30;
                       // Nếu đã chọn start thì disable các ngày trước start
                       return current && current < start.startOf("day");
                     }}
                     onChange={(value) => {
+                      const nowLimit = todayPlus30;
+                      const start = form.getFieldValue("startDate");
+                      // Nếu người dùng chọn ngày kết thúc trong quá khứ so với giới hạn, tự sửa
+                      if (!value || value.isBefore(nowLimit)) {
+                        const fixed = start && start.isAfter(nowLimit) ? start : nowLimit;
+                        form.setFieldsValue({ endDate: fixed });
+                        notify("Thời gian không hợp lệ, hệ thống đã tự điều chỉnh về thời gian hợp lệ", "warning");
+                        return;
+                      }
                       form.setFieldsValue({ endDate: value });
                     }}
                   />
@@ -831,6 +826,11 @@ const MyElectionRequests: React.FC = () => {
                           .map((user) => (
                             <Option key={user._id} value={user._id}>
                               {user.fullName} - {user.email}
+                              {typeof user.currentElectionCount === "number" && (
+                                <span style={{ color: "#999", marginLeft: 8 }}>
+                                  (Đang tham gia {user.currentElectionCount} kỳ)
+                                </span>
+                              )}
                             </Option>
                           ))}
                       </Select>

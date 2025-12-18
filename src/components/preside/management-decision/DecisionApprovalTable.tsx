@@ -32,30 +32,6 @@ import { USER_ROLE } from "@/enums/STATUS";
 const { Text } = Typography;
 const { Option } = Select;
 
-// Format ngày giờ từ ISO string mà không đổi múi giờ
-const formatDateTime = (
-  dateString: string | Date | null | undefined
-): string => {
-  if (!dateString) return "-";
-  try {
-    const date =
-      typeof dateString === "string" ? new Date(dateString) : dateString;
-    if (isNaN(date.getTime())) return "-";
-
-    // Format: DD-MM-YYYY HH:mm:ss (không đổi múi giờ)
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const hours = String(date.getUTCHours()).padStart(2, "0");
-    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-
-    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
-  } catch {
-    return "-";
-  }
-};
-
 const statusMap: Record<string, { text: string; color: string }> = {
   APPROVED_SIGNED: {
     text: "Đã được chủ tịch hội đồng quản trị duyệt",
@@ -341,7 +317,7 @@ const DecisionApprovalTable = () => {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: Date | string) => formatDateTime(date),
+      render: (date: Date | string) => formatDate(date) || "-",
     },
     {
       title: "Thao tác",
@@ -999,6 +975,11 @@ const DecisionApprovalTable = () => {
                     .map((user) => (
                       <Option key={user._id} value={user._id}>
                         {user.fullName} - {user.email}
+                        {typeof user.currentElectionCount === "number" && (
+                          <span style={{ color: "#999", marginLeft: 8 }}>
+                            (Đang tham gia {user.currentElectionCount} kỳ)
+                          </span>
+                        )}
                       </Option>
                     ))}
                 </Select>
@@ -1047,6 +1028,11 @@ const DecisionApprovalTable = () => {
                     .map((user) => (
                       <Option key={user._id} value={user._id}>
                         {user.fullName} - {user.email}
+                        {typeof user.currentElectionCount === "number" && (
+                          <span style={{ color: "#999", marginLeft: 8 }}>
+                            (Đang tham gia {user.currentElectionCount} kỳ)
+                          </span>
+                        )}
                       </Option>
                     ))}
                 </Select>

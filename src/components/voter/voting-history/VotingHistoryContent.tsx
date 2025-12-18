@@ -2,6 +2,7 @@ import { useLoading } from "@/contexts/LoadingContext";
 import { useNotification } from "@/contexts/NotificationContext";
 import BallotService from "@/services/BallotService";
 import { BallotCast } from "@/types/Ballot.interface";
+import { formatDate } from "@/utils/format";
 import {
     AuditOutlined,
     CalendarOutlined,
@@ -13,11 +14,9 @@ import {
     UserOutlined
 } from "@ant-design/icons";
 import { Button, Card, Col, Descriptions, Divider, Row, Tag, Typography } from "antd";
-import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../../style/voter/VotingHistory.model.css";
-import { formatDate } from "@/utils/format";
 
 
 const { Text, Title } = Typography;
@@ -83,7 +82,7 @@ const VotingHistoryContent = () => {
         ? `Phiếu bầu của ${ballot.voterId.userId.fullName}`
         : "Thông tin phiếu bầu";
 
-    const status = ballot.status === "CAST" ? "Đã hoàn thành" : "Chưa bỏ phiếu";
+    const status = ballot.status === "CAST" || ballot.status === "BLANK" ? "Đã hoàn thành" : "Chưa bỏ phiếu";
     const methodCode = ballot.electionId?.votingMethodId?.methodCode;
 
     // Hàm convert voteValue → text cho YES/NO/ABSTAIN
@@ -262,7 +261,7 @@ const VotingHistoryContent = () => {
                                         return ballot.allocations.map((a, i) => (
                                             <Descriptions.Item key={i} label={`Đối tượng ${i + 1}`}>
                                                 <Text strong style={{ color: "#52c41a" }}>
-                                                    {a.entityId?.title} - Số phiếu: {a.voteValue}
+                                                    {a.entityId?.title} - Quyền biểu quyết: {a.voteValue}
                                                 </Text>
                                             </Descriptions.Item>
                                         ));

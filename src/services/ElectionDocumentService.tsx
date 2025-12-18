@@ -71,6 +71,16 @@ class ElectionDocumentService extends BaseService {
             throw error;
         }
     }
+
+  async delete(id: string): Promise<any> {
+    try {
+      const response = await this.api.delete<any>(`${this.endpoint}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      throw error;
+    }
+  }
 }
 
 export default new ElectionDocumentService();

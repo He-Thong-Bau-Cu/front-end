@@ -15,10 +15,13 @@ import {
     UserOutlined,
 } from "@ant-design/icons";
 import { Avatar, Button, Card, Col, Descriptions, Divider, Layout, Modal, Row, Space, Table, Tag, Typography } from "antd";
+import { Content } from "antd/es/layout/layout";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "./HomeHeader";
 import styles from "../../style/voter/AuthorizationHistory.module.css";
+import { formatDate } from "@/utils/format";
+import bannerContent from "@/assets/banner_content.png";
 
 
 const { Title, Text } = Typography;
@@ -147,7 +150,7 @@ export default function AuthorizationHistory() {
             render: (value: string) => (
                 <Space>
                     <CalendarOutlined />
-                    <Text>{new Date(value).toLocaleDateString("vi-VN")}</Text>
+                    <Text>{formatDate(value) || "—"}</Text>
                 </Space>
             ),
         },
@@ -171,55 +174,36 @@ export default function AuthorizationHistory() {
 
     // =================== UI ===================
     return (
-
-
         <Layout
             style={{
                 minHeight: "100vh",
-                background:
-                    "linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 50%, #fafcfb 100%)",
                 minWidth: "100vw",
-                paddingBottom: "32px",
                 position: "relative",
             }}
         >
-            {/* Decorative background elements */}
-            <div
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    width: "40%",
-                    height: "40%",
-                    background:
-                        "radial-gradient(circle, rgba(76, 175, 80, 0.08) 0%, transparent 70%)",
-                    pointerEvents: "none",
-                    zIndex: 0,
-                }}
-            />
-            <div
-                style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: "30%",
-                    height: "30%",
-                    background:
-                        "radial-gradient(circle, rgba(18, 77, 45, 0.06) 0%, transparent 70%)",
-                    pointerEvents: "none",
-                    zIndex: 0,
-                }}
-            />
-
             <HomeHeader />
-            <div
+            <Content
                 style={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "center", // Căn giữa ngang
-                    paddingTop: 50,
+                    backgroundImage: `url(${bannerContent})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    backgroundAttachment: "fixed",
+                    position: "relative",
+                    zIndex: 1,
+                    // paddingTop: 100,
+                    paddingBottom: "32px",
+                    minHeight: "calc(100vh - 100px)",
                 }}
             >
+                <div
+                    style={{
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "center", // Căn giữa ngang
+                        paddingTop: 50,
+                    }}
+                >
                 <Card
                     style={{
                         borderRadius: 12,
@@ -260,9 +244,9 @@ export default function AuthorizationHistory() {
                         />
                     </div>
                 </Card>
-            </div>
+                </div>
 
-            <Modal
+                <Modal
                 open={openModal}
                 onCancel={() => setOpenModal(false)}
                 footer={null}
@@ -385,15 +369,15 @@ export default function AuthorizationHistory() {
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Ngày bắt đầu">
-                                    {new Date(selectedDelegation.startDate).toLocaleDateString("vi-VN")}
+                                    {formatDate(selectedDelegation.startDate) || "—"}
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Ngày kết thúc">
-                                    {new Date(selectedDelegation.endDate).toLocaleDateString("vi-VN")}
+                                    {formatDate(selectedDelegation.endDate) || "—"}
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Ngày tạo">
-                                    {new Date(selectedDelegation.createdAt).toLocaleString("vi-VN")}
+                                    {formatDate(selectedDelegation.createdAt) || "—"}
                                 </Descriptions.Item>
 
                                 <Descriptions.Item label="Lý do ủy quyền">
@@ -404,9 +388,8 @@ export default function AuthorizationHistory() {
                     </Space>
 
                 )}
-            </Modal>
-
-
+                </Modal>
+            </Content>
         </Layout >
 
     );

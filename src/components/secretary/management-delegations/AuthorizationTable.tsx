@@ -21,17 +21,9 @@ import {
 import { useState, useEffect } from "react";
 import DelegationService from "@/services/DelegationService";
 import { useNotification } from "@/contexts/NotificationContext";
+import { formatDate } from "@/utils/format";
 
 const { Text } = Typography;
-
-const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "—";
-    return new Date(dateStr).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-    });
-};
 
 const removeVietnameseTones = (str: string) => {
     if (!str) return "";

@@ -26,6 +26,17 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
     onRefresh
 }) => {
     const meetingStatus = meeting?.status || "PENDING";
+    const electionStatusData = election?.statusData || "";
+    const electionStatus = election?.status || "";
+    // Khóa toàn bộ nút điều khiển khi:
+    // - Cuộc bầu cử đã bị từ chối (REJECTED)
+    // - Hoặc là election cũ đã bị đánh dấu bầu cử lại (ABNORMAL_REMAKE hoặc REMAKE + INACTIVE)
+    // Cho phép election mới được tạo ra khi bầu cử lại (REMAKE + ACTIVE)
+    const isElectionLocked =
+        electionStatusData === "REJECTED" ||
+        electionStatusData === "ABNORMAL_REMAKE" ||
+        (electionStatusData === "REMAKE" && electionStatus === "INACTIVE");
+
     const isMeetingStarted = meetingStatus !== "PENDING";
     const isMeetingCompleted = meetingStatus === "COMPLETED";
 
@@ -35,17 +46,20 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
     const checkinStarted = !!timeline.checkinAt;
     const checkinCompleted = stages.checkin === 'COMPLETED';
     const checkinActive = checkinStarted && !checkinCompleted;
-    const canStartCheckin = isMeetingStarted && !checkinStarted && !checkinCompleted;
+    const canStartCheckin =
+        isMeetingStarted && !checkinStarted && !checkinCompleted && !isElectionLocked;
 
     const reportStarted = !!timeline.reportAt;
     const reportCompleted = stages.report === 'COMPLETED';
     const reportActive = reportStarted && !reportCompleted;
-    const canStartReport = isMeetingStarted && checkinCompleted && !reportStarted && !reportCompleted;
+    const canStartReport =
+        isMeetingStarted && checkinCompleted && !reportStarted && !reportCompleted && !isElectionLocked;
 
     const votingStarted = !!timeline.votingAt;
     const votingCompleted = stages.voting === 'COMPLETED';
     const votingActive = votingStarted && !votingCompleted;
-    const canStartVoting = isMeetingStarted && reportCompleted && !votingStarted && !votingCompleted;
+    const canStartVoting =
+        isMeetingStarted && reportCompleted && !votingStarted && !votingCompleted && !isElectionLocked;
 
     const [votingTimeLeft, setVotingTimeLeft] = useState<string>("--:--:--");
     const [votingTimeLeftSeconds, setVotingTimeLeftSeconds] = useState<number>(0);
@@ -351,13 +365,15 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
     const resultAnnounced = !!timeline.resultAnnouncedAt;
     const resultCompleted = stages.result === 'COMPLETED';
     const resultActive = resultAnnounced && !resultCompleted;
-    const canAnnounceResult = isMeetingStarted && votingCompleted && !resultAnnounced && !resultCompleted;
+    const canAnnounceResult =
+        isMeetingStarted && votingCompleted && !resultAnnounced && !resultCompleted && !isElectionLocked;
 
     // Giai đoạn Bế mạc
     const closingStarted = !!timeline.closingAt;
     const closingCompleted = stages.closing === 'COMPLETED';
     const closingActive = closingStarted && !closingCompleted;
-    const canStartClosing = isMeetingStarted && resultCompleted && !closingStarted && !closingCompleted;
+    const canStartClosing =
+        isMeetingStarted && resultCompleted && !closingStarted && !closingCompleted && !isElectionLocked;
     return (
         <Card bordered={false} className="stage-card">
             <h4 className="stage-title">Kiểm soát Quy trình & Giai đoạn</h4>
@@ -382,7 +398,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 type="primary"
                                 icon={<PlayCircleOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={async () => {
                                     if (!electionId) {
                                         message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -410,13 +426,19 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 className="end-vote-btn"
                                 icon={<FlagOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={() => {
                                     Modal.confirm({
                                         title: "Xác nhận kết thúc giai đoạn Check-in",
                                         content: "Bạn có chắc chắn muốn kết thúc giai đoạn Check-in? Sau khi kết thúc, không thể check-in thêm.",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -455,7 +477,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 type="primary"
                                 icon={<PlayCircleOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={async () => {
                                     if (!electionId) {
                                         message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -478,13 +500,19 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 className="end-vote-btn"
                                 icon={<FlagOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={() => {
                                     Modal.confirm({
                                         title: "Xác nhận kết thúc giai đoạn Phát biểu & Báo cáo",
                                         content: "Bạn có chắc chắn muốn kết thúc giai đoạn Phát biểu & Báo cáo?",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -532,7 +560,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 type="primary"
                                 icon={<PlayCircleOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={async () => {
                                     if (!electionId) {
                                         message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -555,13 +583,19 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 className="end-vote-btn"
                                 icon={<FlagOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={() => {
                                     Modal.confirm({
                                         title: "Xác nhận kết thúc giai đoạn bỏ phiếu",
                                         content: "Bạn có chắc chắn muốn kết thúc giai đoạn bỏ phiếu? Sau khi kết thúc, không thể bỏ phiếu thêm.",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -600,7 +634,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 type="primary"
                                 icon={<PlayCircleOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={async () => {
                                     if (!electionId) {
                                         message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -623,13 +657,19 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 className="end-vote-btn"
                                 icon={<FlagOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={() => {
                                     Modal.confirm({
                                         title: "Xác nhận kết thúc công bố kết quả",
                                         content: "Bạn có chắc chắn muốn kết thúc công bố kết quả?",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -668,7 +708,7 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 type="primary"
                                 icon={<PlayCircleOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={async () => {
                                     if (!electionId) {
                                         message.error("Không tìm thấy thông tin cuộc bầu cử");
@@ -691,13 +731,19 @@ const EventStageControl: React.FC<EventStageControlProps> = ({
                                 block
                                 className="end-vote-btn"
                                 icon={<FlagOutlined />}
-                                disabled={isMeetingCompleted}
+                                disabled={isMeetingCompleted || isElectionLocked}
                                 onClick={() => {
                                     Modal.confirm({
                                         title: "Xác nhận kết thúc bế mạc",
                                         content: "Bạn có chắc chắn muốn kết thúc bế mạc?",
                                         okText: "Xác nhận",
                                         cancelText: "Hủy",
+                                        okButtonProps: {
+                                            style: {
+                                                background: '#52c41a',
+                                                borderColor: '#52c41a'
+                                            }
+                                        },
                                         onOk: async () => {
                                             if (!electionId) {
                                                 message.error("Không tìm thấy thông tin cuộc bầu cử");

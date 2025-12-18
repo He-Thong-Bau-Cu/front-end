@@ -329,9 +329,9 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
 
 
   /* ===========================================================
-      MIN DATE = TODAY + 20 DAYS
+      MIN DATE = TODAY + 30 DAYS
   =========================================================== */
-  const todayPlus20 = dayjs().add(21, "day").startOf("day");
+  const todayPlus30 = dayjs().add(30, "day").startOf("day");
 
   return (
     <Modal
@@ -401,9 +401,15 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                   format={FORMAT}
                   style={{ width: "100%" }}
                   placeholder="Chọn thời gian bắt đầu"
-                  disabledDate={(current) => current && current < todayPlus20}
+                  disabledDate={(current) => current && current < todayPlus30}
                   onChange={(value) => {
                     form.setFieldsValue({ startDate: value });
+                    if (value) {
+                      notify(
+                        "Chú ý: Ngày bắt đầu và ngày kết thúc phải cách ngày hiện tại tối thiểu 30 ngày.",
+                        "info"
+                      );
+                    }
                   }}
                 />
 
@@ -445,11 +451,19 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                   disabledDate={(current) => {
                     const start = form.getFieldValue("startDate");
 
-                    if (!start) return current && current < todayPlus20;
+                    if (!start) return current && current < todayPlus30;
 
                     return current && current < start.startOf("day");
                   }}
                   onChange={(value) => {
+                    const nowLimit = todayPlus30;
+                    const start = form.getFieldValue("startDate");
+                    if (!value || value.isBefore(nowLimit)) {
+                      const fixed = start && start.isAfter(nowLimit) ? start : nowLimit;
+                      form.setFieldsValue({ endDate: fixed });
+                      notify("Thời gian không hợp lệ, hệ thống đã tự điều chỉnh về thời gian hợp lệ", "warning");
+                      return;
+                    }
                     form.setFieldsValue({ endDate: value });
                   }}
                 />
@@ -516,7 +530,16 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                   .map((user) => (
                     <Option key={user._id} value={user._id}>
                       {user.fullName} - {user.email}
-                      {user.isTemp && <span style={{ color: '#999', marginLeft: 8 }}>(Mới thêm)</span>}
+                      {user.isTemp && (
+                        <span style={{ color: '#999', marginLeft: 8 }}>
+                          (Mới thêm)
+                        </span>
+                      )}
+                      {!user.isTemp && typeof user.currentElectionCount === "number" && (
+                        <span style={{ color: '#999', marginLeft: 8 }}>
+                          (Đang tham gia {user.currentElectionCount} kỳ)
+                        </span>
+                      )}
                     </Option>
                   ))}
               </Select>

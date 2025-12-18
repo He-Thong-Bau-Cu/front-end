@@ -127,8 +127,8 @@ const DelegateCardPage = () => {
           </Title>
 
           <Text className="delegate-header-sub">
-            Hạn thẻ: {formatServerDate(card.issuedAt, "DD/MM/YYYY", { fallback: "—" })} -{" "}
-            {formatServerDate(card.expiresAt, "DD/MM/YYYY", { fallback: "—" })}
+            Hạn thẻ: {formatServerDate(card.issuedAt, { fallback: "—" })} -{" "}
+            {formatServerDate(card.expiresAt, { fallback: "—" })}
           </Text>
         </div>
 
@@ -199,7 +199,7 @@ const DelegateCardPage = () => {
             {/* <Col xs={24} md={12}>
               <div className="delegate-detail-item">
                 <Text strong>Ngày phát hành: </Text>
-                <span>{formatServerDate(card.issuedAt, "DD/MM/YYYY", { fallback: "—" })}</span>
+                <span>{formatServerDate(card.issuedAt, { fallback: "—" })}</span>
               </div>
             </Col> */}
 
@@ -237,7 +237,7 @@ const DelegateCardPage = () => {
         </div>
 
         <Text type="secondary" className="delegate-issued">
-          Ngày cấp: {formatServerDate(card.issuedAt, "DD/MM/YYYY", { fallback: "—" })}
+          Ngày cấp: {formatServerDate(card.issuedAt, { fallback: "—" })}
         </Text>
 
       </Card>

@@ -1,5 +1,5 @@
-import { FileTextOutlined } from "@ant-design/icons";
-import { Card, Progress, Typography } from "antd";
+import { FileTextOutlined, StarFilled } from "@ant-design/icons";
+import { Card, Progress, Typography, Tag } from "antd";
 import React, { useEffect, useState } from "react";
 import ElectionService from "@/services/ElectionService";
 import ResultService from "@/services/ResultService";
@@ -14,11 +14,21 @@ interface YesNoResult {
     abstain: { count: number; percent: number };
 }
 
+interface EntityMetaData {
+    type: "project" | "person" | "other";
+    projectName?: string;
+    fullName?: string;
+    label?: string;
+}
+
+
 interface CumulativeItem {
     _id: string;
     totalVotes: number;
     percentage: number;
     entityTitle: string;
+    entityMetaData?: EntityMetaData;
+
 }
 
 interface CandidateResult {
@@ -26,15 +36,24 @@ interface CandidateResult {
     totalVotes?: number;
     percentage?: number;
     entityTitle: string;
+    metaData?: EntityMetaData;
+
 
     yes?: { count: number; percent: number };
     no?: { count: number; percent: number };
 }
 
+const formatNumber = (value?: number) => {
+    if (value === undefined || value === null) return 0;
+    return value.toLocaleString("vi-VN");
+};
+
+
 const VotingResultDetailList: React.FC = () => {
     const [methodCode, setMethodCode] = useState<string | null>(null);
     const [candidates, setCandidates] = useState<CandidateResult[]>([]);
     const electionId = localStorage.getItem("currentElectionId") || "";
+
 
     // Load voting method
     useEffect(() => {
@@ -63,6 +82,7 @@ const VotingResultDetailList: React.FC = () => {
                         totalVotes: item.totalVotes,
                         percentage: item.percentage,
                         entityTitle: item.entityTitle,
+                        metaData: item.entityMetaData,
                     }));
 
                     setCandidates(mapped);
@@ -76,11 +96,20 @@ const VotingResultDetailList: React.FC = () => {
                     const agree = item.agree ?? 0;
                     const disagree = item.disagree ?? 0;
                     const abstain = item.abstain ?? 0;
-                    const totalVotes = item.totalVotes ?? 0;
+                    const totalVotingPower = agree + disagree + abstain;
 
-                    const yesPercent = totalVotes ? (agree / totalVotes) * 100 : 0;
-                    const noPercent = totalVotes ? (disagree / totalVotes) * 100 : 0;
-                    const abstainPercent = totalVotes ? (abstain / totalVotes) * 100 : 0;
+                    const yesPercent = totalVotingPower
+                        ? (agree / totalVotingPower) * 100
+                        : 0;
+
+                    const noPercent = totalVotingPower
+                        ? (disagree / totalVotingPower) * 100
+                        : 0;
+
+                    const abstainPercent = totalVotingPower
+                        ? (abstain / totalVotingPower) * 100
+                        : 0;
+
 
                     const mapped: YesNoResult = {
                         id: item._id || "",
@@ -105,6 +134,39 @@ const VotingResultDetailList: React.FC = () => {
 
     const yesNoItem = candidates[0] as YesNoResult;
 
+    // Xác định option thắng (chỉ so sánh giữa yes và no, không tính abstain)
+    const getYesNoWinner = () => {
+        if (!yesNoItem) return null;
+        const { yes, no } = yesNoItem;
+
+        // Chỉ so sánh yes và no, abstain không được tính là thắng
+        if (yes.percent > no.percent) return 'yes';
+        if (no.percent > yes.percent) return 'no';
+        // Nếu bằng nhau thì không có thắng
+        return null;
+    };
+
+    // Xác định candidate thắng trong CUMULATIVE (có percentage cao nhất)
+    const getCumulativeWinner = () => {
+        if (candidates.length === 0) return null;
+        const maxPercentage = Math.max(...candidates.map(c => c.percentage || 0));
+        const winner = candidates.find(c => c.percentage === maxPercentage);
+        return winner ? winner.id : null;
+    };
+
+    const yesNoWinner = methodCode === "YES_NO_ABSTAIN" ? getYesNoWinner() : null;
+    const cumulativeWinnerId = methodCode === "CUMULATIVE" ? getCumulativeWinner() : null;
+
+    const getAbbr = (c: CandidateResult) => {
+        if (c.metaData?.type === "person" && c.metaData.fullName) {
+            return c.metaData.fullName.trim().charAt(0).toUpperCase();
+        }
+        if (c.metaData?.type === "project" && c.metaData.projectName) {
+            return c.metaData.projectName.trim().charAt(0).toUpperCase();
+        }
+        return c.entityTitle.trim().charAt(0).toUpperCase();
+    };
+
 
     return (
         <div className="voting-wrapper-detail">
@@ -123,10 +185,15 @@ const VotingResultDetailList: React.FC = () => {
                     <div className="yesno-wrapper">
 
                         <h3 className="yesno-title">Bầu cử: {yesNoItem.entityTitle}</h3>
-                        <div className="yesno-row">
+                        <div className={`yesno-row ${yesNoWinner === 'yes' ? 'winner' : ''}`}>
+                            {yesNoWinner === 'yes' && (
+                                <Tag icon={<StarFilled />} color="success" className="winner-tag">
+                                    Thắng
+                                </Tag>
+                            )}
                             <span className="yesno-label">Đồng ý</span>
 
-                            <span className="yesno-percent yes">{yesNoItem.yes.percent.toFixed(0)}%</span>
+                            {/* <span className="yesno-percent yes">{yesNoItem.yes.percent.toFixed(0)}%</span> */}
 
                             <Progress
                                 percent={yesNoItem.yes.percent}
@@ -136,12 +203,17 @@ const VotingResultDetailList: React.FC = () => {
                                 className="yesno-progress"
                             />
 
-                            <span className="yesno-count">{yesNoItem.yes.count} phiếu</span>
+                            <span className="yesno-count">{yesNoItem.yes.count} %</span>
                         </div>
 
-                        <div className="yesno-row">
+                        <div className={`yesno-row ${yesNoWinner === 'no' ? 'winner' : ''}`}>
+                            {yesNoWinner === 'no' && (
+                                <Tag icon={<StarFilled />} color="success" className="winner-tag">
+                                    Thắng
+                                </Tag>
+                            )}
                             <span className="yesno-label">Không đồng ý</span>
-                            <span className="yesno-percent no">{yesNoItem.no.percent.toFixed(0)}%</span>
+                            {/* <span className="yesno-percent no">{yesNoItem.no.percent.toFixed(0)}%</span> */}
 
                             <Progress
                                 percent={yesNoItem.no.percent}
@@ -151,14 +223,14 @@ const VotingResultDetailList: React.FC = () => {
                                 className="yesno-progress"
                             />
 
-                            <span className="yesno-count">{yesNoItem.no.count} phiếu</span>
+                            <span className="yesno-count">{yesNoItem.no.count} %</span>
                         </div>
 
                         <div className="yesno-row">
                             <span className="yesno-label">Không ý kiến</span>
-                            <span className="yesno-percent abstain">
+                            {/* <span className="yesno-percent abstain">
                                 {yesNoItem.abstain.percent.toFixed(0)}%
-                            </span>
+                            </span> */}
 
                             <Progress
                                 percent={yesNoItem.abstain.percent}
@@ -169,7 +241,7 @@ const VotingResultDetailList: React.FC = () => {
                             />
 
                             <span className="yesno-count">
-                                {yesNoItem.abstain.count} phiếu
+                                {yesNoItem.abstain.count} %
                             </span>
                         </div>
 
@@ -182,18 +254,35 @@ const VotingResultDetailList: React.FC = () => {
 
                 {methodCode === "CUMULATIVE" &&
                     candidates.map((c, index) => (
-                        <Card key={c.id} className="candidate-card">
+                        <Card key={c.id} className={`candidate-card ${cumulativeWinnerId === c.id ? 'winner' : ''}`}>
+                            {cumulativeWinnerId === c.id && (
+                                <Tag icon={<StarFilled />} color="success" className="winner-tag">
+                                    Thắng
+                                </Tag>
+                            )}
                             <div className="candidate-row">
                                 <div className="candidate-info">
                                     <div className="rank-circle">{index + 1}</div>
-                                    <div className="abbr-circle">{c.entityTitle.substring(0, 1)}</div>
-                                    <Text strong>{c.entityTitle}</Text>
+                                    {/* <div className="abbr-circle">
+                                        {getAbbr(c)}
+                                    </div> */}
+                                    <div className="candidate-text">
+                                        <Text strong>
+                                            {c.metaData?.type === "person" && c.metaData.fullName}
+                                            {c.metaData?.type === "project" && c.metaData.projectName}
+                                            {!c.metaData && c.entityTitle}
+                                        </Text>
+
+                                        <Text style={{ fontSize: 12, color: "#888" }}>
+                                            {c.entityTitle}
+                                        </Text>
+                                    </div>
                                 </div>
 
                                 <div className="candidate-stats">
                                     <div>
-                                        <Text strong className="stat-green">{c.totalVotes}</Text>
-                                        <p>Phiếu bầu</p>
+                                        <Text strong className="stat-green">{formatNumber(c.totalVotes)}</Text>
+                                        <p>Quyền biểu quyết</p>
                                     </div>
                                     <div>
                                         <Text strong className="stat-green">{c.percentage}%</Text>

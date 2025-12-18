@@ -1,9 +1,14 @@
 import { ElectionEntities } from "@/types/ElectionEntities.interface";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Col, Row, Slider, Space, Typography } from "antd";
+import { Avatar, Button, Card, Col, Row, Slider, Space, Typography } from "antd";
 import React from "react";
 
 const { Text, Paragraph } = Typography;
+
+// Hàm format số với dấu chấm phân cách hàng nghìn
+const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
 
 interface Props {
   entity: ElectionEntities;
@@ -12,6 +17,8 @@ interface Props {
   onVoteChange: (entity: ElectionEntities, value: number) => void;
   disabled?: boolean;
 }
+
+
 
 
 const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange, disabled = false }) => {
@@ -24,6 +31,17 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
     onVoteChange(entity, realValue);
   };
 
+  const getAvatarText = () => {
+    if (entity.metaData?.type === "project") {
+      return entity.metaData.projectName?.charAt(0).toUpperCase();
+    }
+    if (entity.metaData?.type === "person") {
+      return entity.metaData.fullName?.charAt(0).toUpperCase();
+    }
+    return "?";
+  };
+
+
   return (
     <Card
       style={{
@@ -35,19 +53,42 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
       bodyStyle={{ padding: 24 }}
     >
       <Row gutter={[16, 8]} align="middle">
+        <Col>
+          <Avatar
+            size={48}
+            style={{
+              backgroundColor: "#a7e163",
+              color: "#fff",
+              fontWeight: 600,
+            }}
+          >
+            {getAvatarText()}
+          </Avatar>
+        </Col>
+
+
+
         <Col flex="auto">
           <Space direction="vertical" size={4}>
-            <Text strong style={{ fontSize: 16 }}>{entity.title}</Text>
+            <Paragraph style={{ marginTop: 4, marginBottom: 0 }}>
+              <Text strong style={{ fontSize: 14 }}>
+                {entity.metaData?.type === "project" && entity.metaData.projectName}
+                {entity.metaData?.type === "person" && entity.metaData.fullName}
+              </Text>
+            </Paragraph>
+
+            <Text style={{ fontSize: 13, color: "#888" }}>{entity.title}</Text>
           </Space>
         </Col>
       </Row>
 
       <Paragraph style={{ marginTop: 12, fontSize: 14, color: "#555" }}>
-        {entity.description}
+        Mô tả: {entity.description}
       </Paragraph>
 
+
       <div style={{ background: "#fafafa", borderRadius: 12, padding: 16, marginTop: 8 }}>
-        <Text strong>Phân bổ phiếu bầu</Text>
+        <Text strong>Phân bổ quyền biểu quyết</Text>
 
         <Row align="middle" justify="space-between" style={{ marginTop: 8 }}>
           <Space>
@@ -57,7 +98,7 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
               onClick={() => handleChange(votes - 1)}
               disabled={disabled || votes === 0}
             />
-            <Text style={{ fontSize: 18, fontWeight: 600 }}>{votes}</Text>
+            <Text style={{ fontSize: 18, fontWeight: 600 }}>{formatNumber(votes)}</Text>
             <Button
               shape="circle"
               icon={<PlusOutlined />}
@@ -66,7 +107,7 @@ const CandidateCard: React.FC<Props> = ({ entity, votes, maxVotes, onVoteChange,
             />
           </Space>
 
-          <Text type="success" strong>{votes} phiếu bầu</Text>
+          <Text type="success" strong>{formatNumber(votes)} quyền biểu quyết</Text>
         </Row>
 
         <Slider

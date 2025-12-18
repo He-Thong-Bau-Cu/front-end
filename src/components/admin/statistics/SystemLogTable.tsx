@@ -12,6 +12,7 @@ import {
 import { EyeOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import "../../../style/admin/Statistics.model.css";
+import { formatDate } from "@/utils/format";
 
 const { Text, Paragraph } = Typography;
 
@@ -162,7 +163,7 @@ const SystemLogTable: React.FC<SystemLogTableProps> = ({
       key: "createdAt",
       width: 180,
       render: (date: string) => (
-        <Text type="secondary">{new Date(date).toLocaleString("vi-VN")}</Text>
+        <Text type="secondary">{formatDate(date) || "—"}</Text>
       ),
       sorter: (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),

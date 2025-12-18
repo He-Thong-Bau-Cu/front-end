@@ -24,10 +24,10 @@ const TYPE_MAP: Record<string, string> = {
 // Map Report từ API sang ReportArchiveItem
 const mapReportToArchiveItem = (report: Report): ReportArchiveItem => {
   const date = report.createdAt
-    ? formatServerDate(report.createdAt, "DD/MM/YYYY", { fallback: "-" })
+    ? formatServerDate(report.createdAt, { fallback: "-" })
     : report.reviewedAt
-      ? formatServerDate(report.reviewedAt, "DD/MM/YYYY", { fallback: "-" })
-      : formatServerDate(new Date(), "DD/MM/YYYY", { adjustTimezone: false, fallback: "-" });
+      ? formatServerDate(report.reviewedAt, { fallback: "-" })
+      : formatServerDate(new Date(), { fallback: "-" });
 
   const signer = report.signedBy?.fullName || report.signedBy?.username || "-";
   const event = report.electionId?.title || "-";

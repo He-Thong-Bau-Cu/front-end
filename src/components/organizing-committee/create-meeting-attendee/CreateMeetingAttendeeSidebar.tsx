@@ -76,7 +76,7 @@ const CreateMeetingAttendeeSidebar: React.FC<{ refreshTrigger?: number }> = ({ r
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
-    return formatServerDate(dateString, "DD/MM/YYYY | HH:mm");
+    return formatServerDate(dateString);
   };
 
   return (
@@ -93,7 +93,7 @@ const CreateMeetingAttendeeSidebar: React.FC<{ refreshTrigger?: number }> = ({ r
             </p>
             <p className="sidebar-event-time">
               {meetingInfo.meetingDate
-                ? formatServerDate(meetingInfo.meetingDate, "DD/MM/YYYY | HH:mm")
+                ? formatServerDate(meetingInfo.meetingDate)
                 : "N/A"}
             </p>
           </>

@@ -10,21 +10,68 @@ export const getTimeAgo = (date: Date) => {
   return withTargetOffset(date).fromNow();
 };
 
-export const formatDate = (date: Date) => {
-  return withTargetOffset(date).format('DD-MM-YYYY HH:mm:ss');
+const formatDateSimple = (dateInput: Date | string | null | undefined): string => {
+  if (!dateInput) return "";
+  try {
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "";
+
+    return new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: 'UTC',
+      hour12: false
+    }).format(date).replace(',', '');
+  } catch {
+    return "";
+  }
 };
 
-export const formatDateOfBirth = (date: Date) => {
-  return withTargetOffset(date).format('DD-MM-YYYY');
+export const formatDate = (date: Date | string | null | undefined) => {
+  return formatDateSimple(date);
 };
 
-export const formatDatePlain = (date: Date, format = 'DD-MM-YYYY HH:mm:ss') => {
-  return moment.utc(date).format(format);
+export const formatDateOfBirth = (date: Date | string | null | undefined) => {
+  if (!date) return "";
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return "";
+
+    const day = String(dateObj.getUTCDate()).padStart(2, '0');
+    const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+    const year = dateObj.getUTCFullYear();
+
+    return `${day}/${month}/${year}`;
+  } catch {
+    return "";
+  }
 };
 
-export const formatDateNoOffset = (date: any) => formatDatePlain(date, 'DD-MM-YYYY HH:mm:ss');
+export const formatDatePlain = (date: Date | string | null | undefined, format = 'DD-MM-YYYY HH:mm:ss') => {
+  if (format === 'DD-MM-YYYY HH:mm:ss' || format.includes('HH:mm')) {
+    return formatDateSimple(date);
+  }
+  if (!date) return "";
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return "";
+    return moment.utc(dateObj).format(format);
+  } catch {
+    return "";
+  }
+};
 
-export const formatDateNoOffset2 = (date: any) => formatDatePlain(date, 'DD/MM/YYYY');
+export const formatDateNoOffset = (date: any) => formatDateSimple(date);
+
+export const formatDateNoOffset2 = (date: any) => formatDateSimple(date);
+
+export const formatDateInline = (dateInput: Date | string | null | undefined): string => {
+  return formatDateSimple(dateInput);
+};
+
 export const formatSecondsToClock = (seconds?: number | null) => {
   if (seconds === undefined || seconds === null || Number.isNaN(seconds)) {
     return "--:--:--";
