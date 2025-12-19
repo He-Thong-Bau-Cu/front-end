@@ -633,9 +633,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, user, handle
                             <Input placeholder="VD: Hà Nội" />
                           </Form.Item>
                           <Form.Item
-                            label="Quận/Huyện"
+                            label="Phường/Xã"
                             name="localityName"
-                            rules={[{ required: true, message: "Nhập Quận/Huyện" }]}
+                            rules={[{ required: true, message: "Nhập Phường/Xã" }]}
                           >
                             <Input placeholder="VD: Thạch Thất" />
                           </Form.Item>

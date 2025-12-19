@@ -73,7 +73,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
     try {
       const res = await ElectionService.getElectionUser();
       setUserList(res || []);
-      // Lọc danh sách ban kiểm soát (có thể cần API riêng hoặc filter theo role)
+      // Lọc danh sách kiểm soát viên (có thể cần API riêng hoặc filter theo role)
       // Tạm thời dùng chung userList, có thể cần API riêng sau
       setBoardControlList(res || []);
     } catch (err: any) {
@@ -161,14 +161,14 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
       // Nếu có thông tin thư ký mới (từ form thêm thư ký)
       const newSecretaryInfo = form.getFieldValue("newSecretaryInfo");
 
-      // Validation: Nếu trạng thái là WAIT_ENTER_DATA thì phải có thư ký và ban kiểm soát
+      // Validation: Nếu trạng thái là WAIT_ENTER_DATA thì phải có thư ký và kiểm soát viên
       if (values.statusData === "WAIT_ENTER_DATA") {
         if (!values.secretaryId && !newSecretaryInfo) {
           notify("Vui lòng chọn thư ký hoặc thêm thư ký mới khi trạng thái là 'Gửi thư ký nhập dữ liệu'", "error");
           return;
         }
         if (!values.boardOfControlId) {
-          notify("Vui lòng chọn ban kiểm soát khi trạng thái là 'Gửi thư ký nhập dữ liệu'", "error");
+          notify("Vui lòng chọn kiểm soát viên khi trạng thái là 'Gửi thư ký nhập dữ liệu'", "error");
           return;
         }
       }
@@ -524,7 +524,7 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
                   </Option>
                 )}
 
-                {/* Danh sách userList - lọc bỏ user đã được chọn làm ban kiểm soát */}
+                {/* Danh sách userList - lọc bỏ user đã được chọn làm kiểm soát viên */}
                 {userList
                   .filter((user) => !boardOfControlId || String(user._id) !== String(boardOfControlId))
                   .map((user) => (
@@ -577,15 +577,15 @@ const CreateDecisionModal: React.FC<CreateDecisionModalProps> = ({
             })()}
           </Col>
 
-          {/* Ban kiểm soát */}
+          {/* Kiểm soát viên */}
           <Col span={24}>
             <Form.Item
               name="boardOfControlId"
-              label="Ban kiểm soát"
-              rules={[{ required: true, message: "Vui lòng chọn ban kiểm soát" }]}
+              label="Kiểm soát viên"
+              rules={[{ required: true, message: "Vui lòng chọn kiểm soát viên" }]}
             >
               <Select
-                placeholder="Chọn ban kiểm soát"
+                placeholder="Chọn kiểm soát viên"
                 allowClear
                 showSearch
                 filterOption={(input, option) => {

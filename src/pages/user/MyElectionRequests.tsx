@@ -87,7 +87,7 @@ const MyElectionRequests: React.FC = () => {
 
   const userId = localStorage.getItem("userId");
 
-  // Load danh sách user và roleId để chọn thư ký và ban kiểm soát
+  // Load danh sách user và roleId để chọn thư ký và kiểm soát viên
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -208,12 +208,12 @@ const MyElectionRequests: React.FC = () => {
         participants.push({
           userId: values.boardOfControlId,
           roleId: boardOfControlRoleId,
-          position: "Ban kiểm soát",
+          position: "Kiểm soát viên",
         });
       }
 
       if (participants.length === 0) {
-        notify("Vui lòng chọn ít nhất một thành viên (thư ký hoặc ban kiểm soát)", "error");
+        notify("Vui lòng chọn ít nhất một thành viên (thư ký hoặc kiểm soát viên)", "error");
         hideLoading();
         return;
       }
@@ -271,7 +271,7 @@ const MyElectionRequests: React.FC = () => {
                 electionId: editingRecord._id,
                 userId: values.boardOfControlId,
                 roleId: boardOfControlRoleId,
-                position: "Ban kiểm soát",
+                position: "Kiểm soát viên",
                 status: "PENDING",
               });
             }
@@ -810,7 +810,7 @@ const MyElectionRequests: React.FC = () => {
                           return label.toLowerCase().includes(input.toLowerCase());
                         }}
                         onChange={(value) => {
-                          // Nếu chọn thư ký trùng với ban kiểm soát, clear ban kiểm soát
+                          // Nếu chọn thư ký trùng với kiểm soát viên, clear kiểm soát viên
                           if (value && value === boardOfControlId) {
                             form.setFieldsValue({ boardOfControlId: undefined });
                           }
@@ -820,7 +820,7 @@ const MyElectionRequests: React.FC = () => {
                           .filter((user) => {
                             // Lọc bỏ user hiện tại
                             if (user._id === userId) return false;
-                            // Lọc bỏ user đã chọn làm ban kiểm soát
+                            // Lọc bỏ user đã chọn làm kiểm soát viên
                             return !boardOfControlId || user._id !== boardOfControlId;
                           })
                           .map((user) => (
@@ -840,7 +840,7 @@ const MyElectionRequests: React.FC = () => {
               }}
             </Form.Item>
 
-            {/* Ban kiểm soát */}
+            {/* Kiểm soát viên */}
             <Form.Item
               noStyle
               shouldUpdate={(prevValues, currentValues) =>
@@ -853,13 +853,13 @@ const MyElectionRequests: React.FC = () => {
                   <Col span={24}>
                     <Form.Item
                       name="boardOfControlId"
-                      label="Ban kiểm soát"
+                      label="Kiểm soát viên"
                       rules={[
-                        { required: true, message: "Vui lòng chọn ban kiểm soát" },
+                        { required: true, message: "Vui lòng chọn kiểm soát viên" },
                       ]}
                     >
                       <Select
-                        placeholder="Chọn ban kiểm soát"
+                        placeholder="Chọn kiểm soát viên"
                         allowClear
                         showSearch
                         filterOption={(input, option) => {
@@ -869,7 +869,7 @@ const MyElectionRequests: React.FC = () => {
                           return label.toLowerCase().includes(input.toLowerCase());
                         }}
                         onChange={(value) => {
-                          // Nếu chọn ban kiểm soát trùng với thư ký, clear thư ký
+                          // Nếu chọn kiểm soát viên trùng với thư ký, clear thư ký
                           if (value && value === secretaryId) {
                             form.setFieldsValue({ secretaryId: undefined });
                           }

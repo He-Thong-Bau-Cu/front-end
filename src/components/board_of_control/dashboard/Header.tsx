@@ -47,7 +47,7 @@ const Header = () => {
     <Card className="voter-welcome-card">
       <Text strong className="voter-welcome-title">👋 Chào mừng trở lại!</Text>
       <p className="voter-welcome-subtitle">
-        Ban kiểm soát giám sát cuộc bầu cử
+        Kiểm soát viên giám sát cuộc bầu cử
       </p>
 
       <div className="voter-welcome-user">

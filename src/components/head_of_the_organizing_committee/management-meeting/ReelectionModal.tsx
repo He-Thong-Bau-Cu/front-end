@@ -85,6 +85,13 @@ const ReelectionModal: React.FC<ReelectionModalProps> = ({
       okText="Xác nhận"
       cancelText="Hủy"
       width={600}
+      okButtonProps={{
+        style: {
+          backgroundColor: "#52c41a",
+          borderColor: "#52c41a",
+          color: "#fff",
+        },
+      }}
     >
       <Form
         form={form}
@@ -175,6 +182,36 @@ const ReelectionModal: React.FC<ReelectionModalProps> = ({
             format="DD/MM/YYYY HH:mm"
             style={{ width: "100%" }}
             placeholder="Chọn thời gian kết thúc"
+            disabledDate={(current) => {
+              // Disable các ngày trong quá khứ
+              return current && current < dayjs().startOf('day');
+            }}
+            disabledTime={(current) => {
+              // Nếu chọn ngày hôm nay, disable các giờ/phút trong quá khứ
+              if (current && current.isSame(dayjs(), 'day')) {
+                const now = dayjs();
+                return {
+                  disabledHours: () => {
+                    const hours = [];
+                    for (let i = 0; i < now.hour(); i++) {
+                      hours.push(i);
+                    }
+                    return hours;
+                  },
+                  disabledMinutes: (selectedHour: number) => {
+                    if (selectedHour === now.hour()) {
+                      const minutes = [];
+                      for (let i = 0; i <= now.minute(); i++) {
+                        minutes.push(i);
+                      }
+                      return minutes;
+                    }
+                    return [];
+                  },
+                };
+              }
+              return {};
+            }}
           />
         </Form.Item>
       </Form>

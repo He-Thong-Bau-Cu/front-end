@@ -209,7 +209,7 @@ const ManagementMeeting: React.FC = () => {
                         description={
                             <div>
                                 <p style={{ marginBottom: 12 }}>
-                                    Ban kiểm soát đã từ chối kết quả bầu cử. Bạn có thể xem báo cáo bất thường và bắt đầu cuộc bầu cử lại.
+                                    Kiểm soát viên đã từ chối kết quả bầu cử. Bạn có thể xem báo cáo bất thường và bắt đầu cuộc bầu cử lại.
                                 </p>
                                 <Space>
                                     {rejectionStatus?.abnormalReport?.documentId && (

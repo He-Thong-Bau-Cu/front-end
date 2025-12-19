@@ -150,7 +150,7 @@ const ElectionRequestApprovalPage: React.FC = () => {
     setViewModalOpen(true);
     setApproveModalOpen(true);
 
-    // Tìm thư ký và ban kiểm soát từ participants
+    // Tìm thư ký và kiểm soát viên từ participants
     const secretary = record.participants?.find((p: any) => {
       const roleCode = p.roleId?.roleCode || (p.roleId?.roleCode === undefined && p.roleId === secretaryRoleId);
       return roleCode === USER_ROLE.PRESIDE_SECRETARY || p.roleId?._id === secretaryRoleId;
@@ -487,7 +487,7 @@ const ElectionRequestApprovalPage: React.FC = () => {
                       .filter((user) => {
                         // Lọc bỏ user hiện tại
                         if (user._id === userId) return false;
-                        // Lọc bỏ user đã chọn làm ban kiểm soát
+                        // Lọc bỏ user đã chọn làm kiểm soát viên
                         const boardOfControlId = form.getFieldValue("boardOfControlId");
                         return !boardOfControlId || user._id !== boardOfControlId;
                       })
@@ -506,13 +506,13 @@ const ElectionRequestApprovalPage: React.FC = () => {
 
                 <Form.Item
                   name="boardOfControlId"
-                  label="Ban kiểm soát"
+                  label="Kiểm soát viên"
                   rules={[
-                    { required: true, message: "Vui lòng chọn ban kiểm soát" },
+                    { required: true, message: "Vui lòng chọn kiểm soát viên" },
                   ]}
                 >
                   <Select
-                    placeholder="Chọn ban kiểm soát"
+                    placeholder="Chọn kiểm soát viên"
                     allowClear
                     showSearch
                     filterOption={(input, option) => {

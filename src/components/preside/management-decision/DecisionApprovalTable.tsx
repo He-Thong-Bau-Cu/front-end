@@ -168,7 +168,7 @@ const DecisionApprovalTable = () => {
     setSelectedRecord(record);
     setApproveModalOpen(true);
 
-    // Tìm thư ký và ban kiểm soát từ participants
+    // Tìm thư ký và kiểm soát viên từ participants
     const secretary = record.participants?.find((p: any) => {
       if (!p.roleId) return false;
       const roleCode = typeof p.roleId === "object" ? p.roleId.roleCode : null;
@@ -955,7 +955,7 @@ const DecisionApprovalTable = () => {
                     return label.toLowerCase().includes(input.toLowerCase());
                   }}
                   onChange={(value) => {
-                    // Nếu chọn thư ký trùng với ban kiểm soát, clear ban kiểm soát
+                    // Nếu chọn thư ký trùng với kiểm soát viên, clear kiểm soát viên
                     const boardOfControlId =
                       form.getFieldValue("boardOfControlId");
                     if (value && value === boardOfControlId) {
@@ -967,7 +967,7 @@ const DecisionApprovalTable = () => {
                     .filter((user) => {
                       // Lọc bỏ user hiện tại
                       if (user._id === userId) return false;
-                      // Lọc bỏ user đã chọn làm ban kiểm soát
+                      // Lọc bỏ user đã chọn làm kiểm soát viên
                       const boardOfControlId =
                         form.getFieldValue("boardOfControlId");
                       return !boardOfControlId || user._id !== boardOfControlId;
@@ -989,15 +989,15 @@ const DecisionApprovalTable = () => {
                 name="boardOfControlId"
                 label={
                   <span style={{ fontSize: 15, fontWeight: 500 }}>
-                    Ban kiểm soát <span style={{ color: "red" }}>*</span>
+                    Kiểm soát viên <span style={{ color: "red" }}>*</span>
                   </span>
                 }
                 rules={[
-                  { required: true, message: "Vui lòng chọn ban kiểm soát" },
+                  { required: true, message: "Vui lòng chọn kiểm soát viên" },
                 ]}
               >
                 <Select
-                  placeholder="Chọn ban kiểm soát"
+                  placeholder="Chọn kiểm soát viên"
                   allowClear
                   showSearch
                   size="large"
@@ -1010,7 +1010,7 @@ const DecisionApprovalTable = () => {
                     return label.toLowerCase().includes(input.toLowerCase());
                   }}
                   onChange={(value) => {
-                    // Nếu chọn ban kiểm soát trùng với thư ký, clear thư ký
+                    // Nếu chọn kiểm soát viên trùng với thư ký, clear thư ký
                     const secretaryId = form.getFieldValue("secretaryId");
                     if (value && value === secretaryId) {
                       form.setFieldsValue({ secretaryId: undefined });
