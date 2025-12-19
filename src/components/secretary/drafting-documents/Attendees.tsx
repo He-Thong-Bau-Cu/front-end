@@ -25,6 +25,7 @@ interface Props {
   disabled?: boolean;
   organizationMembers?: any[]; // Danh sách thành viên tổ chức để lọc
   electionId?: string; // ID của election để upload file
+  statusData?: any;
 }
 const Attendees: React.FC<Props> = ({
   onChange,
@@ -32,6 +33,7 @@ const Attendees: React.FC<Props> = ({
   disabled = false,
   organizationMembers = [],
   electionId,
+  statusData,
 }) => {
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedVoter, setSelectedVoter] = useState<any | null>(null);
@@ -157,9 +159,9 @@ const Attendees: React.FC<Props> = ({
           setExcelVotersLoaded(true);
         }
       };
-     
-      fetchVotersFromExcel();
-    
+      if (statusData === "WAIT_ENTER_DATA") {
+        fetchVotersFromExcel();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [electionId, dataLoaded, excelVotersLoaded]);
@@ -291,18 +293,15 @@ const Attendees: React.FC<Props> = ({
                 <PlusOutlined style={{ marginRight: 4 }} />
                 Thêm
               </a>
-              
-                <ExcelImport
+
+              <ExcelImport
                 disabled={disabled}
                 participants={participants}
                 setParticipants={setParticipants}
                 organizationMembers={organizationMembers}
                 onChange={onChange}
                 users={users}
-              
               />
-              
-             
             </div>
           </div>
         }
@@ -339,7 +338,9 @@ const Attendees: React.FC<Props> = ({
                   <b>% Cổ phần:</b> {p.percentage}%
                 </p>
               </div>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+              <div
+                style={{ display: "flex", alignItems: "flex-start", gap: 8 }}
+              >
                 <Tag
                   color={statusColor(p.status || "PENDING")}
                   style={{ margin: 0, marginTop: 2 }}

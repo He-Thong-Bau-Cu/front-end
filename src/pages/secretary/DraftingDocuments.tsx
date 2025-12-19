@@ -911,6 +911,7 @@ const DraftingDocuments: React.FC = () => {
               }
               organizationMembers={organization}
               electionId={electionId}
+              statusData={statusData}
             />
             <Organization
               onChange={setOrganization}
