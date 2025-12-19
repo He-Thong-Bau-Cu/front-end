@@ -316,7 +316,7 @@ const DraftingDocuments: React.FC = () => {
         return false;
       }
 
-      // Kiểm tra phải có đủ 3 role bắt buộc: Trưởng ban tổ chức, Thành viên ban tổ chức, Ban kiểm soát
+      // Kiểm tra phải có đủ 3 role bắt buộc: Trưởng ban tổ chức, Thành viên ban tổ chức, Kiểm soát viên
       const roleCheck = checkRequiredRoles(mapParticipants);
       if (!roleCheck.isValid) {
         notify(
@@ -573,7 +573,7 @@ const DraftingDocuments: React.FC = () => {
           return;
         }
 
-        // Kiểm tra phải có đủ 3 role bắt buộc: Trưởng ban tổ chức, Thành viên ban tổ chức, Ban kiểm soát
+        // Kiểm tra phải có đủ 3 role bắt buộc: Trưởng ban tổ chức, Thành viên ban tổ chức, Kiểm soát viên
         // Lọc bỏ VOTER trước khi kiểm tra
         const mapParticipants = participantsList.filter((p: any) => {
           const roleCode = p?.roleId?.roleCode || p?.role?.roleCode;

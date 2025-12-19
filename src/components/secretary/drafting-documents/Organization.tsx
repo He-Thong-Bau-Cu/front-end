@@ -158,7 +158,7 @@ const Organization: React.FC<Props> = ({
           ? "Trưởng ban tổ chức"
           : values.roleId === "693a5bb31d62567f679795d2"
             ? "Thành viên ban tổ chức"
-            : "Ban kiểm soát";
+            : "Kiểm soát viên";
       return message.error(
         `Vai trò "${roleName}" đã được chọn! Mỗi vai trò chỉ được chọn 1 lần.`
       );
@@ -178,7 +178,7 @@ const Organization: React.FC<Props> = ({
           ? "Trưởng ban tổ chức"
           : values.roleId === "693a5bb31d62567f679795d2"
             ? "Thành viên ban tổ chức"
-            : "Ban kiểm soát",
+            : "Kiểm soát viên",
       status: "PENDING",
     };
 
@@ -230,7 +230,7 @@ const Organization: React.FC<Props> = ({
         {members.map((m) => {
           // Kiểm tra xem user này có phải là user hiện tại không (thư ký)
           const isCurrentUser = m.userId === currentUserId;
-          // Kiểm tra xem có phải là ban kiểm soát không (roleId = "693a5bcc1d62567f679795e0")
+          // Kiểm tra xem có phải là kiểm soát viên không (roleId = "693a5bcc1d62567f679795e0")
           const isBoardOfControl = m.roleId === "693a5bcc1d62567f679795e0";
           const isChuToa = m.roleId === "693a5b9e1d62567f679795c4"; // ID của Chữ Tòa
           const canDelete = !disabled && !isCurrentUser && !isBoardOfControl && !isChuToa;
@@ -240,7 +240,7 @@ const Organization: React.FC<Props> = ({
           if (isCurrentUser) {
             deleteTitle = "Không thể xóa chính mình";
           } else if (isBoardOfControl) {
-            deleteTitle = "Không thể xóa ban kiểm soát";
+            deleteTitle = "Không thể xóa kiểm soát viên";
           }
 
           return (
@@ -358,7 +358,7 @@ const Organization: React.FC<Props> = ({
                 value="693a5bcc1d62567f679795e0"
                 disabled={members.some((m) => m.roleId === "693a5bcc1d62567f679795e0")}
               >
-                Ban kiểm soát
+                Kiểm soát viên
                 {members.some((m) => m.roleId === "693a5bcc1d62567f679795e0") && " (đã chọn)"}
               </Option>
             </Select>

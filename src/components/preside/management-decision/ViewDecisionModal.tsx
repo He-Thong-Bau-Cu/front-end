@@ -292,7 +292,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
     WAIT_ENTER_DATA: { label: "Chờ nhập dữ liệu", color: "gold" },
     WAIT_APPROVAL: { label: "Chờ duyệt", color: "orange" },
     WAIT_BKS_CONFIRMED: {
-      label: "Chờ Ban Kiểm Soát xác nhận",
+      label: "Chờ kiểm soát viên xác nhận",
       color: "purple",
     },
     APPROVED_SIGNED: { label: "Đã duyệt", color: "blue" },

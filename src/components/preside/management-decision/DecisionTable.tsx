@@ -45,7 +45,7 @@ const statusMap: { [key: string]: string } = {
   "REJECTED": "Từ chối",
   "WAIT_ENTER_DATA": "Chờ nhập dữ liệu",
   "DRAFT": "Lưu nháp",
-  "WAIT_BKS_CONFIRMED": "Chờ ban kiểm soát xác nhận",
+  "WAIT_BKS_CONFIRMED": "Chờ kiểm soát viên xác nhận",
   "REMAKE": "Bầu cử lại",
   "ABNORMAL_REMAKE": "Có bất thường, bầu cử lại",
 };
@@ -373,7 +373,7 @@ const DecisionTable = () => {
         }
       }
 
-      // Tìm ban kiểm soát từ participants
+      // Tìm kiểm soát viên từ participants
       let boardOfControlFound = false;
       for (const a of participants) {
         const roleIdStr = a.roleId?._id?.toString() || a.roleId?._id || a.roleId;
@@ -545,7 +545,7 @@ const DecisionTable = () => {
             <Option value="APPROVED_SIGNED">Đã phê duyệt</Option>
             <Option value="WAIT_ENTER_DATA">Chờ nhập dữ liệu</Option>
             <Option value="WAIT_APPROVAL">Chờ duyệt</Option>
-            <Option value="WAIT_BKS_CONFIRMED">Chờ ban kiểm soát xác nhận</Option>
+            <Option value="WAIT_BKS_CONFIRMED">Chờ kiểm soát viên xác nhận</Option>
             <Option value="REJECTED">Yêu cầu chỉnh sửa</Option>
             <Option value="DRAFT">Lưu nháp</Option>
           </Select>

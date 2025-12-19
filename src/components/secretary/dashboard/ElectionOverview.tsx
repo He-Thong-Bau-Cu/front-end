@@ -8,7 +8,7 @@ const elections = [
         status: "Đang hoạt động",
     },
     {
-        title: "Bầu cử Ban Kiểm Soát 2025",
+        title: "Bầu cử kiểm soát viên 2025",
         date: "15/11/2025 – 20/11/2025",
         percent: 0,
         status: "Sắp diễn ra",
