@@ -95,7 +95,9 @@ const VotingResultSummary: React.FC = () => {
 
                     <Col span={6} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>
-                            {stats.total === 0 ? "0%" : ((stats.cast / stats.total) * 100) + "%"}
+                            {stats.total === 0
+                                ? "0%"
+                                : `${Math.round((stats.cast / stats.total) * 100)}%`}
                         </Title>
                         <Text>Tỷ lệ tham gia</Text>
                     </Col>
