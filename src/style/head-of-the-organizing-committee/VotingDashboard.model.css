@@ -13,6 +13,18 @@
   gap: 24px;
 }
 
+/* Card trên nhỏ hơn */
+.vd-left-column .vd-card:first-child,
+.vd-right-column .vd-card:first-child {
+  flex: 0 0 42%;
+}
+
+/* Card dưới to hơn */
+.vd-left-column .vd-card:last-child,
+.vd-right-column .vd-card:last-child {
+  flex: 1;
+}
+
 .vd-left-column .vd-card,
 .vd-right-column .vd-card {
   flex: 1;
@@ -29,7 +41,9 @@
   background: #fff;
   padding: 24px 28px;
   width: 100%;
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
 }
 
 .vd-card:hover {
@@ -179,7 +193,7 @@
   color: #52c41a;
   margin: 12px 0 20px;
   letter-spacing: 2px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .vd-timer-actions {
