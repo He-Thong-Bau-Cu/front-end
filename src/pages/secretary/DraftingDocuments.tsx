@@ -886,45 +886,52 @@ const DraftingDocuments: React.FC = () => {
         </Space>
       </div>
 
-      <div className="meeting-content">
-        <div className="meeting-left">
-          <MeetingInfo
-            onChange={setMeetingInfo}
-            data={election}
-            electionentities={electionentities}
-            meeting={meeting}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-          />
-        </div>
-        <div className="meeting-right">
-          <Attendees
-            onChange={setAttendees}
-            data={voter}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-            organizationMembers={organization}
-            electionId={electionId}
-          />
-          <Organization
-            onChange={setOrganization}
-            data={organization}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-            attendeesList={attendees}
-          />
-          <AttachedDocuments
-            onChange={setDocuments}
-            initialDocuments={existingDocuments}
-            disabled={
-              !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
-            }
-          />
-        </div>
-      </div>
+      <Row gutter={[24, 24]} className="meeting-content">
+        <Col xs={24} lg={16} className="meeting-left-col">
+          <div className="meeting-left">
+            <MeetingInfo
+              onChange={setMeetingInfo}
+              data={election}
+              electionentities={electionentities}
+              meeting={meeting}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              electionId={electionId}
+            />
+          </div>
+        </Col>
+        <Col xs={24} lg={8} className="meeting-right-col">
+          <div className="meeting-right">
+            <Attendees
+              onChange={setAttendees}
+              data={voter}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              organizationMembers={organization}
+              electionId={electionId}
+              election={election}
+            />
+            <Organization
+              onChange={setOrganization}
+              data={organization}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              attendeesList={attendees}
+            />
+            <AttachedDocuments
+              onChange={setDocuments}
+              initialDocuments={existingDocuments}
+              disabled={
+                !(statusData === "WAIT_ENTER_DATA" || statusData === "REJECTED")
+              }
+              electionId={electionId}
+            />
+          </div>
+        </Col>
+      </Row>
     </div>
   );
 };
