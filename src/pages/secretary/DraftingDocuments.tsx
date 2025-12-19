@@ -478,8 +478,8 @@ const DraftingDocuments: React.FC = () => {
       const candidatesList = meetingInfo?.candidates || [];
       const documentsList = documents || [];
       const votersList = attendees || [];
-    
-      
+
+
       console.log("documentsList", documentsList);
       console.log("participantsList before filter:", participantsList);
       // Validation bổ sung trước khi gửi (đặc biệt cho gửi duyệt)
@@ -522,7 +522,7 @@ const DraftingDocuments: React.FC = () => {
           }
         }
 
-      
+
 
         // Kiểm tra voters
         if (!Array.isArray(votersList) || votersList.length === 0) {
@@ -911,7 +911,6 @@ const DraftingDocuments: React.FC = () => {
               }
               organizationMembers={organization}
               electionId={electionId}
-              election={election}
             />
             <Organization
               onChange={setOrganization}
