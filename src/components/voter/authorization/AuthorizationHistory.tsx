@@ -3,6 +3,7 @@ import { useNotification } from "@/contexts/NotificationContext";
 import DigitalSignModal from "@/pages/digitalSignature/DigitalSignModal";
 import DelegationService from "@/services/DelegationService";
 import FileService from "@/services/FileService";
+import VoterService from "@/services/VoterService";
 import styles from "@/style/voter/AuthorizationHistory.module.css";
 import { DelegationSearch, DelegationStatus } from "@/types/Delegate.interface";
 import {
@@ -71,6 +72,8 @@ export default function AuthorizationHistory() {
     const { notify } = useNotification();
     const [signModalOpen, setSignModalOpen] = useState(false);
     const [currentDelegationId, setCurrentDelegationId] = useState<string | null>(null);
+    const [isEligible, setIsEligible] = useState<boolean | null>(null);
+
 
 
     useEffect(() => {
@@ -79,8 +82,12 @@ export default function AuthorizationHistory() {
                 showLoading();
                 const electionId = localStorage.getItem("currentElectionId") || "";
                 const delegatorId = localStorage.getItem("userId") || "";
+                const voterId = localStorage.getItem("voterId") || "";
                 const data = await DelegationService.getDelegationByVoterId(electionId, delegatorId);
                 setDelegations(data);
+
+                const voter = await VoterService.getById(voterId);
+                setIsEligible(voter?.eligible === true);
             } catch {
                 notify("Không thể tải danh sách ủy quyền");
             } finally {
@@ -172,6 +179,11 @@ export default function AuthorizationHistory() {
 
     // 👉 Xử lý tạo ủy quyền
     const handleCreateDelegation = () => {
+        if (isEligible === false) {
+            notify("Bạn không đủ điều kiện để tạo ủy quyền", "warning");
+            return;
+        }
+
         if (blockingDelegation) {
             const mapStatus = {
                 PENDING: {
@@ -352,41 +364,43 @@ export default function AuthorizationHistory() {
                     <Title level={5} className={styles.cardTitle}>
                         📚 Lịch sử ủy quyền của bạn
                     </Title>
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        ghost
-                        onClick={handleCreateDelegation}
-                        style={{
-                            borderRadius: 8,
-                            fontWeight: 500,
-                            color: "#124d2d",
-                            border: "1.5px solid #3ca860",
-                            background: "#f6ffed",
-                            transition: "all 0.3s ease",
-                            height: 36,
-                            padding: "0 16px",
-                            marginRight: 30
-                        }}
-                        onMouseEnter={(e) => {
-                            const btn = e.currentTarget;
-                            btn.style.background = "#3ca860";
-                            btn.style.color = "white";
-                            btn.style.borderColor = "#3ca860";
-                            btn.style.boxShadow = "0 2px 6px rgba(60,168,96,0.25)";
-                        }}
-                        onMouseLeave={(e) => {
-                            const btn = e.currentTarget;
-                            btn.style.background = "#f6ffed";
-                            btn.style.color = "#124d2d";
-                            btn.style.borderColor = "#3ca860";
-                            btn.style.boxShadow = "none";
-                        }}
 
-                    >
-                        Tạo ủy quyền mới
-                    </Button>
+                    {isEligible && (
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            ghost
+                            onClick={handleCreateDelegation}
+                            style={{
+                                borderRadius: 8,
+                                fontWeight: 500,
+                                color: "#124d2d",
+                                border: "1.5px solid #3ca860",
+                                background: "#f6ffed",
+                                transition: "all 0.3s ease",
+                                height: 36,
+                                padding: "0 16px",
+                                marginRight: 30
+                            }}
+                            onMouseEnter={(e) => {
+                                const btn = e.currentTarget;
+                                btn.style.background = "#3ca860";
+                                btn.style.color = "white";
+                                btn.style.borderColor = "#3ca860";
+                                btn.style.boxShadow = "0 2px 6px rgba(60,168,96,0.25)";
+                            }}
+                            onMouseLeave={(e) => {
+                                const btn = e.currentTarget;
+                                btn.style.background = "#f6ffed";
+                                btn.style.color = "#124d2d";
+                                btn.style.borderColor = "#3ca860";
+                                btn.style.boxShadow = "none";
+                            }}
 
+                        >
+                            Tạo ủy quyền mới
+                        </Button>
+                    )}
                 </div>
             }
         >

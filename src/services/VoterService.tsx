@@ -9,6 +9,14 @@ class VoterService extends BaseService {
         super("voters");
     }
 
+    // Lấy thông tin cử tri theo voterId
+    async getById(id: string | number): Promise<any> {
+        const response = await this.api.get(`${this.endpoint}/${id}`);
+        return response.data;
+    }
+
+
+
     async getDashboardVoterByElectionId(id: string | number): Promise<DashboardVoterStats> {
         const response = await this.api.get(`${this.endpoint}/dashboard/${id}`) as ApiResponse<DashboardVoterStats>;
         return response.data;
@@ -38,7 +46,7 @@ class VoterService extends BaseService {
     async search(payload: { keyword: string; electionId: string }): Promise<any> {
         // BaseService interceptor đã trả về response.data, nên response chính là BaseResponse
         return await this.api.post(`${this.endpoint}/search`, payload);
-      }
+    }
 }
 
 export default new VoterService();
