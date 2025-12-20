@@ -15,6 +15,7 @@ const VotingResultSummary: React.FC = () => {
         total: 0,
         cast: 0,
         notCast: 0,
+        blank: 0
     });
 
     const electionId = localStorage.getItem("currentElectionId");
@@ -40,6 +41,7 @@ const VotingResultSummary: React.FC = () => {
                     total: data.total,
                     cast,
                     notCast: data.total - cast,
+                    blank: data.ballotStatus.find((s) => s._id === "BLANK")?.totalBallots || 0
                 });
 
             } catch {
@@ -78,22 +80,27 @@ const VotingResultSummary: React.FC = () => {
 
                 {/* 🔥 Thống kê phiếu bầu */}
                 <Row gutter={24} className="summary-stats">
-                    <Col span={6} className="stat-item">
+                    <Col span={5} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>{stats.total}</Title>
                         <Text>Tổng số cử tri tham gia bỏ phiếu</Text>
                     </Col>
 
-                    <Col span={6} className="stat-item">
+                    <Col span={5} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>{stats.cast}</Title>
                         <Text>Tổng số cử tri đã bỏ phiếu</Text>
                     </Col>
 
-                    <Col span={6} className="stat-item">
+                    <Col span={5} className="stat-item">
+                        <Title style={{ color: "#27ae60" }} level={3}>{stats.blank}</Title>
+                        <Text>Tổng số cử tri bỏ phiếu trắng</Text>
+                    </Col>
+
+                    <Col span={5} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>{stats.notCast}</Title>
                         <Text>Tổng số cử tri chưa bỏ phiếu</Text>
                     </Col>
 
-                    <Col span={6} className="stat-item">
+                    <Col span={4} className="stat-item">
                         <Title style={{ color: "#27ae60" }} level={3}>
                             {stats.total === 0
                                 ? "0.00%"

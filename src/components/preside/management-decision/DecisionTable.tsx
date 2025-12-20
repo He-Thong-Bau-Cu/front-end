@@ -253,6 +253,7 @@ const DecisionTable = () => {
         );
         console.log("votingRight", v);
         console.log("voter", voter);
+        console.log("voterFind", votingRight);
         if (votingRight) {
           voter.percent = votingRight.shares;
           voter.statusVoter = votingRight.voterId.status;
@@ -329,10 +330,12 @@ const DecisionTable = () => {
         roleId1List.forEach((voter: unknown) => {
           const voterEmail = (voter as { userId?: { email?: string } })?.userId
             ?.email;
+            console.log(voterEmail)
           if (voterEmail) {
             voterMap.set(voterEmail.toLowerCase(), voter);
           }
         });
+        console.log("Database voters:", voterMap);
 
         // Then, add Excel voters only if they don't exist in database (by email)
         excelVoters.forEach((excelVoter: unknown) => {
@@ -343,9 +346,11 @@ const DecisionTable = () => {
           }
         });
 
+        console.log("Excel voters:", voterMap);
         allVoters = Array.from(voterMap.values());
       }
 
+      console.log("All combined voters:", allVoters);
       setVoters(allVoters);
       setViewDecisionData(electionData);
     } catch (err: any) {

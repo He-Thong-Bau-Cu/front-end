@@ -265,7 +265,7 @@ const ViewDecisionModal: React.FC<ViewDecisionModalProps> = ({
       render: (role: string) => {
         return (
           <Tag style={{ padding: 8, fontSize: 14 }} color={"green"}>
-            {role !== undefined ? `${role}%` : `${0}%`}
+            {`${role}%`}
           </Tag>
         );
       },
