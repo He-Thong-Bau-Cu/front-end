@@ -192,7 +192,7 @@ const ElectionOverview = () => {
                 </div>
 
                 {/* Timeline */}
-                <div className="election-timeline-container">
+                {/* <div className="election-timeline-container">
                     <div className="election-timeline">
                         {stages.map((stage, index) => {
                             const isCompleted = currentStage > stage.key;
@@ -221,7 +221,7 @@ const ElectionOverview = () => {
                             );
                         })}
                     </div>
-                </div>
+                </div> */}
 
                 {/* Nút hành động */}
                 {/* <div className="election-overview-actions">
