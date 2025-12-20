@@ -977,7 +977,7 @@ const DecisionApprovalTable = () => {
                         {user.fullName} - {user.email}
                         {typeof user.currentElectionCount === "number" && (
                           <span style={{ color: "#999", marginLeft: 8 }}>
-                            (Đang tham gia {user.currentElectionCount} kỳ)
+                            {/* (Đang tham gia {user.currentElectionCount} kỳ) */}
                           </span>
                         )}
                       </Option>
@@ -1030,7 +1030,7 @@ const DecisionApprovalTable = () => {
                         {user.fullName} - {user.email}
                         {typeof user.currentElectionCount === "number" && (
                           <span style={{ color: "#999", marginLeft: 8 }}>
-                            (Đang tham gia {user.currentElectionCount} kỳ)
+                            {/* (Đang tham gia {user.currentElectionCount} kỳ) */}
                           </span>
                         )}
                       </Option>
