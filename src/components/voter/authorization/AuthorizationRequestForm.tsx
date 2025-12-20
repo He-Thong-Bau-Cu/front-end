@@ -94,7 +94,13 @@ export default function AuthorizationRequestForm() {
             setModalOpen(true);
 
         } catch (error: any) {
-            notify("Có lỗi xảy ra khi gửi yêu cầu ủy quyền!", "error");
+            const msg =
+                error?.response?.data?.message ||
+                error?.message ||
+                "Có lỗi xảy ra khi gửi yêu cầu ủy quyền!";
+
+            notify(msg, "error");
+
         } finally {
             hideLoading();
         }
